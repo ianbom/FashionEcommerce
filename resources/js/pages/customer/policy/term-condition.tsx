@@ -1,7 +1,7 @@
-import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { FileText, ChevronRight } from 'lucide-react';
-import ShopLayout from '@/Layouts/shop-layout';
+import React from 'react';
+import ShopLayout from '@/layouts/shop-layout';
 
 export default function TermCondition() {
     return (

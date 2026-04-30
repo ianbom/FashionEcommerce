@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { Search, Heart, ChevronDown, ChevronUp } from 'lucide-react';
 import React from 'react';
 import ShopLayout from '@/layouts/shop-layout';
@@ -10,7 +10,7 @@ const products = [
         price: "Rp 589.000",
         badge: "NEW",
         badgeColor: "bg-primary",
-        image: "/img/abdul-raheem-kannath-aNWfK46QWto-unsplash.jpg",
+        image: "/img/abdul-raheem-kannath-aNWfK46QWto-unsplash.webp",
         colors: [],
     },
     {
@@ -19,7 +19,7 @@ const products = [
         price: "Rp 469.000",
         badge: "NEW",
         badgeColor: "bg-primary",
-        image: "/img/ainur-iman-qcNmigFPTQM-unsplash.jpg",
+        image: "/img/ainur-iman-qcNmigFPTQM-unsplash.webp",
         colors: [],
     },
     {
@@ -28,7 +28,7 @@ const products = [
         price: "Rp 869.000",
         badge: "NEW",
         badgeColor: "bg-primary",
-        image: "/img/atiyeh-fathi-CvdzGjVX9DA-unsplash.jpg",
+        image: "/img/atiyeh-fathi-CvdzGjVX9DA-unsplash.webp",
         colors: [],
     },
     {
@@ -37,7 +37,7 @@ const products = [
         price: "Rp 639.000",
         badge: "NEW",
         badgeColor: "bg-primary",
-        image: "/img/hasan-almasi-_X2UAmIcpko-unsplash.jpg",
+        image: "/img/hasan-almasi-_X2UAmIcpko-unsplash.webp",
         colors: [],
     },
     {
@@ -46,7 +46,7 @@ const products = [
         price: "Rp 559.000",
         badge: "NEW",
         badgeColor: "bg-primary",
-        image: "/img/ike-ellyana-2F70bGqQVa4-unsplash.jpg",
+        image: "/img/ike-ellyana-2F70bGqQVa4-unsplash.webp",
         colors: [],
     },
     {
@@ -55,7 +55,7 @@ const products = [
         price: "Rp 349.000",
         badge: "RESTOCKED",
         badgeColor: "bg-accent",
-        image: "/img/khaled-ghareeb-n84s3jgzhKk-unsplash.jpg",
+        image: "/img/khaled-ghareeb-n84s3jgzhKk-unsplash.webp",
         colors: [],
     },
     {
@@ -64,7 +64,7 @@ const products = [
         price: "Rp 389.000",
         badge: "RESTOCKED",
         badgeColor: "bg-accent",
-        image: "/img/m-ghufanil-muta-ali-vAyDuvcjXcs-unsplash.jpg",
+        image: "/img/m-ghufanil-muta-ali-vAyDuvcjXcs-unsplash.webp",
         colors: [],
     },
     {
@@ -73,7 +73,7 @@ const products = [
         price: "Rp 349.000",
         badge: "RESTOCKED",
         badgeColor: "bg-accent",
-        image: "/img/mina-rad-2O2cXJemDmo-unsplash.jpg",
+        image: "/img/mina-rad-2O2cXJemDmo-unsplash.webp",
         colors: [],
     },
     {
@@ -81,7 +81,7 @@ const products = [
         title: "Marrakech Jardin Abaya - Jardin de Flores",
         price: "Rp 1.099.000",
         badge: "",
-        image: "/img/monody-le-7YrRbgOPibw-unsplash.jpg",
+        image: "/img/monody-le-7YrRbgOPibw-unsplash.webp",
         colors: ["bg-black", "bg-[#F174B8]", "bg-[#815C42]"],
     },
     {
@@ -89,7 +89,7 @@ const products = [
         title: "The Granada Jardin Set - Jardin de Flores",
         price: "Rp 1.349.000",
         badge: "",
-        image: "/img/omar-elsharawy-gFHBofW3ncQ-unsplash.jpg",
+        image: "/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp",
         colors: [],
     },
     {
@@ -97,7 +97,7 @@ const products = [
         title: "Mila Jardin Women Abaya - Jardin de Flores",
         price: "Rp 989.000",
         badge: "",
-        image: "/img/sajimon-sahadevan-AWC94dVpTPc-unsplash.jpg",
+        image: "/img/sajimon-sahadevan-AWC94dVpTPc-unsplash.webp",
         colors: ["bg-[#182A45]", "bg-[#E6D4CB]", "bg-[#F174B8]", "bg-[#815C42]", "bg-[#3B3B3B]"],
     },
     {
@@ -105,7 +105,7 @@ const products = [
         title: "Abaya (Abaya Cargo)",
         price: "Rp 729.000",
         badge: "",
-        image: "/img/sarah-khan-R7p66Oj8ZOQ-unsplash.jpg",
+        image: "/img/sarah-khan-R7p66Oj8ZOQ-unsplash.webp",
         colors: [],
     },
     {
@@ -113,7 +113,7 @@ const products = [
         title: "Mila Jardin Kid Abaya - Jardin de Flores",
         price: "Rp 599.000",
         badge: "",
-        image: "/img/shedrack-salami-DRjeesi2kFM-unsplash.jpg",
+        image: "/img/shedrack-salami-DRjeesi2kFM-unsplash.webp",
         colors: ["bg-[#F174B8]", "bg-[#E6D4CB]", "bg-[#182A45]"],
     },
     {
@@ -121,7 +121,7 @@ const products = [
         title: "Bella Kid Khimar - Jardin de Flores",
         price: "Rp 149.000",
         badge: "",
-        image: "/img/abdul-raheem-kannath-aNWfK46QWto-unsplash.jpg",
+        image: "/img/abdul-raheem-kannath-aNWfK46QWto-unsplash.webp",
         colors: ["bg-[#F174B8]", "bg-[#8CA2A8]", "bg-[#E6D4CB]"],
     },
     {
@@ -129,7 +129,7 @@ const products = [
         title: "Hugo Jardin Kids Shirts - Jardin de Flores",
         price: "Rp 349.000",
         badge: "",
-        image: "/img/ainur-iman-qcNmigFPTQM-unsplash.jpg",
+        image: "/img/ainur-iman-qcNmigFPTQM-unsplash.webp",
         colors: [],
     },
     {
@@ -137,7 +137,7 @@ const products = [
         title: "Hugo Jardin Men's Shirt - Jardin de Flores",
         price: "Rp 469.000",
         badge: "",
-        image: "/img/atiyeh-fathi-CvdzGjVX9DA-unsplash.jpg",
+        image: "/img/atiyeh-fathi-CvdzGjVX9DA-unsplash.webp",
         colors: ["bg-[#182A45]", "bg-[#E6D4CB]"],
     },
     {
@@ -146,7 +146,7 @@ const products = [
         price: "Rp 309.000",
         badge: "NEW",
         badgeColor: "bg-accent",
-        image: "/img/hasan-almasi-_X2UAmIcpko-unsplash.jpg",
+        image: "/img/hasan-almasi-_X2UAmIcpko-unsplash.webp",
         colors: [],
     },
     {
@@ -155,7 +155,7 @@ const products = [
         price: "Rp 999.000",
         badge: "NEW",
         badgeColor: "bg-accent",
-        image: "/img/ike-ellyana-2F70bGqQVa4-unsplash.jpg",
+        image: "/img/ike-ellyana-2F70bGqQVa4-unsplash.webp",
         colors: [],
     },
     {
@@ -164,7 +164,7 @@ const products = [
         price: "Rp 869.000",
         badge: "NEW",
         badgeColor: "bg-primary",
-        image: "/img/khaled-ghareeb-n84s3jgzhKk-unsplash.jpg",
+        image: "/img/khaled-ghareeb-n84s3jgzhKk-unsplash.webp",
         colors: [],
     },
     {
@@ -173,7 +173,7 @@ const products = [
         price: "Rp 1.499.000",
         badge: "NEW",
         badgeColor: "bg-accent",
-        image: "/img/m-ghufanil-muta-ali-vAyDuvcjXcs-unsplash.jpg",
+        image: "/img/m-ghufanil-muta-ali-vAyDuvcjXcs-unsplash.webp",
         colors: [],
     }
 ];
@@ -190,9 +190,9 @@ export default function Welcome() {
                     {/* Search */}
                     <div className="relative mb-8 group">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-hover:text-gray-600 transition-colors" size={14} />
-                        <input 
-                            type="text" 
-                            placeholder="Search" 
+                        <input
+                            type="text"
+                            placeholder="Search"
                             className="w-full pl-9 pr-4 py-2 bg-transparent border border-border rounded-md text-[11px] tracking-wide focus:outline-none focus:border-ring focus:ring-1 focus:ring-ring/20 transition-all"
                         />
                     </div>
@@ -344,12 +344,12 @@ export default function Welcome() {
                     {/* Grid */}
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 md:gap-x-5 gap-y-6 md:gap-y-10">
                         {products.map((product) => (
-                            <div key={product.id} className="flex flex-col h-full group cursor-pointer">
+                            <Link href="/detail" key={product.id} className="flex flex-col h-full group cursor-pointer">
                                 {/* Image Container */}
                                 <div className="relative aspect-[3/4] mb-3 overflow-hidden rounded-sm bg-gray-100">
-                                    <img 
-                                        src={product.image} 
-                                        alt={product.title} 
+                                    <img
+                                        src={product.image}
+                                        alt={product.title}
                                         loading="lazy"
                                         decoding="async"
                                         className="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-[1.03]"
@@ -368,7 +368,7 @@ export default function Welcome() {
                                         <Heart size={18} strokeWidth={1.5} />
                                     </div>
                                 </div>
-                                
+
                                 {/* Color Swatches */}
                                 {product.colors && product.colors.length > 0 && (
                                     <div className="flex space-x-1.5 mb-2">
@@ -379,7 +379,7 @@ export default function Welcome() {
                                 )}
 
                                 {/* Title */}
-                                    <h3 className="text-[11px] text-foreground font-semibold leading-[1.4] mb-1 hover:text-primary transition-colors">
+                                <h3 className="text-[11px] text-foreground font-semibold leading-[1.4] mb-1 hover:text-primary transition-colors">
                                     {product.title}
                                 </h3>
 
@@ -389,10 +389,10 @@ export default function Welcome() {
                                 </div>
 
                                 {/* Buy Button */}
-                                <button className="mt-auto w-full border border-input rounded-full py-2 text-[11px] font-semibold text-secondary-foreground tracking-wider hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300 shadow-sm hover:shadow-md active:scale-95">
+                                <span className="mt-auto w-full border border-input rounded-full py-2 text-center text-[11px] font-semibold text-secondary-foreground tracking-wider hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300 shadow-sm hover:shadow-md active:scale-95">
                                     Buy
-                                </button>
-                            </div>
+                                </span>
+                            </Link>
                         ))}
                     </div>
                 </div>

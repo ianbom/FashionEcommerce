@@ -1,32 +1,32 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { Heart, ChevronRight, ChevronLeft, Minus, Plus, MessageCircle, ShoppingBag } from 'lucide-react';
 import React, { useState } from 'react';
 import ShopLayout from '@/layouts/shop-layout';
 const thumbnails = [
-    "/img/abdul-raheem-kannath-aNWfK46QWto-unsplash.jpg",
-    "/img/ainur-iman-qcNmigFPTQM-unsplash.jpg",
-    "/img/atiyeh-fathi-CvdzGjVX9DA-unsplash.jpg",
-    "/img/hasan-almasi-_X2UAmIcpko-unsplash.jpg",
-    "/img/ike-ellyana-2F70bGqQVa4-unsplash.jpg",
-    "/img/khaled-ghareeb-n84s3jgzhKk-unsplash.jpg",
-    "/img/m-ghufanil-muta-ali-vAyDuvcjXcs-unsplash.jpg",
-    "/img/mina-rad-2O2cXJemDmo-unsplash.jpg",
-    "/img/monody-le-7YrRbgOPibw-unsplash.jpg",
-    "/img/omar-elsharawy-gFHBofW3ncQ-unsplash.jpg"
+    "/img/abdul-raheem-kannath-aNWfK46QWto-unsplash.webp",
+    "/img/ainur-iman-qcNmigFPTQM-unsplash.webp",
+    "/img/atiyeh-fathi-CvdzGjVX9DA-unsplash.webp",
+    "/img/hasan-almasi-_X2UAmIcpko-unsplash.webp",
+    "/img/ike-ellyana-2F70bGqQVa4-unsplash.webp",
+    "/img/khaled-ghareeb-n84s3jgzhKk-unsplash.webp",
+    "/img/m-ghufanil-muta-ali-vAyDuvcjXcs-unsplash.webp",
+    "/img/mina-rad-2O2cXJemDmo-unsplash.webp",
+    "/img/monody-le-7YrRbgOPibw-unsplash.webp",
+    "/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp"
 ];
 
 const relatedProducts = [
-    { title: "Athleisure Delik Tunic (LIMITED) - Moov 2026", price: "Rp 639.000", image: "/img/sajimon-sahadevan-AWC94dVpTPc-unsplash.jpg" },
-    { title: "Kafah Khimar", price: "Rp 349.000", image: "/img/sarah-khan-R7p66Oj8ZOQ-unsplash.jpg" },
-    { title: "Caspia Side Khimar (Simar) - Raya Edition", price: "Rp 389.000", image: "/img/shedrack-salami-DRjeesi2kFM-unsplash.jpg" },
-    { title: "Hugo Jardin Men's Shirt - Jardin de Flores", price: "Rp 469.000", image: "/img/abdul-raheem-kannath-aNWfK46QWto-unsplash.jpg" },
-    { title: "Athleisure Adora Abaya - Moov 2026", price: "Rp 869.000", image: "/img/ainur-iman-qcNmigFPTQM-unsplash.jpg" },
-    { title: "Marrakech Jardin Abaya - Jardin de Flores", price: "Rp 1.099.000", image: "/img/atiyeh-fathi-CvdzGjVX9DA-unsplash.jpg" },
-    { title: "The Granada Jardin Set - Jardin de Flores", price: "Rp 1.349.000", image: "/img/hasan-almasi-_X2UAmIcpko-unsplash.jpg" }
+    { title: "Athleisure Delik Tunic (LIMITED) - Moov 2026", price: "Rp 639.000", image: "/img/sajimon-sahadevan-AWC94dVpTPc-unsplash.webp" },
+    { title: "Kafah Khimar", price: "Rp 349.000", image: "/img/sarah-khan-R7p66Oj8ZOQ-unsplash.webp" },
+    { title: "Caspia Side Khimar (Simar) - Raya Edition", price: "Rp 389.000", image: "/img/shedrack-salami-DRjeesi2kFM-unsplash.webp" },
+    { title: "Hugo Jardin Men's Shirt - Jardin de Flores", price: "Rp 469.000", image: "/img/abdul-raheem-kannath-aNWfK46QWto-unsplash.webp" },
+    { title: "Athleisure Adora Abaya - Moov 2026", price: "Rp 869.000", image: "/img/ainur-iman-qcNmigFPTQM-unsplash.webp" },
+    { title: "Marrakech Jardin Abaya - Jardin de Flores", price: "Rp 1.099.000", image: "/img/atiyeh-fathi-CvdzGjVX9DA-unsplash.webp" },
+    { title: "The Granada Jardin Set - Jardin de Flores", price: "Rp 1.349.000", image: "/img/hasan-almasi-_X2UAmIcpko-unsplash.webp" }
 ];
 
 const recentProducts = [
-    { title: "Sport Gemma Khimar - Moov 2026", price: "Rp 469.000", image: "/img/ike-ellyana-2F70bGqQVa4-unsplash.jpg" }
+    { title: "Sport Gemma Khimar - Moov 2026", price: "Rp 469.000", image: "/img/ike-ellyana-2F70bGqQVa4-unsplash.webp" }
 ];
 
 export default function Detail() {
@@ -43,9 +43,9 @@ export default function Detail() {
                     {/* Left Column: Images */}
                     <div className="w-full lg:col-span-6">
                         <div className="relative aspect-[3/4] mb-3 overflow-hidden rounded-sm group cursor-zoom-in">
-                            <img 
-                                src={mainImage} 
-                                alt="Main Product" 
+                            <img
+                                src={mainImage}
+                                alt="Main Product"
                                 className="w-full h-full object-cover transition-transform duration-1000 ease-in-out group-hover:scale-[1.03]"
                                 decoding="async"
                             />
@@ -57,8 +57,8 @@ export default function Detail() {
                         {/* Thumbnails */}
                         <div className="grid grid-cols-5 gap-3 mt-3">
                             {thumbnails.map((thumb, idx) => (
-                                <div 
-                                    key={idx} 
+                                <div
+                                    key={idx}
                                     onClick={() => setMainImage(thumb)}
                                     className={`relative aspect-square cursor-pointer overflow-hidden rounded-sm ${mainImage === thumb ? 'opacity-100 border border-black/10' : 'opacity-60 hover:opacity-100 hover:shadow-md transition-all'}`}
                                 >
@@ -171,12 +171,12 @@ export default function Detail() {
                             </div>
 
                             <div className="flex flex-col space-y-3">
-                                <button className="w-full py-3.5 rounded-full border border-input text-[11px] font-bold tracking-widest text-secondary-foreground hover:bg-secondary hover:shadow-md transition-all active:scale-[0.99]">
+                                <Link href="/my-cart" className="w-full py-3.5 rounded-full border border-input text-center text-[11px] font-bold tracking-widest text-secondary-foreground hover:bg-secondary hover:shadow-md transition-all active:scale-[0.99]">
                                     Add to Cart
-                                </button>
-                                <button className="w-full py-3.5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold tracking-widest hover:bg-primary/90 hover:shadow-md hover:shadow-primary/20 transition-all active:scale-[0.99]">
+                                </Link>
+                                <Link href="/checkout" className="w-full py-3.5 rounded-full bg-primary text-center text-primary-foreground text-[11px] font-bold tracking-widest hover:bg-primary/90 hover:shadow-md hover:shadow-primary/20 transition-all active:scale-[0.99]">
                                     Buy It Now
-                                </button>
+                                </Link>
                             </div>
                         </div>
 
@@ -236,7 +236,7 @@ export default function Detail() {
                     </div>
                     <div className="flex space-x-5 overflow-x-auto pb-6 scrollbar-hide">
                         {relatedProducts.map((product, idx) => (
-                            <div key={idx} className="min-w-[170px] max-w-[170px] group cursor-pointer flex flex-col hover:-translate-y-1 transition-transform duration-300">
+                            <Link href="/detail" key={idx} className="min-w-[170px] max-w-[170px] group cursor-pointer flex flex-col hover:-translate-y-1 transition-transform duration-300">
                                 <div className="relative aspect-[3/4] mb-3 rounded-sm overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-md transition-shadow">
                                     <img src={product.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" alt={product.title} loading="lazy" decoding="async" />
                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-500 pointer-events-none"></div>
@@ -246,7 +246,7 @@ export default function Detail() {
                                 </div>
                                 <h3 className="text-[11px] font-bold tracking-wide leading-[1.4] mb-1.5 text-foreground group-hover:text-primary transition-colors line-clamp-2">{product.title}</h3>
                                 <p className="text-[11px] text-secondary-foreground mt-auto font-medium">{product.price}</p>
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 </div>
@@ -258,7 +258,7 @@ export default function Detail() {
                     </div>
                     <div className="flex space-x-5">
                         {recentProducts.map((product, idx) => (
-                            <div key={idx} className="min-w-[170px] max-w-[170px] group cursor-pointer flex flex-col hover:-translate-y-1 transition-transform duration-300">
+                            <Link href="/detail" key={idx} className="min-w-[170px] max-w-[170px] group cursor-pointer flex flex-col hover:-translate-y-1 transition-transform duration-300">
                                 <div className="relative aspect-[3/4] mb-3 rounded-sm overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-md transition-shadow">
                                     <img src={product.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" alt={product.title} loading="lazy" decoding="async" />
                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-500 pointer-events-none"></div>
@@ -268,7 +268,7 @@ export default function Detail() {
                                 </div>
                                 <h3 className="text-[11px] font-bold tracking-wide leading-[1.4] mb-1.5 text-foreground group-hover:text-primary transition-colors line-clamp-2">{product.title}</h3>
                                 <p className="text-[11px] text-secondary-foreground mt-auto font-medium">{product.price}</p>
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 </div>

@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import { Search, User, ShoppingBag, Menu } from 'lucide-react';
 import React from 'react';
 
@@ -9,22 +10,22 @@ export default function Navbar() {
                 <Menu size={20} className="text-secondary-foreground cursor-pointer" />
             </div>
             
-            <div className="flex flex-col items-center justify-center cursor-pointer transform hover:scale-105 transition-transform duration-300">
+            <Link href="/" className="flex flex-col items-center justify-center cursor-pointer transform hover:scale-105 transition-transform duration-300">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mb-0.5 text-accent">
                     <path d="M7 4V12C7 14.7614 9.23858 17 12 17C14.7614 17 17 14.7614 17 12V4" stroke="currentColor" strokeWidth="1.2"/>
                     <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
                 </svg>
                 <span className="text-[9px] tracking-[0.3em] font-semibold text-accent">WEBCARE</span>
-            </div>
+            </Link>
             
             <div className="hidden md:flex items-center space-x-10 text-[10px] font-semibold tracking-[0.15em] text-secondary-foreground">
-                <a href="#" className="hover:text-primary transition-colors">NEW ARRIVAL</a>
-                <a href="#" className="hover:text-primary transition-colors">SHOP ALL</a>
-                <a href="#" className="hover:text-primary transition-colors">ABAYA</a>
-                <a href="#" className="hover:text-primary transition-colors">KHIMAR</a>
-                <a href="#" className="hover:text-primary transition-colors">ACCESSORIES</a>
-                <a href="#" className="hover:text-primary transition-colors">OUR STORY</a>
-                <a href="#" className="hover:text-primary transition-colors">OUR JOURNAL</a>
+                <Link href="/list" className="hover:text-primary transition-colors">NEW ARRIVAL</Link>
+                <Link href="/list" className="hover:text-primary transition-colors">SHOP ALL</Link>
+                <Link href="/list" className="hover:text-primary transition-colors">ABAYA</Link>
+                <Link href="/list" className="hover:text-primary transition-colors">KHIMAR</Link>
+                <Link href="/list" className="hover:text-primary transition-colors">ACCESSORIES</Link>
+                <Link href="/" className="hover:text-primary transition-colors">OUR STORY</Link>
+                <Link href="/" className="hover:text-primary transition-colors">OUR JOURNAL</Link>
             </div>
             
             <div className="flex items-center space-x-4 md:space-x-6 text-secondary-foreground">
@@ -36,8 +37,12 @@ export default function Navbar() {
                     <span className="text-[10px] font-bold tracking-wider group-hover:text-primary transition-colors">IDR</span>
                 </div>
                 <Search strokeWidth={1.5} size={18} className="hidden sm:block cursor-pointer hover:text-primary hover:-translate-y-0.5 transition-all" />
-                <User strokeWidth={1.5} size={18} className="hidden sm:block cursor-pointer hover:text-primary hover:-translate-y-0.5 transition-all" />
-                <ShoppingBag strokeWidth={1.5} size={18} className="cursor-pointer hover:text-primary hover:-translate-y-0.5 transition-all" />
+                <Link href="/my-profile" aria-label="Open profile">
+                    <User strokeWidth={1.5} size={18} className="hidden sm:block cursor-pointer hover:text-primary hover:-translate-y-0.5 transition-all" />
+                </Link>
+                <Link href="/my-cart" aria-label="Open cart">
+                    <ShoppingBag strokeWidth={1.5} size={18} className="cursor-pointer hover:text-primary hover:-translate-y-0.5 transition-all" />
+                </Link>
             </div>
         </nav>
     );

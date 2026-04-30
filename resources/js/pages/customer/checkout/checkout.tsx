@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
-import { 
-    ChevronRight, Check, Lock, ChevronDown, Plus, ShieldCheck, Box, HeadphonesIcon, 
-    CreditCard, Wallet, QrCode, Building2, Smartphone, AlertCircle 
+import {
+    ChevronRight, Check, Lock, ChevronDown, Plus, ShieldCheck, Box, HeadphonesIcon,
+    CreditCard, Wallet, QrCode, Building2, Smartphone, AlertCircle
 } from 'lucide-react';
-import ShopLayout from '@/Layouts/shop-layout';
+import React, { useState } from 'react';
+import ShopLayout from '@/layouts/shop-layout';
 
 // Dummy Data for Order Summary
 const orderItems = [
@@ -15,7 +15,7 @@ const orderItems = [
         size: "M",
         price: 739000,
         quantity: 1,
-        image: "/img/abdul-raheem-kannath-aNWfK46QWto-unsplash.jpg",
+        image: "/img/abdul-raheem-kannath-aNWfK46QWto-unsplash.webp",
     },
     {
         id: 2,
@@ -24,7 +24,7 @@ const orderItems = [
         size: "M",
         price: 349000,
         quantity: 1,
-        image: "/img/ainur-iman-qcNmigFPTQM-unsplash.jpg",
+        image: "/img/ainur-iman-qcNmigFPTQM-unsplash.webp",
     },
     {
         id: 3,
@@ -33,9 +33,35 @@ const orderItems = [
         size: "Standard",
         price: 244300,
         quantity: 1,
-        image: "/img/atiyeh-fathi-CvdzGjVX9DA-unsplash.jpg",
+        image: "/img/atiyeh-fathi-CvdzGjVX9DA-unsplash.webp",
     }
 ];
+
+interface SectionHeaderProps {
+    num: string;
+    title: string;
+    isActive: boolean;
+    isCompleted: boolean;
+    rightContent?: React.ReactNode;
+    onClick?: () => void;
+}
+
+function SectionHeader({ num, title, isActive, isCompleted, rightContent = null, onClick }: SectionHeaderProps) {
+    return (
+        <div
+            className={`flex items-center justify-between py-4 px-5 md:px-6 cursor-pointer ${isActive ? 'bg-white' : 'bg-transparent hover:bg-white/50'} transition-colors`}
+            onClick={onClick}
+        >
+            <div className="flex items-center space-x-4">
+                <div className={`w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold transition-colors ${isActive || isCompleted ? 'bg-[#C2AA92] text-white shadow-sm' : 'bg-[#EAE8E3] text-[#8C8578]'}`}>
+                    {isCompleted && !isActive ? <Check size={14} strokeWidth={3} /> : num}
+                </div>
+                <h2 className="text-lg font-serif text-[#3C3428]">{title}</h2>
+            </div>
+            {rightContent}
+        </div>
+    );
+}
 
 export default function Checkout() {
     const [activeSection, setActiveSection] = useState(1);
@@ -73,28 +99,12 @@ export default function Checkout() {
         { id: 'cc', name: 'Credit / Debit Card', desc: 'Visa, Mastercard', icon: CreditCard },
     ];
 
-    // Reusable Section Header Component
-    const SectionHeader = ({ num, title, isActive, isCompleted, rightContent = null, onClick = null }: any) => (
-        <div 
-            className={`flex items-center justify-between py-4 px-5 md:px-6 cursor-pointer ${isActive ? 'bg-white' : 'bg-transparent hover:bg-white/50'} transition-colors`}
-            onClick={onClick}
-        >
-            <div className="flex items-center space-x-4">
-                <div className={`w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold transition-colors ${isActive || isCompleted ? 'bg-[#C2AA92] text-white shadow-sm' : 'bg-[#EAE8E3] text-[#8C8578]'}`}>
-                    {isCompleted && !isActive ? <Check size={14} strokeWidth={3} /> : num}
-                </div>
-                <h2 className="text-lg font-serif text-[#3C3428]">{title}</h2>
-            </div>
-            {rightContent}
-        </div>
-    );
-
     return (
         <ShopLayout>
             <Head title="Checkout - Webcare" />
 
             <main className="max-w-[1200px] mx-auto px-4 md:px-8 py-8 md:py-12 bg-[#FAF9F6] min-h-screen">
-                
+
                 {/* Header Area */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-12 gap-6">
                     <div>
@@ -120,16 +130,14 @@ export default function Checkout() {
                         ].map((step, idx, arr) => (
                             <React.Fragment key={step.num}>
                                 <div className="flex flex-col items-center relative group z-10">
-                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-300 ${
-                                        step.status === 'active' ? 'bg-[#3C3428] text-white shadow-md scale-110' :
+                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-300 ${step.status === 'active' ? 'bg-[#3C3428] text-white shadow-md scale-110' :
                                         step.status === 'completed' ? 'bg-white border-2 border-[#C2AA92] text-[#C2AA92]' :
-                                        'bg-white border border-[#EAE8E3] text-[#A89F91]'
-                                    }`}>
+                                            'bg-white border border-[#EAE8E3] text-[#A89F91]'
+                                        }`}>
                                         {step.num}
                                     </div>
-                                    <span className={`absolute -bottom-5 text-[9px] font-medium whitespace-nowrap transition-colors duration-300 ${
-                                        step.status === 'active' ? 'text-[#3C3428]' : 'text-[#A89F91]'
-                                    }`}>
+                                    <span className={`absolute -bottom-5 text-[9px] font-medium whitespace-nowrap transition-colors duration-300 ${step.status === 'active' ? 'text-[#3C3428]' : 'text-[#A89F91]'
+                                        }`}>
                                         {step.label}
                                     </span>
                                 </div>
@@ -145,16 +153,16 @@ export default function Checkout() {
 
                 {/* Main Content Layout */}
                 <div className="flex flex-col lg:flex-row gap-8 lg:gap-10 relative pb-20 lg:pb-0">
-                    
+
                     {/* Left Column: Form Sections */}
                     <div className="flex-1 space-y-4 md:space-y-6">
-                        
+
                         {/* 1. Contact Information */}
                         <div className="bg-white/60 backdrop-blur-md border border-[#EAE8E3] rounded-xl overflow-hidden shadow-sm transition-all duration-300">
-                            <SectionHeader 
-                                num="1" 
-                                title="Contact Information" 
-                                isActive={activeSection === 1} 
+                            <SectionHeader
+                                num="1"
+                                title="Contact Information"
+                                isActive={activeSection === 1}
                                 isCompleted={activeSection > 1}
                                 onClick={() => setActiveSection(1)}
                                 rightContent={
@@ -163,7 +171,7 @@ export default function Checkout() {
                                     </span>
                                 }
                             />
-                            
+
                             {/* Accordion Content */}
                             <div className={`px-5 md:px-6 transition-all duration-500 ease-in-out ${activeSection === 1 ? 'max-h-[500px] pb-6 opacity-100' : 'max-h-0 pb-0 opacity-0 overflow-hidden'}`}>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4">
@@ -189,7 +197,7 @@ export default function Checkout() {
                                     </div>
                                 </div>
                                 <div className="mt-6 flex justify-end">
-                                    <button 
+                                    <button
                                         onClick={() => setActiveSection(2)}
                                         className="px-6 py-2.5 bg-[#3C3428] text-white text-[12px] font-bold tracking-wider rounded-md hover:bg-[#2D261C] transition-colors"
                                     >
@@ -201,10 +209,10 @@ export default function Checkout() {
 
                         {/* 2. Shipping Address */}
                         <div className="bg-white/60 backdrop-blur-md border border-[#EAE8E3] rounded-xl overflow-hidden shadow-sm transition-all duration-300">
-                            <SectionHeader 
-                                num="2" 
-                                title="Shipping Address" 
-                                isActive={activeSection === 2} 
+                            <SectionHeader
+                                num="2"
+                                title="Shipping Address"
+                                isActive={activeSection === 2}
                                 isCompleted={activeSection > 2}
                                 onClick={() => setActiveSection(2)}
                                 rightContent={
@@ -219,7 +227,7 @@ export default function Checkout() {
                                     )
                                 }
                             />
-                            
+
                             {/* Accordion Content */}
                             <div className={`px-5 md:px-6 transition-all duration-500 ease-in-out ${activeSection === 2 ? 'max-h-[800px] pb-6 opacity-100' : 'max-h-0 pb-0 opacity-0 overflow-hidden'}`}>
                                 <div className="mt-4 flex flex-col md:flex-row gap-4 mb-6">
@@ -234,13 +242,13 @@ export default function Checkout() {
                                     </div>
                                     <div className="flex items-end">
                                         <div className="flex bg-[#F5F2E6] p-1 rounded-md border border-[#EAE8E3]">
-                                            <button 
+                                            <button
                                                 onClick={() => setAddressType('home')}
                                                 className={`px-6 py-1.5 text-[12px] font-semibold rounded ${addressType === 'home' ? 'bg-white text-[#3C3428] shadow-sm' : 'text-[#8C8578] hover:text-[#4A4A4A]'} transition-all`}
                                             >
                                                 Home
                                             </button>
-                                            <button 
+                                            <button
                                                 onClick={() => setAddressType('office')}
                                                 className={`px-6 py-1.5 text-[12px] font-semibold rounded ${addressType === 'office' ? 'bg-white text-[#3C3428] shadow-sm' : 'text-[#8C8578] hover:text-[#4A4A4A]'} transition-all`}
                                             >
@@ -259,7 +267,7 @@ export default function Checkout() {
                                         <label className="block text-[11px] font-semibold text-[#4A4A4A] mb-1.5">Phone Number</label>
                                         <input type="tel" defaultValue="0812 3456 789" className="w-full px-4 py-2.5 bg-white border border-[#EAE8E3] rounded-md text-[13px] text-[#333] focus:outline-none focus:border-[#C2AA92] focus:ring-1 focus:ring-[#C2AA92] transition-all" />
                                     </div>
-                                    
+
                                     <div>
                                         <label className="block text-[11px] font-semibold text-[#4A4A4A] mb-1.5">Province</label>
                                         <div className="relative">
@@ -304,7 +312,7 @@ export default function Checkout() {
                                     </div>
                                 </div>
                                 <div className="mt-6 flex justify-end">
-                                    <button 
+                                    <button
                                         onClick={() => setActiveSection(3)}
                                         className="px-6 py-2.5 bg-[#3C3428] text-white text-[12px] font-bold tracking-wider rounded-md hover:bg-[#2D261C] transition-colors"
                                     >
@@ -316,10 +324,10 @@ export default function Checkout() {
 
                         {/* 3. Delivery Method */}
                         <div className="bg-white/60 backdrop-blur-md border border-[#EAE8E3] rounded-xl overflow-hidden shadow-sm transition-all duration-300">
-                            <SectionHeader 
-                                num="3" 
-                                title="Delivery Method" 
-                                isActive={activeSection === 3} 
+                            <SectionHeader
+                                num="3"
+                                title="Delivery Method"
+                                isActive={activeSection === 3}
                                 isCompleted={activeSection > 3}
                                 onClick={() => setActiveSection(3)}
                                 rightContent={
@@ -340,24 +348,22 @@ export default function Checkout() {
                                     )
                                 }
                             />
-                            
+
                             {/* Accordion Content */}
                             <div className={`px-5 md:px-6 transition-all duration-500 ease-in-out ${activeSection === 3 ? 'max-h-[800px] pb-6 opacity-100' : 'max-h-0 pb-0 opacity-0 overflow-hidden'}`}>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
                                     {deliveryOptions.map(option => (
-                                        <div 
+                                        <div
                                             key={option.id}
                                             onClick={() => setDeliveryMethod(option.id)}
-                                            className={`relative border rounded-xl p-4 cursor-pointer transition-all duration-300 ${
-                                                deliveryMethod === option.id 
-                                                    ? 'border-[#C2AA92] bg-[#FAF8F5] shadow-[0_4px_20px_rgba(194,170,146,0.15)] ring-1 ring-[#C2AA92]' 
-                                                    : 'border-[#EAE8E3] bg-white hover:border-[#C4BDB1]'
-                                            }`}
+                                            className={`relative border rounded-xl p-4 cursor-pointer transition-all duration-300 ${deliveryMethod === option.id
+                                                ? 'border-[#C2AA92] bg-[#FAF8F5] shadow-[0_4px_20px_rgba(194,170,146,0.15)] ring-1 ring-[#C2AA92]'
+                                                : 'border-[#EAE8E3] bg-white hover:border-[#C4BDB1]'
+                                                }`}
                                         >
                                             <div className="flex items-start mb-2">
-                                                <div className={`w-4 h-4 rounded-full border flex items-center justify-center mt-0.5 flex-shrink-0 ${
-                                                    deliveryMethod === option.id ? 'border-[#C2AA92]' : 'border-[#C4BDB1]'
-                                                }`}>
+                                                <div className={`w-4 h-4 rounded-full border flex items-center justify-center mt-0.5 flex-shrink-0 ${deliveryMethod === option.id ? 'border-[#C2AA92]' : 'border-[#C4BDB1]'
+                                                    }`}>
                                                     {deliveryMethod === option.id && <div className="w-2 h-2 rounded-full bg-[#C2AA92]"></div>}
                                                 </div>
                                                 <div className="ml-3">
@@ -384,7 +390,7 @@ export default function Checkout() {
                                 </div>
 
                                 <div className="mt-6 flex justify-end">
-                                    <button 
+                                    <button
                                         onClick={() => setActiveSection(4)}
                                         className="px-6 py-2.5 bg-[#3C3428] text-white text-[12px] font-bold tracking-wider rounded-md hover:bg-[#2D261C] transition-colors"
                                     >
@@ -396,10 +402,10 @@ export default function Checkout() {
 
                         {/* 4. Payment Method */}
                         <div className="bg-white/60 backdrop-blur-md border border-[#EAE8E3] rounded-xl overflow-hidden shadow-sm transition-all duration-300">
-                            <SectionHeader 
-                                num="4" 
-                                title="Payment Method" 
-                                isActive={activeSection === 4} 
+                            <SectionHeader
+                                num="4"
+                                title="Payment Method"
+                                isActive={activeSection === 4}
                                 isCompleted={activeSection > 4}
                                 onClick={() => setActiveSection(4)}
                                 rightContent={
@@ -410,26 +416,25 @@ export default function Checkout() {
                                     )
                                 }
                             />
-                            
+
                             {/* Accordion Content */}
                             <div className={`px-5 md:px-6 transition-all duration-500 ease-in-out ${activeSection === 4 ? 'max-h-[800px] pb-6 opacity-100' : 'max-h-0 pb-0 opacity-0 overflow-hidden'}`}>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mt-4">
                                     {paymentOptions.map(option => {
                                         const Icon = option.icon;
+
                                         return (
-                                            <div 
+                                            <div
                                                 key={option.id}
                                                 onClick={() => setPaymentMethod(option.id)}
-                                                className={`relative border rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 ${
-                                                    paymentMethod === option.id 
-                                                        ? 'border-[#C2AA92] bg-[#FAF8F5] shadow-[0_4px_20px_rgba(194,170,146,0.15)] ring-1 ring-[#C2AA92]' 
-                                                        : 'border-[#EAE8E3] bg-white hover:border-[#C4BDB1]'
-                                                }`}
+                                                className={`relative border rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 ${paymentMethod === option.id
+                                                    ? 'border-[#C2AA92] bg-[#FAF8F5] shadow-[0_4px_20px_rgba(194,170,146,0.15)] ring-1 ring-[#C2AA92]'
+                                                    : 'border-[#EAE8E3] bg-white hover:border-[#C4BDB1]'
+                                                    }`}
                                             >
                                                 <div className="absolute top-3 left-3">
-                                                    <div className={`w-3 h-3 rounded-full border flex items-center justify-center ${
-                                                        paymentMethod === option.id ? 'border-[#C2AA92]' : 'border-[#C4BDB1]'
-                                                    }`}>
+                                                    <div className={`w-3 h-3 rounded-full border flex items-center justify-center ${paymentMethod === option.id ? 'border-[#C2AA92]' : 'border-[#C4BDB1]'
+                                                        }`}>
                                                         {paymentMethod === option.id && <div className="w-1.5 h-1.5 rounded-full bg-[#C2AA92]"></div>}
                                                     </div>
                                                 </div>
@@ -440,9 +445,9 @@ export default function Checkout() {
                                         )
                                     })}
                                 </div>
-                                
+
                                 <div className="mt-6 flex justify-end">
-                                    <button 
+                                    <button
                                         onClick={() => setActiveSection(5)}
                                         className="px-6 py-2.5 bg-[#3C3428] text-white text-[12px] font-bold tracking-wider rounded-md hover:bg-[#2D261C] transition-colors"
                                     >
@@ -454,18 +459,18 @@ export default function Checkout() {
 
                         {/* 5. Order Notes */}
                         <div className="bg-white/60 backdrop-blur-md border border-[#EAE8E3] rounded-xl overflow-hidden shadow-sm transition-all duration-300">
-                            <SectionHeader 
-                                num="5" 
-                                title="Order Notes" 
-                                isActive={activeSection === 5} 
+                            <SectionHeader
+                                num="5"
+                                title="Order Notes"
+                                isActive={activeSection === 5}
                                 isCompleted={false}
                                 onClick={() => setActiveSection(5)}
                             />
-                            
+
                             <div className={`px-5 md:px-6 transition-all duration-500 ease-in-out ${activeSection === 5 ? 'max-h-[200px] pb-6 opacity-100' : 'max-h-0 pb-0 opacity-0 overflow-hidden'}`}>
                                 <div className="mt-2 relative">
-                                    <textarea 
-                                        placeholder="Add a note for your order (optional)" 
+                                    <textarea
+                                        placeholder="Add a note for your order (optional)"
                                         className="w-full px-4 py-3 bg-white border border-[#EAE8E3] rounded-md text-[13px] text-[#333] focus:outline-none focus:border-[#C2AA92] focus:ring-1 focus:ring-[#C2AA92] transition-all resize-none h-24"
                                     ></textarea>
                                     <span className="absolute bottom-3 right-3 text-[10px] text-[#A89F91]">0 / 250</span>
@@ -479,7 +484,7 @@ export default function Checkout() {
                     <div className="w-full lg:w-[380px] flex-shrink-0 hidden lg:block">
                         <div className="bg-white rounded-2xl border border-[#EAE8E3]/80 p-6 md:p-8 shadow-xl shadow-black/5 sticky top-24">
                             <h2 className="text-xl font-serif text-[#3C3428] mb-6 border-b border-[#EAE8E3] pb-4">Order Summary</h2>
-                            
+
                             {/* Items List */}
                             <div className="space-y-4 mb-6 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                                 {orderItems.map((item) => (
@@ -492,7 +497,7 @@ export default function Checkout() {
                                         </div>
                                         <div className="flex-1 py-1">
                                             <h3 className="text-[12px] font-bold text-[#333333] leading-tight mb-1">{item.title}</h3>
-                                            <p className="text-[10px] text-[#8C8578] mb-1">Color: {item.color} <br/> Size: {item.size}</p>
+                                            <p className="text-[10px] text-[#8C8578] mb-1">Color: {item.color} <br /> Size: {item.size}</p>
                                         </div>
                                         <div className="py-1 text-right">
                                             <p className="text-[12px] font-semibold text-[#333333]">{formatPrice(item.price)}</p>
@@ -525,9 +530,9 @@ export default function Checkout() {
 
                             {/* Promo Code */}
                             <div className="flex space-x-2 mb-6">
-                                <input 
-                                    type="text" 
-                                    placeholder="Enter promo code" 
+                                <input
+                                    type="text"
+                                    placeholder="Enter promo code"
                                     className="flex-1 px-4 py-2.5 bg-[#FAF9F6] border border-[#EAE8E3] rounded-md text-[12px] focus:outline-none focus:border-[#C4BDB1] focus:ring-1 focus:ring-[#C4BDB1] transition-all"
                                 />
                                 <button className="px-5 py-2.5 bg-[#EAE4D9] text-[#4A4A4A] text-[12px] font-semibold rounded-md hover:bg-[#DFD8CC] hover:text-black transition-colors">
@@ -537,18 +542,18 @@ export default function Checkout() {
 
                             {/* Place Order Button */}
                             <div className="space-y-4">
-                                <button className="w-full py-4 rounded-lg bg-[#3C3428] text-white text-[13px] font-bold tracking-wider hover:bg-[#2D261C] hover:shadow-lg hover:shadow-[#3C3428]/20 transition-all active:scale-[0.98] flex items-center justify-center">
+                                <Link href="/my-order" className="w-full py-4 rounded-lg bg-[#3C3428] text-white text-[13px] font-bold tracking-wider hover:bg-[#2D261C] hover:shadow-lg hover:shadow-[#3C3428]/20 transition-all active:scale-[0.98] flex items-center justify-center">
                                     <Lock size={16} className="mr-2" strokeWidth={2} />
                                     Place Order
-                                </button>
+                                </Link>
                                 <div className="text-center pb-2 border-b border-[#EAE8E3]/60">
                                     <Link href="/my-cart" className="inline-block text-[12px] text-[#333333] font-bold underline underline-offset-4 hover:text-black transition-colors">
                                         Back to Cart
                                     </Link>
                                 </div>
                                 <p className="text-[10px] text-center text-[#8C8578] leading-relaxed">
-                                    By placing your order, you agree to our <br/>
-                                    <a href="#" className="underline hover:text-[#333]">Terms & Conditions</a> and <a href="#" className="underline hover:text-[#333]">Privacy Policy.</a>
+                                    By placing your order, you agree to our <br />
+                                    <Link href="/terms-conditions" className="underline hover:text-[#333]">Terms & Conditions</Link> and <Link href="/privacy-policy" className="underline hover:text-[#333]">Privacy Policy.</Link>
                                 </p>
                             </div>
 
@@ -587,9 +592,9 @@ export default function Checkout() {
                         <p className="text-[10px] text-[#8C8578] mb-0.5 font-medium">Total Payment</p>
                         <p className="text-lg font-serif text-[#333333]">{formatPrice(total)}</p>
                     </div>
-                    <button className="px-6 py-3 bg-[#3C3428] text-white rounded-md text-xs font-bold tracking-wide hover:bg-[#2D261C] transition-colors active:scale-95 flex items-center">
+                    <Link href="/my-order" className="px-6 py-3 bg-[#3C3428] text-white rounded-md text-xs font-bold tracking-wide hover:bg-[#2D261C] transition-colors active:scale-95 flex items-center">
                         Place Order
-                    </button>
+                    </Link>
                 </div>
             </main>
         </ShopLayout>

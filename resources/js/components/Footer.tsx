@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import { Instagram, Facebook, Twitter, Youtube, Mail, MapPin, Phone, ArrowRight } from 'lucide-react';
 import React from 'react';
 
@@ -62,12 +63,12 @@ export default function Footer() {
                     <div>
                         <h3 className="mb-6 font-bold tracking-[0.2em] text-white/95 uppercase text-xs">Customer Care</h3>
                         <ul className="space-y-4 text-white/60">
-                            <li><a href="#" className="hover:text-white hover:translate-x-1 inline-block transition-transform">How to Buy</a></li>
-                            <li><a href="#" className="hover:text-white hover:translate-x-1 inline-block transition-transform">Payment Information</a></li>
-                            <li><a href="#" className="hover:text-white hover:translate-x-1 inline-block transition-transform">Shipping Information</a></li>
-                            <li><a href="#" className="hover:text-white hover:translate-x-1 inline-block transition-transform">Return & Exchange</a></li>
-                            <li><a href="#" className="hover:text-white hover:translate-x-1 inline-block transition-transform">Track Order</a></li>
-                            <li><a href="#" className="hover:text-white hover:translate-x-1 inline-block transition-transform">FAQs</a></li>
+                            <li><Link href="/list" className="hover:text-white hover:translate-x-1 inline-block transition-transform">How to Buy</Link></li>
+                            <li><Link href="/checkout" className="hover:text-white hover:translate-x-1 inline-block transition-transform">Payment Information</Link></li>
+                            <li><Link href="/shipping-policy" className="hover:text-white hover:translate-x-1 inline-block transition-transform">Shipping Information</Link></li>
+                            <li><Link href="/no-return-policy" className="hover:text-white hover:translate-x-1 inline-block transition-transform">Return & Exchange</Link></li>
+                            <li><Link href="/my-order" className="hover:text-white hover:translate-x-1 inline-block transition-transform">Track Order</Link></li>
+                            <li><Link href="/notifications" className="hover:text-white hover:translate-x-1 inline-block transition-transform">FAQs</Link></li>
                         </ul>
                     </div>
 
@@ -75,12 +76,12 @@ export default function Footer() {
                     <div>
                         <h3 className="mb-6 font-bold tracking-[0.2em] text-white/95 uppercase text-xs">Explore</h3>
                         <ul className="space-y-4 text-white/60">
-                            <li><a href="#" className="hover:text-white hover:translate-x-1 inline-block transition-transform">Our Story</a></li>
-                            <li><a href="#" className="hover:text-white hover:translate-x-1 inline-block transition-transform">Our Journal</a></li>
-                            <li><a href="#" className="hover:text-white hover:translate-x-1 inline-block transition-transform">Store Locator</a></li>
-                            <li><a href="#" className="hover:text-white hover:translate-x-1 inline-block transition-transform">Careers</a></li>
-                            <li><a href="#" className="hover:text-white hover:translate-x-1 inline-block transition-transform">Terms & Conditions</a></li>
-                            <li><a href="#" className="hover:text-white hover:translate-x-1 inline-block transition-transform">Privacy Policy</a></li>
+                            <li><Link href="/" className="hover:text-white hover:translate-x-1 inline-block transition-transform">Our Story</Link></li>
+                            <li><Link href="/" className="hover:text-white hover:translate-x-1 inline-block transition-transform">Our Journal</Link></li>
+                            <li><Link href="/list" className="hover:text-white hover:translate-x-1 inline-block transition-transform">Store Locator</Link></li>
+                            <li><Link href="/" className="hover:text-white hover:translate-x-1 inline-block transition-transform">Careers</Link></li>
+                            <li><Link href="/terms-conditions" className="hover:text-white hover:translate-x-1 inline-block transition-transform">Terms & Conditions</Link></li>
+                            <li><Link href="/privacy-policy" className="hover:text-white hover:translate-x-1 inline-block transition-transform">Privacy Policy</Link></li>
                         </ul>
                     </div>
 
@@ -104,18 +105,18 @@ export default function Footer() {
                     <p className="mb-4 md:mb-0">© {new Date().getFullYear()} PT Webcare Digital. All Rights Reserved.</p>
                     
                     <div className="flex items-center space-x-6">
-                        <a href="#" className="hover:text-accent hover:-translate-y-1 transition-all duration-300">
+                        <button type="button" className="hover:text-accent hover:-translate-y-1 transition-all duration-300">
                             <Instagram size={18} strokeWidth={1.5} />
-                        </a>
-                        <a href="#" className="hover:text-accent hover:-translate-y-1 transition-all duration-300">
+                        </button>
+                        <button type="button" className="hover:text-accent hover:-translate-y-1 transition-all duration-300">
                             <Facebook size={18} strokeWidth={1.5} />
-                        </a>
-                        <a href="#" className="hover:text-accent hover:-translate-y-1 transition-all duration-300">
+                        </button>
+                        <button type="button" className="hover:text-accent hover:-translate-y-1 transition-all duration-300">
                             <Twitter size={18} strokeWidth={1.5} />
-                        </a>
-                        <a href="#" className="hover:text-accent hover:-translate-y-1 transition-all duration-300">
+                        </button>
+                        <button type="button" className="hover:text-accent hover:-translate-y-1 transition-all duration-300">
                             <Youtube size={18} strokeWidth={1.5} />
-                        </a>
+                        </button>
                     </div>
                 </div>
             </div>

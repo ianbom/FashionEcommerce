@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
-import { Head } from '@inertiajs/react';
 import { Plus, MapPin, Edit2, Trash2, CheckCircle2, X, AlertCircle } from 'lucide-react';
-import ProfileLayout from '@/Layouts/profile-layout';
+import React, { useState } from 'react';
+import ProfileLayout from '@/layouts/profile-layout';
 
 // --- Dummy Data ---
 const INITIAL_ADDRESSES = [
@@ -70,7 +69,7 @@ export default function ManageAddress() {
             activePath="address"
             breadcrumbs={[
                 { label: 'Home', href: '/' },
-                { label: 'My Account', href: '/my-account' },
+                { label: 'My Account', href: '/my-profile' },
                 { label: 'Address Book' }
             ]}
         >

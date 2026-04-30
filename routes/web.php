@@ -12,6 +12,7 @@ Route::inertia('/list', 'customer/products/list-product')->name('list');
 Route::inertia('/my-cart', 'customer/cart/my-cart')->name('cart');
 Route::inertia('/checkout', 'customer/checkout/checkout')->name('checkout');
 Route::inertia('/my-order', 'customer/order/my-order')->name('my-order');
+Route::inertia('/my-order/detail', 'customer/order/detail-order')->name('order.detail');
 Route::inertia('/my-profile', 'customer/profile/my-profile')->name('my-profile');
 Route::inertia('/address', 'customer/manage-address/manage-address')->name('manage-address');
 Route::inertia('/notifications', 'customer/notification/list-notification')->name('notifications');

@@ -1,7 +1,7 @@
+import { Link } from '@inertiajs/react';
+import { Bell, Package, Tag, Check, Truck, Star } from 'lucide-react';
 import React, { useState } from 'react';
-import { Head, Link } from '@inertiajs/react';
-import { Bell, Package, Tag, Info, Check, CheckCircle2, Truck, Star } from 'lucide-react';
-import ProfileLayout from '@/Layouts/profile-layout';
+import ProfileLayout from '@/layouts/profile-layout';
 
 // --- Dummy Data ---
 const INITIAL_NOTIFICATIONS = [
@@ -74,7 +74,10 @@ export default function ListNotification() {
     const unreadCount = notifications.filter(n => !n.isRead).length;
 
     const filteredNotifications = notifications.filter(n => {
-        if (activeTab === 'unread') return !n.isRead;
+        if (activeTab === 'unread') {
+            return !n.isRead;
+        }
+
         return true;
     });
 
@@ -97,7 +100,7 @@ export default function ListNotification() {
             activePath="notifications"
             breadcrumbs={[
                 { label: 'Home', href: '/' },
-                { label: 'My Account', href: '/my-account' },
+                { label: 'My Account', href: '/my-profile' },
                 { label: 'Notifications' }
             ]}
         >
@@ -165,7 +168,7 @@ export default function ListNotification() {
                 /* --- Notification List --- */
                 <div className="bg-white border border-[#EAE8E3] rounded-2xl overflow-hidden shadow-sm animate-fade-in-up" style={{ animationDelay: '150ms' }}>
                     <div className="divide-y divide-[#EAE8E3]">
-                        {filteredNotifications.map((notification, index) => {
+                        {filteredNotifications.map((notification) => {
                             const IconComponent = notification.icon;
                             
                             return (
