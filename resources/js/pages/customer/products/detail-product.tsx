@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
 import { Head } from '@inertiajs/react';
-import { Heart, ChevronDown, ChevronRight, ChevronLeft, Minus, Plus, MessageCircle, ShoppingBag } from 'lucide-react';
-import AppLayout from '@/Layouts/AppLayout';
+import { Heart, ChevronRight, ChevronLeft, Minus, Plus, MessageCircle, ShoppingBag } from 'lucide-react';
+import React, { useState } from 'react';
+import ShopLayout from '@/layouts/shop-layout';
 const thumbnails = [
     "/img/abdul-raheem-kannath-aNWfK46QWto-unsplash.jpg",
     "/img/ainur-iman-qcNmigFPTQM-unsplash.jpg",
@@ -33,7 +33,7 @@ export default function Detail() {
     const [mainImage, setMainImage] = useState(thumbnails[0]);
 
     return (
-        <AppLayout>
+        <ShopLayout>
             <Head title="Sport Ortega Skirt Pants - Webcare" />
 
 
@@ -81,25 +81,25 @@ export default function Detail() {
                     <div className="w-full lg:col-span-6 pl-0 lg:pl-4 max-w-full lg:max-w-[600px]">
                         {/* Badges */}
                         <div className="flex flex-wrap gap-2 mb-5">
-                            <span className="border border-[#EAE8E3] bg-[#F5F2E6] text-[10px] font-semibold px-2 py-1 tracking-wider uppercase rounded-sm text-[#4A4A4A]">In Stock</span>
-                            <span className="bg-[#4D4A29] text-white text-[10px] font-semibold px-2 py-1 tracking-wider uppercase rounded-sm">New</span>
-                            <span className="bg-[#4D4A29] text-white text-[10px] font-semibold px-2 py-1 tracking-wider uppercase rounded-sm">NEW ARRIVAL</span>
-                            <span className="border border-[#EAE8E3] bg-[#F5F2E6] text-[10px] font-semibold px-2 py-1 tracking-wider uppercase rounded-sm text-[#4A4A4A]">Moov - Sport & Athleisure</span>
+                            <span className="border border-border bg-secondary text-[10px] font-semibold px-2 py-1 tracking-wider uppercase rounded-sm text-secondary-foreground">In Stock</span>
+                            <span className="bg-primary text-primary-foreground text-[10px] font-semibold px-2 py-1 tracking-wider uppercase rounded-sm">New</span>
+                            <span className="bg-primary text-primary-foreground text-[10px] font-semibold px-2 py-1 tracking-wider uppercase rounded-sm">NEW ARRIVAL</span>
+                            <span className="border border-border bg-secondary text-[10px] font-semibold px-2 py-1 tracking-wider uppercase rounded-sm text-secondary-foreground">Moov - Sport & Athleisure</span>
                         </div>
 
                         {/* Title & Price */}
                         <div className="mb-6">
-                            <h1 className="text-xl font-semibold tracking-wide text-[#333333] mb-3">Sport Ortega Skirt Pants (LIMITED) - Moov 2026</h1>
+                            <h1 className="text-xl font-semibold tracking-wide text-foreground mb-3">Sport Ortega Skirt Pants (LIMITED) - Moov 2026</h1>
                             <div className="flex justify-between items-center">
-                                <span className="text-sm font-semibold tracking-wide text-[#4A4A4A]">Rp 589.000</span>
+                                <span className="text-sm font-semibold tracking-wide text-secondary-foreground">Rp 589.000</span>
                                 <Heart size={20} className="text-gray-400 cursor-pointer hover:text-black transition-colors hover:scale-110 active:scale-95" strokeWidth={1.5} />
                             </div>
                         </div>
 
                         {/* Discount Banner */}
-                        <div className="flex items-center justify-between border border-[#EAE8E3] bg-[#FAF8F2] p-4 rounded-md mb-8 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                        <div className="flex items-center justify-between border border-border bg-secondary/70 p-4 rounded-md mb-8 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
                             <div className="flex items-center space-x-3">
-                                <div className="text-[#A89F91]">
+                                <div className="text-accent">
                                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                                         <path d="M4 8V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
                                         <path d="M4 12c1.1 0 2-.9 2-2s-.9-2-2-2M20 12c-1.1 0-2-.9-2-2s.9-2 2-2M4 12c1.1 0 2 .9 2 2s-.9 2-2 2M20 12c-1.1 0-2 .9-2 2s.9-2 2 2" />
@@ -107,7 +107,7 @@ export default function Detail() {
                                     </svg>
                                 </div>
                                 <div>
-                                    <p className="font-semibold text-[#333333] text-[11px] tracking-wide mb-0.5">You have 1 Discount available</p>
+                                    <p className="font-semibold text-foreground text-[11px] tracking-wide mb-0.5">You have 1 Discount available</p>
                                     <p className="text-gray-500 text-[10px] tracking-wide">Use a coupon now for even better deals</p>
                                 </div>
                             </div>
@@ -116,25 +116,25 @@ export default function Detail() {
 
                         {/* Color Selection */}
                         <div className="mb-6">
-                            <h3 className="text-[11px] font-semibold tracking-wide text-[#333333] mb-3">Color</h3>
+                            <h3 className="text-[11px] font-semibold tracking-wide text-foreground mb-3">Color</h3>
                             <div className="flex space-x-4">
                                 <div onClick={() => setMainImage(thumbnails[0])} className="flex flex-col items-center group cursor-pointer hover:-translate-y-1 transition-transform">
-                                    <div className={`w-[50px] h-[65px] border ${mainImage === thumbnails[0] ? 'border-black' : 'border-transparent group-hover:border-[#EAE8E3]'} p-0.5 rounded-sm overflow-hidden mb-2 transition-all`}>
+                                    <div className={`w-[50px] h-[65px] border ${mainImage === thumbnails[0] ? 'border-primary' : 'border-transparent group-hover:border-border'} p-0.5 rounded-sm overflow-hidden mb-2 transition-all`}>
                                         <img src={thumbnails[0]} className="w-full h-full object-cover rounded-sm" alt="Ash Grey" />
                                     </div>
-                                    <span className={`text-[9px] font-medium ${mainImage === thumbnails[0] ? 'text-black' : 'text-gray-500 group-hover:text-black'}`}>Ash Grey</span>
+                                    <span className={`text-[9px] font-medium ${mainImage === thumbnails[0] ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`}>Ash Grey</span>
                                 </div>
                                 <div onClick={() => setMainImage(thumbnails[2])} className="flex flex-col items-center group cursor-pointer hover:-translate-y-1 transition-transform">
-                                    <div className={`w-[50px] h-[65px] border ${mainImage === thumbnails[2] ? 'border-black' : 'border-transparent group-hover:border-[#EAE8E3]'} p-0.5 rounded-sm overflow-hidden mb-2 transition-all`}>
+                                    <div className={`w-[50px] h-[65px] border ${mainImage === thumbnails[2] ? 'border-primary' : 'border-transparent group-hover:border-border'} p-0.5 rounded-sm overflow-hidden mb-2 transition-all`}>
                                         <img src={thumbnails[2]} className="w-full h-full object-cover rounded-sm" alt="Dark Navy" />
                                     </div>
-                                    <span className={`text-[9px] font-medium ${mainImage === thumbnails[2] ? 'text-black' : 'text-gray-500 group-hover:text-black'}`}>Dark Navy</span>
+                                    <span className={`text-[9px] font-medium ${mainImage === thumbnails[2] ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`}>Dark Navy</span>
                                 </div>
                                 <div onClick={() => setMainImage(thumbnails[4])} className="flex flex-col items-center group cursor-pointer hover:-translate-y-1 transition-transform">
-                                    <div className={`w-[50px] h-[65px] border ${mainImage === thumbnails[4] ? 'border-black' : 'border-transparent group-hover:border-[#EAE8E3]'} p-0.5 rounded-sm overflow-hidden mb-2 transition-all`}>
+                                    <div className={`w-[50px] h-[65px] border ${mainImage === thumbnails[4] ? 'border-primary' : 'border-transparent group-hover:border-border'} p-0.5 rounded-sm overflow-hidden mb-2 transition-all`}>
                                         <img src={thumbnails[4]} className="w-full h-full object-cover rounded-sm" alt="Taupe" />
                                     </div>
-                                    <span className={`text-[9px] font-medium ${mainImage === thumbnails[4] ? 'text-black' : 'text-gray-500 group-hover:text-black'}`}>Taupe</span>
+                                    <span className={`text-[9px] font-medium ${mainImage === thumbnails[4] ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`}>Taupe</span>
                                 </div>
                             </div>
                         </div>
@@ -142,17 +142,17 @@ export default function Detail() {
                         {/* Size Selection */}
                         <div className="mb-6">
                             <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-[11px] font-semibold tracking-wide text-[#333333]">Size</h3>
-                                <div className="flex items-center text-[#A89F91] hover:text-black cursor-pointer transition-colors group">
+                                <h3 className="text-[11px] font-semibold tracking-wide text-foreground">Size</h3>
+                                <div className="flex items-center text-accent hover:text-primary cursor-pointer transition-colors group">
                                     <span className="text-[10px] font-medium tracking-wide">Size Guide</span>
                                     <ChevronRight size={14} className="ml-1 group-hover:translate-x-0.5 transition-transform" />
                                 </div>
                             </div>
                             <div className="flex space-x-3">
-                                <button className="border border-[#4A4A4A] text-[#4A4A4A] px-7 py-2.5 rounded-md text-[11px] font-semibold tracking-wide shadow-sm hover:bg-gray-50 transition-all">
+                                <button className="border border-primary text-primary px-7 py-2.5 rounded-md text-[11px] font-semibold tracking-wide shadow-sm hover:bg-secondary transition-all">
                                     SM
                                 </button>
-                                <button className="border border-[#EAE8E3] text-[#888] px-7 py-2.5 rounded-md text-[11px] font-semibold tracking-wide hover:border-[#4A4A4A] hover:text-[#4A4A4A] transition-all">
+                                <button className="border border-border text-muted-foreground px-7 py-2.5 rounded-md text-[11px] font-semibold tracking-wide hover:border-primary hover:text-primary transition-all">
                                     LXL
                                 </button>
                             </div>
@@ -160,28 +160,28 @@ export default function Detail() {
 
                         {/* Quantity & Actions */}
                         <div className="mb-10">
-                            <div className="flex items-center border border-[#EAE8E3] rounded-md w-max bg-white mb-6 shadow-sm">
+                            <div className="flex items-center border border-border rounded-md w-max bg-card mb-6 shadow-sm">
                                 <button className="w-10 h-9 flex items-center justify-center text-gray-400 hover:text-black hover:bg-gray-50 rounded-l-md transition-colors">
                                     <Minus size={14} strokeWidth={2} />
                                 </button>
-                                <span className="w-10 text-center text-[12px] font-semibold text-[#333333]">1</span>
+                                <span className="w-10 text-center text-[12px] font-semibold text-foreground">1</span>
                                 <button className="w-10 h-9 flex items-center justify-center text-gray-400 hover:text-black bg-gray-50 hover:bg-gray-100 rounded-r-md transition-colors">
                                     <Plus size={14} strokeWidth={2} />
                                 </button>
                             </div>
 
                             <div className="flex flex-col space-y-3">
-                                <button className="w-full py-3.5 rounded-full border border-[#D1CEC7] text-[11px] font-bold tracking-widest text-[#4A4A4A] hover:bg-[#F8F6F0] hover:shadow-md transition-all active:scale-[0.99]">
+                                <button className="w-full py-3.5 rounded-full border border-input text-[11px] font-bold tracking-widest text-secondary-foreground hover:bg-secondary hover:shadow-md transition-all active:scale-[0.99]">
                                     Add to Cart
                                 </button>
-                                <button className="w-full py-3.5 rounded-full bg-[#4D4A29] text-white text-[11px] font-bold tracking-widest hover:bg-[#3B391F] hover:shadow-md hover:shadow-[#4D4A29]/20 transition-all active:scale-[0.99]">
+                                <button className="w-full py-3.5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold tracking-widest hover:bg-primary/90 hover:shadow-md hover:shadow-primary/20 transition-all active:scale-[0.99]">
                                     Buy It Now
                                 </button>
                             </div>
                         </div>
 
                         {/* Description */}
-                        <div className="text-[11px] leading-[1.9] text-[#4A4A4A] tracking-wide border-t border-[#EAE8E3] pt-8 mb-8 space-y-5 font-medium">
+                        <div className="text-[11px] leading-[1.9] text-secondary-foreground tracking-wide border-t border-border pt-8 mb-8 space-y-5 font-medium">
                             <p>
                                 <span className="font-bold">Ortega Skirt Pants — Confident in Every Movement.</span>
                             </p>
@@ -196,9 +196,9 @@ export default function Detail() {
                             </p>
                             <div>
                                 <p>Available in three versatile shades:</p>
-                                <p><span className="font-bold text-[#333333]">Ash Grey</span> — cool, minimal, and modern</p>
-                                <p><span className="font-bold text-[#333333]">Dark Navy</span> — deep, strong, and timeless</p>
-                                <p><span className="font-bold text-[#333333]">Taupe</span> — soft, neutral for effortless pairing</p>
+                                <p><span className="font-bold text-foreground">Ash Grey</span> — cool, minimal, and modern</p>
+                                <p><span className="font-bold text-foreground">Dark Navy</span> — deep, strong, and timeless</p>
+                                <p><span className="font-bold text-foreground">Taupe</span> — soft, neutral for effortless pairing</p>
                             </div>
                             <p>A piece for every step, every stretch, and every movement you own with confidence.</p>
                             <div>
@@ -207,19 +207,19 @@ export default function Detail() {
                                 <p>Built-in Inner Pants For Coverage & Ease</p>
                             </div>
                             <div>
-                                <p className="font-bold text-[#333333]">Available in Size SM, LXL</p>
+                                <p className="font-bold text-foreground">Available in Size SM, LXL</p>
                                 <p>Panduan ukuran (size guide) silahkan klik button</p>
                                 <p className="italic">*Size tolerance: ±1-2 cm</p>
                             </div>
                             <div className="space-y-1">
-                                <p className="italic text-[#888]">**We've done our best to capture the true color, though slight differences may occur due to lighting and screen display variations.</p>
-                                <p className="italic text-[#888]">**No exchange, no refund selain bagi kesalahan penerimaan barang - please create an unboxing video clear just in case. Tanpa Video Unboxing maka kami belum bisa menerima retur dan refundnya.</p>
-                                <p className="font-bold text-[#333333]">YuksakillA 🤍</p>
+                                <p className="italic text-muted-foreground">**We've done our best to capture the true color, though slight differences may occur due to lighting and screen display variations.</p>
+                                <p className="italic text-muted-foreground">**No exchange, no refund selain bagi kesalahan penerimaan barang - please create an unboxing video clear just in case. Tanpa Video Unboxing maka kami belum bisa menerima retur dan refundnya.</p>
+                                <p className="font-bold text-foreground">YuksakillA 🤍</p>
                             </div>
                         </div>
 
                         {/* Message Button */}
-                        <button className="w-full py-3.5 rounded-full border border-[#D1CEC7] text-[11px] font-bold tracking-wide text-[#4A4A4A] hover:bg-[#F8F6F0] transition-colors flex items-center justify-center hover:shadow-sm active:scale-[0.99]">
+                        <button className="w-full py-3.5 rounded-full border border-input text-[11px] font-bold tracking-wide text-secondary-foreground hover:bg-secondary transition-colors flex items-center justify-center hover:shadow-sm active:scale-[0.99]">
                             <MessageCircle size={16} className="mr-2" strokeWidth={2} /> Message Itsar! Sport?
                         </button>
                     </div>
@@ -227,11 +227,11 @@ export default function Detail() {
 
                 {/* You Might Also Like */}
                 <div className="mt-28">
-                    <div className="flex justify-between items-center mb-8 border-b border-[#EAE8E3] pb-4">
-                        <h2 className="text-[13px] font-bold tracking-wider text-[#333333]">You Might Also Like</h2>
+                    <div className="flex justify-between items-center mb-8 border-b border-border pb-4">
+                        <h2 className="text-[13px] font-bold tracking-wider text-foreground">You Might Also Like</h2>
                         <div className="flex space-x-2">
-                            <button className="w-8 h-8 rounded-full border border-[#EAE8E3] flex items-center justify-center text-gray-400 hover:text-black hover:border-black transition-colors"><ChevronLeft size={16} /></button>
-                            <button className="w-8 h-8 rounded-full border border-[#EAE8E3] flex items-center justify-center text-gray-400 hover:text-black hover:border-black transition-colors"><ChevronRight size={16} /></button>
+                            <button className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary transition-colors"><ChevronLeft size={16} /></button>
+                            <button className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary transition-colors"><ChevronRight size={16} /></button>
                         </div>
                     </div>
                     <div className="flex space-x-5 overflow-x-auto pb-6 scrollbar-hide">
@@ -240,12 +240,12 @@ export default function Detail() {
                                 <div className="relative aspect-[3/4] mb-3 rounded-sm overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-md transition-shadow">
                                     <img src={product.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" alt={product.title} loading="lazy" decoding="async" />
                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-500 pointer-events-none"></div>
-                                    <div className="absolute bottom-2 right-2 bg-white/90 p-2 rounded-full shadow hover:bg-white hover:scale-110 transition-all text-[#333333]">
+                                    <div className="absolute bottom-2 right-2 bg-card/90 p-2 rounded-full shadow hover:bg-card hover:scale-110 transition-all text-foreground">
                                         <ShoppingBag size={14} strokeWidth={2} />
                                     </div>
                                 </div>
-                                <h3 className="text-[11px] font-bold tracking-wide leading-[1.4] mb-1.5 text-[#333333] group-hover:text-black transition-colors line-clamp-2">{product.title}</h3>
-                                <p className="text-[11px] text-[#4A4A4A] mt-auto font-medium">{product.price}</p>
+                                <h3 className="text-[11px] font-bold tracking-wide leading-[1.4] mb-1.5 text-foreground group-hover:text-primary transition-colors line-clamp-2">{product.title}</h3>
+                                <p className="text-[11px] text-secondary-foreground mt-auto font-medium">{product.price}</p>
                             </div>
                         ))}
                     </div>
@@ -253,8 +253,8 @@ export default function Detail() {
 
                 {/* Recent Viewed */}
                 <div className="mt-20">
-                    <div className="flex justify-between items-center mb-8 border-b border-[#EAE8E3] pb-4">
-                        <h2 className="text-[13px] font-bold tracking-wider text-[#333333]">Recent Viewed</h2>
+                    <div className="flex justify-between items-center mb-8 border-b border-border pb-4">
+                        <h2 className="text-[13px] font-bold tracking-wider text-foreground">Recent Viewed</h2>
                     </div>
                     <div className="flex space-x-5">
                         {recentProducts.map((product, idx) => (
@@ -262,18 +262,18 @@ export default function Detail() {
                                 <div className="relative aspect-[3/4] mb-3 rounded-sm overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-md transition-shadow">
                                     <img src={product.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" alt={product.title} loading="lazy" decoding="async" />
                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-500 pointer-events-none"></div>
-                                    <div className="absolute bottom-2 right-2 bg-white/90 p-2 rounded-full shadow hover:bg-white hover:scale-110 transition-all text-[#333333]">
+                                    <div className="absolute bottom-2 right-2 bg-card/90 p-2 rounded-full shadow hover:bg-card hover:scale-110 transition-all text-foreground">
                                         <ShoppingBag size={14} strokeWidth={2} />
                                     </div>
                                 </div>
-                                <h3 className="text-[11px] font-bold tracking-wide leading-[1.4] mb-1.5 text-[#333333] group-hover:text-black transition-colors line-clamp-2">{product.title}</h3>
-                                <p className="text-[11px] text-[#4A4A4A] mt-auto font-medium">{product.price}</p>
+                                <h3 className="text-[11px] font-bold tracking-wide leading-[1.4] mb-1.5 text-foreground group-hover:text-primary transition-colors line-clamp-2">{product.title}</h3>
+                                <p className="text-[11px] text-secondary-foreground mt-auto font-medium">{product.price}</p>
                             </div>
                         ))}
                     </div>
                 </div>
             </main>
 
-        </AppLayout>
+        </ShopLayout>
     );
 }

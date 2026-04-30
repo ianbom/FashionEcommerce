@@ -1,19 +1,19 @@
-import React from 'react';
 import { Instagram, Facebook, Twitter, Youtube, Mail, MapPin, Phone, ArrowRight } from 'lucide-react';
+import React from 'react';
 
 export default function Footer() {
     return (
-        <footer className="bg-[#2D2A12] text-white pt-16 md:pt-24 pb-8 border-t border-[#EAE8E3]">
+        <footer className="bg-primary text-primary-foreground pt-16 md:pt-24 pb-8 border-t border-border">
             {/* Top Section: Newsletter & Brand */}
             <div className="max-w-[1500px] mx-auto px-6 md:px-10 mb-16">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center pb-12 border-b border-white/10">
                     <div className="flex flex-col">
                         <div className="flex items-center space-x-3 mb-4">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M7 4V12C7 14.7614 9.23858 17 12 17C14.7614 17 17 14.7614 17 12V4" stroke="#A89F91" strokeWidth="1.5"/>
-                                <circle cx="12" cy="12" r="2" fill="#A89F91"/>
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-accent">
+                                <path d="M7 4V12C7 14.7614 9.23858 17 12 17C14.7614 17 17 14.7614 17 12V4" stroke="currentColor" strokeWidth="1.5"/>
+                                <circle cx="12" cy="12" r="2" fill="currentColor"/>
                             </svg>
-                            <span className="text-xl tracking-[0.3em] font-bold text-[#A89F91]">WEBCARE</span>
+                            <span className="text-xl tracking-[0.3em] font-bold text-accent">WEBCARE</span>
                         </div>
                         <p className="text-white/60 text-xs md:text-sm max-w-md leading-relaxed">
                             Elevating modest fashion with elegance and grace. Discover your true identity with our exclusive collections.
@@ -44,15 +44,15 @@ export default function Footer() {
                         <h3 className="mb-6 font-bold tracking-[0.2em] text-white/95 uppercase text-xs">Contact Us</h3>
                         <ul className="space-y-4 text-white/60">
                             <li className="flex items-start gap-3 hover:text-white transition-colors cursor-pointer group">
-                                <MapPin size={16} className="shrink-0 mt-0.5 group-hover:text-[#A89F91] transition-colors" />
+                                <MapPin size={16} className="shrink-0 mt-0.5 group-hover:text-accent transition-colors" />
                                 <span className="leading-relaxed">Jl. Raya Surabaya No. 123,<br/>Surabaya, 12345</span>
                             </li>
                             <li className="flex items-center gap-3 hover:text-white transition-colors cursor-pointer group">
-                                <Phone size={16} className="shrink-0 group-hover:text-[#A89F91] transition-colors" />
+                                <Phone size={16} className="shrink-0 group-hover:text-accent transition-colors" />
                                 <span>+62 812 3456 7890</span>
                             </li>
                             <li className="flex items-center gap-3 hover:text-white transition-colors cursor-pointer group">
-                                <Mail size={16} className="shrink-0 group-hover:text-[#A89F91] transition-colors" />
+                                <Mail size={16} className="shrink-0 group-hover:text-accent transition-colors" />
                                 <span>hello@webcare.com</span>
                             </li>
                         </ul>
@@ -104,16 +104,16 @@ export default function Footer() {
                     <p className="mb-4 md:mb-0">© {new Date().getFullYear()} PT Webcare Digital. All Rights Reserved.</p>
                     
                     <div className="flex items-center space-x-6">
-                        <a href="#" className="hover:text-[#A89F91] hover:-translate-y-1 transition-all duration-300">
+                        <a href="#" className="hover:text-accent hover:-translate-y-1 transition-all duration-300">
                             <Instagram size={18} strokeWidth={1.5} />
                         </a>
-                        <a href="#" className="hover:text-[#A89F91] hover:-translate-y-1 transition-all duration-300">
+                        <a href="#" className="hover:text-accent hover:-translate-y-1 transition-all duration-300">
                             <Facebook size={18} strokeWidth={1.5} />
                         </a>
-                        <a href="#" className="hover:text-[#A89F91] hover:-translate-y-1 transition-all duration-300">
+                        <a href="#" className="hover:text-accent hover:-translate-y-1 transition-all duration-300">
                             <Twitter size={18} strokeWidth={1.5} />
                         </a>
-                        <a href="#" className="hover:text-[#A89F91] hover:-translate-y-1 transition-all duration-300">
+                        <a href="#" className="hover:text-accent hover:-translate-y-1 transition-all duration-300">
                             <Youtube size={18} strokeWidth={1.5} />
                         </a>
                     </div>
