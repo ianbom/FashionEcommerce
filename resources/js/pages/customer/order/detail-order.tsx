@@ -19,7 +19,7 @@ import {
     Package
 } from 'lucide-react';
 import type { ComponentType } from 'react';
-import ProfileLayout from '@/Layouts/profile-layout';
+import ProfileLayout from '@/layouts/profile-layout';
 
 type IconComponent = ComponentType<{
     className?: string;

@@ -1,5 +1,24 @@
-import { Link } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
+import {
+    BarChart3,
+    Bell,
+    BookOpen,
+    Boxes,
+    CircleDollarSign,
+    FileText,
+    FolderGit2,
+    Home,
+    Image,
+    Layers3,
+    LayoutGrid,
+    Package,
+    ReceiptText,
+    ShoppingBag,
+    Tags,
+    Truck,
+    Users,
+    WalletCards,
+} from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -24,27 +43,113 @@ const mainNavItems: NavItem[] = [
     },
 ];
 
-const footerNavItems: NavItem[] = [
+const adminNavItems: NavItem[] = [
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: FolderGit2,
+        title: 'Admin Dashboard',
+        href: '/admin/dashboard',
+        icon: LayoutGrid,
     },
     {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
+        title: 'Products',
+        href: '/admin/products',
+        icon: Package,
+    },
+    {
+        title: 'Variants',
+        href: '/admin/product-variants',
+        icon: Boxes,
+    },
+    {
+        title: 'Categories',
+        href: '/admin/categories',
+        icon: Tags,
+    },
+    {
+        title: 'Collections',
+        href: '/admin/collections',
+        icon: Layers3,
+    },
+    {
+        title: 'Stock',
+        href: '/admin/stock',
+        icon: BarChart3,
+    },
+    {
+        title: 'Stock Logs',
+        href: '/admin/stock/logs',
+        icon: ReceiptText,
+    },
+    {
+        title: 'Orders',
+        href: '/admin/orders',
+        icon: ShoppingBag,
+    },
+    {
+        title: 'Payments',
+        href: '/admin/payments',
+        icon: WalletCards,
+    },
+    {
+        title: 'Payment Logs',
+        href: '/admin/payment-logs',
+        icon: FileText,
+    },
+    {
+        title: 'Shipments',
+        href: '/admin/shipments',
+        icon: Truck,
+    },
+    {
+        title: 'Vouchers',
+        href: '/admin/vouchers',
+        icon: CircleDollarSign,
+    },
+    {
+        title: 'Customers',
+        href: '/admin/customers',
+        icon: Users,
+    },
+    {
+        title: 'Addresses',
+        href: '/admin/customer-addresses',
+        icon: Home,
+    },
+    {
+        title: 'Notifications',
+        href: '/admin/notifications',
+        icon: Bell,
+    },
+    {
+        title: 'Banners',
+        href: '/admin/banners',
+        icon: Image,
+    },
+    {
+        title: 'Pages',
+        href: '/admin/pages',
+        icon: FileText,
+    },
+    {
+        title: 'Settings',
+        href: '/admin/settings',
+        icon: BarChart3,
     },
 ];
 
+
 export function AppSidebar() {
+    const { url } = usePage();
+    const isAdmin = url.startsWith('/admin');
+    const navItems = isAdmin ? adminNavItems : mainNavItems;
+    const homeHref = isAdmin ? '/admin/dashboard' : dashboard();
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboard()} prefetch>
+                            <Link href={homeHref} prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>
@@ -53,11 +158,10 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={navItems} />
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
             </SidebarFooter>
         </Sidebar>
