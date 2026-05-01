@@ -77,10 +77,14 @@ export function ChartAreaInteractive() {
                             width={40}
                         />
                         <Tooltip
-                            formatter={(value: number, name: string) => [
-                                name === "revenue" ? formatRevenue(value) : value,
-                                name === "revenue" ? "Revenue" : "Orders",
-                            ]}
+                            formatter={(value, name) => {
+                                const numericValue = Number(value ?? 0)
+
+                                return [
+                                    name === "revenue" ? formatRevenue(numericValue) : numericValue,
+                                    name === "revenue" ? "Revenue" : "Orders",
+                                ]
+                            }}
                             contentStyle={{
                                 borderRadius: "8px",
                                 fontSize: "12px",

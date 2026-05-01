@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'biteship_order_id',
     'biteship_tracking_id',
     'waybill_id',
+    'label_url',
     'courier_company',
     'courier_type',
     'courier_service_name',

@@ -1,290 +1,411 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { Heart } from 'lucide-react';
-import React from 'react';
 import ShopLayout from '@/layouts/shop-layout';
+import { detail, list } from '@/routes';
 
-// --- DATA DUMMY --- //
-const hajjSeries = [
-    { id: 1, name: 'Adwa Prayer Set', price: 'Rp 455.000', label: 'NEW', image: '/img/abdul-raheem-kannath-aNWfK46QWto-unsplash.webp' },
-    { id: 2, name: 'Safa Basic Gamis', price: 'Rp 325.000', label: '', image: '/img/ainur-iman-qcNmigFPTQM-unsplash.webp' },
-    { id: 3, name: 'Tariq Khimar', price: 'Rp 145.000', label: 'RESTOCK', image: '/img/atiyeh-fathi-CvdzGjVX9DA-unsplash.webp' },
+type ProductCard = {
+    id: number;
+    slug: string;
+    name: string;
+    price: number;
+    sale_price: number | null;
+    label: string | null;
+    image: string | null;
+    category: string | null;
+    collection: string | null;
+    colors: Array<{
+        name: string | null;
+        hex: string;
+    }>;
+};
+
+type BannerCard = {
+    id: number;
+    title: string;
+    subtitle: string | null;
+    image_desktop_url: string;
+    image_mobile_url: string | null;
+    button_text: string | null;
+    button_url: string | null;
+} | null;
+
+type JournalPost = {
+    id: number;
+    title: string;
+    slug: string;
+    type: string;
+    date: string | null;
+};
+
+type Props = {
+    heroBanner: BannerCard;
+    promoBanner: BannerCard;
+    hajjSeries: ProductCard[];
+    wePresent: ProductCard[];
+    recentAdditions: ProductCard[];
+    mostLoved: ProductCard[];
+    journalPosts: JournalPost[];
+};
+
+const fallbackImages = [
+    '/img/abdul-raheem-kannath-aNWfK46QWto-unsplash.webp',
+    '/img/ainur-iman-qcNmigFPTQM-unsplash.webp',
+    '/img/atiyeh-fathi-CvdzGjVX9DA-unsplash.webp',
+    '/img/hasan-almasi-_X2UAmIcpko-unsplash.webp',
+    '/img/ike-ellyana-2F70bGqQVa4-unsplash.webp',
+    '/img/khaled-ghareeb-n84s3jgzhKk-unsplash.webp',
+    '/img/m-ghufanil-muta-ali-vAyDuvcjXcs-unsplash.webp',
+    '/img/mina-rad-2O2cXJemDmo-unsplash.webp',
+    '/img/monody-le-7YrRbgOPibw-unsplash.webp',
+    '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp',
 ];
 
-const wePresent = [
-    { id: 1, name: 'Tunik Qaysaa - Nude', price: 'Rp 265.000', label: '10%', image: '/img/hasan-almasi-_X2UAmIcpko-unsplash.webp' },
-    { id: 2, name: 'Abaya Fatima - Brown', price: 'Rp 450.000', label: '15%', image: '/img/ike-ellyana-2F70bGqQVa4-unsplash.webp' },
-    { id: 3, name: 'Khimar Aisha - Grey', price: 'Rp 185.000', label: '20%', image: '/img/khaled-ghareeb-n84s3jgzhKk-unsplash.webp' },
-    { id: 4, name: 'Setelan Rayya - Blue', price: 'Rp 385.000', label: '5%', image: '/img/m-ghufanil-muta-ali-vAyDuvcjXcs-unsplash.webp' },
-    { id: 5, name: 'Gamis Maryam - Purple', price: 'Rp 420.000', label: '10%', image: '/img/mina-rad-2O2cXJemDmo-unsplash.webp' },
-];
+const formatPrice = (value: number) =>
+    new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        maximumFractionDigits: 0,
+    }).format(value);
 
-const recentAdditions = [
-    { id: 1, name: 'Sport Ortega Skirt - Olive', price: 'Rp 255.000', image: '/img/monody-le-7YrRbgOPibw-unsplash.webp' },
-    { id: 2, name: 'Lova Active Tunic - Sand', price: 'Rp 285.000', image: '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp' },
-    { id: 3, name: 'Daily Sport Khimar - Navy', price: 'Rp 165.000', image: '/img/sajimon-sahadevan-AWC94dVpTPc-unsplash.webp' },
-    { id: 4, name: 'Airy Jogger Pants - Black', price: 'Rp 210.000', image: '/img/sarah-khan-R7p66Oj8ZOQ-unsplash.webpp' },
-    { id: 5, name: 'Moov Jacket - Blue', price: 'Rp 345.000', image: '/img/shedrack-salami-DRjeesi2kFM-unsplash.webp' },
-    { id: 6, name: 'Basic Sport Hijab - White', price: 'Rp 125.000', image: '/img/abdul-raheem-kannath-aNWfK46QWto-unsplash.webp' },
-];
+const productImage = (product: ProductCard | undefined, index: number) =>
+    product?.image ?? fallbackImages[index % fallbackImages.length];
+const bannerImage = (banner: BannerCard, fallback: string) =>
+    banner?.image_desktop_url ?? fallback;
 
-const mostLoved = [
-    { id: 1, name: 'Daily Khimar Emerald', price: 'Rp 155.000', label: 'RESTOCK', image: '/img/ainur-iman-qcNmigFPTQM-unsplash.webp' },
-    { id: 2, name: 'Basic Abaya Maroon', price: 'Rp 375.000', label: '', image: '/img/atiyeh-fathi-CvdzGjVX9DA-unsplash.webp' },
-    { id: 3, name: 'Signature Silk Scarves', price: 'Rp 225.000', label: 'PRE ORDER', image: '/img/hasan-almasi-_X2UAmIcpko-unsplash.webp' },
-    { id: 4, name: 'Pleated Skirt Nude', price: 'Rp 295.000', label: '', image: '/img/ike-ellyana-2F70bGqQVa4-unsplash.webp' },
-];
-
-const journalPosts = [
-    { id: 1, title: 'Your Spark : Elegance Woven into Every Moment "The Identity"', date: 'Mar 15, 2026', image: '/img/khaled-ghareeb-n84s3jgzhKk-unsplash.webp' },
-    { id: 2, title: 'Your Spark: The Journey of Grace and Heritage - From Indonesia to Paris', date: 'Mar 10, 2026', image: '/img/m-ghufanil-muta-ali-vAyDuvcjXcs-unsplash.webp' },
-    { id: 3, title: 'Hajj & Umrah: Every Corner of Your Home is a Field of Rewards', date: 'Feb 28, 2026', image: '/img/mina-rad-2O2cXJemDmo-unsplash.webp' },
-    { id: 4, title: 'Urban Modesty: A Collaboration between Itsar x Rumah Ayu', date: 'Feb 15, 2026', image: '/img/monody-le-7YrRbgOPibw-unsplash.webp' },
-];
-
-export default function Home() {
+export default function Home({
+    heroBanner,
+    promoBanner,
+    hajjSeries,
+    wePresent,
+    recentAdditions,
+    mostLoved,
+    journalPosts,
+}: Props) {
     return (
         <ShopLayout>
-            <Head title="Home - Webcare" />
+            <Head title="Home - Aurea Syari" />
 
-            {/* HERO SECTION */}
-            <section className="relative w-full h-[60vh] md:h-[85vh] overflow-hidden group">
+            <section className="group relative h-[60vh] w-full overflow-hidden md:h-[85vh]">
                 <img
-                    src="/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp"
-                    alt="Hero"
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                    src={bannerImage(
+                        heroBanner,
+                        '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp',
+                    )}
+                    alt={heroBanner?.title ?? 'Aurea Syari'}
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-black/20"></div> {/* Overlay */}
+                <div className="absolute inset-0 bg-black/20" />
 
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-primary-foreground px-4">
-                    <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-[100px] font-bold tracking-tight leading-none mb-2 md:mb-4 drop-shadow-lg">
-                        NOW <br /> LAUNCHING
+                <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center text-primary-foreground">
+                    <h1 className="mb-2 text-4xl leading-none font-bold tracking-tight drop-shadow-lg sm:text-5xl md:mb-4 md:text-7xl lg:text-[100px]">
+                        {heroBanner?.title ?? (
+                            <>
+                                NOW <br /> LAUNCHING
+                            </>
+                        )}
                     </h1>
-                    <div className="mt-2 md:mt-4 animate-fade-in-up">
-                        <h2 className="text-3xl sm:text-4xl md:text-6xl font-serif italic mb-1 md:mb-2 tracking-wide text-muted">Moov</h2>
-                        <p className="text-[8px] sm:text-[10px] md:text-xs tracking-[0.2em] font-medium uppercase drop-shadow-md">
-                            sport & athleisure
-                        </p>
+                    <div className="animate-fade-in-up mt-2 md:mt-4">
+                        <h2 className="mb-1 font-serif text-3xl tracking-wide text-muted italic sm:text-4xl md:mb-2 md:text-6xl">
+                            {heroBanner?.subtitle ?? 'Moov'}
+                        </h2>
+                        <Link
+                            href={heroBanner?.button_url ?? list.url()}
+                            className="text-[8px] font-medium tracking-[0.2em] uppercase drop-shadow-md transition hover:text-white/80 sm:text-[10px] md:text-xs"
+                        >
+                            {heroBanner?.button_text ?? 'sport & athleisure'}
+                        </Link>
                     </div>
                 </div>
             </section>
 
-            {/* ITSAR HAJJ SERIES 2026 */}
-            <section className="py-12 md:py-20 px-4 md:px-10 max-w-[1500px] mx-auto">
-                <div className="text-center mb-8 md:mb-12">
-                    <h2 className="text-xl md:text-3xl font-serif italic text-primary mb-2">Itsar Hajj Series 2026</h2>
-                    <p className="text-[10px] md:text-xs tracking-[0.1em] text-muted-foreground uppercase">Now Served Warmly, Wrapped With Love</p>
-                </div>
+            <section className="mx-auto max-w-[1500px] px-4 py-12 md:px-10 md:py-20">
+                <SectionTitle
+                    title="Itsar Hajj Series 2026"
+                    subtitle="Now Served Warmly, Wrapped With Love"
+                />
 
-                <div className="flex flex-col lg:flex-row gap-6 md:gap-8 items-center">
-                    {/* Left Big Image */}
-                    <div className="w-full lg:w-[45%] relative aspect-[4/3] overflow-hidden group rounded-sm">
+                <div className="flex flex-col items-center gap-6 md:gap-8 lg:flex-row">
+                    <div className="group relative aspect-[4/3] w-full overflow-hidden rounded-sm lg:w-[45%]">
                         <img
-                            src="/img/sajimon-sahadevan-AWC94dVpTPc-unsplash.webp"
-                            alt="Hajj Series Lifestyle"
-                            className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-105"
+                            src={productImage(hajjSeries[0], 8)}
+                            alt={hajjSeries[0]?.name ?? 'Hajj Series Lifestyle'}
+                            className="h-full w-full object-cover transition-transform duration-[1.5s] group-hover:scale-105"
                         />
                     </div>
 
-                    {/* Right Carousel/Grid */}
-                    <div className="w-full lg:w-[55%] relative">
-                        <div className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar gap-4 pb-4 md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0">
-                            {hajjSeries.map(item => (
-                                <div key={item.id} className="min-w-[45%] sm:min-w-[30%] md:min-w-0 snap-start flex flex-col group cursor-pointer">
-                                    <div className="relative aspect-[3/4] overflow-hidden rounded-sm mb-3">
-                                        {item.label && (
-                                            <span className="absolute top-2 left-2 z-10 bg-background/90 px-2 py-1 text-[8px] font-bold tracking-widest uppercase">
-                                                {item.label}
-                                            </span>
-                                        )}
-                                        <img
-                                            src={item.image}
-                                            alt={item.name}
-                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                            loading="lazy"
-                                            decoding="async"
-                                        />
-                                        <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                            <Heart className="text-white drop-shadow-md" size={20} />
-                                        </div>
-                                    </div>
-                                    <div className="text-center px-1">
-                                        <h3 className="text-xs font-semibold mb-1 truncate">{item.name}</h3>
-                                        <p className="text-[10px] md:text-xs text-muted-foreground mb-3">{item.price}</p>
-                                        <button className="text-[9px] md:text-[10px] uppercase font-bold tracking-wider border-b border-foreground pb-0.5 hover:text-primary hover:border-primary transition-colors">
-                                            Buy
-                                        </button>
-                                    </div>
-                                </div>
+                    <div className="relative w-full lg:w-[55%]">
+                        <div className="hide-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0">
+                            {hajjSeries.map((item, index) => (
+                                <ProductTile
+                                    key={item.id}
+                                    product={item}
+                                    index={index}
+                                    centered
+                                />
                             ))}
                         </div>
-                        {/* Custom scrollbar styles for webkit */}
-                        <style dangerouslySetInnerHTML={{
-                            __html: `
-                            .hide-scrollbar::-webkit-scrollbar { display: none; }
-                            .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-                        `}} />
                     </div>
                 </div>
             </section>
 
-            {/* WE PRESENT TO YOU */}
-            <section className="py-12 md:py-16 px-4 md:px-10 max-w-[1500px] mx-auto">
-                <div className="text-center mb-8 md:mb-12">
-                    <h2 className="text-xl md:text-3xl font-serif italic text-primary mb-2">We Present to You...</h2>
-                    <p className="text-[10px] md:text-xs tracking-[0.1em] text-muted-foreground uppercase">More Love. A Special Addition, Exclusively For You</p>
-                </div>
+            <section className="mx-auto max-w-[1500px] px-4 py-12 md:px-10 md:py-16">
+                <SectionTitle
+                    title="We Present to You..."
+                    subtitle="More Love. A Special Addition, Exclusively For You"
+                />
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-5">
-                    {wePresent.map(item => (
-                        <div key={item.id} className="flex flex-col group cursor-pointer">
-                            <div className="relative aspect-[3/4] overflow-hidden rounded-sm mb-3">
-                                {item.label && (
-                                    <span className="absolute top-2 left-2 z-10 bg-destructive text-destructive-foreground px-2 py-0.5 text-[8px] font-bold tracking-widest">
-                                        {item.label}
-                                    </span>
-                                )}
-                                <img
-                                    src={item.image}
-                                    alt={item.name}
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                    loading="lazy"
-                                    decoding="async"
-                                />
-                            </div>
-                            <div className="px-1">
-                                <h3 className="text-[10px] md:text-xs font-semibold mb-1 truncate">{item.name}</h3>
-                                <p className="text-[10px] md:text-xs text-muted-foreground mb-2 md:mb-3">{item.price}</p>
-                                <button className="w-full py-2 bg-primary text-primary-foreground text-[9px] md:text-[10px] font-bold tracking-widest uppercase hover:bg-primary/90 transition-colors rounded-sm">
-                                    Buy
-                                </button>
-                            </div>
-                        </div>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 lg:grid-cols-5">
+                    {wePresent.map((item, index) => (
+                        <ProductTile
+                            key={item.id}
+                            product={item}
+                            index={index}
+                            button
+                        />
                     ))}
                 </div>
             </section>
 
-            {/* RECENT ADDITION */}
-            <section className="py-12 md:py-16 px-4 md:px-10 bg-white">
-                <div className="max-w-[1500px] mx-auto">
-                    <div className="text-center mb-8 md:mb-12">
-                        <h2 className="text-xl md:text-3xl font-serif italic text-primary mb-2">Recent Addition</h2>
-                        <p className="text-[10px] md:text-xs tracking-[0.1em] text-muted-foreground uppercase">Your Beloved Essentials, Now in Colors</p>
-                    </div>
+            <section className="bg-white px-4 py-12 md:px-10 md:py-16">
+                <div className="mx-auto max-w-[1500px]">
+                    <SectionTitle
+                        title="Recent Addition"
+                        subtitle="Your Beloved Essentials, Now in Colors"
+                    />
 
                     <div className="relative">
-                        <div className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar gap-3 md:gap-4 pb-4 md:grid md:grid-cols-3 lg:grid-cols-6 md:pb-0">
-                            {recentAdditions.map(item => (
-                                <div key={item.id} className="min-w-[40%] sm:min-w-[30%] md:min-w-0 snap-start flex flex-col group cursor-pointer text-center">
-                                    <div className="relative aspect-[3/4] overflow-hidden rounded-sm mb-3 bg-background">
+                        <div className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto pb-4 md:grid md:grid-cols-3 md:gap-4 md:pb-0 lg:grid-cols-6">
+                            {recentAdditions.map((item, index) => (
+                                <Link
+                                    href={detail.url({
+                                        query: { product: item.slug },
+                                    })}
+                                    key={item.id}
+                                    className="group flex min-w-[40%] snap-start flex-col text-center sm:min-w-[30%] md:min-w-0"
+                                >
+                                    <div className="relative mb-3 aspect-[3/4] overflow-hidden rounded-sm bg-background">
                                         <img
-                                            src={item.image}
+                                            src={productImage(item, index)}
                                             alt={item.name}
-                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                                             loading="lazy"
                                             decoding="async"
                                         />
                                     </div>
-                                    <h3 className="text-[9px] md:text-[10px] font-semibold mb-1 truncate px-1">{item.name}</h3>
-                                    <p className="text-[9px] md:text-[10px] text-muted-foreground mb-2">{item.price}</p>
-                                    <div className="flex justify-center space-x-1.5">
-                                        <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-[#1e293b] border border-gray-200"></div>
-                                        <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-[#991b1b] border border-gray-200"></div>
-                                        <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-[#e2e8f0] border border-gray-200"></div>
+                                    <h3 className="truncate px-1 text-[9px] font-semibold md:text-[10px]">
+                                        {item.name}
+                                    </h3>
+                                    <p className="mb-2 text-[9px] text-muted-foreground md:text-[10px]">
+                                        {formatPrice(
+                                            item.sale_price ?? item.price,
+                                        )}
+                                    </p>
+                                    <div className="flex justify-center gap-1.5">
+                                        {item.colors
+                                            .slice(0, 3)
+                                            .map((color) => (
+                                                <span
+                                                    key={color.hex}
+                                                    className="h-2.5 w-2.5 rounded-full border border-gray-200 md:h-3 md:w-3"
+                                                    style={{
+                                                        backgroundColor:
+                                                            color.hex,
+                                                    }}
+                                                    title={
+                                                        color.name ?? color.hex
+                                                    }
+                                                />
+                                            ))}
                                     </div>
-                                </div>
+                                </Link>
                             ))}
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* MOST LOVED ESSENTIALS */}
-            <section className="py-12 md:py-20 px-4 md:px-10 max-w-[1500px] mx-auto">
-                <div className="text-center mb-8 md:mb-12">
-                    <h2 className="text-xl md:text-3xl font-serif italic text-primary mb-2">Most Loved Essentials</h2>
-                    <p className="text-[10px] md:text-xs tracking-[0.1em] text-muted-foreground uppercase">Classics And Verified By Many, To Be Your Next Favorites</p>
-                </div>
+            <section className="mx-auto max-w-[1500px] px-4 py-12 md:px-10 md:py-20">
+                <SectionTitle
+                    title="Most Loved Essentials"
+                    subtitle="Classics And Verified By Many, To Be Your Next Favorites"
+                />
 
                 <div className="relative">
-                    <div className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar gap-4 pb-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-6 md:overflow-visible md:pb-0 w-full relative">
-                        {mostLoved.map(item => (
-                            <div key={item.id} className="min-w-[65%] sm:min-w-[45%] md:min-w-0 snap-start flex flex-col group cursor-pointer">
-                                <div className="relative aspect-[3/4] overflow-hidden rounded-sm mb-3 md:mb-4">
-                                    {item.label && (
-                                        <span className="absolute top-2 left-2 z-10 bg-background text-secondary-foreground px-2 py-1 text-[8px] font-bold tracking-widest uppercase">
-                                            {item.label}
-                                        </span>
-                                    )}
-                                    <img
-                                        src={item.image}
-                                        alt={item.name}
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                        loading="lazy"
-                                        decoding="async"
-                                    />
-                                    <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <Heart className="text-white drop-shadow-md" size={18} />
-                                    </div>
-                                </div>
-                                <div className="px-1">
-                                    <h3 className="text-[10px] md:text-xs font-semibold mb-1 truncate">{item.name}</h3>
-                                    <p className="text-[10px] md:text-xs text-muted-foreground mb-2 md:mb-3">{item.price}</p>
-                                    <button className="w-full py-2.5 bg-primary text-primary-foreground text-[9px] md:text-[10px] font-bold tracking-widest uppercase hover:bg-primary/90 transition-colors rounded-sm">
-                                        Buy
-                                    </button>
-                                </div>
-                            </div>
+                    <div className="hide-scrollbar relative flex w-full snap-x snap-mandatory gap-4 overflow-x-auto pb-4 md:grid md:grid-cols-2 md:gap-6 md:overflow-visible md:pb-0 lg:grid-cols-4">
+                        {mostLoved.map((item, index) => (
+                            <ProductTile
+                                key={item.id}
+                                product={item}
+                                index={index}
+                                button
+                                wide
+                            />
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* BANNER SECTION */}
-            <section className="w-full mt-6 md:mt-10 mb-12 md:mb-20 overflow-hidden relative h-[250px] md:h-[400px]">
-                <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('/img/sarah-khan-R7p66Oj8ZOQ-unsplash.webp')" }}></div>
+            <section className="relative mt-6 mb-12 h-[250px] w-full overflow-hidden md:mt-10 md:mb-20 md:h-[400px]">
+                <div
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{
+                        backgroundImage: `url('${bannerImage(promoBanner, '/img/sarah-khan-R7p66Oj8ZOQ-unsplash.webp')}')`,
+                    }}
+                />
                 <div className="absolute inset-0 flex items-center justify-center bg-black/10">
-                    <button className="px-5 py-2 md:px-6 md:py-2 border border-white text-white text-[9px] md:text-[10px] uppercase tracking-widest font-bold hover:bg-white hover:text-black transition-colors backdrop-blur-sm rounded-sm">
-                        Discover
-                    </button>
+                    <Link
+                        href={promoBanner?.button_url ?? list.url()}
+                        className="rounded-sm border border-white px-5 py-2 text-[9px] font-bold tracking-widest text-white uppercase backdrop-blur-sm transition-colors hover:bg-white hover:text-black md:px-6 md:text-[10px]"
+                    >
+                        {promoBanner?.button_text ?? 'Discover'}
+                    </Link>
                 </div>
             </section>
 
-            {/* OUR JOURNAL */}
-            <section className="py-10 px-4 md:px-10 max-w-[1500px] mx-auto mb-10 md:mb-20">
+            <section className="mx-auto mb-10 max-w-[1500px] px-4 py-10 md:mb-20 md:px-10">
                 <div className="mb-6 md:mb-8">
-                    <h2 className="text-lg md:text-xl font-bold text-primary tracking-wider">Our Journal</h2>
+                    <h2 className="text-lg font-bold tracking-wider text-primary md:text-xl">
+                        Our Journal
+                    </h2>
                 </div>
 
-                <div className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar gap-4 pb-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-6 md:pb-0">
-                    {journalPosts.map(post => (
-                        <div key={post.id} className="min-w-[75%] sm:min-w-[45%] md:min-w-0 snap-start flex flex-col group cursor-pointer">
-                            <div className="relative aspect-[16/9] overflow-hidden rounded-sm mb-3 md:mb-4">
+                <div className="hide-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 md:grid md:grid-cols-2 md:gap-6 md:pb-0 lg:grid-cols-4">
+                    {journalPosts.map((post, index) => (
+                        <article
+                            key={post.id}
+                            className="group flex min-w-[75%] cursor-pointer snap-start flex-col sm:min-w-[45%] md:min-w-0"
+                        >
+                            <div className="relative mb-3 aspect-video overflow-hidden rounded-sm md:mb-4">
                                 <img
-                                    src={post.image}
+                                    src={
+                                        fallbackImages[
+                                            (index + 5) % fallbackImages.length
+                                        ]
+                                    }
                                     alt={post.title}
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                                     loading="lazy"
                                     decoding="async"
                                 />
                             </div>
-                            <div className="flex-1 flex flex-col justify-between px-1">
+                            <div className="flex flex-1 flex-col justify-between px-1">
                                 <div>
-                                    <p className="text-[9px] md:text-[10px] text-muted-foreground mb-1.5 md:mb-2 uppercase tracking-wider">{post.date}</p>
-                                    <h3 className="text-[11px] md:text-xs font-semibold mb-3 md:mb-4 leading-relaxed group-hover:text-primary transition-colors line-clamp-3">
+                                    <p className="mb-1.5 text-[9px] tracking-wider text-muted-foreground uppercase md:mb-2 md:text-[10px]">
+                                        {post.date ?? post.type}
+                                    </p>
+                                    <h3 className="mb-3 line-clamp-3 text-[11px] leading-relaxed font-semibold transition-colors group-hover:text-primary md:mb-4 md:text-xs">
                                         {post.title}
                                     </h3>
                                 </div>
                                 <div className="mt-auto">
-                                    <button className="text-[9px] md:text-[10px] uppercase font-bold tracking-wider border border-border px-3 py-1 md:px-4 md:py-1.5 rounded-full hover:border-foreground transition-colors">
+                                    <span className="rounded-full border border-border px-3 py-1 text-[9px] font-bold tracking-wider uppercase transition-colors group-hover:border-foreground md:px-4 md:py-1.5 md:text-[10px]">
                                         Continue Reading
-                                    </button>
+                                    </span>
                                 </div>
                             </div>
-                        </div>
+                        </article>
                     ))}
                 </div>
             </section>
+
+            <style
+                dangerouslySetInnerHTML={{
+                    __html: `
+                    .hide-scrollbar::-webkit-scrollbar { display: none; }
+                    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+                `,
+                }}
+            />
         </ShopLayout>
     );
 }
 
+function SectionTitle({
+    title,
+    subtitle,
+}: {
+    title: string;
+    subtitle: string;
+}) {
+    return (
+        <div className="mb-8 text-center md:mb-12">
+            <h2 className="mb-2 font-serif text-xl text-primary italic md:text-3xl">
+                {title}
+            </h2>
+            <p className="text-[10px] tracking-[0.1em] text-muted-foreground uppercase md:text-xs">
+                {subtitle}
+            </p>
+        </div>
+    );
+}
+
+function ProductTile({
+    product,
+    index,
+    button = false,
+    centered = false,
+    wide = false,
+}: {
+    product: ProductCard;
+    index: number;
+    button?: boolean;
+    centered?: boolean;
+    wide?: boolean;
+}) {
+    return (
+        <Link
+            href={detail.url({ query: { product: product.slug } })}
+            className={`group flex cursor-pointer flex-col ${centered ? 'min-w-[45%] text-center sm:min-w-[30%]' : ''} ${
+                wide ? 'min-w-[65%] sm:min-w-[45%]' : ''
+            } snap-start md:min-w-0`}
+        >
+            <div className="relative mb-3 aspect-[3/4] overflow-hidden rounded-sm">
+                {product.label && (
+                    <span
+                        className={`absolute top-2 left-2 z-10 px-2 py-1 text-[8px] font-bold tracking-widest uppercase ${
+                            product.label.includes('%')
+                                ? 'bg-destructive text-destructive-foreground'
+                                : 'bg-background/90 text-secondary-foreground'
+                        }`}
+                    >
+                        {product.label}
+                    </span>
+                )}
+                <img
+                    src={productImage(product, index)}
+                    alt={product.name}
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    loading="lazy"
+                    decoding="async"
+                />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/10 opacity-0 transition-opacity group-hover:opacity-100">
+                    <Heart className="text-white drop-shadow-md" size={20} />
+                </div>
+            </div>
+            <div className={centered ? 'px-1 text-center' : 'px-1'}>
+                <h3 className="mb-1 truncate text-[10px] font-semibold md:text-xs">
+                    {product.name}
+                </h3>
+                <div className="mb-2 flex flex-wrap items-center gap-1.5 text-[10px] text-muted-foreground md:mb-3 md:text-xs">
+                    <span>
+                        {formatPrice(product.sale_price ?? product.price)}
+                    </span>
+                    {product.sale_price !== null && (
+                        <span className="line-through">
+                            {formatPrice(product.price)}
+                        </span>
+                    )}
+                </div>
+                {button ? (
+                    <span className="block w-full rounded-sm bg-primary py-2 text-center text-[9px] font-bold tracking-widest text-primary-foreground uppercase transition-colors hover:bg-primary/90 md:text-[10px]">
+                        Buy
+                    </span>
+                ) : (
+                    <span className="border-b border-foreground pb-0.5 text-[9px] font-bold tracking-wider uppercase transition-colors hover:border-primary hover:text-primary md:text-[10px]">
+                        Buy
+                    </span>
+                )}
+            </div>
+        </Link>
+    );
+}

@@ -1,17 +1,35 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminNotificationController;
 use App\Http\Controllers\Admin\AdminPageController;
+use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\Auth\LoginController as AdminLoginController;
+use App\Http\Controllers\Admin\BannerController;
+use App\Http\Controllers\Admin\BiteshipWebhookLogController;
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\CollectionController;
+use App\Http\Controllers\Admin\CustomerAddressController;
+use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\PageController;
+use App\Http\Controllers\Admin\PaymentController;
+use App\Http\Controllers\Admin\PaymentLogController;
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ProductVariantController;
+use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\ShipmentController;
+use App\Http\Controllers\Admin\StockController;
+use App\Http\Controllers\Admin\VoucherController;
+use App\Http\Controllers\Admin\WishlistInsightController;
+use App\Http\Controllers\Customer\HomeController as CustomerHomeController;
+use App\Http\Controllers\Customer\ProductController as CustomerProductController;
 use Illuminate\Support\Facades\Route;
-use Laravel\Fortify\Features;
 
-Route::inertia('/', 'welcome', [
-    'canRegister' => Features::enabled(Features::registration()),
-])->name('home');
+Route::get('/', [CustomerHomeController::class, 'index'])->name('home');
 
-Route::inertia('/detail', 'customer/products/detail-product')->name('detail');
-Route::inertia('/list', 'customer/products/list-product')->name('list');
+Route::get('/detail', [CustomerProductController::class, 'show'])->name('detail');
+Route::get('/list', [CustomerProductController::class, 'index'])->name('list');
 Route::inertia('/my-cart', 'customer/cart/my-cart')->name('cart');
 Route::inertia('/checkout', 'customer/checkout/checkout')->name('checkout');
 Route::inertia('/my-order', 'customer/order/my-order')->name('my-order');
@@ -38,73 +56,112 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('logout', [AdminLoginController::class, 'destroy'])->name('logout');
     Route::get('dashboard', AdminDashboardController::class)->name('dashboard');
 
-    Route::get('products', [AdminPageController::class, 'index'])->defaults('module', 'products')->name('products.index');
-    Route::get('products/create', [AdminPageController::class, 'create'])->defaults('module', 'products')->name('products.create');
-    Route::get('products/{id}', [AdminPageController::class, 'show'])->whereNumber('id')->defaults('module', 'products')->name('products.show');
-    Route::get('products/{id}/edit', [AdminPageController::class, 'edit'])->whereNumber('id')->defaults('module', 'products')->name('products.edit');
-    Route::get('products/{id}/variants', [AdminPageController::class, 'index'])->whereNumber('id')->defaults('module', 'product-variants')->name('products.variants.index');
+    Route::get('products', [ProductController::class, 'index'])->name('products.index');
+    Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
+    Route::post('products', [ProductController::class, 'store'])->name('products.store');
+    Route::get('products/{product}', [ProductController::class, 'show'])->name('products.show');
+    Route::get('products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
+    Route::put('products/{product}', [ProductController::class, 'update'])->name('products.update');
+    Route::post('products/{product}/publish', [ProductController::class, 'publish'])->name('products.publish');
+    Route::post('products/{product}/archive', [ProductController::class, 'archive'])->name('products.archive');
+    Route::post('products/{product}/duplicate', [ProductController::class, 'duplicate'])->name('products.duplicate');
+    Route::delete('products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+    Route::get('products/{product}/variants', [ProductVariantController::class, 'index'])->name('products.variants.index');
 
-    Route::get('product-variants', [AdminPageController::class, 'index'])->defaults('module', 'product-variants')->name('product-variants.index');
-    Route::get('product-variants/create', [AdminPageController::class, 'create'])->defaults('module', 'product-variants')->name('product-variants.create');
-    Route::get('product-variants/{id}', [AdminPageController::class, 'show'])->whereNumber('id')->defaults('module', 'product-variants')->name('product-variants.show');
-    Route::get('product-variants/{id}/edit', [AdminPageController::class, 'edit'])->whereNumber('id')->defaults('module', 'product-variants')->name('product-variants.edit');
-    Route::get('product-variants/{id}/stock-adjustment', [AdminPageController::class, 'edit'])->whereNumber('id')->defaults('module', 'product-variants')->name('product-variants.stock-adjustment');
+    Route::get('product-variants', [ProductVariantController::class, 'index'])->name('product-variants.index');
+    Route::get('product-variants/create', [ProductVariantController::class, 'create'])->name('product-variants.create');
+    Route::post('product-variants', [ProductVariantController::class, 'store'])->name('product-variants.store');
+    Route::get('product-variants/{productVariant}/edit', [ProductVariantController::class, 'edit'])->name('product-variants.edit');
+    Route::put('product-variants/{productVariant}', [ProductVariantController::class, 'update'])->name('product-variants.update');
+    Route::delete('product-variants/{productVariant}', [ProductVariantController::class, 'destroy'])->name('product-variants.destroy');
+    Route::get('product-variants/{productVariant}/stock-adjustment', [StockController::class, 'edit'])->name('product-variants.stock-adjustment');
+    Route::post('product-variants/{productVariant}/stock-adjustment', [StockController::class, 'update'])->name('product-variants.stock-adjustment.update');
 
-    Route::get('categories', [AdminPageController::class, 'index'])->defaults('module', 'categories')->name('categories.index');
-    Route::get('categories/create', [AdminPageController::class, 'create'])->defaults('module', 'categories')->name('categories.create');
-    Route::get('categories/{id}', [AdminPageController::class, 'show'])->whereNumber('id')->defaults('module', 'categories')->name('categories.show');
-    Route::get('categories/{id}/edit', [AdminPageController::class, 'edit'])->whereNumber('id')->defaults('module', 'categories')->name('categories.edit');
+    Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
+    Route::get('categories/create', [CategoryController::class, 'create'])->name('categories.create');
+    Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
+    Route::get('categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
+    Route::put('categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
+    Route::delete('categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
 
-    Route::get('collections', [AdminPageController::class, 'index'])->defaults('module', 'collections')->name('collections.index');
-    Route::get('collections/create', [AdminPageController::class, 'create'])->defaults('module', 'collections')->name('collections.create');
-    Route::get('collections/{id}', [AdminPageController::class, 'show'])->whereNumber('id')->defaults('module', 'collections')->name('collections.show');
-    Route::get('collections/{id}/edit', [AdminPageController::class, 'edit'])->whereNumber('id')->defaults('module', 'collections')->name('collections.edit');
+    Route::get('collections', [CollectionController::class, 'index'])->name('collections.index');
+    Route::get('collections/create', [CollectionController::class, 'create'])->name('collections.create');
+    Route::post('collections', [CollectionController::class, 'store'])->name('collections.store');
+    Route::get('collections/{collection}/edit', [CollectionController::class, 'edit'])->name('collections.edit');
+    Route::put('collections/{collection}', [CollectionController::class, 'update'])->name('collections.update');
+    Route::delete('collections/{collection}', [CollectionController::class, 'destroy'])->name('collections.destroy');
 
-    Route::get('stock', [AdminPageController::class, 'index'])->defaults('module', 'stock')->name('stock.index');
-    Route::get('stock/logs', [AdminPageController::class, 'index'])->defaults('module', 'stock-logs')->name('stock.logs');
-    Route::get('stock/logs/{id}', [AdminPageController::class, 'show'])->whereNumber('id')->defaults('module', 'stock-logs')->name('stock.logs.show');
+    Route::get('stock', [StockController::class, 'index'])->name('stock.index');
+    Route::get('stock/logs', [StockController::class, 'logs'])->name('stock.logs');
 
-    Route::get('orders', [AdminPageController::class, 'index'])->defaults('module', 'orders')->name('orders.index');
-    Route::get('orders/{id}', [AdminPageController::class, 'show'])->whereNumber('id')->defaults('module', 'orders')->name('orders.show');
+    Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::post('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.status');
+    Route::post('orders/{order}/notes', [OrderController::class, 'updateNotes'])->name('orders.notes');
+    Route::post('orders/{order}/shipments', [ShipmentController::class, 'createFromOrder'])->name('orders.shipments.store');
 
-    Route::get('payments', [AdminPageController::class, 'index'])->defaults('module', 'payments')->name('payments.index');
-    Route::get('payments/{id}', [AdminPageController::class, 'show'])->whereNumber('id')->defaults('module', 'payments')->name('payments.show');
-    Route::get('payment-logs', [AdminPageController::class, 'index'])->defaults('module', 'payment-logs')->name('payment-logs.index');
-    Route::get('payment-logs/{id}', [AdminPageController::class, 'show'])->whereNumber('id')->defaults('module', 'payment-logs')->name('payment-logs.show');
+    Route::get('payments', [PaymentController::class, 'index'])->name('payments.index');
+    Route::get('payments/{payment}', [PaymentController::class, 'show'])->name('payments.show');
+    Route::post('payments/{payment}/sync', [PaymentController::class, 'sync'])->name('payments.sync');
+    Route::get('payment-logs', [PaymentLogController::class, 'index'])->name('payment-logs.index');
+    Route::get('payment-logs/{paymentLog}', [PaymentLogController::class, 'show'])->name('payment-logs.show');
 
-    Route::get('shipments', [AdminPageController::class, 'index'])->defaults('module', 'shipments')->name('shipments.index');
-    Route::get('shipments/{id}', [AdminPageController::class, 'show'])->whereNumber('id')->defaults('module', 'shipments')->name('shipments.show');
+    Route::get('shipments', [ShipmentController::class, 'index'])->name('shipments.index');
+    Route::get('shipments/{shipment}', [ShipmentController::class, 'show'])->name('shipments.show');
+    Route::post('shipments/{shipment}/status', [ShipmentController::class, 'updateStatus'])->name('shipments.status');
+    Route::post('shipments/{shipment}/refresh-tracking', [ShipmentController::class, 'refreshTracking'])->name('shipments.refresh-tracking');
+    Route::get('biteship-webhook-logs', [BiteshipWebhookLogController::class, 'index'])->name('biteship-webhook-logs.index');
+    Route::get('biteship-webhook-logs/{biteshipWebhookLog}', [BiteshipWebhookLogController::class, 'show'])->name('biteship-webhook-logs.show');
 
-    Route::get('customers', [AdminPageController::class, 'index'])->defaults('module', 'customers')->name('customers.index');
-    Route::get('customers/{id}', [AdminPageController::class, 'show'])->whereNumber('id')->defaults('module', 'customers')->name('customers.show');
-    Route::get('customer-addresses', [AdminPageController::class, 'index'])->defaults('module', 'customer-addresses')->name('customer-addresses.index');
-    Route::get('customer-addresses/{id}', [AdminPageController::class, 'show'])->whereNumber('id')->defaults('module', 'customer-addresses')->name('customer-addresses.show');
+    Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
+    Route::get('customers/{customer}', [CustomerController::class, 'show'])->name('customers.show');
+    Route::post('customers/{customer}/toggle-active', [CustomerController::class, 'toggleActive'])->name('customers.toggle-active');
 
-    Route::get('vouchers', [AdminPageController::class, 'index'])->defaults('module', 'vouchers')->name('vouchers.index');
-    Route::get('vouchers/create', [AdminPageController::class, 'create'])->defaults('module', 'vouchers')->name('vouchers.create');
-    Route::get('vouchers/{id}', [AdminPageController::class, 'show'])->whereNumber('id')->defaults('module', 'vouchers')->name('vouchers.show');
-    Route::get('vouchers/{id}/edit', [AdminPageController::class, 'edit'])->whereNumber('id')->defaults('module', 'vouchers')->name('vouchers.edit');
+    Route::get('customer-addresses', [CustomerAddressController::class, 'index'])->name('customer-addresses.index');
+    Route::get('customer-addresses/{customerAddress}', [CustomerAddressController::class, 'show'])->name('customer-addresses.show');
+    Route::get('customer-addresses/{customerAddress}/edit', [CustomerAddressController::class, 'edit'])->name('customer-addresses.edit');
+    Route::put('customer-addresses/{customerAddress}', [CustomerAddressController::class, 'update'])->name('customer-addresses.update');
+    Route::delete('customer-addresses/{customerAddress}', [CustomerAddressController::class, 'destroy'])->name('customer-addresses.destroy');
 
-    Route::get('notifications', [AdminPageController::class, 'index'])->defaults('module', 'notifications')->name('notifications.index');
-    Route::get('notifications/create', [AdminPageController::class, 'create'])->defaults('module', 'notifications')->name('notifications.create');
-    Route::get('notifications/{id}', [AdminPageController::class, 'show'])->whereNumber('id')->defaults('module', 'notifications')->name('notifications.show');
+    Route::get('vouchers', [VoucherController::class, 'index'])->name('vouchers.index');
+    Route::get('vouchers/create', [VoucherController::class, 'create'])->name('vouchers.create');
+    Route::post('vouchers', [VoucherController::class, 'store'])->name('vouchers.store');
+    Route::get('vouchers/{voucher}/edit', [VoucherController::class, 'edit'])->name('vouchers.edit');
+    Route::put('vouchers/{voucher}', [VoucherController::class, 'update'])->name('vouchers.update');
+    Route::delete('vouchers/{voucher}', [VoucherController::class, 'destroy'])->name('vouchers.destroy');
 
-    Route::get('banners', [AdminPageController::class, 'index'])->defaults('module', 'banners')->name('banners.index');
-    Route::get('banners/create', [AdminPageController::class, 'create'])->defaults('module', 'banners')->name('banners.create');
-    Route::get('banners/{id}', [AdminPageController::class, 'show'])->whereNumber('id')->defaults('module', 'banners')->name('banners.show');
-    Route::get('banners/{id}/edit', [AdminPageController::class, 'edit'])->whereNumber('id')->defaults('module', 'banners')->name('banners.edit');
+    Route::get('notifications', [AdminNotificationController::class, 'index'])->name('notifications.index');
+    Route::get('notifications/create', [AdminNotificationController::class, 'create'])->name('notifications.create');
+    Route::post('notifications', [AdminNotificationController::class, 'store'])->name('notifications.store');
 
-    Route::get('pages', [AdminPageController::class, 'index'])->defaults('module', 'pages')->name('pages.index');
-    Route::get('pages/create', [AdminPageController::class, 'create'])->defaults('module', 'pages')->name('pages.create');
-    Route::get('pages/{id}', [AdminPageController::class, 'show'])->whereNumber('id')->defaults('module', 'pages')->name('pages.show');
-    Route::get('pages/{id}/edit', [AdminPageController::class, 'edit'])->whereNumber('id')->defaults('module', 'pages')->name('pages.edit');
+    Route::get('wishlists', [WishlistInsightController::class, 'index'])->name('wishlists.index');
 
-    Route::get('settings', [AdminPageController::class, 'index'])->defaults('module', 'settings')->name('settings.index');
-    Route::get('settings/{id}', [AdminPageController::class, 'show'])->whereNumber('id')->defaults('module', 'settings')->name('settings.show');
-    Route::get('settings/store', [AdminPageController::class, 'index'])->defaults('module', 'settings')->name('settings.store');
-    Route::get('settings/seo', [AdminPageController::class, 'index'])->defaults('module', 'settings')->name('settings.seo');
-    Route::get('settings/payment', [AdminPageController::class, 'index'])->defaults('module', 'settings')->name('settings.payment');
-    Route::get('settings/shipping', [AdminPageController::class, 'index'])->defaults('module', 'settings')->name('settings.shipping');
+    Route::get('banners', [BannerController::class, 'index'])->name('banners.index');
+    Route::get('banners/create', [BannerController::class, 'create'])->name('banners.create');
+    Route::post('banners', [BannerController::class, 'store'])->name('banners.store');
+    Route::get('banners/{banner}/edit', [BannerController::class, 'edit'])->name('banners.edit');
+    Route::put('banners/{banner}', [BannerController::class, 'update'])->name('banners.update');
+    Route::delete('banners/{banner}', [BannerController::class, 'destroy'])->name('banners.destroy');
+
+    Route::get('pages', [PageController::class, 'index'])->name('pages.index');
+    Route::get('pages/create', [PageController::class, 'create'])->name('pages.create');
+    Route::post('pages', [PageController::class, 'store'])->name('pages.store');
+    Route::get('pages/{page}/edit', [PageController::class, 'edit'])->name('pages.edit');
+    Route::put('pages/{page}', [PageController::class, 'update'])->name('pages.update');
+    Route::delete('pages/{page}', [PageController::class, 'destroy'])->name('pages.destroy');
+
+    Route::get('settings', [SettingController::class, 'index'])->defaults('section', 'store')->name('settings.index');
+    Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
+    Route::get('settings/store', [SettingController::class, 'index'])->defaults('section', 'store')->name('settings.store');
+    Route::get('settings/seo', [SettingController::class, 'index'])->defaults('section', 'seo')->name('settings.seo');
+    Route::get('settings/payment', [SettingController::class, 'index'])->defaults('section', 'payment')->name('settings.payment');
+    Route::get('settings/shipping', [SettingController::class, 'index'])->defaults('section', 'shipping')->name('settings.shipping');
+
+    Route::get('admin-users', [AdminUserController::class, 'index'])->name('admin-users.index');
+    Route::get('admin-users/create', [AdminUserController::class, 'create'])->name('admin-users.create');
+    Route::post('admin-users', [AdminUserController::class, 'store'])->name('admin-users.store');
+    Route::get('admin-users/{adminUser}/edit', [AdminUserController::class, 'edit'])->name('admin-users.edit');
+    Route::put('admin-users/{adminUser}', [AdminUserController::class, 'update'])->name('admin-users.update');
 
     Route::get('reports/sales', [AdminPageController::class, 'index'])->defaults('module', 'orders')->name('reports.sales');
     Route::get('reports/products', [AdminPageController::class, 'index'])->defaults('module', 'products')->name('reports.products');

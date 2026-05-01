@@ -1,0 +1,273 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\Category;
+use App\Models\Collection;
+use App\Models\Product;
+use Illuminate\Database\Seeder;
+use RuntimeException;
+
+class ProductSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        $products = [
+            [
+                'category_slug' => 'womens-tops',
+                'collection_slug' => 'summer-linen-2026',
+                'name' => 'Aurelia Linen Relaxed Shirt',
+                'slug' => 'aurelia-linen-relaxed-shirt',
+                'sku' => 'PRD-WTS-LIN-001',
+                'short_description' => 'Kemeja linen loose fit dengan kerah klasik dan lengan panjang.',
+                'description' => 'Atasan berbahan 100% linen yang breathable, ideal untuk cuaca panas dan layering tipis. Potongan relaxed membuatnya nyaman dipakai seharian.',
+                'material' => '100% Linen',
+                'care_instruction' => 'Cuci mesin suhu dingin, hindari pemutih, setrika suhu rendah.',
+                'base_price' => 329000,
+                'sale_price' => 279000,
+                'weight' => 240,
+                'length' => 34,
+                'width' => 26,
+                'height' => 3,
+                'status' => 'published',
+                'is_featured' => true,
+                'is_new_arrival' => true,
+                'is_best_seller' => false,
+                'meta_title' => 'Aurelia Linen Relaxed Shirt | Fashion E-Commerce',
+                'meta_description' => 'Kemeja linen wanita dengan potongan relaxed, ringan, dan nyaman dipakai harian.',
+            ],
+            [
+                'category_slug' => 'womens-dresses',
+                'collection_slug' => 'eid-radiance',
+                'name' => 'Selene Pleated Midi Dress',
+                'slug' => 'selene-pleated-midi-dress',
+                'sku' => 'PRD-WDR-PLT-002',
+                'short_description' => 'Midi dress beraksen pleats dengan detail waist tie.',
+                'description' => 'Dress midi dengan tekstur pleats halus, siluet feminin, dan flow ringan yang cocok untuk brunch maupun acara semi-formal.',
+                'material' => 'Polyester Blend',
+                'care_instruction' => 'Cuci tangan lembut, keringkan gantung, hindari dryer.',
+                'base_price' => 549000,
+                'sale_price' => 499000,
+                'weight' => 380,
+                'length' => 38,
+                'width' => 28,
+                'height' => 5,
+                'status' => 'published',
+                'is_featured' => true,
+                'is_new_arrival' => true,
+                'is_best_seller' => true,
+                'meta_title' => 'Selene Pleated Midi Dress | Fashion E-Commerce',
+                'meta_description' => 'Dress midi pleated untuk tampilan elegan dan effortless.',
+            ],
+            [
+                'category_slug' => 'mens-shirts',
+                'collection_slug' => 'workwear-essentials',
+                'name' => 'Noah Oxford Smart Shirt',
+                'slug' => 'noah-oxford-smart-shirt',
+                'sku' => 'PRD-MSH-OXF-003',
+                'short_description' => 'Kemeja oxford pria dengan potongan regular fit.',
+                'description' => 'Kemeja oxford premium dengan struktur rapi untuk tampilan formal dan smart casual. Mudah dipadukan dengan chinos atau tailored pants.',
+                'material' => 'Cotton Oxford',
+                'care_instruction' => 'Cuci mesin normal, setrika medium, jangan bleach.',
+                'base_price' => 389000,
+                'sale_price' => null,
+                'weight' => 310,
+                'length' => 35,
+                'width' => 27,
+                'height' => 4,
+                'status' => 'published',
+                'is_featured' => false,
+                'is_new_arrival' => false,
+                'is_best_seller' => true,
+                'meta_title' => 'Noah Oxford Smart Shirt | Fashion E-Commerce',
+                'meta_description' => 'Kemeja oxford pria yang rapi, nyaman, dan cocok untuk aktivitas kerja.',
+            ],
+            [
+                'category_slug' => 'outerwear',
+                'collection_slug' => 'workwear-essentials',
+                'name' => 'Astra Cropped Blazer',
+                'slug' => 'astra-cropped-blazer',
+                'sku' => 'PRD-OUT-BLZ-004',
+                'short_description' => 'Blazer cropped modern untuk office look kontemporer.',
+                'description' => 'Blazer wanita dengan potongan cropped yang clean, cocok dipakai bersama high-waist pants atau skirt untuk tampilan polished.',
+                'material' => 'Poly Rayon',
+                'care_instruction' => 'Dry clean disarankan agar bentuk tetap presisi.',
+                'base_price' => 629000,
+                'sale_price' => 579000,
+                'weight' => 520,
+                'length' => 40,
+                'width' => 30,
+                'height' => 6,
+                'status' => 'published',
+                'is_featured' => true,
+                'is_new_arrival' => false,
+                'is_best_seller' => false,
+                'meta_title' => 'Astra Cropped Blazer | Fashion E-Commerce',
+                'meta_description' => 'Blazer cropped dengan tailoring rapi untuk tampilan formal modern.',
+            ],
+            [
+                'category_slug' => 'accessories',
+                'collection_slug' => 'eid-radiance',
+                'name' => 'Mira Satin Hijab',
+                'slug' => 'mira-satin-hijab',
+                'sku' => 'PRD-ACC-HJB-005',
+                'short_description' => 'Hijab satin dengan kilau halus dan drape elegan.',
+                'description' => 'Hijab satin premium yang ringan, tidak mudah kusut, dan cocok untuk daily styling maupun acara spesial.',
+                'material' => 'Premium Satin',
+                'care_instruction' => 'Cuci tangan dengan deterjen lembut, jemur tanpa sinar matahari langsung.',
+                'base_price' => 129000,
+                'sale_price' => 99000,
+                'weight' => 120,
+                'length' => 22,
+                'width' => 16,
+                'height' => 2,
+                'status' => 'published',
+                'is_featured' => false,
+                'is_new_arrival' => true,
+                'is_best_seller' => true,
+                'meta_title' => 'Mira Satin Hijab | Fashion E-Commerce',
+                'meta_description' => 'Hijab satin ringan dan elegan dengan pilihan warna versatile.',
+            ],
+            [
+                'category_slug' => 'outerwear',
+                'collection_slug' => 'weekend-casual',
+                'name' => 'Arden Knit Cardigan',
+                'slug' => 'arden-knit-cardigan',
+                'sku' => 'PRD-OUT-KNT-006',
+                'short_description' => 'Cardigan rajut soft touch dengan kancing depan.',
+                'description' => 'Cardigan knit dengan feel lembut dan siluet relaxed untuk layering di kantor ber-AC maupun aktivitas santai.',
+                'material' => 'Viscose Knit',
+                'care_instruction' => 'Cuci tangan, jangan diperas, keringkan di permukaan datar.',
+                'base_price' => 459000,
+                'sale_price' => null,
+                'weight' => 430,
+                'length' => 36,
+                'width' => 26,
+                'height' => 5,
+                'status' => 'published',
+                'is_featured' => false,
+                'is_new_arrival' => false,
+                'is_best_seller' => true,
+                'meta_title' => 'Arden Knit Cardigan | Fashion E-Commerce',
+                'meta_description' => 'Cardigan rajut wanita dengan kenyamanan ekstra untuk layer harian.',
+            ],
+            [
+                'category_slug' => 'footwear',
+                'collection_slug' => 'monochrome-studio',
+                'name' => 'Luca Slip-On Loafers',
+                'slug' => 'luca-slip-on-loafers',
+                'sku' => 'PRD-FWT-LOF-007',
+                'short_description' => 'Loafers slip-on minimalis dengan insole empuk.',
+                'description' => 'Sepatu loafers uniseks bergaya clean, ringan, dan nyaman untuk mobilitas tinggi sepanjang hari.',
+                'material' => 'Vegan Leather',
+                'care_instruction' => 'Bersihkan dengan kain lembut sedikit lembap, simpan dengan shoe tree.',
+                'base_price' => 699000,
+                'sale_price' => 629000,
+                'weight' => 760,
+                'length' => 34,
+                'width' => 24,
+                'height' => 12,
+                'status' => 'published',
+                'is_featured' => true,
+                'is_new_arrival' => false,
+                'is_best_seller' => false,
+                'meta_title' => 'Luca Slip-On Loafers | Fashion E-Commerce',
+                'meta_description' => 'Loafers minimalis dengan insole nyaman untuk tampilan smart casual.',
+            ],
+            [
+                'category_slug' => 'mens-shirts',
+                'collection_slug' => 'weekend-casual',
+                'name' => 'Elio Utility Overshirt',
+                'slug' => 'elio-utility-overshirt',
+                'sku' => 'PRD-MSH-UTL-008',
+                'short_description' => 'Overshirt utilitarian dengan dua kantong dada.',
+                'description' => 'Overshirt pria berbahan twill medium-weight untuk outer ringan saat weekend atau perjalanan.',
+                'material' => 'Cotton Twill',
+                'care_instruction' => 'Cuci mesin mode lembut, setrika medium.',
+                'base_price' => 479000,
+                'sale_price' => null,
+                'weight' => 470,
+                'length' => 37,
+                'width' => 28,
+                'height' => 6,
+                'status' => 'draft',
+                'is_featured' => false,
+                'is_new_arrival' => true,
+                'is_best_seller' => false,
+                'meta_title' => 'Elio Utility Overshirt | Fashion E-Commerce',
+                'meta_description' => 'Overshirt twill pria untuk gaya utilitarian yang clean dan modern.',
+            ],
+            [
+                'category_slug' => 'accessories',
+                'collection_slug' => 'monochrome-studio',
+                'name' => 'Vera Classic Tote Bag',
+                'slug' => 'vera-classic-tote-bag',
+                'sku' => 'PRD-ACC-TOT-009',
+                'short_description' => 'Tote bag medium dengan kompartemen interior.',
+                'description' => 'Tas tote klasik dengan desain fungsional dan strap nyaman untuk kebutuhan kerja serta daily commute.',
+                'material' => 'Textured PU',
+                'care_instruction' => 'Lap dengan kain microfiber, hindari paparan panas berlebih.',
+                'base_price' => 429000,
+                'sale_price' => 359000,
+                'weight' => 680,
+                'length' => 39,
+                'width' => 30,
+                'height' => 9,
+                'status' => 'archived',
+                'is_featured' => false,
+                'is_new_arrival' => false,
+                'is_best_seller' => false,
+                'meta_title' => 'Vera Classic Tote Bag | Fashion E-Commerce',
+                'meta_description' => 'Tote bag klasik untuk aktivitas harian dengan ruang penyimpanan lega.',
+            ],
+        ];
+
+        $categoryIds = Category::query()
+            ->pluck('id', 'slug');
+
+        $collectionIds = Collection::query()
+            ->pluck('id', 'slug');
+
+        foreach ($products as $product) {
+            $categoryId = $categoryIds->get($product['category_slug']);
+            $collectionId = $collectionIds->get($product['collection_slug']);
+
+            if (! $categoryId) {
+                throw new RuntimeException("Category slug [{$product['category_slug']}] tidak ditemukan.");
+            }
+
+            if (! $collectionId) {
+                throw new RuntimeException("Collection slug [{$product['collection_slug']}] tidak ditemukan.");
+            }
+
+            Product::query()->updateOrCreate(
+                ['slug' => $product['slug']],
+                [
+                    'category_id' => $categoryId,
+                    'collection_id' => $collectionId,
+                    'name' => $product['name'],
+                    'sku' => $product['sku'],
+                    'short_description' => $product['short_description'],
+                    'description' => $product['description'],
+                    'material' => $product['material'],
+                    'care_instruction' => $product['care_instruction'],
+                    'base_price' => $product['base_price'],
+                    'sale_price' => $product['sale_price'],
+                    'weight' => $product['weight'],
+                    'length' => $product['length'],
+                    'width' => $product['width'],
+                    'height' => $product['height'],
+                    'status' => $product['status'],
+                    'is_featured' => $product['is_featured'],
+                    'is_new_arrival' => $product['is_new_arrival'],
+                    'is_best_seller' => $product['is_best_seller'],
+                    'meta_title' => $product['meta_title'],
+                    'meta_description' => $product['meta_description'],
+                ],
+            );
+        }
+    }
+}

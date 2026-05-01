@@ -27,6 +27,7 @@ function displayValue(value: string | number | boolean | null) {
             </span>
         );
     }
+
     return value ?? '—';
 }
 

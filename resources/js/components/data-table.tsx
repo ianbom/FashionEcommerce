@@ -5,7 +5,6 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 
 type Order = {
     id: string
@@ -18,14 +17,6 @@ type Order = {
 
 type Props = {
     data: Order[]
-}
-
-const statusVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-    Delivered: "default",
-    Shipped: "secondary",
-    Processing: "outline",
-    Pending: "outline",
-    Canceled: "destructive",
 }
 
 const statusClass: Record<string, string> = {

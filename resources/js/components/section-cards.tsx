@@ -1,5 +1,4 @@
 import { TrendingUpIcon, ShoppingBagIcon, PackageCheckIcon, CircleDollarSignIcon, UsersIcon } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
 import {
     Card,
     CardDescription,
@@ -48,6 +47,7 @@ export function SectionCards() {
         <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:from-primary/10 grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs sm:grid-cols-2 lg:grid-cols-4 lg:px-6">
             {cards.map((card) => {
                 const Icon = card.icon
+
                 return (
                     <Card key={card.title} className="@container/card" data-slot="card">
                         <CardHeader className="relative">
