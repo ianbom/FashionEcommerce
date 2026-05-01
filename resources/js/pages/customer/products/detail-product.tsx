@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import {
     ChevronLeft,
     ChevronRight,
@@ -8,9 +8,11 @@ import {
     Plus,
     ShoppingBag,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import type { FormEvent } from 'react';
 import ShopLayout from '@/layouts/shop-layout';
-import { cart, checkout, detail, list } from '@/routes';
+import { addProductVariantToCart as addProductVariantToCartRoute } from '@/actions/App/Http/Controllers/Customer/CartController';
+import { checkout, detail, list } from '@/routes';
 
 type Variant = {
     id: number;
@@ -108,6 +110,20 @@ function DetailProductContent({
     relatedProducts,
     recentProducts,
 }: Props) {
+    const variants = useMemo(
+        () =>
+            [...product.variants].sort((left, right) => {
+                const leftAvailable = left.available_stock > 0 ? 1 : 0;
+                const rightAvailable = right.available_stock > 0 ? 1 : 0;
+
+                if (leftAvailable !== rightAvailable) {
+                    return rightAvailable - leftAvailable;
+                }
+
+                return left.id - right.id;
+            }),
+        [product.variants],
+    );
     const gallery = useMemo(() => {
         const images = product.images.length > 0 ? product.images : [];
 
@@ -125,7 +141,7 @@ function DetailProductContent({
 
     const colors = useMemo(
         () =>
-            product.variants
+            variants
                 .filter((variant) => variant.color_name || variant.color_hex)
                 .filter(
                     (variant, index, variants) =>
@@ -135,34 +151,47 @@ function DetailProductContent({
                                 candidate.color_hex === variant.color_hex,
                         ) === index,
                 ),
-        [product.variants],
+        [variants],
     );
-    const sizes = useMemo(
-        () => uniqueValues(product.variants.map((variant) => variant.size)),
-        [product.variants],
+    const initialVariant = useMemo(
+        () => variants.find((variant) => variant.available_stock > 0) ?? variants[0],
+        [variants],
     );
     const [mainImage, setMainImage] = useState(
         gallery[0]?.url ?? fallbackImages[0],
     );
-    const [selectedColor, setSelectedColor] = useState(
-        colors[0]?.color_name ?? '',
+    const [selectedVariantId, setSelectedVariantId] = useState(
+        initialVariant?.id ?? null,
     );
-    const [selectedSize, setSelectedSize] = useState(sizes[0] ?? '');
     const [quantity, setQuantity] = useState(1);
+    const cartForm = useForm<{
+        quantity: number;
+        product_variant_id?: number;
+    }>({
+        quantity: 1,
+    });
 
-    const selectedVariant = useMemo(() => {
-        return (
-            product.variants.find((variant) => {
-                const colorMatches =
-                    selectedColor === '' ||
-                    variant.color_name === selectedColor;
-                const sizeMatches =
-                    selectedSize === '' || variant.size === selectedSize;
-
-                return colorMatches && sizeMatches;
-            }) ?? product.variants[0]
-        );
-    }, [product.variants, selectedColor, selectedSize]);
+    const selectedVariant = useMemo(
+        () =>
+            variants.find((variant) => variant.id === selectedVariantId) ??
+            initialVariant,
+        [initialVariant, selectedVariantId, variants],
+    );
+    const selectedColor = selectedVariant?.color_name ?? '';
+    const selectedSize = selectedVariant?.size ?? '';
+    const sizes = useMemo(
+        () =>
+            uniqueValues(
+                variants
+                    .filter(
+                        (variant) =>
+                            selectedColor === '' ||
+                            variant.color_name === selectedColor,
+                    )
+                    .map((variant) => variant.size),
+            ),
+        [selectedColor, variants],
+    );
 
     const currentPrice =
         (product.sale_price ?? product.price) +
@@ -176,13 +205,6 @@ function DetailProductContent({
         product.available_stock > 0 &&
         (selectedVariant?.available_stock ?? product.available_stock) > 0;
     const productDescription = product.description || product.short_description;
-    const cartHref = cart.url({
-        query: {
-            product: product.slug,
-            variant: selectedVariant?.id,
-            quantity,
-        },
-    });
     const checkoutHref = checkout.url({
         query: {
             product: product.slug,
@@ -195,6 +217,43 @@ function DetailProductContent({
         setQuantity((current) => Math.max(1, current - 1));
     const increaseQuantity = () =>
         setQuantity((current) => Math.min(maxQuantity, current + 1));
+    const addProductVariantToCart = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        if (!selectedVariant || !isAvailable || cartForm.processing) {
+            return;
+        }
+
+        cartForm.submit(addProductVariantToCartRoute(selectedVariant.id), {
+            preserveScroll: true,
+        });
+    };
+
+    useEffect(() => {
+        setSelectedVariantId(initialVariant?.id ?? null);
+    }, [initialVariant?.id, product.id]);
+
+    useEffect(() => {
+        setQuantity((current) => Math.min(current, maxQuantity));
+    }, [maxQuantity]);
+
+    useEffect(() => {
+        cartForm.setData('quantity', quantity);
+    }, [quantity]);
+
+    useEffect(() => {
+        if (!selectedVariant) {
+            return;
+        }
+
+        const nextImage =
+            selectedVariant.image_url ??
+            gallery.find((image) => image.url === mainImage)?.url ??
+            gallery[0]?.url ??
+            fallbackImages[0];
+
+        setMainImage(nextImage);
+    }, [gallery, selectedVariant?.id]);
 
     return (
         <ShopLayout>
@@ -349,9 +408,25 @@ function DetailProductContent({
                                                 key={`${variant.color_name}-${variant.color_hex}`}
                                                 type="button"
                                                 onClick={() => {
-                                                    setSelectedColor(
-                                                        variant.color_name ??
-                                                            '',
+                                                    const nextVariant =
+                                                        variants.find(
+                                                            (candidate) =>
+                                                                candidate.color_name ===
+                                                                    (variant.color_name ??
+                                                                        '') &&
+                                                                candidate.size ===
+                                                                    selectedSize,
+                                                        ) ??
+                                                        variants.find(
+                                                            (candidate) =>
+                                                                candidate.color_name ===
+                                                                (variant.color_name ??
+                                                                    ''),
+                                                        ) ??
+                                                        initialVariant;
+
+                                                    setSelectedVariantId(
+                                                        nextVariant?.id ?? null,
                                                     );
                                                     setMainImage(variantImage);
                                                 }}
@@ -415,9 +490,26 @@ function DetailProductContent({
                                         <button
                                             key={size}
                                             type="button"
-                                            onClick={() =>
-                                                setSelectedSize(size)
-                                            }
+                                            onClick={() => {
+                                                const nextVariant =
+                                                    variants.find(
+                                                        (variant) =>
+                                                            variant.size ===
+                                                                size &&
+                                                            variant.color_name ===
+                                                                selectedColor,
+                                                    ) ??
+                                                    variants.find(
+                                                        (variant) =>
+                                                            variant.size ===
+                                                            size,
+                                                    ) ??
+                                                    initialVariant;
+
+                                                setSelectedVariantId(
+                                                    nextVariant?.id ?? null,
+                                                );
+                                            }}
                                             className={`rounded-md border px-7 py-2.5 text-[11px] font-semibold tracking-wide transition-all ${
                                                 selectedSize === size
                                                     ? 'border-primary text-primary shadow-sm hover:bg-secondary'
@@ -453,16 +545,36 @@ function DetailProductContent({
                             </div>
 
                             <div className="flex flex-col gap-3">
-                                <Link
-                                    href={cartHref}
-                                    className={`w-full rounded-full border border-input py-3.5 text-center text-[11px] font-bold tracking-widest text-secondary-foreground transition-all active:scale-[0.99] ${
-                                        isAvailable
-                                            ? 'hover:bg-secondary hover:shadow-md'
-                                            : 'pointer-events-none opacity-50'
-                                    }`}
-                                >
-                                    Add to Cart
-                                </Link>
+                                <form onSubmit={addProductVariantToCart}>
+                                    <button
+                                        type="submit"
+                                        disabled={
+                                            !isAvailable ||
+                                            !selectedVariant ||
+                                            cartForm.processing
+                                        }
+                                        className={`w-full rounded-full border border-input py-3.5 text-center text-[11px] font-bold tracking-widest text-secondary-foreground transition-all active:scale-[0.99] ${
+                                            isAvailable &&
+                                            selectedVariant &&
+                                            !cartForm.processing
+                                                ? 'hover:bg-secondary hover:shadow-md'
+                                                : 'cursor-not-allowed opacity-50'
+                                        }`}
+                                    >
+                                        {cartForm.processing
+                                            ? 'Adding...'
+                                            : 'Add to Cart'}
+                                    </button>
+                                    {(cartForm.errors.quantity ||
+                                        cartForm.errors
+                                            .product_variant_id) && (
+                                        <p className="mt-2 text-center text-[11px] font-medium text-destructive">
+                                            {cartForm.errors.quantity ||
+                                                cartForm.errors
+                                                    .product_variant_id}
+                                        </p>
+                                    )}
+                                </form>
                                 <Link
                                     href={checkoutHref}
                                     className={`w-full rounded-full bg-primary py-3.5 text-center text-[11px] font-bold tracking-widest text-primary-foreground transition-all active:scale-[0.99] ${

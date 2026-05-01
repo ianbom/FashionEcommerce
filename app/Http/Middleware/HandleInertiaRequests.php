@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -41,7 +42,34 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
+                'info' => fn () => $request->session()->get('info'),
+                'warning' => fn () => $request->session()->get('warning'),
+                'toast' => fn () => $this->toast($request),
+            ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
+    }
+
+    /**
+     * @return array{id: string, type: string, message: string}|null
+     */
+    private function toast(Request $request): ?array
+    {
+        foreach (['success', 'error', 'info', 'warning'] as $type) {
+            $message = $request->session()->get($type);
+
+            if ($message) {
+                return [
+                    'id' => (string) Str::uuid(),
+                    'type' => $type,
+                    'message' => $message,
+                ];
+            }
+        }
+
+        return null;
     }
 }

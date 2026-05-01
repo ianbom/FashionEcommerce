@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\ShipmentController;
 use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\Admin\WishlistInsightController;
+use App\Http\Controllers\Customer\CartController;
 use App\Http\Controllers\Customer\HomeController as CustomerHomeController;
 use App\Http\Controllers\Customer\ProductController as CustomerProductController;
 use Illuminate\Support\Facades\Route;
@@ -30,7 +31,7 @@ Route::get('/', [CustomerHomeController::class, 'index'])->name('home');
 
 Route::get('/detail', [CustomerProductController::class, 'show'])->name('detail');
 Route::get('/list', [CustomerProductController::class, 'index'])->name('list');
-Route::inertia('/my-cart', 'customer/cart/my-cart')->name('cart');
+
 Route::inertia('/checkout', 'customer/checkout/checkout')->name('checkout');
 Route::inertia('/my-order', 'customer/order/my-order')->name('my-order');
 Route::inertia('/my-order/detail', 'customer/order/detail-order')->name('order.detail');
@@ -45,6 +46,13 @@ Route::inertia('/shipping-policy', 'customer/policy/shipping-policy')->name('pol
 Route::inertia('/terms-conditions', 'customer/policy/term-condition')->name('policy.terms');
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/my-cart', [CartController::class, 'index'])->name('cart');
+    Route::post('/product-variants/{productVariant}/add-to-cart', [CartController::class, 'addProductVariantToCart'])->name('cart.add-product-variant');
+    Route::patch('/cart-items/{cartItem}', [CartController::class, 'updateCartItemQuantity'])->name('cart.items.update');
+    Route::delete('/cart-items/{cartItem}', [CartController::class, 'removeCartItem'])->name('cart.items.destroy');
 });
 
 Route::middleware('guest')->prefix('admin')->name('admin.')->group(function () {
