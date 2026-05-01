@@ -1,1 +1,0 @@
-import{rt as e}from"./app-i8LxHmp_.js";var t=e(`Minus`,[[`path`,{d:`M5 12h14`,key:`1ays0h`}]]);export{t};

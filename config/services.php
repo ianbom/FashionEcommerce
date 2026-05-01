@@ -35,4 +35,13 @@ return [
         ],
     ],
 
+    'biteship' => [
+        'api_key' => env('BITESHIP_API_KEY'),
+    ],
+
+    'midtrans' => [
+        'server_key' => env('MIDTRANS_SERVER_KEY'),
+        'client_key' => env('MIDTRANS_CLIENT_KEY'),
+    ],
+
 ];

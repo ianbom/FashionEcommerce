@@ -373,20 +373,8 @@ export default function MyCart({
                                         </div>
                                     </div>
 
-                                    <div className="mb-6 flex space-x-2">
-                                        <input
-                                            type="text"
-                                            placeholder="Enter promo code"
-                                            className="flex-1 rounded-md border border-[#EAE8E3] bg-[#FAF9F6] px-4 py-2.5 text-[12px] transition-all focus:border-[#C4BDB1] focus:ring-1 focus:ring-[#C4BDB1] focus:outline-none"
-                                            disabled
-                                        />
-                                        <button
-                                            type="button"
-                                            disabled
-                                            className="rounded-md bg-[#EAE4D9] px-5 py-2.5 text-[12px] font-semibold text-[#4A4A4A] opacity-60"
-                                        >
-                                            Apply
-                                        </button>
+                                    <div className="mb-6 rounded-lg border border-[#EAE8E3] bg-[#FAF9F6] px-4 py-3 text-[12px] text-[#8C8578]">
+                                        Voucher discount can be applied on checkout after selecting shipping.
                                     </div>
 
                                     <div className="space-y-4">

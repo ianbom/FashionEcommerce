@@ -15,6 +15,7 @@ import {
     ReceiptText,
     Settings,
     ShoppingBag,
+    ShieldCheck,
     Tags,
     Truck,
     UserCog,
@@ -169,6 +170,36 @@ const adminNavGroups: NavGroup[] = [
     {
         title: 'System',
         items: [
+            {
+                title: 'Sales Report',
+                href: '/admin/reports/sales',
+                icon: BarChart3,
+            },
+            {
+                title: 'Product Report',
+                href: '/admin/reports/products',
+                icon: ClipboardList,
+            },
+            {
+                title: 'Customer Report',
+                href: '/admin/reports/customers',
+                icon: Users,
+            },
+            {
+                title: 'Shipment Report',
+                href: '/admin/reports/shipments',
+                icon: Truck,
+            },
+            {
+                title: 'Voucher Report',
+                href: '/admin/reports/vouchers',
+                icon: CircleDollarSign,
+            },
+            {
+                title: 'Audit Logs',
+                href: '/admin/audit-logs',
+                icon: ShieldCheck,
+            },
             {
                 title: 'Settings',
                 href: '/admin/settings',

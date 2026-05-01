@@ -1,115 +1,176 @@
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import {
-    Search, ChevronDown, Package, Check, Truck, ChevronLeft, ChevronRight
+    Check,
+    ChevronDown,
+    ChevronLeft,
+    ChevronRight,
+    Package,
+    Search,
+    Truck,
 } from 'lucide-react';
-import React, { useState } from 'react';
+import type { FormEvent, ReactNode } from 'react';
+import { useMemo, useState } from 'react';
+import { index as orderIndex, show as orderShow } from '@/actions/App/Http/Controllers/Customer/OrderController';
 import ProfileLayout from '@/layouts/profile-layout';
 
-// --- Dummy Data ---
-const TABS = [
-    { id: 'all', label: 'All Orders' },
-    { id: 'pending-payment', label: 'Pending Payment' },
-    { id: 'processing', label: 'Processing' },
-    { id: 'shipped', label: 'Shipped' },
-    { id: 'delivered', label: 'Delivered' },
-    { id: 'cancelled', label: 'Cancelled' }
-];
+type PaginationLink = {
+    url: string | null;
+    label: string;
+    active: boolean;
+};
 
-const ORDERS = [
-    {
-        id: 'AS24051578',
-        date: '15 May 2024',
-        time: '10:32 AM',
-        paymentStatus: 'Pending Payment',
-        orderStatus: 'Pending Payment',
-        total: 1128000,
-        items: [
-            { id: 1, title: 'Najran Piping Lace Abaya', color: 'Off White', size: 'M', qty: 1, image: '/img/abdul-raheem-kannath-aNWfK46QWto-unsplash.webp' },
-            { id: 2, title: 'Sila Scarf', color: 'Sand Beige', size: 'Standard', qty: 1, image: '/img/ainur-iman-qcNmigFPTQM-unsplash.webp' },
-        ],
-        extraItems: 1
-    },
-    {
-        id: 'AS24051322',
-        date: '13 May 2024',
-        time: '02:15 PM',
-        paymentStatus: 'Paid',
-        orderStatus: 'Processing',
-        total: 799000,
-        items: [
-            { id: 1, title: 'Kufah Khimar', color: 'Taupe', size: 'M', qty: 1, image: '/img/atiyeh-fathi-CvdzGjVX9DA-unsplash.webpp' },
-            { id: 2, title: 'Sila Scarf', color: 'Sand Beige', size: 'Standard', qty: 1, image: '/img/hasan-almasi-_X2UAmIcpko-unsplash.webp' },
-        ],
-        extraItems: 0
-    },
-    {
-        id: 'AS24051011',
-        date: '10 May 2024',
-        time: '09:48 AM',
-        paymentStatus: 'Paid',
-        orderStatus: 'Shipped',
-        total: 1287000,
-        items: [
-            { id: 1, title: 'Najran Piping Lace Abaya', color: 'Off White', size: 'M', qty: 1, image: '/img/ike-ellyana-2F70bGqQVa4-unsplash.webp' },
-            { id: 2, title: 'Kufah Khimar', color: 'Taupe', size: 'M', qty: 1, image: '/img/khaled-ghareeb-n84s3jgzhKk-unsplash.webp' },
-        ],
-        extraItems: 2,
-        timeline: { step: 3, dates: ['10 May', '11 May', '12 May', 'Est. 16 May'] }
-    },
-    {
-        id: 'AS24050544',
-        date: '5 May 2024',
-        time: '11:20 AM',
-        paymentStatus: 'Paid',
-        orderStatus: 'Delivered',
-        total: 598000,
-        items: [
-            { id: 1, title: 'Zahra Dress', color: 'Mauve', size: 'M', qty: 1, image: '/img/m-ghufanil-muta-ali-vAyDuvcjXcs-unsplash.webp' },
-        ],
-        extraItems: 0
-    },
-    {
-        id: 'AS24050190',
-        date: '1 May 2024',
-        time: '04:05 PM',
-        paymentStatus: 'Refunded',
-        orderStatus: 'Cancelled',
-        total: 299000,
-        items: [
-            { id: 1, title: 'Sila Scarf', color: 'Muted Blush', size: 'Standard', qty: 1, image: '/img/abdul-raheem-kannath-aNWfK46QWto-unsplash.webp' },
-        ],
-        extraItems: 0
-    }
-];
+type Paginated<T> = {
+    data: T[];
+    links: PaginationLink[];
+    from: number | null;
+    to: number | null;
+    total: number;
+};
 
-// --- Helpers ---
+type OrderItem = {
+    id: number;
+    title: string;
+    color: string | null;
+    size: string | null;
+    qty: number;
+    image: string | null;
+};
+
+type Order = {
+    id: number;
+    order_number: string;
+    created_date: string | null;
+    created_time: string | null;
+    payment_status: string;
+    order_status: string;
+    shipping_status: string;
+    grand_total: number;
+    items: OrderItem[];
+    items_count: number;
+    extra_items: number;
+    shipment: {
+        waybill_id: string | null;
+        courier: string | null;
+        service: string | null;
+    };
+    payment: {
+        midtrans_redirect_url: string | null;
+    };
+};
+
+type Filters = {
+    search: string;
+    order_status: string;
+    payment_status: string;
+    sort: string;
+    direction: string;
+    per_page: number;
+};
+
+type Props = {
+    orders: Paginated<Order>;
+    filters: Filters;
+    options: {
+        orderStatuses: string[];
+        paymentStatuses: string[];
+        sorts: string[];
+        directions: string[];
+        perPages: number[];
+    };
+};
+
+const FALLBACK_IMAGE = '/img/hasan-almasi-_X2UAmIcpko-unsplash.webp';
+
 const formatPrice = (price: number) => {
     return new Intl.NumberFormat('id-ID', {
-        style: 'currency', currency: 'IDR', minimumFractionDigits: 0
-    }).format(price).replace('Rp', 'Rp ');
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0,
+    })
+        .format(price)
+        .replace('Rp', 'Rp ');
+};
+
+const labelStatus = (status: string) => {
+    return status
+        .split('_')
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
 };
 
 const getBadgeStyle = (status: string) => {
-    switch (status.toLowerCase()) {
-        case 'pending payment': return 'bg-orange-100 text-orange-700';
-        case 'paid': return 'bg-green-100 text-green-700';
-        case 'processing': return 'bg-blue-100 text-blue-700';
-        case 'shipped': return 'bg-purple-100 text-purple-700';
-        case 'delivered': return 'bg-emerald-100 text-emerald-700';
-        case 'cancelled': return 'bg-red-100 text-red-700';
-        case 'refunded': return 'bg-gray-200 text-gray-700';
-        default: return 'bg-gray-100 text-gray-700';
+    switch (status) {
+        case 'pending':
+        case 'pending_payment':
+            return 'bg-orange-100 text-orange-700';
+        case 'paid':
+        case 'completed':
+            return 'bg-green-100 text-green-700';
+        case 'processing':
+        case 'ready_to_ship':
+            return 'bg-blue-100 text-blue-700';
+        case 'shipped':
+            return 'bg-purple-100 text-purple-700';
+        case 'delivered':
+            return 'bg-emerald-100 text-emerald-700';
+        case 'cancelled':
+        case 'expired':
+        case 'failed':
+            return 'bg-red-100 text-red-700';
+        default:
+            return 'bg-gray-100 text-gray-700';
     }
 };
 
-export default function ListOrder() {
-    const [activeTab, setActiveTab] = useState('all');
-    // Set to true to see the empty state
-    const [isEmpty] = useState(false);
+const cleanQuery = (filters: Filters) => {
+    return Object.fromEntries(
+        Object.entries(filters).filter(([, value]) => value !== '' && value !== null),
+    );
+};
 
-    const filteredOrders = activeTab === 'all'
-        ? ORDERS
-        : ORDERS.filter(o => o.orderStatus.toLowerCase() === activeTab.replace('-', ' '));
+const cleanPageLabel = (label: string) => {
+    return label.replace('&laquo;', '').replace('&raquo;', '').trim();
+};
+
+export default function ListOrder({ orders, filters, options }: Props) {
+    const [form, setForm] = useState<Filters>({
+        search: filters.search ?? '',
+        order_status: filters.order_status ?? '',
+        payment_status: filters.payment_status ?? '',
+        sort: filters.sort ?? 'created_at',
+        direction: filters.direction ?? 'desc',
+        per_page: Number(filters.per_page ?? 10),
+    });
+
+    const tabs = useMemo(
+        () => [
+            { id: '', label: 'All Orders' },
+            ...options.orderStatuses.map((status) => ({
+                id: status,
+                label: labelStatus(status),
+            })),
+        ],
+        [options.orderStatuses],
+    );
+
+    const visit = (next: Filters) => {
+        router.get(orderIndex.url(), cleanQuery(next), {
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    const submit = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        visit(form);
+    };
+
+    const updateFilter = (next: Partial<Filters>) => {
+        const nextForm = { ...form, ...next };
+        setForm(nextForm);
+        visit(nextForm);
+    };
 
     return (
         <ProfileLayout
@@ -120,42 +181,49 @@ export default function ListOrder() {
             breadcrumbs={[
                 { label: 'Home', href: '/' },
                 { label: 'My Account', href: '/my-profile' },
-                { label: 'My Orders' }
+                { label: 'My Orders' },
             ]}
         >
-
-            {/* Search & Sort Bar */}
-            <div className="flex flex-col md:flex-row gap-4 mb-6">
-                <div className="relative flex-1">
+            <form onSubmit={submit} className="mb-6 grid gap-3 lg:grid-cols-[1fr_190px_170px_150px_110px_auto]">
+                <div className="relative">
                     <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#A89F91]" />
                     <input
-                        type="text"
+                        type="search"
+                        value={form.search}
+                        onChange={(event) => setForm((current) => ({ ...current, search: event.target.value }))}
                         placeholder="Search by order number or product name"
-                        className="w-full pl-11 pr-4 py-3 bg-white border border-[#EAE8E3] rounded-xl text-[13px] text-[#333] focus:outline-none focus:border-[#C2AA92] focus:ring-1 focus:ring-[#C2AA92] transition-all shadow-sm"
+                        className="w-full rounded-xl border border-[#EAE8E3] bg-white py-3 pr-4 pl-11 text-[13px] text-[#333] shadow-sm transition-all focus:border-[#C2AA92] focus:ring-1 focus:ring-[#C2AA92] focus:outline-none"
                     />
                 </div>
-                <div className="hidden md:flex relative w-[200px]">
-                    <select className="w-full px-4 py-3 bg-white border border-[#EAE8E3] rounded-xl text-[13px] text-[#333] appearance-none focus:outline-none focus:border-[#C2AA92] shadow-sm">
-                        <option>Newest First</option>
-                        <option>Oldest First</option>
-                    </select>
-                    <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#A89F91] pointer-events-none" />
-                </div>
-            </div>
+                <Select value={form.payment_status} onChange={(value) => updateFilter({ payment_status: value })}>
+                    <option value="">All payments</option>
+                    {options.paymentStatuses.map((status) => <option key={status} value={status}>{labelStatus(status)}</option>)}
+                </Select>
+                <Select value={form.sort} onChange={(value) => updateFilter({ sort: value })}>
+                    {options.sorts.map((sort) => <option key={sort} value={sort}>Sort: {labelStatus(sort)}</option>)}
+                </Select>
+                <Select value={form.direction} onChange={(value) => updateFilter({ direction: value })}>
+                    {options.directions.map((direction) => <option key={direction} value={direction}>{direction === 'desc' ? 'Newest / High' : 'Oldest / Low'}</option>)}
+                </Select>
+                <Select value={String(form.per_page)} onChange={(value) => updateFilter({ per_page: Number(value) })}>
+                    {options.perPages.map((perPage) => <option key={perPage} value={perPage}>{perPage}/page</option>)}
+                </Select>
+                <button type="submit" className="rounded-xl bg-[#3C3428] px-5 py-3 text-[12px] font-bold text-white shadow-sm transition-colors hover:bg-[#2D261C]">
+                    Search
+                </button>
+            </form>
 
-            {/* Tabs */}
-            <div className="flex overflow-x-auto hide-scrollbar border-b border-[#EAE8E3] mb-6">
+            <div className="hide-scrollbar mb-6 flex overflow-x-auto border-b border-[#EAE8E3]">
                 <div className="flex space-x-6 px-1">
-                    {TABS.map(tab => (
+                    {tabs.map((tab) => (
                         <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`pb-3 text-[13px] font-medium whitespace-nowrap transition-all relative ${activeTab === tab.id ? 'text-[#3C3428]' : 'text-[#8C8578] hover:text-[#4A4A4A]'}`}
+                            key={tab.id || 'all'}
+                            type="button"
+                            onClick={() => updateFilter({ order_status: tab.id })}
+                            className={`relative pb-3 text-[13px] font-medium whitespace-nowrap transition-all ${form.order_status === tab.id ? 'text-[#3C3428]' : 'text-[#8C8578] hover:text-[#4A4A4A]'}`}
                         >
-                            {activeTab === tab.id && (
-                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C2AA92] rounded-t-full"></div>
-                            )}
-                            <span className={activeTab === tab.id ? 'bg-[#C2AA92] text-white px-3 py-1.5 rounded-full text-xs shadow-sm' : 'px-1'}>
+                            {form.order_status === tab.id && <div className="absolute right-0 bottom-0 left-0 h-0.5 rounded-t-full bg-[#C2AA92]" />}
+                            <span className={form.order_status === tab.id ? 'rounded-full bg-[#C2AA92] px-3 py-1.5 text-xs text-white shadow-sm' : 'px-1'}>
                                 {tab.label}
                             </span>
                         </button>
@@ -163,145 +231,109 @@ export default function ListOrder() {
                 </div>
             </div>
 
-            {/* --- Empty State --- */}
-            {isEmpty || filteredOrders.length === 0 ? (
-                <div className="bg-white border border-[#EAE8E3] rounded-2xl flex flex-col items-center justify-center py-20 px-6 text-center animate-fade-in-up">
-                    <div className="w-48 h-48 mb-6 relative">
-                        <div className="absolute inset-0 bg-[#F5F2E6] rounded-full blur-2xl opacity-50"></div>
-                        <img src="/img/hasan-almasi-_X2UAmIcpko-unsplash.webp" alt="Emwebp Box" className="w-full h-full object-cover rounded-xl shadow-lg relative z-10" />
+            {orders.data.length === 0 ? (
+                <div className="flex flex-col items-center justify-center rounded-2xl border border-[#EAE8E3] bg-white px-6 py-20 text-center">
+                    <div className="relative mb-6 h-48 w-48">
+                        <div className="absolute inset-0 rounded-full bg-[#F5F2E6] opacity-50 blur-2xl" />
+                        <img src={FALLBACK_IMAGE} alt="Empty orders" className="relative z-10 h-full w-full rounded-xl object-cover shadow-lg" />
                     </div>
-                    <h2 className="text-2xl font-serif text-[#3C3428] mb-2">No orders yet</h2>
-                    <p className="text-[13px] text-[#8C8578] mb-8 max-w-[280px]">You haven't placed any orders yet. Start exploring our collection.</p>
-                    <div className="flex flex-col sm:flex-row gap-3">
-                        <Link href="/list" className="px-8 py-3 bg-[#3C3428] text-white text-[12px] font-bold tracking-wider rounded-lg hover:bg-[#2D261C] hover:shadow-lg transition-all active:scale-[0.98]">
-                            Shop Now
-                        </Link>
-                        <Link href="/list" className="px-8 py-3 bg-white border border-[#EAE8E3] text-[#3C3428] text-[12px] font-bold tracking-wider rounded-lg hover:border-[#C4BDB1] hover:bg-[#FAF9F6] transition-all">
-                            Browse New Arrivals
-                        </Link>
-                    </div>
+                    <h2 className="mb-2 font-serif text-2xl text-[#3C3428]">No orders found</h2>
+                    <p className="mb-8 max-w-[280px] text-[13px] text-[#8C8578]">Try a different filter or start exploring our collection.</p>
+                    <Link href="/list" className="rounded-lg bg-[#3C3428] px-8 py-3 text-[12px] font-bold tracking-wider text-white transition-all hover:bg-[#2D261C]">
+                        Shop Now
+                    </Link>
                 </div>
             ) : (
-                /* --- Order List --- */
                 <div className="space-y-6">
-                    {filteredOrders.map((order, idx) => (
+                    {orders.data.map((order, idx) => (
                         <div
                             key={order.id}
-                            className="bg-white border border-[#EAE8E3] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 animate-fade-in-up"
+                            className="overflow-hidden rounded-2xl border border-[#EAE8E3] bg-white shadow-sm transition-shadow duration-300 hover:shadow-md"
                             style={{ animationDelay: `${idx * 50}ms` }}
                         >
-                            {/* Order Card Header */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-5 md:p-6 border-b border-[#EAE8E3]/60 bg-[#FAF9F6]/50">
+                            <div className="grid grid-cols-2 gap-4 border-b border-[#EAE8E3]/60 bg-[#FAF9F6]/50 p-5 md:grid-cols-4 md:p-6">
                                 <div className="col-span-2 md:col-span-1">
-                                    <p className="text-[13px] font-serif text-[#333333] mb-1">Order #{order.id}</p>
-                                    <p className="text-[11px] text-[#8C8578]">{order.date} • {order.time}</p>
+                                    <p className="mb-1 font-serif text-[13px] text-[#333333]">Order #{order.order_number}</p>
+                                    <p className="text-[11px] text-[#8C8578]">{order.created_date ?? '-'} • {order.created_time ?? '-'}</p>
                                 </div>
                                 <div className="hidden md:block">
-                                    <p className="text-[10px] text-[#8C8578] mb-1">Payment</p>
-                                    <span className={`inline-block px-2.5 py-1 text-[10px] font-bold rounded-md ${getBadgeStyle(order.paymentStatus)}`}>
-                                        {order.paymentStatus}
+                                    <p className="mb-1 text-[10px] text-[#8C8578]">Payment</p>
+                                    <span className={`inline-block rounded-md px-2.5 py-1 text-[10px] font-bold ${getBadgeStyle(order.payment_status)}`}>
+                                        {labelStatus(order.payment_status)}
                                     </span>
                                 </div>
                                 <div className="hidden md:block">
-                                    <p className="text-[10px] text-[#8C8578] mb-1">Total</p>
-                                    <p className="text-[14px] font-serif text-[#333333]">{formatPrice(order.total)}</p>
+                                    <p className="mb-1 text-[10px] text-[#8C8578]">Total</p>
+                                    <p className="font-serif text-[14px] text-[#333333]">{formatPrice(order.grand_total)}</p>
                                 </div>
-                                <div className="col-span-2 md:col-span-1 text-left md:text-right flex flex-col justify-center items-start md:items-end">
-                                    <p className="text-[10px] text-[#8C8578] mb-1 hidden md:block">Order Status</p>
-                                    <span className={`inline-block px-3 py-1.5 text-[11px] font-bold rounded-md ${getBadgeStyle(order.orderStatus)}`}>
-                                        {order.orderStatus}
+                                <div className="col-span-2 flex flex-col items-start justify-center text-left md:col-span-1 md:items-end md:text-right">
+                                    <p className="mb-1 hidden text-[10px] text-[#8C8578] md:block">Order Status</p>
+                                    <span className={`inline-block rounded-md px-3 py-1.5 text-[11px] font-bold ${getBadgeStyle(order.order_status)}`}>
+                                        {labelStatus(order.order_status)}
                                     </span>
                                 </div>
                             </div>
 
-                            {/* Order Card Body */}
-                            <div className="p-5 md:p-6 flex flex-col lg:flex-row gap-6 justify-between items-start lg:items-center">
-
-                                {/* Items Preview (Desktop: detailed, Mobile: thumbnails only) */}
-                                <div className="flex-1 flex gap-4 w-full overflow-x-auto hide-scrollbar pb-2 lg:pb-0">
-                                    {order.items.map(item => (
-                                        <div key={item.id} className="flex gap-4 min-w-[200px] md:min-w-0">
-                                            <div className="w-[80px] h-[100px] rounded-lg overflow-hidden bg-[#F5F2E6] flex-shrink-0">
-                                                <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                            <div className="flex flex-col items-start justify-between gap-6 p-5 md:p-6 lg:flex-row lg:items-center">
+                                <div className="hide-scrollbar flex w-full flex-1 gap-4 overflow-x-auto pb-2 lg:pb-0">
+                                    {order.items.map((item) => (
+                                        <div key={item.id} className="flex min-w-[200px] gap-4 md:min-w-0">
+                                            <div className="h-[100px] w-[80px] shrink-0 overflow-hidden rounded-lg bg-[#F5F2E6]">
+                                                <img src={item.image ?? FALLBACK_IMAGE} alt={item.title} className="h-full w-full object-cover" />
                                             </div>
-                                            <div className="py-1 hidden md:block pr-4">
-                                                <h4 className="text-[13px] font-semibold text-[#333333] mb-1 truncate max-w-[150px]">{item.title}</h4>
-                                                <p className="text-[11px] text-[#8C8578] mb-1">{item.color} • {item.size}</p>
+                                            <div className="hidden py-1 pr-4 md:block">
+                                                <h4 className="mb-1 max-w-[150px] truncate text-[13px] font-semibold text-[#333333]">{item.title}</h4>
+                                                <p className="mb-1 text-[11px] text-[#8C8578]">{item.color ?? '-'} • {item.size ?? '-'}</p>
                                                 <p className="text-[11px] text-[#8C8578]">Qty: {item.qty}</p>
                                             </div>
                                         </div>
                                     ))}
-                                    {order.extraItems > 0 && (
-                                        <div className="w-[80px] h-[100px] rounded-lg bg-[#FAF9F6] border border-[#EAE8E3] flex flex-col items-center justify-center text-[#8C8578] flex-shrink-0">
-                                            <span className="text-lg font-serif italic text-[#3C3428]">+{order.extraItems}</span>
-                                            <span className="text-[10px]">more item{order.extraItems > 1 && 's'}</span>
+                                    {order.extra_items > 0 && (
+                                        <div className="flex h-[100px] w-[80px] shrink-0 flex-col items-center justify-center rounded-lg border border-[#EAE8E3] bg-[#FAF9F6] text-[#8C8578]">
+                                            <span className="font-serif text-lg text-[#3C3428] italic">+{order.extra_items}</span>
+                                            <span className="text-[10px]">more</span>
                                         </div>
                                     )}
                                 </div>
 
-                                {/* Action Buttons */}
-                                <div className="w-full lg:w-[200px] flex flex-row lg:flex-col gap-3 flex-shrink-0 mt-4 lg:mt-0">
-                                    {order.orderStatus === 'Pending Payment' && (
-                                        <Link href="/checkout" className="flex-1 lg:w-full py-2.5 bg-[#3C3428] text-center text-white text-[12px] font-bold rounded-lg hover:bg-[#2D261C] transition-colors shadow-md shadow-[#3C3428]/20">
+                                <div className="mt-4 flex w-full shrink-0 flex-row gap-3 lg:mt-0 lg:w-[200px] lg:flex-col">
+                                    {order.order_status === 'pending_payment' && (
+                                        <a href={order.payment.midtrans_redirect_url ?? '/checkout'} target={order.payment.midtrans_redirect_url ? '_blank' : undefined} rel={order.payment.midtrans_redirect_url ? 'noreferrer' : undefined} className="flex-1 rounded-lg bg-[#3C3428] py-2.5 text-center text-[12px] font-bold text-white shadow-md shadow-[#3C3428]/20 transition-colors hover:bg-[#2D261C] lg:w-full">
                                             Pay Now
-                                        </Link>
+                                        </a>
                                     )}
-                                    {order.orderStatus === 'Shipped' && (
-                                        <Link href="/my-order/detail" className="flex-1 lg:w-full py-2.5 bg-[#3C3428] text-center text-white text-[12px] font-bold rounded-lg hover:bg-[#2D261C] transition-colors shadow-md shadow-[#3C3428]/20">
+                                    {order.order_status === 'shipped' && (
+                                        <Link href={orderShow.url(order.id)} className="flex-1 rounded-lg bg-[#3C3428] py-2.5 text-center text-[12px] font-bold text-white shadow-md shadow-[#3C3428]/20 transition-colors hover:bg-[#2D261C] lg:w-full">
                                             Track Order
                                         </Link>
                                     )}
-                                    {order.orderStatus === 'Delivered' && (
-                                        <Link href="/detail" className="flex-1 lg:w-full py-2.5 bg-[#3C3428] text-center text-white text-[12px] font-bold rounded-lg hover:bg-[#2D261C] transition-colors shadow-md shadow-[#3C3428]/20">
-                                            Review Product
-                                        </Link>
-                                    )}
-
-                                    {order.orderStatus === 'Processing' && (
-                                        <button className="flex-1 lg:w-full py-2.5 bg-white border border-[#EAE8E3] text-[#EF4444] text-[12px] font-bold rounded-lg hover:bg-red-50 hover:border-red-200 transition-colors">
-                                            Cancel Order
-                                        </button>
-                                    )}
-
-                                    <Link href={order.orderStatus === 'Delivered' ? '/list' : '/my-order/detail'} className="flex-1 lg:w-full py-2.5 bg-white border border-[#EAE8E3] text-center text-[#3C3428] text-[12px] font-bold rounded-lg hover:bg-[#FAF9F6] hover:border-[#C4BDB1] transition-colors">
-                                        {order.orderStatus === 'Delivered' ? 'Buy Again' : 'View Details'}
+                                    <Link href={order.order_status === 'delivered' || order.order_status === 'completed' ? '/list' : orderShow.url(order.id)} className="flex-1 rounded-lg border border-[#EAE8E3] bg-white py-2.5 text-center text-[12px] font-bold text-[#3C3428] transition-colors hover:border-[#C4BDB1] hover:bg-[#FAF9F6] lg:w-full">
+                                        {order.order_status === 'delivered' || order.order_status === 'completed' ? 'Buy Again' : 'View Details'}
                                     </Link>
                                 </div>
                             </div>
 
-                            {/* Optional Timeline (Only for active shipping) */}
-                            {order.timeline && (
-                                <div className="px-5 md:px-8 py-4 bg-[#FAF9F6] border-t border-[#EAE8E3]/60 hidden md:block">
-                                    <div className="flex items-center justify-between relative z-10 max-w-[600px] mx-auto">
-                                        {/* Background line */}
-                                        <div className="absolute left-[5%] right-[5%] top-4 h-[2px] bg-[#EAE8E3] -z-10"></div>
-
-                                        {/* Active line */}
-                                        <div
-                                            className="absolute left-[5%] top-4 h-[2px] bg-[#C2AA92] -z-10 transition-all duration-1000"
-                                            style={{ width: `${((order.timeline.step - 1) / 3) * 90}%` }}
-                                        ></div>
-
+                            {order.order_status === 'shipped' && (
+                                <div className="hidden border-t border-[#EAE8E3]/60 bg-[#FAF9F6] px-5 py-4 md:block md:px-8">
+                                    <div className="relative z-10 mx-auto flex max-w-[600px] items-center justify-between">
+                                        <div className="absolute top-4 right-[5%] left-[5%] -z-10 h-[2px] bg-[#EAE8E3]" />
+                                        <div className="absolute top-4 left-[5%] -z-10 h-[2px] w-[60%] bg-[#C2AA92]" />
                                         {[
-                                            { label: 'Order Confirmed', icon: Check, active: order.timeline.step >= 1 },
-                                            { label: 'Packed', icon: Package, active: order.timeline.step >= 2 },
-                                            { label: 'Shipped', icon: Truck, active: order.timeline.step >= 3 },
-                                            { label: 'Delivered', icon: Check, active: order.timeline.step >= 4 },
-                                        ].map((step, i) => {
+                                            { label: 'Order Confirmed', icon: Check, active: true },
+                                            { label: 'Packed', icon: Package, active: true },
+                                            { label: 'Shipped', icon: Truck, active: true },
+                                            { label: 'Delivered', icon: Check, active: false },
+                                        ].map((step) => {
                                             const Icon = step.icon;
 
                                             return (
-                                                <div key={i} className="flex flex-col items-center">
-                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 mb-2 transition-colors ${step.active
-                                                        ? 'bg-[#C2AA92] border-[#C2AA92] text-white shadow-md'
-                                                        : 'bg-white border-[#EAE8E3] text-[#A89F91]'
-                                                        }`}>
+                                                <div key={step.label} className="flex flex-col items-center">
+                                                    <div className={`mb-2 flex h-8 w-8 items-center justify-center rounded-full border-2 transition-colors ${step.active ? 'border-[#C2AA92] bg-[#C2AA92] text-white shadow-md' : 'border-[#EAE8E3] bg-white text-[#A89F91]'}`}>
                                                         <Icon size={14} strokeWidth={3} />
                                                     </div>
-                                                    <p className={`text-[10px] font-bold mb-0.5 ${step.active ? 'text-[#3C3428]' : 'text-[#A89F91]'}`}>{step.label}</p>
-                                                    <p className="text-[9px] text-[#8C8578]">{order.timeline.dates[i]}</p>
+                                                    <p className={`mb-0.5 text-[10px] font-bold ${step.active ? 'text-[#3C3428]' : 'text-[#A89F91]'}`}>{step.label}</p>
                                                 </div>
-                                            )
+                                            );
                                         })}
                                     </div>
                                 </div>
@@ -309,29 +341,55 @@ export default function ListOrder() {
                         </div>
                     ))}
 
-                    {/* Pagination */}
-                    <div className="flex items-center justify-center pt-8 pb-4">
-                        <div className="flex space-x-1">
-                            <button className="w-8 h-8 flex items-center justify-center rounded-md text-[#A89F91] hover:bg-white hover:text-[#3C3428] transition-colors">
-                                <ChevronLeft size={16} />
-                            </button>
-                            <button className="w-8 h-8 flex items-center justify-center rounded-md bg-[#3C3428] text-white font-semibold text-xs shadow-md">1</button>
-                            <button className="w-8 h-8 flex items-center justify-center rounded-md text-[#8C8578] hover:bg-white hover:text-[#3C3428] font-medium text-xs transition-colors">2</button>
-                            <button className="w-8 h-8 flex items-center justify-center rounded-md text-[#8C8578] hover:bg-white hover:text-[#3C3428] font-medium text-xs transition-colors">3</button>
-                            <span className="w-8 h-8 flex items-center justify-center text-[#A89F91] text-xs">...</span>
-                            <button className="w-8 h-8 flex items-center justify-center rounded-md text-[#8C8578] hover:bg-white hover:text-[#3C3428] font-medium text-xs transition-colors">8</button>
-                            <button className="w-8 h-8 flex items-center justify-center rounded-md text-[#8C8578] hover:bg-white hover:text-[#3C3428] transition-colors">
-                                <ChevronRight size={16} />
-                            </button>
+                    <div className="flex flex-col items-center justify-between gap-4 pt-8 pb-4 text-[12px] text-[#8C8578] md:flex-row">
+                        <span>Showing {orders.from ?? 0}-{orders.to ?? 0} of {orders.total} orders</span>
+                        <div className="flex flex-wrap justify-center gap-1">
+                            {orders.links.map((link) => (
+                                <PaginationButton key={`${link.label}-${link.url ?? 'disabled'}`} link={link} />
+                            ))}
                         </div>
-                    </div>
-                    <div className="flex justify-center pb-8">
-                        <button className="px-6 py-2.5 bg-[#EAE4D9]/50 border border-[#C4BDB1]/50 text-[#4A4A4A] text-[11px] font-bold rounded-lg hover:bg-[#EAE4D9] transition-colors flex items-center">
-                            Load More Orders <ChevronDown size={14} className="ml-1" />
-                        </button>
                     </div>
                 </div>
             )}
         </ProfileLayout>
+    );
+}
+
+function Select({
+    value,
+    onChange,
+    children,
+}: {
+    value: string;
+    onChange: (value: string) => void;
+    children: ReactNode;
+}) {
+    return (
+        <div className="relative">
+            <select
+                value={value}
+                onChange={(event) => onChange(event.target.value)}
+                className="w-full appearance-none rounded-xl border border-[#EAE8E3] bg-white px-4 py-3 pr-9 text-[13px] text-[#333] shadow-sm focus:border-[#C2AA92] focus:outline-none"
+            >
+                {children}
+            </select>
+            <ChevronDown size={16} className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-[#A89F91]" />
+        </div>
+    );
+}
+
+function PaginationButton({ link }: { link: PaginationLink }) {
+    const label = cleanPageLabel(link.label);
+    const content = label === 'Previous' ? <ChevronLeft size={16} /> : label === 'Next' ? <ChevronRight size={16} /> : label;
+    const className = `flex h-8 min-w-8 items-center justify-center rounded-md px-2 font-medium transition-colors ${link.active ? 'bg-[#3C3428] text-white shadow-md' : 'text-[#8C8578] hover:bg-white hover:text-[#3C3428]'}`;
+
+    if (!link.url) {
+        return <span className={`${className} opacity-40`}>{content}</span>;
+    }
+
+    return (
+        <Link href={link.url} preserveScroll preserveState className={className}>
+            {content}
+        </Link>
     );
 }

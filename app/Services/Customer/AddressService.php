@@ -12,6 +12,7 @@ class AddressService
     public function pageData(User $user): array
     {
         return [
+            'redirectTo' => request()->string('redirect_to')->toString(),
             'addresses' => CustomerAddress::query()
                 ->where('user_id', $user->id)
                 ->orderByDesc('is_default')

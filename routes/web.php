@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminNotificationController;
-use App\Http\Controllers\Admin\AdminPageController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\Auth\LoginController as AdminLoginController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\BiteshipWebhookLogController;
@@ -17,14 +17,19 @@ use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\PaymentLogController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductVariantController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\ShipmentController;
 use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\Admin\WishlistInsightController;
 use App\Http\Controllers\Customer\AddressController;
+use App\Http\Controllers\Customer\BiteshipAreaController;
 use App\Http\Controllers\Customer\CartController;
+use App\Http\Controllers\Customer\CheckoutController;
 use App\Http\Controllers\Customer\HomeController as CustomerHomeController;
+use App\Http\Controllers\Customer\MidtransWebhookController;
+use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\Customer\ProductController as CustomerProductController;
 use App\Http\Controllers\Settings\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -34,9 +39,6 @@ Route::get('/', [CustomerHomeController::class, 'index'])->name('home');
 Route::get('/detail', [CustomerProductController::class, 'show'])->name('detail');
 Route::get('/list', [CustomerProductController::class, 'index'])->name('list');
 
-Route::inertia('/checkout', 'customer/checkout/checkout')->name('checkout');
-Route::inertia('/my-order', 'customer/order/my-order')->name('my-order');
-Route::inertia('/my-order/detail', 'customer/order/detail-order')->name('order.detail');
 Route::inertia('/notifications', 'customer/notification/list-notification')->name('notifications');
 
 // Policy Routes
@@ -55,6 +57,15 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/product-variants/{productVariant}/add-to-cart', [CartController::class, 'addProductVariantToCart'])->name('cart.add-product-variant');
     Route::patch('/cart-items/{cartItem}', [CartController::class, 'updateCartItemQuantity'])->name('cart.items.update');
     Route::delete('/cart-items/{cartItem}', [CartController::class, 'removeCartItem'])->name('cart.items.destroy');
+    Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout');
+    Route::get('/my-order', [CustomerOrderController::class, 'index'])->name('my-order');
+    Route::get('/my-order/{order}', [CustomerOrderController::class, 'show'])->name('order.detail');
+    Route::get('/biteship/areas', BiteshipAreaController::class)->name('biteship.areas');
+    Route::post('/checkout/shipping-rates', [CheckoutController::class, 'shippingRates'])->name('checkout.shipping-rates');
+    Route::post('/checkout/shipping-rate', [CheckoutController::class, 'selectShippingRate'])->name('checkout.shipping-rate');
+    Route::post('/checkout/voucher', [CheckoutController::class, 'applyVoucher'])->name('checkout.voucher.apply');
+    Route::delete('/checkout/voucher', [CheckoutController::class, 'removeVoucher'])->name('checkout.voucher.remove');
+    Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder'])->name('checkout.place-order');
     Route::get('/address', [AddressController::class, 'index'])->name('manage-address');
     Route::post('/address', [AddressController::class, 'store'])->name('manage-address.store');
     Route::put('/address/{customerAddress}', [AddressController::class, 'update'])->name('manage-address.update');
@@ -66,7 +77,7 @@ Route::middleware('guest')->prefix('admin')->name('admin.')->group(function () {
     Route::post('login', [AdminLoginController::class, 'store'])->name('login.store');
 });
 
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'admin', 'admin.activity'])->prefix('admin')->name('admin.')->group(function () {
     Route::post('logout', [AdminLoginController::class, 'destroy'])->name('logout');
     Route::get('dashboard', AdminDashboardController::class)->name('dashboard');
 
@@ -177,10 +188,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('admin-users/{adminUser}/edit', [AdminUserController::class, 'edit'])->name('admin-users.edit');
     Route::put('admin-users/{adminUser}', [AdminUserController::class, 'update'])->name('admin-users.update');
 
-    Route::get('reports/sales', [AdminPageController::class, 'index'])->defaults('module', 'orders')->name('reports.sales');
-    Route::get('reports/products', [AdminPageController::class, 'index'])->defaults('module', 'products')->name('reports.products');
-    Route::get('reports/customers', [AdminPageController::class, 'index'])->defaults('module', 'customers')->name('reports.customers');
-    Route::get('reports/shipments', [AdminPageController::class, 'index'])->defaults('module', 'shipments')->name('reports.shipments');
+    Route::get('reports/{type}', [ReportController::class, 'index'])->whereIn('type', ['sales', 'products', 'customers', 'shipments', 'vouchers'])->name('reports.index');
+    Route::get('reports/{type}/export', [ReportController::class, 'export'])->whereIn('type', ['sales', 'products', 'customers', 'shipments', 'vouchers'])->name('reports.export');
+    Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
 });
+
+Route::post('/payments/midtrans/notification', MidtransWebhookController::class)->name('payments.midtrans.notification');
 
 require __DIR__.'/settings.php';

@@ -40,7 +40,7 @@ class SettingRequest extends FormRequest
             'origin_province' => ['nullable', 'string', 'max:100'],
             'origin_city' => ['nullable', 'string', 'max:100'],
             'origin_district' => ['nullable', 'string', 'max:100'],
-            'origin_postal_code' => ['nullable', 'string', 'max:20'],
+            'store_postal_code' => ['nullable', 'string', 'max:20'],
             'origin_biteship_area_id' => ['nullable', 'string', 'max:100'],
             'shipper_name' => ['nullable', 'string', 'max:150'],
             'shipper_phone' => ['nullable', 'string', 'max:30'],

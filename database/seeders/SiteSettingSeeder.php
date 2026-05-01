@@ -22,6 +22,7 @@ class SiteSettingSeeder extends Seeder
             ['key' => 'store_currency_symbol',  'value' => 'Rp',                                        'type' => 'string'],
             ['key' => 'store_language',         'value' => 'id',                                        'type' => 'string'],
             ['key' => 'store_timezone',         'value' => 'Asia/Jakarta',                              'type' => 'string'],
+            ['key' => 'store_postal_code',       'value' => "60111",                                    'type' => 'string'],
 
             // ─── Contact & Location ──────────────────────────────────────────────
             ['key' => 'contact_email',          'value' => 'hello@aureasyrari.com',                     'type' => 'string'],

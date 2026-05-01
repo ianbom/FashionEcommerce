@@ -27,7 +27,11 @@ class AddressController extends Controller
             $request->boolean('is_default'),
         );
 
-        return redirect()->back()->with('success', 'Alamat berhasil ditambahkan.');
+        $redirectTo = $request->string('redirect_to')->toString();
+
+        return $redirectTo !== ''
+            ? redirect($redirectTo)->with('success', 'Alamat berhasil ditambahkan.')
+            : redirect()->back()->with('success', 'Alamat berhasil ditambahkan.');
     }
 
     public function update(

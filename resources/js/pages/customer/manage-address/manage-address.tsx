@@ -1,5 +1,13 @@
 import { router, useForm } from '@inertiajs/react';
-import { AlertCircle, Edit2, MapPin, Plus, Trash2, X } from 'lucide-react';
+import {
+    AlertCircle,
+    Edit2,
+    MapPin,
+    Plus,
+    Search,
+    Trash2,
+    X,
+} from 'lucide-react';
 import type { FormEvent } from 'react';
 import { useMemo, useState } from 'react';
 import {
@@ -7,6 +15,7 @@ import {
     store,
     update,
 } from '@/actions/App/Http/Controllers/Customer/AddressController';
+import biteshipAreas from '@/actions/App/Http/Controllers/Customer/BiteshipAreaController';
 import ProfileLayout from '@/layouts/profile-layout';
 
 type Address = {
@@ -29,6 +38,7 @@ type Address = {
 
 type Props = {
     addresses: Address[];
+    redirectTo?: string;
 };
 
 type AddressFormData = {
@@ -42,6 +52,7 @@ type AddressFormData = {
     subdistrict: string;
     postal_code: string;
     biteship_area_id: string;
+    google_maps_url: string;
     latitude: string;
     longitude: string;
     note: string;
@@ -59,6 +70,7 @@ const EMPTY_FORM: AddressFormData = {
     subdistrict: '',
     postal_code: '',
     biteship_area_id: '',
+    google_maps_url: '',
     latitude: '',
     longitude: '',
     note: '',
@@ -84,6 +96,10 @@ const formDataFromAddress = (address?: Address): AddressFormData => {
         subdistrict: address.subdistrict ?? '',
         postal_code: address.postal_code,
         biteship_area_id: address.biteship_area_id ?? '',
+        google_maps_url:
+            address.latitude && address.longitude
+                ? `https://www.google.com/maps?q=${address.latitude},${address.longitude}`
+                : '',
         latitude: asText(address.latitude),
         longitude: asText(address.longitude),
         note: address.note ?? '',
@@ -91,38 +107,113 @@ const formDataFromAddress = (address?: Address): AddressFormData => {
     };
 };
 
-const normalizePayload = (data: AddressFormData) => ({
-    ...data,
-    label: data.label.trim() === '' ? null : data.label.trim(),
-    subdistrict: data.subdistrict.trim() === '' ? null : data.subdistrict.trim(),
-    note: data.note.trim() === '' ? null : data.note.trim(),
-    biteship_area_id:
-        data.biteship_area_id.trim() === '' ? null : data.biteship_area_id.trim(),
-    latitude: data.latitude.trim() === '' ? null : Number(data.latitude),
-    longitude: data.longitude.trim() === '' ? null : Number(data.longitude),
-});
+const normalizePayload = (data: AddressFormData) => {
+    const { google_maps_url: _googleMapsUrl, ...payload } = data;
+
+    return {
+        ...payload,
+        label: data.label.trim() === '' ? null : data.label.trim(),
+        subdistrict:
+            data.subdistrict.trim() === '' ? null : data.subdistrict.trim(),
+        note: data.note.trim() === '' ? null : data.note.trim(),
+        biteship_area_id:
+            data.biteship_area_id.trim() === ''
+                ? null
+                : data.biteship_area_id.trim(),
+        latitude: data.latitude.trim() === '' ? null : data.latitude.trim(),
+        longitude: data.longitude.trim() === '' ? null : data.longitude.trim(),
+    };
+};
 
 const payloadFromAddress = (
     address: Address,
     overrides: Partial<AddressFormData> = {},
-) => normalizePayload({
-    ...formDataFromAddress(address),
-    ...overrides,
-});
+) =>
+    normalizePayload({
+        ...formDataFromAddress(address),
+        ...overrides,
+    });
 
-export default function ManageAddress({ addresses }: Props) {
+type BiteshipArea = {
+    id: string;
+    name: string | null;
+    administrative_division_level_1_name: string | null;
+    administrative_division_level_2_name: string | null;
+    administrative_division_level_3_name: string | null;
+    administrative_division_level_4_name: string | null;
+    postal_code: string | null;
+    latitude: number | string | null;
+    longitude: number | string | null;
+};
+
+const formatCoordinate = (value: number): string => value.toFixed(7);
+
+const validCoordinates = (latitude: number, longitude: number): boolean =>
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude) &&
+    latitude >= -90 &&
+    latitude <= 90 &&
+    longitude >= -180 &&
+    longitude <= 180;
+
+const extractGoogleMapsCoordinates = (
+    value: string,
+): { latitude: string; longitude: string } | null => {
+    let decoded = value;
+
+    try {
+        decoded = decodeURIComponent(value);
+    } catch {
+        decoded = value;
+    }
+
+    const bangMatch = decoded.match(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/);
+    const commaMatch =
+        decoded.match(/@(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/) ??
+        decoded.match(
+            /(?:q|ll|query)=(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/,
+        ) ??
+        decoded.match(/(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/);
+    const match = bangMatch ?? commaMatch;
+
+    if (!match) {
+        return null;
+    }
+
+    const latitude = Number(match[1]);
+    const longitude = Number(match[2]);
+
+    if (!validCoordinates(latitude, longitude)) {
+        return null;
+    }
+
+    return {
+        latitude: formatCoordinate(latitude),
+        longitude: formatCoordinate(longitude),
+    };
+};
+
+export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingId, setEditingId] = useState<number | null>(null);
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(
+        null,
+    );
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const [defaultingId, setDefaultingId] = useState<number | null>(null);
+    const [areaQuery, setAreaQuery] = useState('');
+    const [areaResults, setAreaResults] = useState<BiteshipArea[]>([]);
+    const [areaLoading, setAreaLoading] = useState(false);
+    const [areaError, setAreaError] = useState('');
+    const [mapLinkError, setMapLinkError] = useState('');
 
     const form = useForm<AddressFormData>({ ...EMPTY_FORM });
     const editingAddress = useMemo(
         () =>
             editingId === null
                 ? null
-                : addresses.find((address) => address.id === editingId) ?? null,
+                : (addresses.find((address) => address.id === editingId) ??
+                  null),
         [addresses, editingId],
     );
     const canMutateCard = deletingId === null && defaultingId === null;
@@ -137,6 +228,10 @@ export default function ManageAddress({ addresses }: Props) {
         setShowDeleteConfirm(null);
         form.clearErrors();
         form.setData(formDataFromAddress(selectedAddress));
+        setAreaQuery('');
+        setAreaResults([]);
+        setAreaError('');
+        setMapLinkError('');
         setIsModalOpen(true);
     };
 
@@ -145,6 +240,10 @@ export default function ManageAddress({ addresses }: Props) {
         setEditingId(null);
         form.clearErrors();
         form.setData({ ...EMPTY_FORM });
+        setAreaQuery('');
+        setAreaResults([]);
+        setAreaError('');
+        setMapLinkError('');
     };
 
     const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -152,7 +251,10 @@ export default function ManageAddress({ addresses }: Props) {
 
         const action = editingAddress ? update(editingAddress.id) : store();
 
-        form.transform((data) => normalizePayload(data));
+        form.transform((data) => ({
+            ...normalizePayload(data),
+            redirect_to: redirectTo || null,
+        }));
         form.submit(action, {
             preserveScroll: true,
             onSuccess: () => {
@@ -162,6 +264,70 @@ export default function ManageAddress({ addresses }: Props) {
                 form.transform((data) => data);
             },
         });
+    };
+
+    const searchArea = async () => {
+        if (areaQuery.trim().length < 3) {
+            return;
+        }
+
+        setAreaLoading(true);
+        setAreaError('');
+
+        try {
+            const response = await fetch(
+                biteshipAreas.url({ query: { search: areaQuery.trim() } }),
+                {
+                    headers: { Accept: 'application/json' },
+                },
+            );
+            const payload = await response.json();
+
+            if (!response.ok) {
+                setAreaError(payload.message ?? 'Gagal mencari area Biteship.');
+                setAreaResults([]);
+                return;
+            }
+
+            setAreaResults(payload.areas ?? []);
+        } catch {
+            setAreaError('Gagal terhubung ke Biteship.');
+            setAreaResults([]);
+        } finally {
+            setAreaLoading(false);
+        }
+    };
+
+    const chooseArea = (area: BiteshipArea) => {
+        form.setData({
+            ...form.data,
+            biteship_area_id: area.id,
+            province:
+                area.administrative_division_level_1_name ?? form.data.province,
+            city: area.administrative_division_level_2_name ?? form.data.city,
+            district:
+                area.administrative_division_level_3_name ?? form.data.district,
+            postal_code: area.postal_code ?? form.data.postal_code,
+        });
+        setAreaQuery(area.name ?? area.id);
+        setAreaResults([]);
+        setAreaError('');
+    };
+
+    const handleGoogleMapsUrlChange = (value: string) => {
+        const coordinates = extractGoogleMapsCoordinates(value);
+
+        form.setData({
+            ...form.data,
+            google_maps_url: value,
+            latitude: coordinates?.latitude ?? '',
+            longitude: coordinates?.longitude ?? '',
+        });
+        setMapLinkError(
+            value.trim() !== '' && !coordinates
+                ? 'Link Google Maps tidak berisi koordinat yang valid.'
+                : '',
+        );
     };
 
     const handleDelete = (addressId: number) => {
@@ -187,12 +353,16 @@ export default function ManageAddress({ addresses }: Props) {
 
         setDefaultingId(address.id);
 
-        router.put(update(address.id), payloadFromAddress(address, { is_default: true }), {
-            preserveScroll: true,
-            onFinish: () => {
-                setDefaultingId(null);
+        router.put(
+            update(address.id),
+            payloadFromAddress(address, { is_default: true }),
+            {
+                preserveScroll: true,
+                onFinish: () => {
+                    setDefaultingId(null);
+                },
             },
-        });
+        );
     };
 
     return (
@@ -212,7 +382,9 @@ export default function ManageAddress({ addresses }: Props) {
                 style={{ animationDelay: '150ms' }}
             >
                 <div>
-                    <h2 className="font-serif text-xl text-[#3C3428]">Saved Addresses</h2>
+                    <h2 className="font-serif text-xl text-[#3C3428]">
+                        Saved Addresses
+                    </h2>
                     <p className="mt-1 text-[12px] text-[#8C8578]">
                         You have {addresses.length} saved address
                         {addresses.length !== 1 ? 'es' : ''}
@@ -231,7 +403,7 @@ export default function ManageAddress({ addresses }: Props) {
                 <button
                     type="button"
                     onClick={() => openModal()}
-                    className="group flex min-h-[240px] w-full animate-fade-in-up flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[#EAE8E3] p-6 text-center transition-all duration-300 hover:border-[#C2AA92] hover:bg-[#FAF9F6]"
+                    className="group animate-fade-in-up flex min-h-[240px] w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[#EAE8E3] p-6 text-center transition-all duration-300 hover:border-[#C2AA92] hover:bg-[#FAF9F6]"
                 >
                     <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#F5F2E6] text-[#C2AA92] transition-all duration-300 group-hover:scale-110 group-hover:bg-[#C2AA92] group-hover:text-white">
                         <Plus size={24} />
@@ -257,7 +429,9 @@ export default function ManageAddress({ addresses }: Props) {
                                         ? 'border-[#C2AA92]'
                                         : 'border-[#EAE8E3]'
                                 } animate-fade-in-up`}
-                                style={{ animationDelay: `${200 + index * 50}ms` }}
+                                style={{
+                                    animationDelay: `${200 + index * 50}ms`,
+                                }}
                             >
                                 {address.is_default && (
                                     <div className="absolute top-0 right-8 -translate-y-1/2">
@@ -292,7 +466,9 @@ export default function ManageAddress({ addresses }: Props) {
                                         <button
                                             type="button"
                                             disabled={!canMutateCard}
-                                            onClick={() => openModal(address.id)}
+                                            onClick={() =>
+                                                openModal(address.id)
+                                            }
                                             className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FAF9F6] text-[#8C8578] transition-colors hover:bg-[#F5F2E6] hover:text-[#3C3428] disabled:cursor-not-allowed disabled:opacity-60"
                                         >
                                             <Edit2 size={14} />
@@ -300,7 +476,9 @@ export default function ManageAddress({ addresses }: Props) {
                                         <button
                                             type="button"
                                             disabled={!canMutateCard}
-                                            onClick={() => setShowDeleteConfirm(address.id)}
+                                            onClick={() =>
+                                                setShowDeleteConfirm(address.id)
+                                            }
                                             className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FFF5F5] text-[#EF4444] transition-colors hover:bg-[#FEE2E2] hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60"
                                         >
                                             <Trash2 size={14} />
@@ -348,7 +526,9 @@ export default function ManageAddress({ addresses }: Props) {
                                             <button
                                                 type="button"
                                                 disabled={deletingThis}
-                                                onClick={() => setShowDeleteConfirm(null)}
+                                                onClick={() =>
+                                                    setShowDeleteConfirm(null)
+                                                }
                                                 className="flex-1 rounded-lg border border-[#EAE8E3] py-2 text-[12px] font-bold text-[#4A4A4A] transition-colors hover:bg-[#FAF9F6]"
                                             >
                                                 Cancel
@@ -356,10 +536,14 @@ export default function ManageAddress({ addresses }: Props) {
                                             <button
                                                 type="button"
                                                 disabled={deletingThis}
-                                                onClick={() => handleDelete(address.id)}
+                                                onClick={() =>
+                                                    handleDelete(address.id)
+                                                }
                                                 className="flex-1 rounded-lg bg-[#EF4444] py-2 text-[12px] font-bold text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
                                             >
-                                                {deletingThis ? 'Deleting...' : 'Delete'}
+                                                {deletingThis
+                                                    ? 'Deleting...'
+                                                    : 'Delete'}
                                             </button>
                                         </div>
                                     </div>
@@ -376,10 +560,12 @@ export default function ManageAddress({ addresses }: Props) {
                         className="absolute inset-0 bg-black/40 backdrop-blur-sm"
                         onClick={closeModal}
                     />
-                    <div className="relative z-10 flex max-h-[90vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+                    <div className="relative z-10 flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
                         <div className="flex items-center justify-between border-b border-[#EAE8E3] bg-[#FAF9F6] px-6 py-4">
                             <h3 className="font-serif text-lg text-[#3C3428]">
-                                {editingAddress ? 'Edit Address' : 'Add New Address'}
+                                {editingAddress
+                                    ? 'Edit Address'
+                                    : 'Add New Address'}
                             </h3>
                             <button
                                 type="button"
@@ -390,12 +576,17 @@ export default function ManageAddress({ addresses }: Props) {
                             </button>
                         </div>
 
-                        <form onSubmit={submit} className="flex min-h-0 flex-1 flex-col">
+                        <form
+                            onSubmit={submit}
+                            className="flex min-h-0 flex-1 flex-col"
+                        >
                             <div className="custom-scrollbar space-y-4 overflow-y-auto p-6">
                                 <InputBlock
                                     label="Address Label"
                                     value={form.data.label}
-                                    onChange={(value) => form.setData('label', value)}
+                                    onChange={(value) =>
+                                        form.setData('label', value)
+                                    }
                                     placeholder="e.g. Home, Office"
                                     error={form.errors.label}
                                 />
@@ -404,7 +595,10 @@ export default function ManageAddress({ addresses }: Props) {
                                         label="Recipient Name"
                                         value={form.data.recipient_name}
                                         onChange={(value) =>
-                                            form.setData('recipient_name', value)
+                                            form.setData(
+                                                'recipient_name',
+                                                value,
+                                            )
                                         }
                                         error={form.errors.recipient_name}
                                     />
@@ -412,56 +606,159 @@ export default function ManageAddress({ addresses }: Props) {
                                         label="Phone Number"
                                         value={form.data.recipient_phone}
                                         onChange={(value) =>
-                                            form.setData('recipient_phone', value)
+                                            form.setData(
+                                                'recipient_phone',
+                                                value,
+                                            )
                                         }
                                         error={form.errors.recipient_phone}
                                     />
                                 </div>
-                                <TextareaBlock
-                                    label="Full Address"
-                                    value={form.data.full_address}
-                                    onChange={(value) => form.setData('full_address', value)}
-                                    placeholder="Street name, building, house no."
-                                    error={form.errors.full_address}
-                                />
+                                <div>
+                                    <label className="mb-1.5 block text-[11px] font-semibold text-[#4A4A4A]">
+                                        Biteship Area
+                                    </label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={areaQuery}
+                                            onChange={(event) =>
+                                                setAreaQuery(event.target.value)
+                                            }
+                                            placeholder="Search district, city, postal code"
+                                            className="w-full rounded-md border border-[#EAE8E3] bg-white px-4 py-2.5 text-[13px] text-[#333] transition-all focus:border-[#C2AA92] focus:ring-1 focus:ring-[#C2AA92] focus:outline-none"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={searchArea}
+                                            disabled={
+                                                areaLoading ||
+                                                areaQuery.trim().length < 3
+                                            }
+                                            className="flex items-center gap-2 rounded-md bg-[#EAE4D9] px-4 py-2.5 text-[12px] font-bold text-[#4A4A4A] disabled:opacity-60"
+                                        >
+                                            <Search size={14} />
+                                            {areaLoading ? '...' : 'Search'}
+                                        </button>
+                                    </div>
+                                    {form.data.biteship_area_id && (
+                                        <p className="mt-1.5 text-[11px] text-[#8C8578]">
+                                            Area ID:{' '}
+                                            {form.data.biteship_area_id}
+                                        </p>
+                                    )}
+                                    {areaResults.length > 0 && (
+                                        <div className="mt-2 max-h-48 overflow-y-auto rounded-md border border-[#EAE8E3] bg-white">
+                                            {areaResults.map((area) => (
+                                                <button
+                                                    key={area.id}
+                                                    type="button"
+                                                    onClick={() =>
+                                                        chooseArea(area)
+                                                    }
+                                                    className="block w-full border-b border-[#F1EEE8] px-4 py-2 text-left text-[12px] hover:bg-[#FAF9F6]"
+                                                >
+                                                    <span className="font-semibold text-[#333]">
+                                                        {area.name ?? area.id}
+                                                    </span>
+                                                    <span className="block text-[#8C8578]">
+                                                        {[
+                                                            area.administrative_division_level_3_name,
+                                                            area.administrative_division_level_2_name,
+                                                            area.administrative_division_level_1_name,
+                                                            area.postal_code,
+                                                        ]
+                                                            .filter(Boolean)
+                                                            .join(', ')}
+                                                    </span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {areaError && (
+                                        <p className="mt-1.5 text-[11px] font-medium text-[#B24B4B]">
+                                            {areaError}
+                                        </p>
+                                    )}
+                                    {form.errors.biteship_area_id && (
+                                        <p className="mt-1.5 text-[11px] font-medium text-[#B24B4B]">
+                                            {form.errors.biteship_area_id}
+                                        </p>
+                                    )}
+                                </div>
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <InputBlock
                                         label="Province"
                                         value={form.data.province}
-                                        onChange={(value) => form.setData('province', value)}
+                                        onChange={() => undefined}
                                         error={form.errors.province}
+                                        readOnly
                                     />
                                     <InputBlock
                                         label="City"
                                         value={form.data.city}
-                                        onChange={(value) => form.setData('city', value)}
+                                        onChange={() => undefined}
                                         error={form.errors.city}
+                                        readOnly
                                     />
                                 </div>
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <InputBlock
                                         label="District"
                                         value={form.data.district}
-                                        onChange={(value) => form.setData('district', value)}
+                                        onChange={() => undefined}
                                         error={form.errors.district}
+                                        readOnly
                                     />
                                     <InputBlock
-                                        label="Subdistrict"
-                                        value={form.data.subdistrict}
-                                        onChange={(value) => form.setData('subdistrict', value)}
-                                        error={form.errors.subdistrict}
+                                        label="Postal Code"
+                                        value={form.data.postal_code}
+                                        onChange={() => undefined}
+                                        error={form.errors.postal_code}
+                                        readOnly
                                     />
                                 </div>
                                 <InputBlock
-                                    label="Postal Code"
-                                    value={form.data.postal_code}
-                                    onChange={(value) => form.setData('postal_code', value)}
-                                    error={form.errors.postal_code}
+                                    label="Subdistrict"
+                                    value={form.data.subdistrict}
+                                    onChange={(value) =>
+                                        form.setData('subdistrict', value)
+                                    }
+                                    error={form.errors.subdistrict}
+                                />
+                                <InputBlock
+                                    label="Google Maps Link"
+                                    value={form.data.google_maps_url}
+                                    onChange={handleGoogleMapsUrlChange}
+                                    placeholder="Paste Google Maps link"
+                                    error={
+                                        mapLinkError ||
+                                        form.errors.latitude ||
+                                        form.errors.longitude
+                                    }
+                                />
+                                {(form.data.latitude ||
+                                    form.data.longitude) && (
+                                    <p className="-mt-2 text-[11px] text-[#8C8578]">
+                                        Coordinates: {form.data.latitude},{' '}
+                                        {form.data.longitude}
+                                    </p>
+                                )}
+                                <TextareaBlock
+                                    label="Full Address"
+                                    value={form.data.full_address}
+                                    onChange={(value) =>
+                                        form.setData('full_address', value)
+                                    }
+                                    placeholder="Street name, building, house no."
+                                    error={form.errors.full_address}
                                 />
                                 <TextareaBlock
                                     label="Address Note (optional)"
                                     value={form.data.note}
-                                    onChange={(value) => form.setData('note', value)}
+                                    onChange={(value) =>
+                                        form.setData('note', value)
+                                    }
                                     placeholder="Landmark, delivery note, etc."
                                     error={form.errors.note}
                                 />
@@ -470,7 +767,10 @@ export default function ManageAddress({ addresses }: Props) {
                                         type="checkbox"
                                         checked={form.data.is_default}
                                         onChange={(event) =>
-                                            form.setData('is_default', event.target.checked)
+                                            form.setData(
+                                                'is_default',
+                                                event.target.checked,
+                                            )
                                         }
                                         className="h-4 w-4 rounded border-[#EAE8E3] text-[#3C3428] focus:ring-[#C2AA92]"
                                     />
@@ -490,7 +790,9 @@ export default function ManageAddress({ addresses }: Props) {
                                 </button>
                                 <button
                                     type="submit"
-                                    disabled={form.processing}
+                                    disabled={
+                                        form.processing || mapLinkError !== ''
+                                    }
                                     className="rounded-md bg-[#3C3428] px-6 py-2.5 text-[12px] font-bold text-white transition-colors hover:bg-[#2D261C] disabled:cursor-not-allowed disabled:opacity-70"
                                 >
                                     {form.processing
@@ -514,9 +816,17 @@ type FieldProps = {
     onChange: (value: string) => void;
     error?: string;
     placeholder?: string;
+    readOnly?: boolean;
 };
 
-function InputBlock({ label, value, onChange, placeholder, error }: FieldProps) {
+function InputBlock({
+    label,
+    value,
+    onChange,
+    placeholder,
+    error,
+    readOnly = false,
+}: FieldProps) {
     return (
         <div>
             <label className="mb-1.5 block text-[11px] font-semibold text-[#4A4A4A]">
@@ -527,9 +837,16 @@ function InputBlock({ label, value, onChange, placeholder, error }: FieldProps) 
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
                 placeholder={placeholder}
-                className="w-full rounded-md border border-[#EAE8E3] bg-white px-4 py-2.5 text-[13px] text-[#333] transition-all focus:border-[#C2AA92] focus:ring-1 focus:ring-[#C2AA92] focus:outline-none"
+                readOnly={readOnly}
+                className={`w-full rounded-md border border-[#EAE8E3] px-4 py-2.5 text-[13px] text-[#333] transition-all focus:border-[#C2AA92] focus:ring-1 focus:ring-[#C2AA92] focus:outline-none ${
+                    readOnly ? 'bg-[#FAF9F6] text-[#8C8578]' : 'bg-white'
+                }`}
             />
-            {error && <p className="mt-1.5 text-[11px] font-medium text-[#B24B4B]">{error}</p>}
+            {error && (
+                <p className="mt-1.5 text-[11px] font-medium text-[#B24B4B]">
+                    {error}
+                </p>
+            )}
         </div>
     );
 }
@@ -553,7 +870,11 @@ function TextareaBlock({
                 placeholder={placeholder}
                 className="w-full resize-none rounded-md border border-[#EAE8E3] bg-white px-4 py-2.5 text-[13px] text-[#333] transition-all focus:border-[#C2AA92] focus:ring-1 focus:ring-[#C2AA92] focus:outline-none"
             />
-            {error && <p className="mt-1.5 text-[11px] font-medium text-[#B24B4B]">{error}</p>}
+            {error && (
+                <p className="mt-1.5 text-[11px] font-medium text-[#B24B4B]">
+                    {error}
+                </p>
+            )}
         </div>
     );
 }

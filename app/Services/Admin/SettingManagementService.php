@@ -53,7 +53,7 @@ class SettingManagementService
                 ['key' => 'origin_province', 'label' => 'Origin Province', 'type' => 'string'],
                 ['key' => 'origin_city', 'label' => 'Origin City', 'type' => 'string'],
                 ['key' => 'origin_district', 'label' => 'Origin District', 'type' => 'string'],
-                ['key' => 'origin_postal_code', 'label' => 'Origin Postal Code', 'type' => 'string'],
+                ['key' => 'store_postal_code', 'label' => 'Store Postal Code', 'type' => 'string'],
                 ['key' => 'origin_biteship_area_id', 'label' => 'Origin Biteship Area ID', 'type' => 'string'],
                 ['key' => 'shipper_name', 'label' => 'Shipper Name', 'type' => 'string'],
                 ['key' => 'shipper_phone', 'label' => 'Shipper Phone', 'type' => 'string'],

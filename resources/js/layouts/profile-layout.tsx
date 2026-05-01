@@ -97,10 +97,10 @@ export default function ProfileLayout({ children, title, pageTitle, subtitle, ac
                                 );
                             })}
                             <div className="h-px bg-[#EAE8E3] my-2 mx-2"></div>
-                            <button className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-[#8C8578] hover:bg-red-50 hover:text-red-600 transition-all">
+                            <Link href="/logout" method="post" as="button" className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-[#8C8578] hover:bg-red-50 hover:text-red-600 transition-all">
                                 <LogOut size={18} />
                                 <span className="text-[13px]">Logout</span>
-                            </button>
+                            </Link>
                         </div>
 
                         {/* Need Help Card (Desktop) */}

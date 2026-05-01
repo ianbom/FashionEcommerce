@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Carbon\CarbonImmutable;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -12,11 +13,16 @@ class AdminDashboardService
     /**
      * @return array<string, mixed>
      */
-    public function overview(string $range): array
+    public function overview(Request $request): array
     {
-        [$start, $end, $label] = $this->dateWindow($range);
+        [$start, $end, $label, $range] = $this->dateWindow($request);
 
         return [
+            'filters' => [
+                'range' => $range,
+                'date_from' => $start->toDateString(),
+                'date_to' => $end->toDateString(),
+            ],
             'range' => [
                 'key' => $range,
                 'label' => $label,
@@ -24,9 +30,25 @@ class AdminDashboardService
                 'end' => $end->toDateString(),
             ],
             'summary' => $this->summary($start, $end),
-            'salesChart' => $this->salesChart($start, $end),
-            'orderStatusChart' => $this->distribution('orders', 'order_status'),
-            'paymentStatusChart' => $this->distribution('orders', 'payment_status'),
+            'salesChart' => $this->salesChart($start, $end, $request->string('group_by')->toString()),
+            'orderStatusChart' => $this->distribution('orders', 'order_status', [
+                'pending_payment',
+                'paid',
+                'processing',
+                'ready_to_ship',
+                'shipped',
+                'delivered',
+                'completed',
+                'cancelled',
+                'expired',
+            ], $start, $end),
+            'paymentStatusChart' => $this->distribution('orders', 'payment_status', [
+                'pending',
+                'paid',
+                'expired',
+                'failed',
+                'cancelled',
+            ], $start, $end),
             'recentOrders' => $this->recentOrders(),
             'lowStockVariants' => $this->lowStockVariants(),
             'latestPaymentLogs' => $this->latestPaymentLogs(),
@@ -35,17 +57,25 @@ class AdminDashboardService
     }
 
     /**
-     * @return array{0: CarbonImmutable, 1: CarbonImmutable, 2: string}
+     * @return array{0: CarbonImmutable, 1: CarbonImmutable, 2: string, 3: string}
      */
-    private function dateWindow(string $range): array
+    private function dateWindow(Request $request): array
     {
         $now = CarbonImmutable::now();
+        $range = $request->string('range')->toString() ?: '30d';
+
+        if ($range === 'custom') {
+            $start = CarbonImmutable::parse($request->string('date_from')->toString() ?: $now->subDays(29)->toDateString())->startOfDay();
+            $end = CarbonImmutable::parse($request->string('date_to')->toString() ?: $now->toDateString())->endOfDay();
+
+            return [$start, $end, 'Custom Range', 'custom'];
+        }
 
         return match ($range) {
-            'today' => [$now->startOfDay(), $now->endOfDay(), 'Today'],
-            '7d' => [$now->subDays(6)->startOfDay(), $now->endOfDay(), 'Last 7 Days'],
-            'month' => [$now->startOfMonth(), $now->endOfMonth(), 'This Month'],
-            default => [$now->subDays(29)->startOfDay(), $now->endOfDay(), 'Last 30 Days'],
+            'today' => [$now->startOfDay(), $now->endOfDay(), 'Today', 'today'],
+            '7d' => [$now->subDays(6)->startOfDay(), $now->endOfDay(), 'Last 7 Days', '7d'],
+            'month' => [$now->startOfMonth(), $now->endOfMonth(), 'This Month', 'month'],
+            default => [$now->subDays(29)->startOfDay(), $now->endOfDay(), 'Last 30 Days', '30d'],
         };
     }
 
@@ -63,11 +93,11 @@ class AdminDashboardService
             ['label' => 'Revenue Today', 'value' => $this->paidRevenue($todayStart, $todayEnd), 'format' => 'currency'],
             ['label' => 'Revenue Month', 'value' => $this->paidRevenue($monthStart, $monthEnd), 'format' => 'currency'],
             ['label' => 'Orders Today', 'value' => $this->orderCount($todayStart, $todayEnd), 'format' => 'number'],
-            ['label' => 'Pending Payment', 'value' => $this->countWhere('orders', 'order_status', 'pending_payment'), 'format' => 'number'],
-            ['label' => 'Paid Orders', 'value' => $this->countWhere('orders', 'payment_status', 'paid'), 'format' => 'number'],
-            ['label' => 'Processing', 'value' => $this->countWhere('orders', 'order_status', 'processing'), 'format' => 'number'],
-            ['label' => 'Shipped', 'value' => $this->countWhere('orders', 'order_status', 'shipped'), 'format' => 'number'],
-            ['label' => 'Completed', 'value' => $this->countWhere('orders', 'order_status', 'completed'), 'format' => 'number'],
+            ['label' => 'Pending Payment', 'value' => $this->orderStatusCount('pending_payment', $start, $end), 'format' => 'number'],
+            ['label' => 'Paid Orders', 'value' => $this->paymentStatusCount('paid', $start, $end), 'format' => 'number'],
+            ['label' => 'Processing', 'value' => $this->orderStatusCount('processing', $start, $end), 'format' => 'number'],
+            ['label' => 'Shipped', 'value' => $this->orderStatusCount('shipped', $start, $end), 'format' => 'number'],
+            ['label' => 'Completed', 'value' => $this->orderStatusCount('completed', $start, $end), 'format' => 'number'],
             ['label' => 'Customers', 'value' => $this->customersCount(), 'format' => 'number'],
             ['label' => 'Published Products', 'value' => $this->countWhere('products', 'status', 'published'), 'format' => 'number'],
             ['label' => 'Low Stock Variants', 'value' => $this->variantStockCount(1, 5), 'format' => 'number'],
@@ -96,6 +126,29 @@ class AdminDashboardService
         return DB::table('orders')->whereBetween('created_at', [$start, $end])->count();
     }
 
+    private function orderStatusCount(string $status, CarbonImmutable $start, CarbonImmutable $end): int
+    {
+        if (! Schema::hasTable('orders')) {
+            return 0;
+        }
+
+        return $this->ordersInRange($start, $end)->where('order_status', $status)->count();
+    }
+
+    private function paymentStatusCount(string $status, CarbonImmutable $start, CarbonImmutable $end): int
+    {
+        if (! Schema::hasTable('orders')) {
+            return 0;
+        }
+
+        return $this->ordersInRange($start, $end)->where('payment_status', $status)->count();
+    }
+
+    private function ordersInRange(CarbonImmutable $start, CarbonImmutable $end): \Illuminate\Database\Query\Builder
+    {
+        return DB::table('orders')->whereBetween('created_at', [$start, $end]);
+    }
+
     private function countWhere(string $table, string $column, string $value): int
     {
         if (! Schema::hasTable($table)) {
@@ -121,6 +174,7 @@ class AdminDashboardService
         }
 
         $query = DB::table('product_variants')
+            ->whereNull('deleted_at')
             ->whereRaw('(stock - reserved_stock) <= ?', [$max])
             ->where('is_active', true);
 
@@ -132,50 +186,55 @@ class AdminDashboardService
     }
 
     /**
-     * @return array<int, array{date: string, revenue: float}>
+     * @return array<int, array{date: string, revenue: float, orders: int}>
      */
-    private function salesChart(CarbonImmutable $start, CarbonImmutable $end): array
+    private function salesChart(CarbonImmutable $start, CarbonImmutable $end, string $groupBy): array
     {
-        $days = collect();
-        $cursor = $start;
-
-        while ($cursor->lte($end)) {
-            $days->put($cursor->toDateString(), 0.0);
-            $cursor = $cursor->addDay();
-        }
+        $groupBy = in_array($groupBy, ['daily', 'weekly', 'monthly'], true) ? $groupBy : 'daily';
+        $driver = DB::connection()->getDriverName();
+        $dateExpression = match ($groupBy) {
+            'monthly' => $driver === 'sqlite' ? "strftime('%Y-%m', paid_at)" : "date_format(paid_at, '%Y-%m')",
+            'weekly' => $driver === 'sqlite' ? "strftime('%Y-W%W', paid_at)" : "date_format(paid_at, '%x-W%v')",
+            default => $driver === 'sqlite' ? "strftime('%Y-%m-%d', paid_at)" : 'date(paid_at)',
+        };
 
         if (! Schema::hasTable('orders')) {
-            return $days->map(fn (float $revenue, string $date): array => compact('date', 'revenue'))->values()->all();
-        }
-
-        DB::table('orders')
-            ->selectRaw('date(paid_at) as paid_date, sum(grand_total) as revenue')
-            ->where('payment_status', 'paid')
-            ->whereBetween('paid_at', [$start, $end])
-            ->groupBy('paid_date')
-            ->get()
-            ->each(function (object $row) use ($days): void {
-                $days->put($row->paid_date, (float) $row->revenue);
-            });
-
-        return $days->map(fn (float $revenue, string $date): array => compact('date', 'revenue'))->values()->all();
-    }
-
-    /**
-     * @return array<int, array{label: string, value: int}>
-     */
-    private function distribution(string $table, string $column): array
-    {
-        if (! Schema::hasTable($table)) {
             return [];
         }
 
-        return DB::table($table)
-            ->selectRaw("{$column} as label, count(*) as value")
-            ->groupBy($column)
-            ->orderByDesc('value')
+        return DB::table('orders')
+            ->selectRaw("{$dateExpression} as date, sum(grand_total) as revenue, count(*) as orders")
+            ->where('payment_status', 'paid')
+            ->whereBetween('paid_at', [$start, $end])
+            ->groupBy('date')
+            ->orderBy('date')
             ->get()
-            ->map(fn (object $row): array => ['label' => (string) $row->label, 'value' => (int) $row->value])
+            ->map(fn (object $row): array => [
+                'date' => (string) $row->date,
+                'revenue' => (float) $row->revenue,
+                'orders' => (int) $row->orders,
+            ])
+            ->all();
+    }
+
+    /**
+     * @param  array<int, string>  $labels
+     * @return array<int, array{label: string, value: int}>
+     */
+    private function distribution(string $table, string $column, array $labels, CarbonImmutable $start, CarbonImmutable $end): array
+    {
+        if (! Schema::hasTable($table)) {
+            return collect($labels)->map(fn (string $label): array => ['label' => $label, 'value' => 0])->all();
+        }
+
+        $counts = DB::table($table)
+            ->selectRaw("{$column} as label, count(*) as value")
+            ->whereBetween('created_at', [$start, $end])
+            ->groupBy($column)
+            ->pluck('value', 'label');
+
+        return collect($labels)
+            ->map(fn (string $label): array => ['label' => $label, 'value' => (int) ($counts[$label] ?? 0)])
             ->all();
     }
 
@@ -210,6 +269,7 @@ class AdminDashboardService
                 DB::raw('(product_variants.stock - product_variants.reserved_stock) as available_stock'),
                 DB::raw('products.name as product_name'),
             ])
+            ->whereNull('product_variants.deleted_at')
             ->whereRaw('(product_variants.stock - product_variants.reserved_stock) <= 5')
             ->orderBy('available_stock')
             ->limit(10)
@@ -238,7 +298,16 @@ class AdminDashboardService
 
         return DB::table('shipments')
             ->leftJoin('orders', 'orders.id', '=', 'shipments.order_id')
-            ->select(['shipments.id', 'waybill_id', 'courier_company', 'courier_type', 'shipping_status', 'estimated_delivery', 'shipments.updated_at', DB::raw('orders.order_number as order_number')])
+            ->select([
+                'shipments.id',
+                'shipments.waybill_id',
+                'shipments.courier_company',
+                'shipments.courier_type',
+                'shipments.estimated_delivery',
+                'shipments.updated_at',
+                DB::raw('shipments.shipping_status as shipping_status'),
+                DB::raw('orders.order_number as order_number'),
+            ])
             ->latest('shipments.updated_at')
             ->limit(8)
             ->get();
