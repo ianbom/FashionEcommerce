@@ -1,0 +1,1 @@
+import{at as e}from"./app-Ce4gPoz8.js";var t=e(`Minus`,[[`path`,{d:`M5 12h14`,key:`1ays0h`}]]);export{t};
