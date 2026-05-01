@@ -22,9 +22,11 @@ use App\Http\Controllers\Admin\ShipmentController;
 use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\Admin\WishlistInsightController;
+use App\Http\Controllers\Customer\AddressController;
 use App\Http\Controllers\Customer\CartController;
 use App\Http\Controllers\Customer\HomeController as CustomerHomeController;
 use App\Http\Controllers\Customer\ProductController as CustomerProductController;
+use App\Http\Controllers\Settings\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [CustomerHomeController::class, 'index'])->name('home');
@@ -35,8 +37,6 @@ Route::get('/list', [CustomerProductController::class, 'index'])->name('list');
 Route::inertia('/checkout', 'customer/checkout/checkout')->name('checkout');
 Route::inertia('/my-order', 'customer/order/my-order')->name('my-order');
 Route::inertia('/my-order/detail', 'customer/order/detail-order')->name('order.detail');
-Route::inertia('/my-profile', 'customer/profile/my-profile')->name('my-profile');
-Route::inertia('/address', 'customer/manage-address/manage-address')->name('manage-address');
 Route::inertia('/notifications', 'customer/notification/list-notification')->name('notifications');
 
 // Policy Routes
@@ -49,10 +49,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
+    Route::get('/my-profile', [ProfileController::class, 'customerEdit'])->name('my-profile');
+    Route::patch('/my-profile', [ProfileController::class, 'update'])->name('my-profile.update');
     Route::get('/my-cart', [CartController::class, 'index'])->name('cart');
     Route::post('/product-variants/{productVariant}/add-to-cart', [CartController::class, 'addProductVariantToCart'])->name('cart.add-product-variant');
     Route::patch('/cart-items/{cartItem}', [CartController::class, 'updateCartItemQuantity'])->name('cart.items.update');
     Route::delete('/cart-items/{cartItem}', [CartController::class, 'removeCartItem'])->name('cart.items.destroy');
+    Route::get('/address', [AddressController::class, 'index'])->name('manage-address');
+    Route::post('/address', [AddressController::class, 'store'])->name('manage-address.store');
+    Route::put('/address/{customerAddress}', [AddressController::class, 'update'])->name('manage-address.update');
+    Route::delete('/address/{customerAddress}', [AddressController::class, 'destroy'])->name('manage-address.destroy');
 });
 
 Route::middleware('guest')->prefix('admin')->name('admin.')->group(function () {

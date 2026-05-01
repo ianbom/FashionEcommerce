@@ -5,7 +5,8 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileDeleteRequest;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\User;
+use App\Services\Profile\ProfileService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,15 +15,24 @@ use Inertia\Response;
 
 class ProfileController extends Controller
 {
+    public function __construct(
+        private readonly ProfileService $profiles,
+    ) {}
+
+    /**
+     * Show the authenticated customer's profile page.
+     */
+    public function customerEdit(Request $request): Response
+    {
+        return Inertia::render('customer/profile/my-profile', $this->profiles->profilePageProps($request));
+    }
+
     /**
      * Show the user's profile settings page.
      */
     public function edit(Request $request): Response
     {
-        return Inertia::render('settings/profile', [
-            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
-            'status' => $request->session()->get('status'),
-        ]);
+        return Inertia::render('settings/profile', $this->profiles->profilePageProps($request));
     }
 
     /**
@@ -30,17 +40,12 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        abort_unless($user instanceof User, 403);
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-        }
+        $this->profiles->updateProfile($user, $request->validated());
 
-        $request->user()->save();
-
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Profile updated.')]);
-
-        return to_route('profile.edit');
+        return to_route($this->profiles->profileRoute($user))->with('success', 'Profile berhasil diperbarui.');
     }
 
     /**

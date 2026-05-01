@@ -3,7 +3,6 @@ import {
     ChevronDown,
     ChevronLeft,
     ChevronRight,
-    ChevronUp,
     Heart,
     Search,
 } from 'lucide-react';
@@ -230,9 +229,9 @@ export default function ListProduct({ products, filters, options }: Props) {
                         />
                     </form>
 
-                    <div className="space-y-6 text-secondary-foreground">
-                        <div className="flex items-center justify-between">
-                            <p className="text-[11px] font-semibold tracking-wide text-foreground">
+                    <div className="text-secondary-foreground">
+                        <div className="mb-3 flex items-center justify-between px-1">
+                            <p className="text-[11px] font-semibold tracking-wide text-foreground uppercase">
                                 Filters
                             </p>
                             {activeSummary > 0 && (
@@ -246,7 +245,8 @@ export default function ListProduct({ products, filters, options }: Props) {
                             )}
                         </div>
 
-                        <FilterSection title="Categories">
+                        <div className="rounded-xl border border-border/50 bg-card/30 px-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md">
+                            <FilterSection title="Categories">
                             <div className="space-y-3.5 text-[11px] tracking-wide">
                                 <FilterRadio
                                     label="All Categories"
@@ -417,6 +417,7 @@ export default function ListProduct({ products, filters, options }: Props) {
                                 ))}
                             </div>
                         </FilterSection>
+                        </div>
                     </div>
                 </aside>
 
@@ -626,18 +627,39 @@ export default function ListProduct({ products, filters, options }: Props) {
 function FilterSection({
     title,
     children,
+    defaultOpen = true,
 }: {
     title: string;
     children: ReactNode;
+    defaultOpen?: boolean;
 }) {
+    const [isOpen, setIsOpen] = useState(defaultOpen);
+
     return (
-        <div>
-            <div className="mb-4 flex cursor-pointer items-center justify-between text-[11px] font-semibold tracking-wide transition-colors hover:text-foreground">
+        <div className="border-b border-border/60 py-5 last:border-0">
+            <button
+                type="button"
+                onClick={() => setIsOpen(!isOpen)}
+                className="group flex w-full cursor-pointer items-center justify-between text-[11px] font-semibold tracking-wide transition-colors hover:text-foreground outline-none"
+            >
                 <span>{title}</span>
-                <ChevronUp size={14} />
+                <div
+                    className={`transform transition-transform duration-300 ease-[cubic-bezier(0.87,_0,_0.13,_1)] ${
+                        isOpen ? 'rotate-180' : 'rotate-0'
+                    }`}
+                >
+                    <ChevronDown size={14} className="text-muted-foreground transition-colors group-hover:text-foreground" />
+                </div>
+            </button>
+            <div
+                className={`grid transition-[grid-template-rows,opacity,padding] duration-500 ease-[cubic-bezier(0.87,_0,_0.13,_1)] ${
+                    isOpen ? 'grid-rows-[1fr] opacity-100 pt-4' : 'grid-rows-[0fr] opacity-0 pt-0 pointer-events-none'
+                }`}
+            >
+                <div className="overflow-hidden">
+                    {children}
+                </div>
             </div>
-            {children}
-            <hr className="mt-6 border-border" />
         </div>
     );
 }
@@ -655,23 +677,28 @@ function FilterRadio({
         <button
             type="button"
             onClick={onClick}
-            className="group flex w-full items-center justify-between gap-3 text-left transition-colors hover:text-foreground"
+            className="group flex w-full items-center justify-between gap-3 text-left outline-none"
         >
             <span className="flex items-center gap-3">
                 <span
-                    className={`flex h-[14px] w-[14px] items-center justify-center rounded-full border transition-colors ${
+                    className={`flex h-[14px] w-[14px] flex-shrink-0 items-center justify-center rounded-full border transition-all duration-300 ${
                         active
-                            ? 'border-secondary-foreground'
-                            : 'border-input group-hover:border-secondary-foreground'
+                            ? 'border-primary ring-4 ring-primary/10'
+                            : 'border-input group-hover:border-primary/50'
                     }`}
                 >
-                    {active && (
-                        <span className="h-[6px] w-[6px] rounded-full bg-secondary-foreground" />
-                    )}
+                    <span 
+                        className={`h-[6px] w-[6px] rounded-full bg-primary transition-all duration-300 ${
+                            active ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
+                        }`} 
+                    />
                 </span>
-                <span>{label}</span>
+                <span className={`transition-colors duration-300 text-[11px] tracking-wide ${
+                    active ? 'text-foreground font-medium' : 'text-secondary-foreground group-hover:text-foreground'
+                }`}>
+                    {label}
+                </span>
             </span>
-            <ChevronDown size={14} className="opacity-60" />
         </button>
     );
 }
