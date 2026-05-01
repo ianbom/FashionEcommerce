@@ -1,0 +1,19 @@
+import { Head, Link, router } from '@inertiajs/react';
+import {
+    Archive, AlertTriangle, Ban, ChevronLeft, ChevronRight,
+    Download, Eye, FileText, MoreVertical, Package, Pencil, Plus, RotateCcw,
+    Search, ShoppingBag, Sparkles, Star, Trash2, TrendingDown, Upload, X,
+} from 'lucide-react';
+import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import {
+    Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList,
+    BreadcrumbPage, BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+    DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
