@@ -207,19 +207,6 @@ export default function ProductsIndex({ products, filters, options }: Props) {
             <Head title='Products' />
             <div className='flex flex-col gap-6 p-6 mx-auto max-w-7xl'>
 
-                {/* Breadcrumb */}
-                <Breadcrumb>
-                    <BreadcrumbList>
-                        <BreadcrumbItem>
-                            <BreadcrumbLink href={'/admin/dashboard'}>Dashboard</BreadcrumbLink>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                            <BreadcrumbPage className='text-zinc-500'>Products</BreadcrumbPage>
-                        </BreadcrumbItem>
-                    </BreadcrumbList>
-                </Breadcrumb>
-
                 {/* Header */}
                 <div className='flex flex-col md:flex-row justify-between items-start md:items-end gap-4'>
                     <div>
