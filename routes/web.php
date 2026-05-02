@@ -29,6 +29,7 @@ use App\Http\Controllers\Customer\CartController;
 use App\Http\Controllers\Customer\CheckoutController;
 use App\Http\Controllers\Customer\HomeController as CustomerHomeController;
 use App\Http\Controllers\Customer\MidtransWebhookController;
+use App\Http\Controllers\Customer\NotificationController as CustomerNotificationController;
 use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\Customer\ProductController as CustomerProductController;
 use App\Http\Controllers\Settings\ProfileController;
@@ -38,8 +39,6 @@ Route::get('/', [CustomerHomeController::class, 'index'])->name('home');
 
 Route::get('/detail', [CustomerProductController::class, 'show'])->name('detail');
 Route::get('/list', [CustomerProductController::class, 'index'])->name('list');
-
-Route::inertia('/notifications', 'customer/notification/list-notification')->name('notifications');
 
 // Policy Routes
 Route::inertia('/privacy-policy', 'customer/policy/privacy-policy')->name('policy.privacy');
@@ -61,6 +60,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout');
     Route::get('/my-order', [CustomerOrderController::class, 'index'])->name('my-order');
     Route::get('/my-order/{order}', [CustomerOrderController::class, 'show'])->name('order.detail');
+    Route::get('/notifications', [CustomerNotificationController::class, 'index'])->name('notifications');
+    Route::get('/notifications/{notification}', [CustomerNotificationController::class, 'show'])->name('notifications.show');
+    Route::post('/notifications/read-all', [CustomerNotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+    Route::post('/notifications/{notification}/read', [CustomerNotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::get('/biteship/areas', BiteshipAreaController::class)->name('biteship.areas');
     Route::post('/checkout/shipping-rates', [CheckoutController::class, 'shippingRates'])->name('checkout.shipping-rates');
     Route::post('/checkout/shipping-rate', [CheckoutController::class, 'selectShippingRate'])->name('checkout.shipping-rate');

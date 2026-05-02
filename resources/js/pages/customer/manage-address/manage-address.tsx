@@ -286,6 +286,7 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
             if (!response.ok) {
                 setAreaError(payload.message ?? 'Gagal mencari area Biteship.');
                 setAreaResults([]);
+
                 return;
             }
 

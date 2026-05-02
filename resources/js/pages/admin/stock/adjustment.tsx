@@ -52,12 +52,20 @@ export default function StockAdjustment({ variant }: Props) {
                     <Card>
                         <CardHeader>
                             <CardTitle>{variant.sku}</CardTitle>
-                            <CardDescription>{variant.product ?? '-'}</CardDescription>
+                            <CardDescription>
+                                {variant.product ?? '-'}
+                            </CardDescription>
                         </CardHeader>
                         <CardContent className="grid gap-3 text-sm">
                             <Metric label="Stock" value={variant.stock} />
-                            <Metric label="Reserved" value={variant.reserved_stock} />
-                            <Metric label="Available" value={variant.available_stock} />
+                            <Metric
+                                label="Reserved"
+                                value={variant.reserved_stock}
+                            />
+                            <Metric
+                                label="Available"
+                                value={variant.available_stock}
+                            />
                         </CardContent>
                     </Card>
 
@@ -65,34 +73,73 @@ export default function StockAdjustment({ variant }: Props) {
                         <CardHeader>
                             <CardTitle>Adjustment Form</CardTitle>
                             <CardDescription>
-                                Type out otomatis mengurangi stok jika quantity positif.
+                                Type out otomatis mengurangi stok jika quantity
+                                positif.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <form onSubmit={submit} className="flex flex-col gap-5">
+                            <form
+                                onSubmit={submit}
+                                className="flex flex-col gap-5"
+                            >
                                 <div className="grid gap-5 md:grid-cols-2">
                                     <div className="grid gap-2">
                                         <Label htmlFor="type">Type</Label>
-                                        <select id="type" value={data.type} onChange={(event) => setData('type', event.target.value)} className="border-input h-9 rounded-md border bg-transparent px-3 py-1 text-sm">
+                                        <select
+                                            id="type"
+                                            value={data.type}
+                                            onChange={(event) =>
+                                                setData(
+                                                    'type',
+                                                    event.target.value,
+                                                )
+                                            }
+                                            className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm"
+                                        >
                                             <option value="in">In</option>
                                             <option value="out">Out</option>
-                                            <option value="adjustment">Adjustment</option>
+                                            <option value="adjustment">
+                                                Adjustment
+                                            </option>
                                         </select>
                                         <InputError message={errors.type} />
                                     </div>
                                     <div className="grid gap-2">
-                                        <Label htmlFor="quantity">Quantity</Label>
-                                        <Input id="quantity" type="number" value={data.quantity} onChange={(event) => setData('quantity', Number(event.target.value))} />
+                                        <Label htmlFor="quantity">
+                                            Quantity
+                                        </Label>
+                                        <Input
+                                            id="quantity"
+                                            type="number"
+                                            value={data.quantity}
+                                            onChange={(event) =>
+                                                setData(
+                                                    'quantity',
+                                                    Number(event.target.value),
+                                                )
+                                            }
+                                        />
                                         <InputError message={errors.quantity} />
                                     </div>
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="note">Note</Label>
-                                    <textarea id="note" value={data.note} onChange={(event) => setData('note', event.target.value)} className="border-input focus-visible:border-ring focus-visible:ring-ring/50 min-h-28 rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]" />
+                                    <textarea
+                                        id="note"
+                                        value={data.note}
+                                        onChange={(event) =>
+                                            setData('note', event.target.value)
+                                        }
+                                        className="min-h-28 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                                    />
                                     <InputError message={errors.note} />
                                 </div>
                                 <div className="flex justify-end gap-3 border-t pt-5">
-                                    <Button asChild type="button" variant="outline">
+                                    <Button
+                                        asChild
+                                        type="button"
+                                        variant="outline"
+                                    >
                                         <Link href="/admin/stock">Cancel</Link>
                                     </Button>
                                     <Button type="submit" disabled={processing}>

@@ -1,22 +1,53 @@
 import { Head, Link, router } from '@inertiajs/react';
 import {
-    Archive, Ban, ChevronLeft, ChevronRight,
-    Download, Eye, FileText, MoreVertical, Package, Pencil, Plus, RotateCcw,
-    Search, ShoppingBag, Sparkles, Star, Trash2, TrendingDown, Upload, X, Layers
+    Archive,
+    Ban,
+    ChevronLeft,
+    ChevronRight,
+    Download,
+    Eye,
+    FileText,
+    MoreVertical,
+    Package,
+    Pencil,
+    Plus,
+    RotateCcw,
+    Search,
+    ShoppingBag,
+    Sparkles,
+    Star,
+    Trash2,
+    TrendingDown,
+    Upload,
+    X,
+    Layers,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import {
-    Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList,
-    BreadcrumbPage, BreadcrumbSeparator,
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbPage,
+    BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
-    DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 interface Collection {
     id: number;
@@ -50,25 +81,46 @@ interface Props {
     filters: Filters;
 }
 
-const statusConfig: Record<string, { label: string; dot: string; text: string; bg: string }> = {
-    active:   { label: 'Active',   dot: 'bg-emerald-400', text: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-100' },
-    inactive: { label: 'Inactive', dot: 'bg-zinc-400',    text: 'text-zinc-600',    bg: 'bg-zinc-50 border-zinc-200'     },
+const statusConfig: Record<
+    string,
+    { label: string; dot: string; text: string; bg: string }
+> = {
+    active: {
+        label: 'Active',
+        dot: 'bg-emerald-400',
+        text: 'text-emerald-700',
+        bg: 'bg-emerald-50 border-emerald-100',
+    },
+    inactive: {
+        label: 'Inactive',
+        dot: 'bg-zinc-400',
+        text: 'text-zinc-600',
+        bg: 'bg-zinc-50 border-zinc-200',
+    },
 };
 
 export default function CollectionsIndex({ collections, filters }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [selected, setSelected] = useState<number[]>([]);
 
-    const allSelected = collections.data.length > 0 && selected.length === collections.data.length;
+    const allSelected =
+        collections.data.length > 0 &&
+        selected.length === collections.data.length;
 
     const toggleAll = () =>
         setSelected(allSelected ? [] : collections.data.map((c) => c.id));
 
     const toggleOne = (id: number) =>
-        setSelected((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+        setSelected((prev) =>
+            prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+        );
 
     const applyFilter = (key: string, value: string) =>
-        router.get('/admin/collections', { ...filters, [key]: value, page: 1 }, { preserveState: true, replace: true });
+        router.get(
+            '/admin/collections',
+            { ...filters, [key]: value, page: 1 },
+            { preserveState: true, replace: true },
+        );
 
     const resetFilters = () =>
         router.get('/admin/collections', {}, { preserveState: false });
@@ -81,8 +133,8 @@ export default function CollectionsIndex({ collections, filters }: Props) {
     const doAction = (url: string, method: 'post' | 'delete' = 'post') =>
         router[method](url, {}, { preserveScroll: true });
 
-    const activeCount   = collections.data.filter(c => c.is_active).length;
-    const featuredCount = collections.data.filter(c => c.is_featured).length;
+    const activeCount = collections.data.filter((c) => c.is_active).length;
+    const featuredCount = collections.data.filter((c) => c.is_featured).length;
 
     const stats = [
         {
@@ -131,31 +183,41 @@ export default function CollectionsIndex({ collections, filters }: Props) {
 
     return (
         <>
-            <Head title='Collections' />
-            <div className='flex flex-col gap-6 p-6 mx-auto w-full'>
+            <Head title="Collections" />
+            <div className="mx-auto flex w-full flex-col gap-6 p-6">
                 {/* Header */}
-                <div className='flex flex-col md:flex-row justify-between items-start md:items-end gap-4'>
+                <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
                     <div>
-                        <p className='text-[11px] font-bold uppercase tracking-widest text-[#422d25]/50 mb-1'>Catalog Management</p>
-                        <h1 className='text-3xl font-serif text-zinc-900 leading-tight'>Collections</h1>
-                        <p className='text-sm text-zinc-400 mt-1'>Manage your campaign collections like Ramadan, Hajj Series, etc.</p>
+                        <p className="mb-1 text-[11px] font-bold tracking-widest text-[#422d25]/50 uppercase">
+                            Catalog Management
+                        </p>
+                        <h1 className="font-serif text-3xl leading-tight text-zinc-900">
+                            Collections
+                        </h1>
+                        <p className="mt-1 text-sm text-zinc-400">
+                            Manage your campaign collections like Ramadan, Hajj
+                            Series, etc.
+                        </p>
                     </div>
-                    <div className='flex items-center gap-2 shrink-0'>
-                        <Link href='/admin/collections/create'>
-                            <Button size='sm' className='h-9 bg-[#422d25] hover:bg-[#34231d] text-white gap-1.5 shadow-sm'>
-                                <Plus className='w-3.5 h-3.5' /> Add Collection
+                    <div className="flex shrink-0 items-center gap-2">
+                        <Link href="/admin/collections/create">
+                            <Button
+                                size="sm"
+                                className="h-9 gap-1.5 bg-[#422d25] text-white shadow-sm hover:bg-[#34231d]"
+                            >
+                                <Plus className="h-3.5 w-3.5" /> Add Collection
                             </Button>
                         </Link>
                     </div>
                 </div>
 
                 {/* Stat Cards */}
-                <div className='grid grid-cols-2 md:grid-cols-3 gap-3'>
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
                     {stats.map((m, i) => (
                         <div
                             key={i}
                             className={[
-                                'relative rounded-2xl overflow-hidden border transition-all duration-200 hover:-translate-y-0.5',
+                                'relative overflow-hidden rounded-2xl border transition-all duration-200 hover:-translate-y-0.5',
                                 m.featured
                                     ? 'border-transparent shadow-lg shadow-[#422d25]/20'
                                     : 'border-zinc-100 shadow-sm hover:shadow-md',
@@ -163,27 +225,55 @@ export default function CollectionsIndex({ collections, filters }: Props) {
                             ].join(' ')}
                         >
                             {!m.featured && m.accent && (
-                                <div className={'absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ' + m.accent} />
+                                <div
+                                    className={
+                                        'absolute top-0 right-0 left-0 h-0.5 bg-gradient-to-r ' +
+                                        m.accent
+                                    }
+                                />
                             )}
                             {m.featured && (
-                                <div className='absolute -right-5 -top-5 w-20 h-20 rounded-full bg-white/10' />
+                                <div className="absolute -top-5 -right-5 h-20 w-20 rounded-full bg-white/10" />
                             )}
 
-                            <div className='p-4 flex flex-col gap-3'>
-                                <div className='flex items-center justify-between'>
-                                    <div className={'w-8 h-8 rounded-xl flex items-center justify-center ' + m.iconBg}>
-                                        <m.icon className={'w-4 h-4 ' + m.iconColor} />
+                            <div className="flex flex-col gap-3 p-4">
+                                <div className="flex items-center justify-between">
+                                    <div
+                                        className={
+                                            'flex h-8 w-8 items-center justify-center rounded-xl ' +
+                                            m.iconBg
+                                        }
+                                    >
+                                        <m.icon
+                                            className={'h-4 w-4 ' + m.iconColor}
+                                        />
                                     </div>
-                                    {m.featured && <Sparkles className='w-3.5 h-3.5 text-white/30' />}
+                                    {m.featured && (
+                                        <Sparkles className="h-3.5 w-3.5 text-white/30" />
+                                    )}
                                 </div>
                                 <div>
-                                    <div className={'text-2xl font-bold tracking-tight leading-none ' + m.valColor}>
+                                    <div
+                                        className={
+                                            'text-2xl leading-none font-bold tracking-tight ' +
+                                            m.valColor
+                                        }
+                                    >
                                         {m.val}
                                     </div>
-                                    <div className={'text-[11px] font-semibold mt-1.5 ' + m.titleColor}>
+                                    <div
+                                        className={
+                                            'mt-1.5 text-[11px] font-semibold ' +
+                                            m.titleColor
+                                        }
+                                    >
                                         {m.title}
                                     </div>
-                                    <div className={'text-[10px] mt-0.5 ' + m.subColor}>
+                                    <div
+                                        className={
+                                            'mt-0.5 text-[10px] ' + m.subColor
+                                        }
+                                    >
                                         {m.sub}
                                     </div>
                                 </div>
@@ -193,79 +283,144 @@ export default function CollectionsIndex({ collections, filters }: Props) {
                 </div>
 
                 {/* Main Table Card */}
-                <div className='bg-white border border-zinc-100 rounded-2xl shadow-sm overflow-hidden'>
-
+                <div className="overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-sm">
                     {/* Filter Bar */}
-                    <form onSubmit={handleSearch} className='px-5 py-4 border-b border-zinc-100 bg-zinc-50/40 flex flex-wrap items-end gap-3'>
-                        <div className='relative flex-1 min-w-[200px]'>
-                            <Search className='absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 w-3.5 h-3.5' />
+                    <form
+                        onSubmit={handleSearch}
+                        className="flex flex-wrap items-end gap-3 border-b border-zinc-100 bg-zinc-50/40 px-5 py-4"
+                    >
+                        <div className="relative min-w-[200px] flex-1">
+                            <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
                             <Input
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                placeholder='Search collections...'
-                                className='pl-9 h-9 border-zinc-200 bg-white rounded-lg text-sm shadow-sm'
+                                placeholder="Search collections..."
+                                className="h-9 rounded-lg border-zinc-200 bg-white pl-9 text-sm shadow-sm"
                             />
                         </div>
 
-                        <FilterSelect label='Status' value={filters.status || 'all'} onChange={(v) => applyFilter('status', v === 'all' ? '' : v)}>
-                            <SelectItem value='all'>All Status</SelectItem>
-                            <SelectItem value='1'>Active</SelectItem>
-                            <SelectItem value='0'>Inactive</SelectItem>
+                        <FilterSelect
+                            label="Status"
+                            value={filters.status || 'all'}
+                            onChange={(v) =>
+                                applyFilter('status', v === 'all' ? '' : v)
+                            }
+                        >
+                            <SelectItem value="all">All Status</SelectItem>
+                            <SelectItem value="1">Active</SelectItem>
+                            <SelectItem value="0">Inactive</SelectItem>
                         </FilterSelect>
 
-                        <div className='flex gap-2 ml-auto'>
-                            <Button type='submit' size='sm' className='h-9 bg-[#422d25] hover:bg-[#34231d] text-white gap-1.5'>
-                                <Search className='w-3.5 h-3.5' /> Search
+                        <div className="ml-auto flex gap-2">
+                            <Button
+                                type="submit"
+                                size="sm"
+                                className="h-9 gap-1.5 bg-[#422d25] text-white hover:bg-[#34231d]"
+                            >
+                                <Search className="h-3.5 w-3.5" /> Search
                             </Button>
-                            <Button type='button' variant='ghost' size='sm' className='h-9 text-zinc-500 hover:text-zinc-700 gap-1.5' onClick={resetFilters}>
-                                <RotateCcw className='w-3.5 h-3.5' /> Reset
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-9 gap-1.5 text-zinc-500 hover:text-zinc-700"
+                                onClick={resetFilters}
+                            >
+                                <RotateCcw className="h-3.5 w-3.5" /> Reset
                             </Button>
                         </div>
                     </form>
 
                     {/* Bulk Action Bar */}
                     {selected.length > 0 && (
-                        <div className='px-5 py-2.5 bg-[#fdfaf8] border-b border-[#e8ddd8] flex items-center gap-3'>
-                            <span className='text-sm font-semibold text-[#422d25]'>{selected.length} selected</span>
-                            <div className='flex gap-2'>
-                                <Button size='sm' variant='outline' className='h-7 text-xs border-red-100 text-red-600 hover:bg-red-50 gap-1' onClick={() => { if (confirm('Delete ' + selected.length + ' collections?')) doAction('/admin/collections/bulk-delete', 'delete'); }}>
-                                    <Trash2 className='w-3 h-3' /> Delete
+                        <div className="flex items-center gap-3 border-b border-[#e8ddd8] bg-[#fdfaf8] px-5 py-2.5">
+                            <span className="text-sm font-semibold text-[#422d25]">
+                                {selected.length} selected
+                            </span>
+                            <div className="flex gap-2">
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-7 gap-1 border-red-100 text-xs text-red-600 hover:bg-red-50"
+                                    onClick={() => {
+                                        if (
+                                            confirm(
+                                                'Delete ' +
+                                                    selected.length +
+                                                    ' collections?',
+                                            )
+                                        ) {
+                                            doAction(
+                                                '/admin/collections/bulk-delete',
+                                                'delete',
+                                            );
+                                        }
+                                    }}
+                                >
+                                    <Trash2 className="h-3 w-3" /> Delete
                                 </Button>
                             </div>
-                            <Button variant='ghost' size='icon' className='h-7 w-7 ml-auto text-zinc-400 hover:text-zinc-600' onClick={() => setSelected([])}>
-                                <X className='w-3.5 h-3.5' />
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="ml-auto h-7 w-7 text-zinc-400 hover:text-zinc-600"
+                                onClick={() => setSelected([])}
+                            >
+                                <X className="h-3.5 w-3.5" />
                             </Button>
                         </div>
                     )}
 
                     {/* Table */}
-                    <div className='overflow-x-auto'>
-                        <table className='w-full text-sm text-left'>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-sm">
                             <thead>
-                                <tr className='border-b border-zinc-100 bg-zinc-50/60'>
-                                    <th className='px-4 py-3 w-10'>
-                                        <Checkbox checked={allSelected} onCheckedChange={toggleAll}
-                                            className='data-[state=checked]:bg-[#422d25] border-zinc-300' />
+                                <tr className="border-b border-zinc-100 bg-zinc-50/60">
+                                    <th className="w-10 px-4 py-3">
+                                        <Checkbox
+                                            checked={allSelected}
+                                            onCheckedChange={toggleAll}
+                                            className="border-zinc-300 data-[state=checked]:bg-[#422d25]"
+                                        />
                                     </th>
-                                    <th className='px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-400'>Collection</th>
-                                    <th className='px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 text-center'>Products</th>
-                                    <th className='px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-400'>Featured</th>
-                                    <th className='px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-400'>Status</th>
-                                    <th className='px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-400'>Created</th>
-                                    <th className='px-4 py-3 w-10'></th>
+                                    <th className="px-4 py-3 text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">
+                                        Collection
+                                    </th>
+                                    <th className="px-4 py-3 text-center text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">
+                                        Products
+                                    </th>
+                                    <th className="px-4 py-3 text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">
+                                        Featured
+                                    </th>
+                                    <th className="px-4 py-3 text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">
+                                        Status
+                                    </th>
+                                    <th className="px-4 py-3 text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">
+                                        Created
+                                    </th>
+                                    <th className="w-10 px-4 py-3"></th>
                                 </tr>
                             </thead>
-                            <tbody className='divide-y divide-zinc-50'>
+                            <tbody className="divide-y divide-zinc-50">
                                 {collections.data.length === 0 && (
                                     <tr>
                                         <td colSpan={7}>
-                                            <div className='flex flex-col items-center justify-center py-20 gap-3'>
-                                                <div className='w-12 h-12 rounded-2xl bg-zinc-100 flex items-center justify-center'>
-                                                    <Layers className='w-5 h-5 text-zinc-400' />
+                                            <div className="flex flex-col items-center justify-center gap-3 py-20">
+                                                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-100">
+                                                    <Layers className="h-5 w-5 text-zinc-400" />
                                                 </div>
-                                                <p className='text-sm text-zinc-400'>No collections found. Try adjusting your filters.</p>
-                                                <Button size='sm' variant='outline' className='text-xs h-8' onClick={resetFilters}>
-                                                    <RotateCcw className='w-3 h-3 mr-1' /> Clear Filters
+                                                <p className="text-sm text-zinc-400">
+                                                    No collections found. Try
+                                                    adjusting your filters.
+                                                </p>
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="h-8 text-xs"
+                                                    onClick={resetFilters}
+                                                >
+                                                    <RotateCcw className="mr-1 h-3 w-3" />{' '}
+                                                    Clear Filters
                                                 </Button>
                                             </div>
                                         </td>
@@ -273,87 +428,179 @@ export default function CollectionsIndex({ collections, filters }: Props) {
                                 )}
                                 {collections.data.map((c) => {
                                     const isSelected = selected.includes(c.id);
-                                    const sc = statusConfig[c.is_active ? 'active' : 'inactive'];
+                                    const sc =
+                                        statusConfig[
+                                            c.is_active ? 'active' : 'inactive'
+                                        ];
 
                                     return (
                                         <tr
                                             key={c.id}
-                                            className={'transition-colors hover:bg-zinc-50/70 ' + (isSelected ? 'bg-[#fdfaf8]' : '')}
+                                            className={
+                                                'transition-colors hover:bg-zinc-50/70 ' +
+                                                (isSelected
+                                                    ? 'bg-[#fdfaf8]'
+                                                    : '')
+                                            }
                                         >
-                                            <td className='px-4 py-3.5'>
+                                            <td className="px-4 py-3.5">
                                                 <Checkbox
                                                     checked={isSelected}
-                                                    onCheckedChange={() => toggleOne(c.id)}
-                                                    className={isSelected ? 'data-[state=checked]:bg-[#422d25] border-[#422d25]' : 'border-zinc-300'}
+                                                    onCheckedChange={() =>
+                                                        toggleOne(c.id)
+                                                    }
+                                                    className={
+                                                        isSelected
+                                                            ? 'border-[#422d25] data-[state=checked]:bg-[#422d25]'
+                                                            : 'border-zinc-300'
+                                                    }
                                                 />
                                             </td>
 
-                                            <td className='px-4 py-3.5'>
-                                                <div className='flex items-center gap-3'>
-                                                    <div className='w-11 h-11 rounded-xl overflow-hidden border border-zinc-200 bg-zinc-50 shrink-0'>
-                                                        {c.banner_desktop_url
-                                                            ? <img src={c.banner_desktop_url} alt={c.name} className='w-full h-full object-cover' />
-                                                            : <div className='w-full h-full flex items-center justify-center'><Layers className='w-4 h-4 text-zinc-300' /></div>
-                                                        }
+                                            <td className="px-4 py-3.5">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50">
+                                                        {c.banner_desktop_url ? (
+                                                            <img
+                                                                src={
+                                                                    c.banner_desktop_url
+                                                                }
+                                                                alt={c.name}
+                                                                className="h-full w-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <div className="flex h-full w-full items-center justify-center">
+                                                                <Layers className="h-4 w-4 text-zinc-300" />
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                    <div className='min-w-[160px]'>
-                                                        <Link href={'/admin/collections/' + c.id + '/edit'} className='font-semibold text-zinc-900 hover:text-[#422d25] transition-colors line-clamp-1'>
+                                                    <div className="min-w-[160px]">
+                                                        <Link
+                                                            href={
+                                                                '/admin/collections/' +
+                                                                c.id +
+                                                                '/edit'
+                                                            }
+                                                            className="line-clamp-1 font-semibold text-zinc-900 transition-colors hover:text-[#422d25]"
+                                                        >
                                                             {c.name}
                                                         </Link>
-                                                        <span className='block text-xs text-zinc-400 mt-0.5'>{c.slug}</span>
+                                                        <span className="mt-0.5 block text-xs text-zinc-400">
+                                                            {c.slug}
+                                                        </span>
                                                     </div>
                                                 </div>
                                             </td>
 
-                                            <td className='px-4 py-3.5 text-center'>
-                                                <span className='inline-flex items-center justify-center w-7 h-7 rounded-lg bg-zinc-100 text-zinc-700 text-xs font-semibold'>
+                                            <td className="px-4 py-3.5 text-center">
+                                                <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-100 text-xs font-semibold text-zinc-700">
                                                     {c.products_count}
                                                 </span>
                                             </td>
 
-                                            <td className='px-4 py-3.5'>
+                                            <td className="px-4 py-3.5">
                                                 {c.is_featured ? (
-                                                    <Badge variant='outline' className='text-xs px-2 py-0.5 text-amber-700 border-amber-200 bg-amber-50'>
+                                                    <Badge
+                                                        variant="outline"
+                                                        className="border-amber-200 bg-amber-50 px-2 py-0.5 text-xs text-amber-700"
+                                                    >
                                                         Featured
                                                     </Badge>
                                                 ) : (
-                                                    <span className='text-zinc-300'>-</span>
+                                                    <span className="text-zinc-300">
+                                                        -
+                                                    </span>
                                                 )}
                                             </td>
 
-                                            <td className='px-4 py-3.5'>
-                                                <span className={'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ' + sc.text + ' ' + sc.bg}>
-                                                    <span className={'w-1.5 h-1.5 rounded-full ' + sc.dot} />
+                                            <td className="px-4 py-3.5">
+                                                <span
+                                                    className={
+                                                        'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ' +
+                                                        sc.text +
+                                                        ' ' +
+                                                        sc.bg
+                                                    }
+                                                >
+                                                    <span
+                                                        className={
+                                                            'h-1.5 w-1.5 rounded-full ' +
+                                                            sc.dot
+                                                        }
+                                                    />
                                                     {sc.label}
                                                 </span>
                                             </td>
 
-                                            <td className='px-4 py-3.5'>
-                                                <span className='text-xs text-zinc-400 whitespace-nowrap'>
+                                            <td className="px-4 py-3.5">
+                                                <span className="text-xs whitespace-nowrap text-zinc-400">
                                                     {c.created_at
-                                                        ? new Date(c.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+                                                        ? new Date(
+                                                              c.created_at,
+                                                          ).toLocaleDateString(
+                                                              'id-ID',
+                                                              {
+                                                                  day: '2-digit',
+                                                                  month: 'short',
+                                                                  year: 'numeric',
+                                                              },
+                                                          )
                                                         : '-'}
                                                 </span>
                                             </td>
 
-                                            <td className='px-4 py-3.5'>
+                                            <td className="px-4 py-3.5">
                                                 <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant='ghost' size='icon' className='h-8 w-8 text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 rounded-lg'>
-                                                            <MoreVertical className='w-4 h-4' />
+                                                    <DropdownMenuTrigger
+                                                        asChild
+                                                    >
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-8 w-8 rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600"
+                                                        >
+                                                            <MoreVertical className="h-4 w-4" />
                                                         </Button>
                                                     </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align='end' className='w-48'>
-                                                        <DropdownMenuItem asChild>
-                                                            <Link href={'/admin/collections/' + c.id + '/edit'} className='w-full flex items-center gap-2'>
-                                                                <Pencil className='w-3.5 h-3.5' /> Edit
+                                                    <DropdownMenuContent
+                                                        align="end"
+                                                        className="w-48"
+                                                    >
+                                                        <DropdownMenuItem
+                                                            asChild
+                                                        >
+                                                            <Link
+                                                                href={
+                                                                    '/admin/collections/' +
+                                                                    c.id +
+                                                                    '/edit'
+                                                                }
+                                                                className="flex w-full items-center gap-2"
+                                                            >
+                                                                <Pencil className="h-3.5 w-3.5" />{' '}
+                                                                Edit
                                                             </Link>
                                                         </DropdownMenuItem>
                                                         <DropdownMenuItem
-                                                            onClick={() => { if (confirm('Delete ' + c.name + '?')) doAction('/admin/collections/' + c.id, 'delete'); }}
-                                                            className='text-red-600 focus:text-red-600 focus:bg-red-50 gap-2'
+                                                            onClick={() => {
+                                                                if (
+                                                                    confirm(
+                                                                        'Delete ' +
+                                                                            c.name +
+                                                                            '?',
+                                                                    )
+                                                                ) {
+                                                                    doAction(
+                                                                        '/admin/collections/' +
+                                                                            c.id,
+                                                                        'delete',
+                                                                    );
+                                                                }
+                                                            }}
+                                                            className="gap-2 text-red-600 focus:bg-red-50 focus:text-red-600"
                                                         >
-                                                            <Trash2 className='w-3.5 h-3.5' /> Delete
+                                                            <Trash2 className="h-3.5 w-3.5" />{' '}
+                                                            Delete
                                                         </DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
@@ -366,30 +613,52 @@ export default function CollectionsIndex({ collections, filters }: Props) {
                     </div>
 
                     {/* Pagination */}
-                    <div className='px-5 py-3.5 border-t border-zinc-100 flex items-center justify-between bg-zinc-50/40'>
-                        <span className='text-xs text-zinc-400'>
+                    <div className="flex items-center justify-between border-t border-zinc-100 bg-zinc-50/40 px-5 py-3.5">
+                        <span className="text-xs text-zinc-400">
                             {collections.from && collections.to
-                                ? 'Showing ' + collections.from + '-' + collections.to + ' of ' + collections.total + ' collections'
+                                ? 'Showing ' +
+                                  collections.from +
+                                  '-' +
+                                  collections.to +
+                                  ' of ' +
+                                  collections.total +
+                                  ' collections'
                                 : 'No collections'}
                         </span>
-                        <div className='flex items-center gap-1'>
+                        <div className="flex items-center gap-1">
                             {collections.links.map((link, i) => {
-                                const isChevronLeft  = link.label.includes('Previous') || link.label.includes('&laquo;');
-                                const isChevronRight = link.label.includes('Next')     || link.label.includes('&raquo;');
-                                const label = isChevronLeft  ? <ChevronLeft  className='w-3.5 h-3.5' />
-                                            : isChevronRight ? <ChevronRight className='w-3.5 h-3.5' />
-                                            : <span dangerouslySetInnerHTML={{ __html: link.label }} />;
+                                const isChevronLeft =
+                                    link.label.includes('Previous') ||
+                                    link.label.includes('&laquo;');
+                                const isChevronRight =
+                                    link.label.includes('Next') ||
+                                    link.label.includes('&raquo;');
+                                const label = isChevronLeft ? (
+                                    <ChevronLeft className="h-3.5 w-3.5" />
+                                ) : isChevronRight ? (
+                                    <ChevronRight className="h-3.5 w-3.5" />
+                                ) : (
+                                    <span
+                                        dangerouslySetInnerHTML={{
+                                            __html: link.label,
+                                        }}
+                                    />
+                                );
 
                                 return (
                                     <button
                                         key={i}
                                         disabled={!link.url}
-                                        onClick={() => link.url && router.get(link.url)}
+                                        onClick={() =>
+                                            link.url && router.get(link.url)
+                                        }
                                         className={[
-                                            'h-8 min-w-8 px-2.5 rounded-lg text-xs font-medium transition-colors',
-                                            link.active  ? 'bg-[#422d25] text-white shadow-sm'
-                                            : !link.url  ? 'text-zinc-300 cursor-not-allowed'
-                                            :              'text-zinc-500 hover:bg-zinc-100',
+                                            'h-8 min-w-8 rounded-lg px-2.5 text-xs font-medium transition-colors',
+                                            link.active
+                                                ? 'bg-[#422d25] text-white shadow-sm'
+                                                : !link.url
+                                                  ? 'cursor-not-allowed text-zinc-300'
+                                                  : 'text-zinc-500 hover:bg-zinc-100',
                                         ].join(' ')}
                                     >
                                         {label}
@@ -405,7 +674,10 @@ export default function CollectionsIndex({ collections, filters }: Props) {
 }
 
 function FilterSelect({
-    label, value, onChange, children,
+    label,
+    value,
+    onChange,
+    children,
 }: {
     label: string;
     value: string;
@@ -413,10 +685,12 @@ function FilterSelect({
     children: React.ReactNode;
 }) {
     return (
-        <div className='flex flex-col gap-1'>
-            <span className='text-[10px] font-semibold uppercase tracking-wider text-zinc-400 px-0.5'>{label}</span>
+        <div className="flex flex-col gap-1">
+            <span className="px-0.5 text-[10px] font-semibold tracking-wider text-zinc-400 uppercase">
+                {label}
+            </span>
             <Select value={value} onValueChange={onChange}>
-                <SelectTrigger className='h-9 w-[130px] border-zinc-200 bg-white shadow-sm text-xs rounded-lg'>
+                <SelectTrigger className="h-9 w-[130px] rounded-lg border-zinc-200 bg-white text-xs shadow-sm">
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent>{children}</SelectContent>

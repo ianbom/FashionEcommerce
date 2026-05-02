@@ -1,22 +1,55 @@
 import { Head, Link, router } from '@inertiajs/react';
 import {
-    Archive, Ban, ChevronLeft, ChevronRight,
-    Download, Eye, FileText, MoreVertical, Package, Pencil, Plus, RotateCcw,
-    Search, ShoppingBag, Sparkles, Star, Trash2, TrendingDown, Upload, X, SlidersHorizontal, History, CheckCircle2
+    Archive,
+    Ban,
+    ChevronLeft,
+    ChevronRight,
+    Download,
+    Eye,
+    FileText,
+    MoreVertical,
+    Package,
+    Pencil,
+    Plus,
+    RotateCcw,
+    Search,
+    ShoppingBag,
+    Sparkles,
+    Star,
+    Trash2,
+    TrendingDown,
+    Upload,
+    X,
+    SlidersHorizontal,
+    History,
+    CheckCircle2,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import {
-    Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList,
-    BreadcrumbPage, BreadcrumbSeparator,
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbPage,
+    BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
-    DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 interface VariantStock {
     id: number;
@@ -51,16 +84,33 @@ interface Props {
     filters: Filters;
 }
 
-const statusConfig: Record<string, { label: string; dot: string; text: string; bg: string }> = {
-    active:   { label: 'Active',   dot: 'bg-emerald-400', text: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-100' },
-    inactive: { label: 'Inactive', dot: 'bg-zinc-400',    text: 'text-zinc-600',    bg: 'bg-zinc-50 border-zinc-200'     },
+const statusConfig: Record<
+    string,
+    { label: string; dot: string; text: string; bg: string }
+> = {
+    active: {
+        label: 'Active',
+        dot: 'bg-emerald-400',
+        text: 'text-emerald-700',
+        bg: 'bg-emerald-50 border-emerald-100',
+    },
+    inactive: {
+        label: 'Inactive',
+        dot: 'bg-zinc-400',
+        text: 'text-zinc-600',
+        bg: 'bg-zinc-50 border-zinc-200',
+    },
 };
 
 export default function StockIndex({ variants, filters }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
 
     const applyFilter = (key: string, value: string) =>
-        router.get('/admin/stock', { ...filters, [key]: value, page: 1 }, { preserveState: true, replace: true });
+        router.get(
+            '/admin/stock',
+            { ...filters, [key]: value, page: 1 },
+            { preserveState: true, replace: true },
+        );
 
     const resetFilters = () =>
         router.get('/admin/stock', {}, { preserveState: false });
@@ -70,9 +120,15 @@ export default function StockIndex({ variants, filters }: Props) {
         applyFilter('search', search);
     };
 
-    const inStockCount = variants.data.filter(v => v.available_stock > 5).length;
-    const lowStockCount = variants.data.filter(v => v.available_stock > 0 && v.available_stock <= 5).length;
-    const soldOutCount = variants.data.filter(v => v.available_stock === 0).length;
+    const inStockCount = variants.data.filter(
+        (v) => v.available_stock > 5,
+    ).length;
+    const lowStockCount = variants.data.filter(
+        (v) => v.available_stock > 0 && v.available_stock <= 5,
+    ).length;
+    const soldOutCount = variants.data.filter(
+        (v) => v.available_stock === 0,
+    ).length;
 
     const stats = [
         {
@@ -135,31 +191,42 @@ export default function StockIndex({ variants, filters }: Props) {
 
     return (
         <>
-            <Head title='Stock Monitor' />
-            <div className='flex flex-col gap-6 p-6 mx-auto w-full'>
+            <Head title="Stock Monitor" />
+            <div className="mx-auto flex w-full flex-col gap-6 p-6">
                 {/* Header */}
-                <div className='flex flex-col md:flex-row justify-between items-start md:items-end gap-4'>
+                <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
                     <div>
-                        <p className='text-[11px] font-bold uppercase tracking-widest text-[#422d25]/50 mb-1'>Catalog Management</p>
-                        <h1 className='text-3xl font-serif text-zinc-900 leading-tight'>Stock Monitor</h1>
-                        <p className='text-sm text-zinc-400 mt-1'>Monitor variant stock, reserved items, and perform manual adjustments.</p>
+                        <p className="mb-1 text-[11px] font-bold tracking-widest text-[#422d25]/50 uppercase">
+                            Catalog Management
+                        </p>
+                        <h1 className="font-serif text-3xl leading-tight text-zinc-900">
+                            Stock Monitor
+                        </h1>
+                        <p className="mt-1 text-sm text-zinc-400">
+                            Monitor variant stock, reserved items, and perform
+                            manual adjustments.
+                        </p>
                     </div>
-                    <div className='flex items-center gap-2 shrink-0'>
-                        <Link href='/admin/stock/logs'>
-                            <Button size='sm' variant='outline' className='h-9 text-zinc-600 border-zinc-200 bg-white hover:bg-zinc-50 gap-1.5 shadow-sm'>
-                                <History className='w-3.5 h-3.5' /> Stock Logs
+                    <div className="flex shrink-0 items-center gap-2">
+                        <Link href="/admin/stock/logs">
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-9 gap-1.5 border-zinc-200 bg-white text-zinc-600 shadow-sm hover:bg-zinc-50"
+                            >
+                                <History className="h-3.5 w-3.5" /> Stock Logs
                             </Button>
                         </Link>
                     </div>
                 </div>
 
                 {/* Stat Cards */}
-                <div className='grid grid-cols-2 md:grid-cols-4 gap-3'>
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                     {stats.map((m, i) => (
                         <div
                             key={i}
                             className={[
-                                'relative rounded-2xl overflow-hidden border transition-all duration-200 hover:-translate-y-0.5',
+                                'relative overflow-hidden rounded-2xl border transition-all duration-200 hover:-translate-y-0.5',
                                 m.featured
                                     ? 'border-transparent shadow-lg shadow-[#422d25]/20'
                                     : 'border-zinc-100 shadow-sm hover:shadow-md',
@@ -167,27 +234,55 @@ export default function StockIndex({ variants, filters }: Props) {
                             ].join(' ')}
                         >
                             {!m.featured && m.accent && (
-                                <div className={'absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ' + m.accent} />
+                                <div
+                                    className={
+                                        'absolute top-0 right-0 left-0 h-0.5 bg-gradient-to-r ' +
+                                        m.accent
+                                    }
+                                />
                             )}
                             {m.featured && (
-                                <div className='absolute -right-5 -top-5 w-20 h-20 rounded-full bg-white/10' />
+                                <div className="absolute -top-5 -right-5 h-20 w-20 rounded-full bg-white/10" />
                             )}
 
-                            <div className='p-4 flex flex-col gap-3'>
-                                <div className='flex items-center justify-between'>
-                                    <div className={'w-8 h-8 rounded-xl flex items-center justify-center ' + m.iconBg}>
-                                        <m.icon className={'w-4 h-4 ' + m.iconColor} />
+                            <div className="flex flex-col gap-3 p-4">
+                                <div className="flex items-center justify-between">
+                                    <div
+                                        className={
+                                            'flex h-8 w-8 items-center justify-center rounded-xl ' +
+                                            m.iconBg
+                                        }
+                                    >
+                                        <m.icon
+                                            className={'h-4 w-4 ' + m.iconColor}
+                                        />
                                     </div>
-                                    {m.featured && <Sparkles className='w-3.5 h-3.5 text-white/30' />}
+                                    {m.featured && (
+                                        <Sparkles className="h-3.5 w-3.5 text-white/30" />
+                                    )}
                                 </div>
                                 <div>
-                                    <div className={'text-2xl font-bold tracking-tight leading-none ' + m.valColor}>
+                                    <div
+                                        className={
+                                            'text-2xl leading-none font-bold tracking-tight ' +
+                                            m.valColor
+                                        }
+                                    >
                                         {m.val}
                                     </div>
-                                    <div className={'text-[11px] font-semibold mt-1.5 ' + m.titleColor}>
+                                    <div
+                                        className={
+                                            'mt-1.5 text-[11px] font-semibold ' +
+                                            m.titleColor
+                                        }
+                                    >
                                         {m.title}
                                     </div>
-                                    <div className={'text-[10px] mt-0.5 ' + m.subColor}>
+                                    <div
+                                        className={
+                                            'mt-0.5 text-[10px] ' + m.subColor
+                                        }
+                                    >
                                         {m.sub}
                                     </div>
                                 </div>
@@ -197,116 +292,213 @@ export default function StockIndex({ variants, filters }: Props) {
                 </div>
 
                 {/* Main Table Card */}
-                <div className='bg-white border border-zinc-100 rounded-2xl shadow-sm overflow-hidden'>
-
+                <div className="overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-sm">
                     {/* Filter Bar */}
-                    <form onSubmit={handleSearch} className='px-5 py-4 border-b border-zinc-100 bg-zinc-50/40 flex flex-wrap items-end gap-3'>
-                        <div className='relative flex-1 min-w-[200px]'>
-                            <Search className='absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 w-3.5 h-3.5' />
+                    <form
+                        onSubmit={handleSearch}
+                        className="flex flex-wrap items-end gap-3 border-b border-zinc-100 bg-zinc-50/40 px-5 py-4"
+                    >
+                        <div className="relative min-w-[200px] flex-1">
+                            <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
                             <Input
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                placeholder='Search SKU or product...'
-                                className='pl-9 h-9 border-zinc-200 bg-white rounded-lg text-sm shadow-sm'
+                                placeholder="Search SKU or product..."
+                                className="h-9 rounded-lg border-zinc-200 bg-white pl-9 text-sm shadow-sm"
                             />
                         </div>
 
-                        <FilterSelect label='Stock Status' value={filters.stock_status || 'all'} onChange={(v) => applyFilter('stock_status', v === 'all' ? '' : v)}>
-                            <SelectItem value='all'>All Stock</SelectItem>
-                            <SelectItem value='in_stock'>In Stock</SelectItem>
-                            <SelectItem value='low_stock'>Low Stock</SelectItem>
-                            <SelectItem value='sold_out'>Sold Out</SelectItem>
+                        <FilterSelect
+                            label="Stock Status"
+                            value={filters.stock_status || 'all'}
+                            onChange={(v) =>
+                                applyFilter(
+                                    'stock_status',
+                                    v === 'all' ? '' : v,
+                                )
+                            }
+                        >
+                            <SelectItem value="all">All Stock</SelectItem>
+                            <SelectItem value="in_stock">In Stock</SelectItem>
+                            <SelectItem value="low_stock">Low Stock</SelectItem>
+                            <SelectItem value="sold_out">Sold Out</SelectItem>
                         </FilterSelect>
 
-                        <div className='flex gap-2 ml-auto'>
-                            <Button type='submit' size='sm' className='h-9 bg-[#422d25] hover:bg-[#34231d] text-white gap-1.5'>
-                                <Search className='w-3.5 h-3.5' /> Search
+                        <div className="ml-auto flex gap-2">
+                            <Button
+                                type="submit"
+                                size="sm"
+                                className="h-9 gap-1.5 bg-[#422d25] text-white hover:bg-[#34231d]"
+                            >
+                                <Search className="h-3.5 w-3.5" /> Search
                             </Button>
-                            <Button type='button' variant='ghost' size='sm' className='h-9 text-zinc-500 hover:text-zinc-700 gap-1.5' onClick={resetFilters}>
-                                <RotateCcw className='w-3.5 h-3.5' /> Reset
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-9 gap-1.5 text-zinc-500 hover:text-zinc-700"
+                                onClick={resetFilters}
+                            >
+                                <RotateCcw className="h-3.5 w-3.5" /> Reset
                             </Button>
                         </div>
                     </form>
 
                     {/* Table */}
-                    <div className='overflow-x-auto'>
-                        <table className='w-full text-sm text-left'>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-sm">
                             <thead>
-                                <tr className='border-b border-zinc-100 bg-zinc-50/60'>
-                                    <th className='px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-400'>Variant / SKU</th>
-                                    <th className='px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-400'>Color / Size</th>
-                                    <th className='px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-400'>Stock</th>
-                                    <th className='px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-400'>Reserved</th>
-                                    <th className='px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-400'>Available</th>
-                                    <th className='px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-400'>Status</th>
-                                    <th className='px-4 py-3 w-10'></th>
+                                <tr className="border-b border-zinc-100 bg-zinc-50/60">
+                                    <th className="px-4 py-3 text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">
+                                        Variant / SKU
+                                    </th>
+                                    <th className="px-4 py-3 text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">
+                                        Color / Size
+                                    </th>
+                                    <th className="px-4 py-3 text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">
+                                        Stock
+                                    </th>
+                                    <th className="px-4 py-3 text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">
+                                        Reserved
+                                    </th>
+                                    <th className="px-4 py-3 text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">
+                                        Available
+                                    </th>
+                                    <th className="px-4 py-3 text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">
+                                        Status
+                                    </th>
+                                    <th className="w-10 px-4 py-3"></th>
                                 </tr>
                             </thead>
-                            <tbody className='divide-y divide-zinc-50'>
+                            <tbody className="divide-y divide-zinc-50">
                                 {variants.data.length === 0 && (
                                     <tr>
                                         <td colSpan={7}>
-                                            <div className='flex flex-col items-center justify-center py-20 gap-3'>
-                                                <div className='w-12 h-12 rounded-2xl bg-zinc-100 flex items-center justify-center'>
-                                                    <Package className='w-5 h-5 text-zinc-400' />
+                                            <div className="flex flex-col items-center justify-center gap-3 py-20">
+                                                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-100">
+                                                    <Package className="h-5 w-5 text-zinc-400" />
                                                 </div>
-                                                <p className='text-sm text-zinc-400'>No variants found. Try adjusting your filters.</p>
-                                                <Button size='sm' variant='outline' className='text-xs h-8' onClick={resetFilters}>
-                                                    <RotateCcw className='w-3 h-3 mr-1' /> Clear Filters
+                                                <p className="text-sm text-zinc-400">
+                                                    No variants found. Try
+                                                    adjusting your filters.
+                                                </p>
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="h-8 text-xs"
+                                                    onClick={resetFilters}
+                                                >
+                                                    <RotateCcw className="mr-1 h-3 w-3" />{' '}
+                                                    Clear Filters
                                                 </Button>
                                             </div>
                                         </td>
                                     </tr>
                                 )}
                                 {variants.data.map((v) => {
-                                    const sc = statusConfig[v.is_active ? 'active' : 'inactive'];
-                                    const isLowStock = v.available_stock > 0 && v.available_stock <= 5;
-                                    const isOutOfStock = v.available_stock === 0;
+                                    const sc =
+                                        statusConfig[
+                                            v.is_active ? 'active' : 'inactive'
+                                        ];
+                                    const isLowStock =
+                                        v.available_stock > 0 &&
+                                        v.available_stock <= 5;
+                                    const isOutOfStock =
+                                        v.available_stock === 0;
 
                                     return (
-                                        <tr key={v.id} className='transition-colors hover:bg-zinc-50/70'>
-                                            <td className='px-4 py-3.5'>
-                                                <div className='flex flex-col'>
-                                                    <span className='font-semibold text-zinc-900'>{v.sku}</span>
-                                                    <span className='text-xs text-zinc-400'>{v.product ?? '-'}</span>
+                                        <tr
+                                            key={v.id}
+                                            className="transition-colors hover:bg-zinc-50/70"
+                                        >
+                                            <td className="px-4 py-3.5">
+                                                <div className="flex flex-col">
+                                                    <span className="font-semibold text-zinc-900">
+                                                        {v.sku}
+                                                    </span>
+                                                    <span className="text-xs text-zinc-400">
+                                                        {v.product ?? '-'}
+                                                    </span>
                                                 </div>
                                             </td>
 
-                                            <td className='px-4 py-3.5'>
-                                                <span className='text-sm text-zinc-600'>
-                                                    {v.color_name ?? '-'} / {v.size ?? '-'}
+                                            <td className="px-4 py-3.5">
+                                                <span className="text-sm text-zinc-600">
+                                                    {v.color_name ?? '-'} /{' '}
+                                                    {v.size ?? '-'}
                                                 </span>
                                             </td>
 
-                                            <td className='px-4 py-3.5 text-zinc-600'>
+                                            <td className="px-4 py-3.5 text-zinc-600">
                                                 {v.stock}
                                             </td>
 
-                                            <td className='px-4 py-3.5 text-zinc-600'>
+                                            <td className="px-4 py-3.5 text-zinc-600">
                                                 {v.reserved_stock}
                                             </td>
 
-                                            <td className='px-4 py-3.5'>
-                                                <div className='flex items-center gap-1.5'>
-                                                    <span className={'text-sm font-semibold ' + (isOutOfStock ? 'text-red-500' : isLowStock ? 'text-amber-600' : 'text-zinc-800')}>
+                                            <td className="px-4 py-3.5">
+                                                <div className="flex items-center gap-1.5">
+                                                    <span
+                                                        className={
+                                                            'text-sm font-semibold ' +
+                                                            (isOutOfStock
+                                                                ? 'text-red-500'
+                                                                : isLowStock
+                                                                  ? 'text-amber-600'
+                                                                  : 'text-zinc-800')
+                                                        }
+                                                    >
                                                         {v.available_stock}
                                                     </span>
-                                                    {isOutOfStock && <span className='text-[10px] text-red-400 font-medium'>Sold Out</span>}
-                                                    {isLowStock   && <span className='text-[10px] text-amber-500 font-medium'>Low</span>}
+                                                    {isOutOfStock && (
+                                                        <span className="text-[10px] font-medium text-red-400">
+                                                            Sold Out
+                                                        </span>
+                                                    )}
+                                                    {isLowStock && (
+                                                        <span className="text-[10px] font-medium text-amber-500">
+                                                            Low
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </td>
 
-                                            <td className='px-4 py-3.5'>
-                                                <span className={'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ' + sc.text + ' ' + sc.bg}>
-                                                    <span className={'w-1.5 h-1.5 rounded-full ' + sc.dot} />
+                                            <td className="px-4 py-3.5">
+                                                <span
+                                                    className={
+                                                        'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ' +
+                                                        sc.text +
+                                                        ' ' +
+                                                        sc.bg
+                                                    }
+                                                >
+                                                    <span
+                                                        className={
+                                                            'h-1.5 w-1.5 rounded-full ' +
+                                                            sc.dot
+                                                        }
+                                                    />
                                                     {sc.label}
                                                 </span>
                                             </td>
 
-                                            <td className='px-4 py-3.5'>
-                                                <Button asChild variant='ghost' size='icon' className='h-8 w-8 text-zinc-400 hover:text-[#422d25] hover:bg-[#fdfaf8] rounded-lg'>
-                                                    <Link href={'/admin/product-variants/' + v.id + '/stock-adjustment'} title='Adjust Stock'>
-                                                        <SlidersHorizontal className='w-4 h-4' />
+                                            <td className="px-4 py-3.5">
+                                                <Button
+                                                    asChild
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 rounded-lg text-zinc-400 hover:bg-[#fdfaf8] hover:text-[#422d25]"
+                                                >
+                                                    <Link
+                                                        href={
+                                                            '/admin/product-variants/' +
+                                                            v.id +
+                                                            '/stock-adjustment'
+                                                        }
+                                                        title="Adjust Stock"
+                                                    >
+                                                        <SlidersHorizontal className="h-4 w-4" />
                                                     </Link>
                                                 </Button>
                                             </td>
@@ -318,30 +510,52 @@ export default function StockIndex({ variants, filters }: Props) {
                     </div>
 
                     {/* Pagination */}
-                    <div className='px-5 py-3.5 border-t border-zinc-100 flex items-center justify-between bg-zinc-50/40'>
-                        <span className='text-xs text-zinc-400'>
+                    <div className="flex items-center justify-between border-t border-zinc-100 bg-zinc-50/40 px-5 py-3.5">
+                        <span className="text-xs text-zinc-400">
                             {variants.from && variants.to
-                                ? 'Showing ' + variants.from + '-' + variants.to + ' of ' + variants.total + ' variants'
+                                ? 'Showing ' +
+                                  variants.from +
+                                  '-' +
+                                  variants.to +
+                                  ' of ' +
+                                  variants.total +
+                                  ' variants'
                                 : 'No variants'}
                         </span>
-                        <div className='flex items-center gap-1'>
+                        <div className="flex items-center gap-1">
                             {variants.links.map((link, i) => {
-                                const isChevronLeft  = link.label.includes('Previous') || link.label.includes('&laquo;');
-                                const isChevronRight = link.label.includes('Next')     || link.label.includes('&raquo;');
-                                const label = isChevronLeft  ? <ChevronLeft  className='w-3.5 h-3.5' />
-                                            : isChevronRight ? <ChevronRight className='w-3.5 h-3.5' />
-                                            : <span dangerouslySetInnerHTML={{ __html: link.label }} />;
+                                const isChevronLeft =
+                                    link.label.includes('Previous') ||
+                                    link.label.includes('&laquo;');
+                                const isChevronRight =
+                                    link.label.includes('Next') ||
+                                    link.label.includes('&raquo;');
+                                const label = isChevronLeft ? (
+                                    <ChevronLeft className="h-3.5 w-3.5" />
+                                ) : isChevronRight ? (
+                                    <ChevronRight className="h-3.5 w-3.5" />
+                                ) : (
+                                    <span
+                                        dangerouslySetInnerHTML={{
+                                            __html: link.label,
+                                        }}
+                                    />
+                                );
 
                                 return (
                                     <button
                                         key={i}
                                         disabled={!link.url}
-                                        onClick={() => link.url && router.get(link.url)}
+                                        onClick={() =>
+                                            link.url && router.get(link.url)
+                                        }
                                         className={[
-                                            'h-8 min-w-8 px-2.5 rounded-lg text-xs font-medium transition-colors',
-                                            link.active  ? 'bg-[#422d25] text-white shadow-sm'
-                                            : !link.url  ? 'text-zinc-300 cursor-not-allowed'
-                                            :              'text-zinc-500 hover:bg-zinc-100',
+                                            'h-8 min-w-8 rounded-lg px-2.5 text-xs font-medium transition-colors',
+                                            link.active
+                                                ? 'bg-[#422d25] text-white shadow-sm'
+                                                : !link.url
+                                                  ? 'cursor-not-allowed text-zinc-300'
+                                                  : 'text-zinc-500 hover:bg-zinc-100',
                                         ].join(' ')}
                                     >
                                         {label}
@@ -357,7 +571,10 @@ export default function StockIndex({ variants, filters }: Props) {
 }
 
 function FilterSelect({
-    label, value, onChange, children,
+    label,
+    value,
+    onChange,
+    children,
 }: {
     label: string;
     value: string;
@@ -365,10 +582,12 @@ function FilterSelect({
     children: React.ReactNode;
 }) {
     return (
-        <div className='flex flex-col gap-1'>
-            <span className='text-[10px] font-semibold uppercase tracking-wider text-zinc-400 px-0.5'>{label}</span>
+        <div className="flex flex-col gap-1">
+            <span className="px-0.5 text-[10px] font-semibold tracking-wider text-zinc-400 uppercase">
+                {label}
+            </span>
             <Select value={value} onValueChange={onChange}>
-                <SelectTrigger className='h-9 w-[130px] border-zinc-200 bg-white shadow-sm text-xs rounded-lg'>
+                <SelectTrigger className="h-9 w-[130px] rounded-lg border-zinc-200 bg-white text-xs shadow-sm">
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent>{children}</SelectContent>

@@ -1,7 +1,20 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import {
+    createContext,
+    useCallback,
+    useContext,
+    useMemo,
+    useState,
+} from 'react';
 import type { ReactNode } from 'react';
-import { placeOrder as placeOrderRoute, shippingRate, shippingRates } from '@/routes/checkout';
-import { apply as applyVoucherRoute, remove as removeVoucherRoute } from '@/routes/checkout/voucher';
+import {
+    placeOrder as placeOrderRoute,
+    shippingRate,
+    shippingRates,
+} from '@/routes/checkout';
+import {
+    apply as applyVoucherRoute,
+    remove as removeVoucherRoute,
+} from '@/routes/checkout/voucher';
 
 export type CheckoutItem = {
     id: number;
@@ -92,7 +105,11 @@ function csrfHeaders() {
     };
 }
 
-async function jsonRequest(url: string, method: string, body?: Record<string, unknown>) {
+async function jsonRequest(
+    url: string,
+    method: string,
+    body?: Record<string, unknown>,
+) {
     const response = await fetch(url, {
         method,
         headers: csrfHeaders(),
@@ -101,7 +118,9 @@ async function jsonRequest(url: string, method: string, body?: Record<string, un
     const payload = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-        const errors = payload.errors ?? { checkout: payload.message ?? 'Request failed.' };
+        const errors = payload.errors ?? {
+            checkout: payload.message ?? 'Request failed.',
+        };
 
         throw errors;
     }
@@ -126,10 +145,17 @@ export function CheckoutProvider({
     selectedShippingRate: ShippingRate | null;
     summary: CheckoutSummary;
 }) {
-    const [currentAddressId, setCurrentAddressId] = useState<number | null>(defaultAddressId);
-    const [rates, setRates] = useState<ShippingRate[]>(selectedShippingRate ? [selectedShippingRate] : []);
-    const [currentRate, setCurrentRate] = useState<ShippingRate | null>(selectedShippingRate);
-    const [currentVoucher, setCurrentVoucher] = useState<Voucher>(appliedVoucher);
+    const [currentAddressId, setCurrentAddressId] = useState<number | null>(
+        defaultAddressId,
+    );
+    const [rates, setRates] = useState<ShippingRate[]>(
+        selectedShippingRate ? [selectedShippingRate] : [],
+    );
+    const [currentRate, setCurrentRate] = useState<ShippingRate | null>(
+        selectedShippingRate,
+    );
+    const [currentVoucher, setCurrentVoucher] =
+        useState<Voucher>(appliedVoucher);
     const [currentSummary, setCurrentSummary] = useState(summary);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [shippingRatesLoading, setShippingRatesLoading] = useState(false);
@@ -142,12 +168,17 @@ export function CheckoutProvider({
         setCurrentSummary((current) => ({
             ...current,
             shipping: 0,
-            total: Math.max(0, current.subtotal + current.service_fee - current.discount),
+            total: Math.max(
+                0,
+                current.subtotal + current.service_fee - current.discount,
+            ),
         }));
         setShippingRatesLoading(true);
 
         try {
-            const payload = await jsonRequest(shippingRates.url(), 'POST', { customer_address_id: addressId });
+            const payload = await jsonRequest(shippingRates.url(), 'POST', {
+                customer_address_id: addressId,
+            });
             setRates(payload.rates ?? []);
         } catch (error) {
             setRates([]);
@@ -157,19 +188,31 @@ export function CheckoutProvider({
         }
     }, []);
 
-    const selectAddress = useCallback(async (addressId: number) => {
-        await loadShippingRates(addressId);
-    }, [loadShippingRates]);
+    const selectAddress = useCallback(
+        async (addressId: number) => {
+            await loadShippingRates(addressId);
+        },
+        [loadShippingRates],
+    );
 
     const selectShippingRate = useCallback(async (rate: ShippingRate) => {
         setErrors({});
+
         try {
-            await jsonRequest(shippingRate.url(), 'POST', { shipping_rate_id: rate.id });
+            await jsonRequest(shippingRate.url(), 'POST', {
+                shipping_rate_id: rate.id,
+            });
             setCurrentRate(rate);
             setCurrentSummary((current) => ({
                 ...current,
                 shipping: rate.price,
-                total: Math.max(0, current.subtotal + rate.price + current.service_fee - current.discount),
+                total: Math.max(
+                    0,
+                    current.subtotal +
+                        rate.price +
+                        current.service_fee -
+                        current.discount,
+                ),
             }));
         } catch (error) {
             setErrors(error as Record<string, string>);
@@ -180,7 +223,9 @@ export function CheckoutProvider({
         setErrors({});
 
         try {
-            const payload = await jsonRequest(applyVoucherRoute.url(), 'POST', { voucher_code: code });
+            const payload = await jsonRequest(applyVoucherRoute.url(), 'POST', {
+                voucher_code: code,
+            });
             setCurrentVoucher(payload.voucher);
             setCurrentSummary(payload.summary);
         } catch (error) {
@@ -195,55 +240,88 @@ export function CheckoutProvider({
         setCurrentSummary(payload.summary);
     }, []);
 
-    const placeOrder = useCallback(async (notes: string, agreed: boolean) => {
-        if (!currentAddressId || !currentRate) {
-            setErrors({ checkout: 'Pilih alamat dan ongkir terlebih dahulu.' });
+    const placeOrder = useCallback(
+        async (notes: string, agreed: boolean) => {
+            if (!currentAddressId || !currentRate) {
+                setErrors({
+                    checkout: 'Pilih alamat dan ongkir terlebih dahulu.',
+                });
 
-            return null;
-        }
+                return null;
+            }
 
-        setPlacingOrder(true);
-        setErrors({});
+            setPlacingOrder(true);
+            setErrors({});
 
-        try {
-            const payload = await jsonRequest(placeOrderRoute.url(), 'POST', {
-                customer_address_id: currentAddressId,
-                shipping_rate_id: currentRate.id,
-                voucher_code: currentVoucher?.code ?? null,
-                notes,
-                no_return_refund_agreed: agreed,
-            });
+            try {
+                const payload = await jsonRequest(
+                    placeOrderRoute.url(),
+                    'POST',
+                    {
+                        customer_address_id: currentAddressId,
+                        shipping_rate_id: currentRate.id,
+                        voucher_code: currentVoucher?.code ?? null,
+                        notes,
+                        no_return_refund_agreed: agreed,
+                    },
+                );
 
-            return payload.redirect_url ?? null;
-        } catch (error) {
-            setErrors(error as Record<string, string>);
+                return payload.redirect_url ?? null;
+            } catch (error) {
+                setErrors(error as Record<string, string>);
 
-            return null;
-        } finally {
-            setPlacingOrder(false);
-        }
-    }, [currentAddressId, currentRate, currentVoucher]);
+                return null;
+            } finally {
+                setPlacingOrder(false);
+            }
+        },
+        [currentAddressId, currentRate, currentVoucher],
+    );
 
-    const value = useMemo<CheckoutContextValue>(() => ({
-        addresses,
-        appliedVoucher: currentVoucher,
-        applyVoucher,
-        cartItems,
-        errors,
-        loadShippingRates,
-        placeOrder,
-        placingOrder,
-        removeVoucher,
-        selectAddress,
-        selectShippingRate,
-        selectedAddressId: currentAddressId,
-        selectedShippingRate: currentRate,
-        shippingRates: rates,
-        shippingRatesLoading,
-        summary: currentSummary,
-    }), [addresses, applyVoucher, cartItems, currentAddressId, currentRate, currentSummary, currentVoucher, errors, loadShippingRates, placeOrder, placingOrder, rates, removeVoucher, selectAddress, selectShippingRate, shippingRatesLoading]);
+    const value = useMemo<CheckoutContextValue>(
+        () => ({
+            addresses,
+            appliedVoucher: currentVoucher,
+            applyVoucher,
+            cartItems,
+            errors,
+            loadShippingRates,
+            placeOrder,
+            placingOrder,
+            removeVoucher,
+            selectAddress,
+            selectShippingRate,
+            selectedAddressId: currentAddressId,
+            selectedShippingRate: currentRate,
+            shippingRates: rates,
+            shippingRatesLoading,
+            summary: currentSummary,
+        }),
+        [
+            addresses,
+            applyVoucher,
+            cartItems,
+            currentAddressId,
+            currentRate,
+            currentSummary,
+            currentVoucher,
+            errors,
+            loadShippingRates,
+            placeOrder,
+            placingOrder,
+            rates,
+            removeVoucher,
+            selectAddress,
+            selectShippingRate,
+            shippingRatesLoading,
+        ],
+    );
 
-    return <CheckoutContext.Provider value={value}>{children}</CheckoutContext.Provider>;
+    return (
+        <CheckoutContext.Provider value={value}>
+            {children}
+        </CheckoutContext.Provider>
+    );
 }
 
 export function useCheckout() {

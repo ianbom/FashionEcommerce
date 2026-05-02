@@ -120,16 +120,16 @@ export default function AdminUsersIndex({ admins, filters }: Props) {
                             <table className="w-full text-sm">
                                 <thead>
                                     <tr className="border-b text-left text-muted-foreground">
-                                        <th className="pb-3 pr-4 font-medium">
+                                        <th className="pr-4 pb-3 font-medium">
                                             Name
                                         </th>
-                                        <th className="pb-3 pr-4 font-medium">
+                                        <th className="pr-4 pb-3 font-medium">
                                             Contact
                                         </th>
-                                        <th className="pb-3 pr-4 font-medium">
+                                        <th className="pr-4 pb-3 font-medium">
                                             Status
                                         </th>
-                                        <th className="hidden pb-3 pr-4 font-medium md:table-cell">
+                                        <th className="hidden pr-4 pb-3 font-medium md:table-cell">
                                             Created
                                         </th>
                                         <th className="pb-3 text-right font-medium">

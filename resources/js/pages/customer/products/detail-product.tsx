@@ -10,8 +10,8 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
-import ShopLayout from '@/layouts/shop-layout';
 import { addProductVariantToCart as addProductVariantToCartRoute } from '@/actions/App/Http/Controllers/Customer/CartController';
+import ShopLayout from '@/layouts/shop-layout';
 import { checkout, detail, list } from '@/routes';
 
 type Variant = {
@@ -154,7 +154,9 @@ function DetailProductContent({
         [variants],
     );
     const initialVariant = useMemo(
-        () => variants.find((variant) => variant.available_stock > 0) ?? variants[0],
+        () =>
+            variants.find((variant) => variant.available_stock > 0) ??
+            variants[0],
         [variants],
     );
     const [mainImage, setMainImage] = useState(
@@ -566,8 +568,7 @@ function DetailProductContent({
                                             : 'Add to Cart'}
                                     </button>
                                     {(cartForm.errors.quantity ||
-                                        cartForm.errors
-                                            .product_variant_id) && (
+                                        cartForm.errors.product_variant_id) && (
                                         <p className="mt-2 text-center text-[11px] font-medium text-destructive">
                                             {cartForm.errors.quantity ||
                                                 cartForm.errors

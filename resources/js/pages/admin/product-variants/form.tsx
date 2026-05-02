@@ -38,10 +38,17 @@ type Props = {
     selectedProductId: number | null;
 };
 
-export default function ProductVariantForm({ mode, variant, products, selectedProductId }: Props) {
+export default function ProductVariantForm({
+    mode,
+    variant,
+    products,
+    selectedProductId,
+}: Props) {
     const isEdit = mode === 'edit' && variant !== null;
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [preview, setPreview] = useState<string | null>(variant?.image_url ?? null);
+    const [preview, setPreview] = useState<string | null>(
+        variant?.image_url ?? null,
+    );
 
     const { data, setData, post, processing, errors } = useForm({
         _method: isEdit ? 'PUT' : 'POST',
@@ -62,8 +69,8 @@ export default function ProductVariantForm({ mode, variant, products, selectedPr
         setData('image', file);
 
         if (file) {
-setPreview(URL.createObjectURL(file));
-}
+            setPreview(URL.createObjectURL(file));
+        }
     };
 
     const clearImage = () => {
@@ -71,8 +78,8 @@ setPreview(URL.createObjectURL(file));
         setPreview(null);
 
         if (fileInputRef.current) {
-fileInputRef.current.value = '';
-}
+            fileInputRef.current.value = '';
+        }
     };
 
     const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -96,7 +103,8 @@ fileInputRef.current.value = '';
                     <CardHeader>
                         <CardTitle>Variant Information</CardTitle>
                         <CardDescription>
-                            Perubahan stok melalui form ini tetap dicatat ke stock logs.
+                            Perubahan stok melalui form ini tetap dicatat ke
+                            stock logs.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -107,24 +115,51 @@ fileInputRef.current.value = '';
                                     <select
                                         id="product_id"
                                         value={data.product_id}
-                                        onChange={(event) => setData('product_id', event.target.value)}
-                                        className="border-input h-9 rounded-md border bg-transparent px-3 py-1 text-sm"
+                                        onChange={(event) =>
+                                            setData(
+                                                'product_id',
+                                                event.target.value,
+                                            )
+                                        }
+                                        className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm"
                                     >
                                         <option value="">Select product</option>
                                         {products.map((product) => (
-                                            <option key={product.id} value={product.id}>{product.name}</option>
+                                            <option
+                                                key={product.id}
+                                                value={product.id}
+                                            >
+                                                {product.name}
+                                            </option>
                                         ))}
                                     </select>
                                     <InputError message={errors.product_id} />
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="sku">SKU</Label>
-                                    <Input id="sku" value={data.sku} onChange={(event) => setData('sku', event.target.value)} />
+                                    <Input
+                                        id="sku"
+                                        value={data.sku}
+                                        onChange={(event) =>
+                                            setData('sku', event.target.value)
+                                        }
+                                    />
                                     <InputError message={errors.sku} />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="color_name">Color Name</Label>
-                                    <Input id="color_name" value={data.color_name} onChange={(event) => setData('color_name', event.target.value)} />
+                                    <Label htmlFor="color_name">
+                                        Color Name
+                                    </Label>
+                                    <Input
+                                        id="color_name"
+                                        value={data.color_name}
+                                        onChange={(event) =>
+                                            setData(
+                                                'color_name',
+                                                event.target.value,
+                                            )
+                                        }
+                                    />
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="color_hex">Color Hex</Label>
@@ -133,30 +168,84 @@ fileInputRef.current.value = '';
                                             id="color_hex"
                                             type="color"
                                             value={data.color_hex || '#000000'}
-                                            onChange={(event) => setData('color_hex', event.target.value)}
+                                            onChange={(event) =>
+                                                setData(
+                                                    'color_hex',
+                                                    event.target.value,
+                                                )
+                                            }
                                             className="h-9 w-14 p-1"
                                         />
-                                        <Input value={data.color_hex || '#000000'} readOnly className="font-mono text-xs" />
+                                        <Input
+                                            value={data.color_hex || '#000000'}
+                                            readOnly
+                                            className="font-mono text-xs"
+                                        />
                                     </div>
                                     <InputError message={errors.color_hex} />
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="size">Size</Label>
-                                    <Input id="size" value={data.size} onChange={(event) => setData('size', event.target.value)} />
+                                    <Input
+                                        id="size"
+                                        value={data.size}
+                                        onChange={(event) =>
+                                            setData('size', event.target.value)
+                                        }
+                                    />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="additional_price">Additional Price</Label>
-                                    <Input id="additional_price" type="number" min="0" value={data.additional_price} onChange={(event) => setData('additional_price', event.target.value)} />
+                                    <Label htmlFor="additional_price">
+                                        Additional Price
+                                    </Label>
+                                    <Input
+                                        id="additional_price"
+                                        type="number"
+                                        min="0"
+                                        value={data.additional_price}
+                                        onChange={(event) =>
+                                            setData(
+                                                'additional_price',
+                                                event.target.value,
+                                            )
+                                        }
+                                    />
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="stock">Stock</Label>
-                                    <Input id="stock" type="number" min="0" value={data.stock} onChange={(event) => setData('stock', Number(event.target.value))} />
+                                    <Input
+                                        id="stock"
+                                        type="number"
+                                        min="0"
+                                        value={data.stock}
+                                        onChange={(event) =>
+                                            setData(
+                                                'stock',
+                                                Number(event.target.value),
+                                            )
+                                        }
+                                    />
                                     <InputError message={errors.stock} />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="reserved_stock">Reserved Stock</Label>
-                                    <Input id="reserved_stock" type="number" min="0" value={data.reserved_stock} onChange={(event) => setData('reserved_stock', Number(event.target.value))} />
-                                    <InputError message={errors.reserved_stock} />
+                                    <Label htmlFor="reserved_stock">
+                                        Reserved Stock
+                                    </Label>
+                                    <Input
+                                        id="reserved_stock"
+                                        type="number"
+                                        min="0"
+                                        value={data.reserved_stock}
+                                        onChange={(event) =>
+                                            setData(
+                                                'reserved_stock',
+                                                Number(event.target.value),
+                                            )
+                                        }
+                                    />
+                                    <InputError
+                                        message={errors.reserved_stock}
+                                    />
                                 </div>
                             </div>
 
@@ -168,11 +257,15 @@ fileInputRef.current.value = '';
                                     <div className="relative flex h-32 w-32 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted">
                                         {preview ? (
                                             <>
-                                                <img src={preview} alt="Preview" className="h-full w-full object-cover" />
+                                                <img
+                                                    src={preview}
+                                                    alt="Preview"
+                                                    className="h-full w-full object-cover"
+                                                />
                                                 <button
                                                     type="button"
                                                     onClick={clearImage}
-                                                    className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+                                                    className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
                                                 >
                                                     <X className="h-3 w-3" />
                                                 </button>
@@ -185,13 +278,18 @@ fileInputRef.current.value = '';
                                     {/* Drop zone */}
                                     <div
                                         className="flex flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-6 text-center transition hover:border-primary/60 hover:bg-muted/50"
-                                        onClick={() => fileInputRef.current?.click()}
+                                        onClick={() =>
+                                            fileInputRef.current?.click()
+                                        }
                                     >
                                         <Upload className="h-6 w-6 text-muted-foreground" />
                                         <p className="text-sm text-muted-foreground">
-                                            Klik untuk upload atau drag &amp; drop gambar
+                                            Klik untuk upload atau drag &amp;
+                                            drop gambar
                                         </p>
-                                        <p className="text-xs text-muted-foreground/60">JPG, PNG, WEBP — maks. 2 MB</p>
+                                        <p className="text-xs text-muted-foreground/60">
+                                            JPG, PNG, WEBP — maks. 2 MB
+                                        </p>
                                         <input
                                             ref={fileInputRef}
                                             type="file"
@@ -208,18 +306,30 @@ fileInputRef.current.value = '';
                                 <input
                                     type="checkbox"
                                     checked={data.is_active}
-                                    onChange={(event) => setData('is_active', event.target.checked)}
+                                    onChange={(event) =>
+                                        setData(
+                                            'is_active',
+                                            event.target.checked,
+                                        )
+                                    }
                                     className="mt-1"
                                 />
                                 <span>
-                                    <span className="block font-medium">Active variant</span>
-                                    <span className="text-muted-foreground">Varian aktif bisa tampil dan dibeli customer jika stok tersedia.</span>
+                                    <span className="block font-medium">
+                                        Active variant
+                                    </span>
+                                    <span className="text-muted-foreground">
+                                        Varian aktif bisa tampil dan dibeli
+                                        customer jika stok tersedia.
+                                    </span>
                                 </span>
                             </label>
 
                             <div className="flex justify-end gap-3 border-t pt-5">
                                 <Button asChild type="button" variant="outline">
-                                    <Link href="/admin/product-variants">Cancel</Link>
+                                    <Link href="/admin/product-variants">
+                                        Cancel
+                                    </Link>
                                 </Button>
                                 <Button type="submit" disabled={processing}>
                                     <Save />

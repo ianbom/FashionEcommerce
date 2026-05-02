@@ -41,21 +41,22 @@ export default function ResourceForm({ definition, mode, record }: Props) {
             `}</style>
 
             <div className="flex flex-col gap-6 px-4 py-6 lg:px-6">
-
                 {/* ── Hero header ── */}
                 <div className="anim-fadeinup relative overflow-hidden rounded-2xl border border-white/60 bg-gradient-to-br from-stone-900 via-stone-800 to-stone-700 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.18)] lg:p-8">
-                    <div className="pointer-events-none absolute -right-10 -top-10 h-44 w-44 rounded-full bg-white/5 blur-3xl" />
-                    <div className="pointer-events-none absolute -bottom-6 right-1/3 h-28 w-28 rounded-full bg-amber-300/10 blur-2xl" />
+                    <div className="pointer-events-none absolute -top-10 -right-10 h-44 w-44 rounded-full bg-white/5 blur-3xl" />
+                    <div className="pointer-events-none absolute right-1/3 -bottom-6 h-28 w-28 rounded-full bg-amber-300/10 blur-2xl" />
 
                     <div className="relative flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
                         <div>
-                            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-stone-400">
+                            <p className="flex items-center gap-2 text-xs font-semibold tracking-widest text-stone-400 uppercase">
                                 <FilePen size={12} />
                                 {definition.group}
                             </p>
                             <h1 className="mt-2 text-3xl font-bold text-white lg:text-4xl">
                                 {isEdit ? 'Edit' : 'Create'}
-                                <span className="ml-3 text-stone-300">{definition.title}</span>
+                                <span className="ml-3 text-stone-300">
+                                    {definition.title}
+                                </span>
                             </h1>
                             {isEdit && record?.id && (
                                 <p className="mt-1 font-mono text-xs text-stone-400">
@@ -77,8 +78,10 @@ export default function ResourceForm({ definition, mode, record }: Props) {
                 {/* ── Form card ── */}
                 <div className="anim-fadeinup anim-delay-1 overflow-hidden rounded-2xl border border-stone-200/80 bg-white shadow-[0_8px_40px_rgba(0,0,0,0.06)]">
                     <div className="border-b border-stone-100 bg-stone-50/60 px-6 py-4">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-stone-400">
-                            {isEdit ? 'Update record fields' : 'Fill in the details below'}
+                        <p className="text-xs font-semibold tracking-wider text-stone-400 uppercase">
+                            {isEdit
+                                ? 'Update record fields'
+                                : 'Fill in the details below'}
                         </p>
                     </div>
 
@@ -88,13 +91,17 @@ export default function ResourceForm({ definition, mode, record }: Props) {
                                 <label
                                     key={column}
                                     className="field-in flex flex-col gap-1.5"
-                                    style={{ animationDelay: `${0.12 + idx * 0.05}s` }}
+                                    style={{
+                                        animationDelay: `${0.12 + idx * 0.05}s`,
+                                    }}
                                 >
-                                    <span className="text-xs font-semibold uppercase tracking-wider text-stone-500">
+                                    <span className="text-xs font-semibold tracking-wider text-stone-500 uppercase">
                                         {column.replaceAll('_', ' ')}
                                     </span>
                                     <input
-                                        defaultValue={String(record?.[column] ?? '')}
+                                        defaultValue={String(
+                                            record?.[column] ?? '',
+                                        )}
                                         className="input-field h-11 w-full rounded-xl border border-stone-200 bg-stone-50/60 px-4 text-sm text-stone-900 placeholder:text-stone-400"
                                         placeholder={`Enter ${column.replaceAll('_', ' ').toLowerCase()}…`}
                                     />

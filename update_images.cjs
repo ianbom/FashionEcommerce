@@ -30,6 +30,7 @@ files.forEach(file => {
     content = content.replace(/https:\/\/loremflickr\.com\/[^'")]+\b/g, (match) => {
         const img = localImages[index % localImages.length];
         index++;
+
         return img;
     });
     

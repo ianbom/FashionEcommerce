@@ -48,21 +48,22 @@ export default function ResourceShow({ definition, record }: Props) {
             `}</style>
 
             <div className="flex flex-col gap-6 px-4 py-6 lg:px-6">
-
                 {/* ── Hero header ── */}
                 <div className="anim-fadeinup relative overflow-hidden rounded-2xl border border-white/60 bg-gradient-to-br from-stone-900 via-stone-800 to-stone-700 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.18)] lg:p-8">
-                    <div className="pointer-events-none absolute -right-10 -top-10 h-44 w-44 rounded-full bg-white/5 blur-3xl" />
+                    <div className="pointer-events-none absolute -top-10 -right-10 h-44 w-44 rounded-full bg-white/5 blur-3xl" />
                     <div className="pointer-events-none absolute -bottom-6 left-1/4 h-28 w-28 rounded-full bg-amber-300/10 blur-2xl" />
 
                     <div className="relative flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
                         <div>
-                            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-stone-400">
+                            <p className="flex items-center gap-2 text-xs font-semibold tracking-widest text-stone-400 uppercase">
                                 <Eye size={12} />
                                 {definition.group}
                             </p>
                             <h1 className="mt-2 text-3xl font-bold text-white lg:text-4xl">
                                 {definition.title}
-                                <span className="ml-3 text-stone-400">Detail</span>
+                                <span className="ml-3 text-stone-400">
+                                    Detail
+                                </span>
                             </h1>
                             {record?.id && (
                                 <p className="mt-1 font-mono text-xs text-stone-400">
@@ -99,9 +100,12 @@ export default function ResourceShow({ definition, record }: Props) {
                             <Eye size={28} />
                         </div>
                         <div>
-                            <p className="font-semibold text-stone-600">Record not found</p>
+                            <p className="font-semibold text-stone-600">
+                                Record not found
+                            </p>
                             <p className="mt-1 text-sm text-stone-400">
-                                The requested record does not exist or has been removed.
+                                The requested record does not exist or has been
+                                removed.
                             </p>
                         </div>
                         <Link
@@ -115,7 +119,7 @@ export default function ResourceShow({ definition, record }: Props) {
                 ) : (
                     <div className="anim-fadeinup anim-delay-1 overflow-hidden rounded-2xl border border-stone-200/80 bg-white shadow-[0_8px_40px_rgba(0,0,0,0.06)]">
                         <div className="border-b border-stone-100 bg-stone-50/60 px-6 py-4">
-                            <p className="text-xs font-semibold uppercase tracking-wider text-stone-400">
+                            <p className="text-xs font-semibold tracking-wider text-stone-400 uppercase">
                                 Record Fields
                             </p>
                         </div>
@@ -125,12 +129,14 @@ export default function ResourceShow({ definition, record }: Props) {
                                 <div
                                     key={key}
                                     className="field-card group flex flex-col gap-1.5 border-b border-stone-50 px-6 py-5 transition-colors duration-150 hover:bg-stone-50/60"
-                                    style={{ animationDelay: `${0.12 + idx * 0.04}s` }}
+                                    style={{
+                                        animationDelay: `${0.12 + idx * 0.04}s`,
+                                    }}
                                 >
-                                    <p className="text-[10px] font-semibold uppercase tracking-widest text-stone-400">
+                                    <p className="text-[10px] font-semibold tracking-widest text-stone-400 uppercase">
                                         {key.replaceAll('_', ' ')}
                                     </p>
-                                    <div className="break-words text-sm font-medium text-stone-800">
+                                    <div className="text-sm font-medium break-words text-stone-800">
                                         {displayValue(value)}
                                     </div>
                                 </div>

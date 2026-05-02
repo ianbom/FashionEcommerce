@@ -1,5 +1,13 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowRight, DatabaseZap, Layers, Plus, Search, TrendingUp, XCircle } from 'lucide-react';
+import {
+    ArrowRight,
+    DatabaseZap,
+    Layers,
+    Plus,
+    Search,
+    TrendingUp,
+    XCircle,
+} from 'lucide-react';
 import type { FormEvent } from 'react';
 import { useState } from 'react';
 
@@ -51,7 +59,11 @@ function renderCell(value: string | number | boolean | null) {
 
     const normalized = value.toLowerCase();
 
-    if (['paid', 'published', 'completed', 'delivered', 'settlement'].includes(normalized)) {
+    if (
+        ['paid', 'published', 'completed', 'delivered', 'settlement'].includes(
+            normalized,
+        )
+    ) {
         return (
             <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -69,7 +81,11 @@ function renderCell(value: string | number | boolean | null) {
         );
     }
 
-    if (normalized.includes('cancel') || normalized.includes('expired') || normalized.includes('failed')) {
+    if (
+        normalized.includes('cancel') ||
+        normalized.includes('expired') ||
+        normalized.includes('failed')
+    ) {
         return (
             <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700 ring-1 ring-red-200">
                 <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
@@ -81,12 +97,21 @@ function renderCell(value: string | number | boolean | null) {
     return value;
 }
 
-export default function ResourceIndex({ definition, filters, rows, stats }: Props) {
+export default function ResourceIndex({
+    definition,
+    filters,
+    rows,
+    stats,
+}: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
-        router.get(`/admin/${definition.key}`, { search }, { preserveScroll: true });
+        router.get(
+            `/admin/${definition.key}`,
+            { search },
+            { preserveScroll: true },
+        );
     };
 
     return (
@@ -106,16 +131,15 @@ export default function ResourceIndex({ definition, filters, rows, stats }: Prop
             `}</style>
 
             <div className="flex flex-col gap-6 px-4 py-6 lg:px-6">
-
                 {/* ── Hero header ── */}
                 <div className="anim-fadeinup relative overflow-hidden rounded-2xl border border-white/60 bg-gradient-to-br from-stone-900 via-stone-800 to-stone-700 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.18)] lg:p-8">
                     {/* decorative orbs */}
-                    <div className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/5 blur-3xl" />
+                    <div className="pointer-events-none absolute -top-12 -right-12 h-48 w-48 rounded-full bg-white/5 blur-3xl" />
                     <div className="pointer-events-none absolute -bottom-8 left-1/3 h-32 w-32 rounded-full bg-amber-400/10 blur-2xl" />
 
                     <div className="relative flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
                         <div>
-                            <p className="text-xs font-semibold uppercase tracking-widest text-stone-400">
+                            <p className="text-xs font-semibold tracking-widest text-stone-400 uppercase">
                                 {definition.group}
                             </p>
                             <h1 className="mt-2 text-3xl font-bold text-white lg:text-4xl">
@@ -165,36 +189,53 @@ export default function ResourceIndex({ definition, filters, rows, stats }: Prop
                             iconBg: 'bg-orange-100 text-orange-600',
                             delay: 'anim-delay-3',
                         },
-                    ].map(({ label, value, icon: Icon, color, iconBg, delay }) => (
-                        <div
-                            key={label}
-                            className={`anim-fadeinup ${delay} group relative overflow-hidden rounded-2xl border border-white/80 bg-gradient-to-br ${color} p-5 shadow-[0_8px_32px_rgba(0,0,0,0.06)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(0,0,0,0.1)]`}
-                            style={{ willChange: 'transform' }}
-                        >
-                            <div className={`mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl ${iconBg} transition-transform duration-300 group-hover:scale-110`}>
-                                <Icon size={20} />
+                    ].map(
+                        ({
+                            label,
+                            value,
+                            icon: Icon,
+                            color,
+                            iconBg,
+                            delay,
+                        }) => (
+                            <div
+                                key={label}
+                                className={`anim-fadeinup ${delay} group relative overflow-hidden rounded-2xl border border-white/80 bg-gradient-to-br ${color} p-5 shadow-[0_8px_32px_rgba(0,0,0,0.06)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(0,0,0,0.1)]`}
+                                style={{ willChange: 'transform' }}
+                            >
+                                <div
+                                    className={`mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl ${iconBg} transition-transform duration-300 group-hover:scale-110`}
+                                >
+                                    <Icon size={20} />
+                                </div>
+                                <p className="text-xs font-semibold tracking-wider text-stone-500 uppercase">
+                                    {label}
+                                </p>
+                                <p className="mt-1 text-3xl font-black text-stone-900">
+                                    {new Intl.NumberFormat('id-ID').format(
+                                        value,
+                                    )}
+                                </p>
                             </div>
-                            <p className="text-xs font-semibold uppercase tracking-wider text-stone-500">{label}</p>
-                            <p className="mt-1 text-3xl font-black text-stone-900">
-                                {new Intl.NumberFormat('id-ID').format(value)}
-                            </p>
-                        </div>
-                    ))}
+                        ),
+                    )}
                 </div>
 
                 {/* ── Table card ── */}
                 <div className="anim-fadeinup anim-delay-4 overflow-hidden rounded-2xl border border-stone-200/80 bg-white shadow-[0_8px_40px_rgba(0,0,0,0.06)]">
-
                     {/* Search bar */}
                     <div className="border-b border-stone-100 bg-stone-50/60 px-5 py-4">
                         <form onSubmit={submit} className="flex max-w-lg gap-3">
                             <div className="relative flex-1">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" size={16} />
+                                <Search
+                                    className="absolute top-1/2 left-3 -translate-y-1/2 text-stone-400"
+                                    size={16}
+                                />
                                 <input
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     placeholder={`Search ${definition.title.toLowerCase()}…`}
-                                    className="h-10 w-full rounded-xl border border-stone-200 bg-white pl-10 pr-3 text-sm text-stone-900 placeholder:text-stone-400 outline-none transition-all duration-200 focus:border-stone-400 focus:ring-2 focus:ring-stone-200"
+                                    className="h-10 w-full rounded-xl border border-stone-200 bg-white pr-3 pl-10 text-sm text-stone-900 transition-all duration-200 outline-none placeholder:text-stone-400 focus:border-stone-400 focus:ring-2 focus:ring-stone-200"
                                 />
                             </div>
                             <button
@@ -208,7 +249,11 @@ export default function ResourceIndex({ definition, filters, rows, stats }: Prop
                                     type="button"
                                     onClick={() => {
                                         setSearch('');
-                                        router.get(`/admin/${definition.key}`, {}, { preserveScroll: true });
+                                        router.get(
+                                            `/admin/${definition.key}`,
+                                            {},
+                                            { preserveScroll: true },
+                                        );
                                     }}
                                     className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-stone-200 px-3 text-sm text-stone-500 transition hover:text-stone-900"
                                 >
@@ -227,12 +272,12 @@ export default function ResourceIndex({ definition, filters, rows, stats }: Prop
                                     {definition.columns.map((col) => (
                                         <th
                                             key={col}
-                                            className="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-stone-500"
+                                            className="px-5 py-3.5 text-xs font-semibold tracking-wider text-stone-500 uppercase"
                                         >
                                             {col.replaceAll('_', ' ')}
                                         </th>
                                     ))}
-                                    <th className="px-5 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-stone-500">
+                                    <th className="px-5 py-3.5 text-right text-xs font-semibold tracking-wider text-stone-500 uppercase">
                                         Action
                                     </th>
                                 </tr>
@@ -241,16 +286,22 @@ export default function ResourceIndex({ definition, filters, rows, stats }: Prop
                                 {rows.length === 0 ? (
                                     <tr>
                                         <td
-                                            colSpan={definition.columns.length + 1}
+                                            colSpan={
+                                                definition.columns.length + 1
+                                            }
                                             className="px-5 py-16 text-center"
                                         >
                                             <div className="flex flex-col items-center gap-3">
                                                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-stone-100 text-stone-400">
                                                     <DatabaseZap size={24} />
                                                 </div>
-                                                <p className="font-semibold text-stone-500">No records found</p>
+                                                <p className="font-semibold text-stone-500">
+                                                    No records found
+                                                </p>
                                                 <p className="text-xs text-stone-400">
-                                                    {search ? 'Try a different search term.' : 'Create the first one to get started.'}
+                                                    {search
+                                                        ? 'Try a different search term.'
+                                                        : 'Create the first one to get started.'}
                                                 </p>
                                             </div>
                                         </td>
@@ -279,7 +330,9 @@ export default function ResourceIndex({ definition, filters, rows, stats }: Prop
                                                         <ArrowRight size={13} />
                                                     </Link>
                                                 ) : (
-                                                    <span className="text-stone-300">—</span>
+                                                    <span className="text-stone-300">
+                                                        —
+                                                    </span>
                                                 )}
                                             </td>
                                         </tr>

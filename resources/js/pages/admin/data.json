@@ -1,66 +1,66 @@
 [
-  {
-    "id": "ORD-2026-001",
-    "customer": "Siti Aisyah",
-    "product": "Najran Piping Lace Abaya",
-    "date": "2026-04-28",
-    "status": "Delivered",
-    "amount": 739000
-  },
-  {
-    "id": "ORD-2026-002",
-    "customer": "Fatimah Zahra",
-    "product": "Kufah Khimar",
-    "date": "2026-04-27",
-    "status": "Shipped",
-    "amount": 349000
-  },
-  {
-    "id": "ORD-2026-003",
-    "customer": "Nurul Hidayah",
-    "product": "Sila Scarf",
-    "date": "2026-04-26",
-    "status": "Processing",
-    "amount": 244300
-  },
-  {
-    "id": "ORD-2026-004",
-    "customer": "Aisyah Putri",
-    "product": "Madinah Linen Abaya",
-    "date": "2026-04-25",
-    "status": "Pending",
-    "amount": 580000
-  },
-  {
-    "id": "ORD-2026-005",
-    "customer": "Rahmah Dewi",
-    "product": "Bukhara Inner Ninja",
-    "date": "2026-04-24",
-    "status": "Delivered",
-    "amount": 149000
-  },
-  {
-    "id": "ORD-2026-006",
-    "customer": "Khadijah Salma",
-    "product": "Jeddah Tulip Khimar",
-    "date": "2026-04-23",
-    "status": "Canceled",
-    "amount": 399000
-  },
-  {
-    "id": "ORD-2026-007",
-    "customer": "Mariam Nur",
-    "product": "Riyad Plain Abaya",
-    "date": "2026-04-22",
-    "status": "Shipped",
-    "amount": 689000
-  },
-  {
-    "id": "ORD-2026-008",
-    "customer": "Zaynab Alya",
-    "product": "Safwa Slip Dress",
-    "date": "2026-04-21",
-    "status": "Delivered",
-    "amount": 459000
-  }
+    {
+        "id": "ORD-2026-001",
+        "customer": "Siti Aisyah",
+        "product": "Najran Piping Lace Abaya",
+        "date": "2026-04-28",
+        "status": "Delivered",
+        "amount": 739000
+    },
+    {
+        "id": "ORD-2026-002",
+        "customer": "Fatimah Zahra",
+        "product": "Kufah Khimar",
+        "date": "2026-04-27",
+        "status": "Shipped",
+        "amount": 349000
+    },
+    {
+        "id": "ORD-2026-003",
+        "customer": "Nurul Hidayah",
+        "product": "Sila Scarf",
+        "date": "2026-04-26",
+        "status": "Processing",
+        "amount": 244300
+    },
+    {
+        "id": "ORD-2026-004",
+        "customer": "Aisyah Putri",
+        "product": "Madinah Linen Abaya",
+        "date": "2026-04-25",
+        "status": "Pending",
+        "amount": 580000
+    },
+    {
+        "id": "ORD-2026-005",
+        "customer": "Rahmah Dewi",
+        "product": "Bukhara Inner Ninja",
+        "date": "2026-04-24",
+        "status": "Delivered",
+        "amount": 149000
+    },
+    {
+        "id": "ORD-2026-006",
+        "customer": "Khadijah Salma",
+        "product": "Jeddah Tulip Khimar",
+        "date": "2026-04-23",
+        "status": "Canceled",
+        "amount": 399000
+    },
+    {
+        "id": "ORD-2026-007",
+        "customer": "Mariam Nur",
+        "product": "Riyad Plain Abaya",
+        "date": "2026-04-22",
+        "status": "Shipped",
+        "amount": 689000
+    },
+    {
+        "id": "ORD-2026-008",
+        "customer": "Zaynab Alya",
+        "product": "Safwa Slip Dress",
+        "date": "2026-04-21",
+        "status": "Delivered",
+        "amount": 459000
+    }
 ]

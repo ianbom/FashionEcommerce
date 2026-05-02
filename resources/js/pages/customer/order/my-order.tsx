@@ -10,7 +10,10 @@ import {
 } from 'lucide-react';
 import type { FormEvent, ReactNode } from 'react';
 import { useMemo, useState } from 'react';
-import { index as orderIndex, show as orderShow } from '@/actions/App/Http/Controllers/Customer/OrderController';
+import {
+    index as orderIndex,
+    show as orderShow,
+} from '@/actions/App/Http/Controllers/Customer/OrderController';
 import ProfileLayout from '@/layouts/profile-layout';
 
 type PaginationLink = {
@@ -124,7 +127,9 @@ const getBadgeStyle = (status: string) => {
 
 const cleanQuery = (filters: Filters) => {
     return Object.fromEntries(
-        Object.entries(filters).filter(([, value]) => value !== '' && value !== null),
+        Object.entries(filters).filter(
+            ([, value]) => value !== '' && value !== null,
+        ),
     );
 };
 
@@ -184,31 +189,79 @@ export default function ListOrder({ orders, filters, options }: Props) {
                 { label: 'My Orders' },
             ]}
         >
-            <form onSubmit={submit} className="mb-6 grid gap-3 lg:grid-cols-[1fr_190px_170px_150px_110px_auto]">
+            <form
+                onSubmit={submit}
+                className="mb-6 grid gap-3 lg:grid-cols-[1fr_190px_170px_150px_110px_auto]"
+            >
                 <div className="relative">
-                    <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#A89F91]" />
+                    <Search
+                        size={18}
+                        className="absolute top-1/2 left-4 -translate-y-1/2 text-[#A89F91]"
+                    />
                     <input
                         type="search"
                         value={form.search}
-                        onChange={(event) => setForm((current) => ({ ...current, search: event.target.value }))}
+                        onChange={(event) =>
+                            setForm((current) => ({
+                                ...current,
+                                search: event.target.value,
+                            }))
+                        }
                         placeholder="Search by order number or product name"
                         className="w-full rounded-xl border border-[#EAE8E3] bg-white py-3 pr-4 pl-11 text-[13px] text-[#333] shadow-sm transition-all focus:border-[#C2AA92] focus:ring-1 focus:ring-[#C2AA92] focus:outline-none"
                     />
                 </div>
-                <Select value={form.payment_status} onChange={(value) => updateFilter({ payment_status: value })}>
+                <Select
+                    value={form.payment_status}
+                    onChange={(value) =>
+                        updateFilter({ payment_status: value })
+                    }
+                >
                     <option value="">All payments</option>
-                    {options.paymentStatuses.map((status) => <option key={status} value={status}>{labelStatus(status)}</option>)}
+                    {options.paymentStatuses.map((status) => (
+                        <option key={status} value={status}>
+                            {labelStatus(status)}
+                        </option>
+                    ))}
                 </Select>
-                <Select value={form.sort} onChange={(value) => updateFilter({ sort: value })}>
-                    {options.sorts.map((sort) => <option key={sort} value={sort}>Sort: {labelStatus(sort)}</option>)}
+                <Select
+                    value={form.sort}
+                    onChange={(value) => updateFilter({ sort: value })}
+                >
+                    {options.sorts.map((sort) => (
+                        <option key={sort} value={sort}>
+                            Sort: {labelStatus(sort)}
+                        </option>
+                    ))}
                 </Select>
-                <Select value={form.direction} onChange={(value) => updateFilter({ direction: value })}>
-                    {options.directions.map((direction) => <option key={direction} value={direction}>{direction === 'desc' ? 'Newest / High' : 'Oldest / Low'}</option>)}
+                <Select
+                    value={form.direction}
+                    onChange={(value) => updateFilter({ direction: value })}
+                >
+                    {options.directions.map((direction) => (
+                        <option key={direction} value={direction}>
+                            {direction === 'desc'
+                                ? 'Newest / High'
+                                : 'Oldest / Low'}
+                        </option>
+                    ))}
                 </Select>
-                <Select value={String(form.per_page)} onChange={(value) => updateFilter({ per_page: Number(value) })}>
-                    {options.perPages.map((perPage) => <option key={perPage} value={perPage}>{perPage}/page</option>)}
+                <Select
+                    value={String(form.per_page)}
+                    onChange={(value) =>
+                        updateFilter({ per_page: Number(value) })
+                    }
+                >
+                    {options.perPages.map((perPage) => (
+                        <option key={perPage} value={perPage}>
+                            {perPage}/page
+                        </option>
+                    ))}
                 </Select>
-                <button type="submit" className="rounded-xl bg-[#3C3428] px-5 py-3 text-[12px] font-bold text-white shadow-sm transition-colors hover:bg-[#2D261C]">
+                <button
+                    type="submit"
+                    className="rounded-xl bg-[#3C3428] px-5 py-3 text-[12px] font-bold text-white shadow-sm transition-colors hover:bg-[#2D261C]"
+                >
                     Search
                 </button>
             </form>
@@ -219,11 +272,21 @@ export default function ListOrder({ orders, filters, options }: Props) {
                         <button
                             key={tab.id || 'all'}
                             type="button"
-                            onClick={() => updateFilter({ order_status: tab.id })}
+                            onClick={() =>
+                                updateFilter({ order_status: tab.id })
+                            }
                             className={`relative pb-3 text-[13px] font-medium whitespace-nowrap transition-all ${form.order_status === tab.id ? 'text-[#3C3428]' : 'text-[#8C8578] hover:text-[#4A4A4A]'}`}
                         >
-                            {form.order_status === tab.id && <div className="absolute right-0 bottom-0 left-0 h-0.5 rounded-t-full bg-[#C2AA92]" />}
-                            <span className={form.order_status === tab.id ? 'rounded-full bg-[#C2AA92] px-3 py-1.5 text-xs text-white shadow-sm' : 'px-1'}>
+                            {form.order_status === tab.id && (
+                                <div className="absolute right-0 bottom-0 left-0 h-0.5 rounded-t-full bg-[#C2AA92]" />
+                            )}
+                            <span
+                                className={
+                                    form.order_status === tab.id
+                                        ? 'rounded-full bg-[#C2AA92] px-3 py-1.5 text-xs text-white shadow-sm'
+                                        : 'px-1'
+                                }
+                            >
                                 {tab.label}
                             </span>
                         </button>
@@ -235,11 +298,23 @@ export default function ListOrder({ orders, filters, options }: Props) {
                 <div className="flex flex-col items-center justify-center rounded-2xl border border-[#EAE8E3] bg-white px-6 py-20 text-center">
                     <div className="relative mb-6 h-48 w-48">
                         <div className="absolute inset-0 rounded-full bg-[#F5F2E6] opacity-50 blur-2xl" />
-                        <img src={FALLBACK_IMAGE} alt="Empty orders" className="relative z-10 h-full w-full rounded-xl object-cover shadow-lg" />
+                        <img
+                            src={FALLBACK_IMAGE}
+                            alt="Empty orders"
+                            className="relative z-10 h-full w-full rounded-xl object-cover shadow-lg"
+                        />
                     </div>
-                    <h2 className="mb-2 font-serif text-2xl text-[#3C3428]">No orders found</h2>
-                    <p className="mb-8 max-w-[280px] text-[13px] text-[#8C8578]">Try a different filter or start exploring our collection.</p>
-                    <Link href="/list" className="rounded-lg bg-[#3C3428] px-8 py-3 text-[12px] font-bold tracking-wider text-white transition-all hover:bg-[#2D261C]">
+                    <h2 className="mb-2 font-serif text-2xl text-[#3C3428]">
+                        No orders found
+                    </h2>
+                    <p className="mb-8 max-w-[280px] text-[13px] text-[#8C8578]">
+                        Try a different filter or start exploring our
+                        collection.
+                    </p>
+                    <Link
+                        href="/list"
+                        className="rounded-lg bg-[#3C3428] px-8 py-3 text-[12px] font-bold tracking-wider text-white transition-all hover:bg-[#2D261C]"
+                    >
                         Shop Now
                     </Link>
                 </div>
@@ -253,22 +328,39 @@ export default function ListOrder({ orders, filters, options }: Props) {
                         >
                             <div className="grid grid-cols-2 gap-4 border-b border-[#EAE8E3]/60 bg-[#FAF9F6]/50 p-5 md:grid-cols-4 md:p-6">
                                 <div className="col-span-2 md:col-span-1">
-                                    <p className="mb-1 font-serif text-[13px] text-[#333333]">Order #{order.order_number}</p>
-                                    <p className="text-[11px] text-[#8C8578]">{order.created_date ?? '-'} • {order.created_time ?? '-'}</p>
+                                    <p className="mb-1 font-serif text-[13px] text-[#333333]">
+                                        Order #{order.order_number}
+                                    </p>
+                                    <p className="text-[11px] text-[#8C8578]">
+                                        {order.created_date ?? '-'} •{' '}
+                                        {order.created_time ?? '-'}
+                                    </p>
                                 </div>
                                 <div className="hidden md:block">
-                                    <p className="mb-1 text-[10px] text-[#8C8578]">Payment</p>
-                                    <span className={`inline-block rounded-md px-2.5 py-1 text-[10px] font-bold ${getBadgeStyle(order.payment_status)}`}>
+                                    <p className="mb-1 text-[10px] text-[#8C8578]">
+                                        Payment
+                                    </p>
+                                    <span
+                                        className={`inline-block rounded-md px-2.5 py-1 text-[10px] font-bold ${getBadgeStyle(order.payment_status)}`}
+                                    >
                                         {labelStatus(order.payment_status)}
                                     </span>
                                 </div>
                                 <div className="hidden md:block">
-                                    <p className="mb-1 text-[10px] text-[#8C8578]">Total</p>
-                                    <p className="font-serif text-[14px] text-[#333333]">{formatPrice(order.grand_total)}</p>
+                                    <p className="mb-1 text-[10px] text-[#8C8578]">
+                                        Total
+                                    </p>
+                                    <p className="font-serif text-[14px] text-[#333333]">
+                                        {formatPrice(order.grand_total)}
+                                    </p>
                                 </div>
                                 <div className="col-span-2 flex flex-col items-start justify-center text-left md:col-span-1 md:items-end md:text-right">
-                                    <p className="mb-1 hidden text-[10px] text-[#8C8578] md:block">Order Status</p>
-                                    <span className={`inline-block rounded-md px-3 py-1.5 text-[11px] font-bold ${getBadgeStyle(order.order_status)}`}>
+                                    <p className="mb-1 hidden text-[10px] text-[#8C8578] md:block">
+                                        Order Status
+                                    </p>
+                                    <span
+                                        className={`inline-block rounded-md px-3 py-1.5 text-[11px] font-bold ${getBadgeStyle(order.order_status)}`}
+                                    >
                                         {labelStatus(order.order_status)}
                                     </span>
                                 </div>
@@ -277,38 +369,94 @@ export default function ListOrder({ orders, filters, options }: Props) {
                             <div className="flex flex-col items-start justify-between gap-6 p-5 md:p-6 lg:flex-row lg:items-center">
                                 <div className="hide-scrollbar flex w-full flex-1 gap-4 overflow-x-auto pb-2 lg:pb-0">
                                     {order.items.map((item) => (
-                                        <div key={item.id} className="flex min-w-[200px] gap-4 md:min-w-0">
+                                        <div
+                                            key={item.id}
+                                            className="flex min-w-[200px] gap-4 md:min-w-0"
+                                        >
                                             <div className="h-[100px] w-[80px] shrink-0 overflow-hidden rounded-lg bg-[#F5F2E6]">
-                                                <img src={item.image ?? FALLBACK_IMAGE} alt={item.title} className="h-full w-full object-cover" />
+                                                <img
+                                                    src={
+                                                        item.image ??
+                                                        FALLBACK_IMAGE
+                                                    }
+                                                    alt={item.title}
+                                                    className="h-full w-full object-cover"
+                                                />
                                             </div>
                                             <div className="hidden py-1 pr-4 md:block">
-                                                <h4 className="mb-1 max-w-[150px] truncate text-[13px] font-semibold text-[#333333]">{item.title}</h4>
-                                                <p className="mb-1 text-[11px] text-[#8C8578]">{item.color ?? '-'} • {item.size ?? '-'}</p>
-                                                <p className="text-[11px] text-[#8C8578]">Qty: {item.qty}</p>
+                                                <h4 className="mb-1 max-w-[150px] truncate text-[13px] font-semibold text-[#333333]">
+                                                    {item.title}
+                                                </h4>
+                                                <p className="mb-1 text-[11px] text-[#8C8578]">
+                                                    {item.color ?? '-'} •{' '}
+                                                    {item.size ?? '-'}
+                                                </p>
+                                                <p className="text-[11px] text-[#8C8578]">
+                                                    Qty: {item.qty}
+                                                </p>
                                             </div>
                                         </div>
                                     ))}
                                     {order.extra_items > 0 && (
                                         <div className="flex h-[100px] w-[80px] shrink-0 flex-col items-center justify-center rounded-lg border border-[#EAE8E3] bg-[#FAF9F6] text-[#8C8578]">
-                                            <span className="font-serif text-lg text-[#3C3428] italic">+{order.extra_items}</span>
-                                            <span className="text-[10px]">more</span>
+                                            <span className="font-serif text-lg text-[#3C3428] italic">
+                                                +{order.extra_items}
+                                            </span>
+                                            <span className="text-[10px]">
+                                                more
+                                            </span>
                                         </div>
                                     )}
                                 </div>
 
                                 <div className="mt-4 flex w-full shrink-0 flex-row gap-3 lg:mt-0 lg:w-[200px] lg:flex-col">
-                                    {order.order_status === 'pending_payment' && (
-                                        <a href={order.payment.midtrans_redirect_url ?? '/checkout'} target={order.payment.midtrans_redirect_url ? '_blank' : undefined} rel={order.payment.midtrans_redirect_url ? 'noreferrer' : undefined} className="flex-1 rounded-lg bg-[#3C3428] py-2.5 text-center text-[12px] font-bold text-white shadow-md shadow-[#3C3428]/20 transition-colors hover:bg-[#2D261C] lg:w-full">
+                                    {order.order_status ===
+                                        'pending_payment' && (
+                                        <a
+                                            href={
+                                                order.payment
+                                                    .midtrans_redirect_url ??
+                                                '/checkout'
+                                            }
+                                            target={
+                                                order.payment
+                                                    .midtrans_redirect_url
+                                                    ? '_blank'
+                                                    : undefined
+                                            }
+                                            rel={
+                                                order.payment
+                                                    .midtrans_redirect_url
+                                                    ? 'noreferrer'
+                                                    : undefined
+                                            }
+                                            className="flex-1 rounded-lg bg-[#3C3428] py-2.5 text-center text-[12px] font-bold text-white shadow-md shadow-[#3C3428]/20 transition-colors hover:bg-[#2D261C] lg:w-full"
+                                        >
                                             Pay Now
                                         </a>
                                     )}
                                     {order.order_status === 'shipped' && (
-                                        <Link href={orderShow.url(order.id)} className="flex-1 rounded-lg bg-[#3C3428] py-2.5 text-center text-[12px] font-bold text-white shadow-md shadow-[#3C3428]/20 transition-colors hover:bg-[#2D261C] lg:w-full">
+                                        <Link
+                                            href={orderShow.url(order.id)}
+                                            className="flex-1 rounded-lg bg-[#3C3428] py-2.5 text-center text-[12px] font-bold text-white shadow-md shadow-[#3C3428]/20 transition-colors hover:bg-[#2D261C] lg:w-full"
+                                        >
                                             Track Order
                                         </Link>
                                     )}
-                                    <Link href={order.order_status === 'delivered' || order.order_status === 'completed' ? '/list' : orderShow.url(order.id)} className="flex-1 rounded-lg border border-[#EAE8E3] bg-white py-2.5 text-center text-[12px] font-bold text-[#3C3428] transition-colors hover:border-[#C4BDB1] hover:bg-[#FAF9F6] lg:w-full">
-                                        {order.order_status === 'delivered' || order.order_status === 'completed' ? 'Buy Again' : 'View Details'}
+                                    <Link
+                                        href={
+                                            order.order_status ===
+                                                'delivered' ||
+                                            order.order_status === 'completed'
+                                                ? '/list'
+                                                : orderShow.url(order.id)
+                                        }
+                                        className="flex-1 rounded-lg border border-[#EAE8E3] bg-white py-2.5 text-center text-[12px] font-bold text-[#3C3428] transition-colors hover:border-[#C4BDB1] hover:bg-[#FAF9F6] lg:w-full"
+                                    >
+                                        {order.order_status === 'delivered' ||
+                                        order.order_status === 'completed'
+                                            ? 'Buy Again'
+                                            : 'View Details'}
                                     </Link>
                                 </div>
                             </div>
@@ -319,19 +467,47 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                         <div className="absolute top-4 right-[5%] left-[5%] -z-10 h-[2px] bg-[#EAE8E3]" />
                                         <div className="absolute top-4 left-[5%] -z-10 h-[2px] w-[60%] bg-[#C2AA92]" />
                                         {[
-                                            { label: 'Order Confirmed', icon: Check, active: true },
-                                            { label: 'Packed', icon: Package, active: true },
-                                            { label: 'Shipped', icon: Truck, active: true },
-                                            { label: 'Delivered', icon: Check, active: false },
+                                            {
+                                                label: 'Order Confirmed',
+                                                icon: Check,
+                                                active: true,
+                                            },
+                                            {
+                                                label: 'Packed',
+                                                icon: Package,
+                                                active: true,
+                                            },
+                                            {
+                                                label: 'Shipped',
+                                                icon: Truck,
+                                                active: true,
+                                            },
+                                            {
+                                                label: 'Delivered',
+                                                icon: Check,
+                                                active: false,
+                                            },
                                         ].map((step) => {
                                             const Icon = step.icon;
 
                                             return (
-                                                <div key={step.label} className="flex flex-col items-center">
-                                                    <div className={`mb-2 flex h-8 w-8 items-center justify-center rounded-full border-2 transition-colors ${step.active ? 'border-[#C2AA92] bg-[#C2AA92] text-white shadow-md' : 'border-[#EAE8E3] bg-white text-[#A89F91]'}`}>
-                                                        <Icon size={14} strokeWidth={3} />
+                                                <div
+                                                    key={step.label}
+                                                    className="flex flex-col items-center"
+                                                >
+                                                    <div
+                                                        className={`mb-2 flex h-8 w-8 items-center justify-center rounded-full border-2 transition-colors ${step.active ? 'border-[#C2AA92] bg-[#C2AA92] text-white shadow-md' : 'border-[#EAE8E3] bg-white text-[#A89F91]'}`}
+                                                    >
+                                                        <Icon
+                                                            size={14}
+                                                            strokeWidth={3}
+                                                        />
                                                     </div>
-                                                    <p className={`mb-0.5 text-[10px] font-bold ${step.active ? 'text-[#3C3428]' : 'text-[#A89F91]'}`}>{step.label}</p>
+                                                    <p
+                                                        className={`mb-0.5 text-[10px] font-bold ${step.active ? 'text-[#3C3428]' : 'text-[#A89F91]'}`}
+                                                    >
+                                                        {step.label}
+                                                    </p>
                                                 </div>
                                             );
                                         })}
@@ -342,10 +518,16 @@ export default function ListOrder({ orders, filters, options }: Props) {
                     ))}
 
                     <div className="flex flex-col items-center justify-between gap-4 pt-8 pb-4 text-[12px] text-[#8C8578] md:flex-row">
-                        <span>Showing {orders.from ?? 0}-{orders.to ?? 0} of {orders.total} orders</span>
+                        <span>
+                            Showing {orders.from ?? 0}-{orders.to ?? 0} of{' '}
+                            {orders.total} orders
+                        </span>
                         <div className="flex flex-wrap justify-center gap-1">
                             {orders.links.map((link) => (
-                                <PaginationButton key={`${link.label}-${link.url ?? 'disabled'}`} link={link} />
+                                <PaginationButton
+                                    key={`${link.label}-${link.url ?? 'disabled'}`}
+                                    link={link}
+                                />
                             ))}
                         </div>
                     </div>
@@ -373,14 +555,24 @@ function Select({
             >
                 {children}
             </select>
-            <ChevronDown size={16} className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-[#A89F91]" />
+            <ChevronDown
+                size={16}
+                className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-[#A89F91]"
+            />
         </div>
     );
 }
 
 function PaginationButton({ link }: { link: PaginationLink }) {
     const label = cleanPageLabel(link.label);
-    const content = label === 'Previous' ? <ChevronLeft size={16} /> : label === 'Next' ? <ChevronRight size={16} /> : label;
+    const content =
+        label === 'Previous' ? (
+            <ChevronLeft size={16} />
+        ) : label === 'Next' ? (
+            <ChevronRight size={16} />
+        ) : (
+            label
+        );
     const className = `flex h-8 min-w-8 items-center justify-center rounded-md px-2 font-medium transition-colors ${link.active ? 'bg-[#3C3428] text-white shadow-md' : 'text-[#8C8578] hover:bg-white hover:text-[#3C3428]'}`;
 
     if (!link.url) {
@@ -388,7 +580,12 @@ function PaginationButton({ link }: { link: PaginationLink }) {
     }
 
     return (
-        <Link href={link.url} preserveScroll preserveState className={className}>
+        <Link
+            href={link.url}
+            preserveScroll
+            preserveState
+            className={className}
+        >
             {content}
         </Link>
     );

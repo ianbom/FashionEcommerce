@@ -109,7 +109,12 @@ export default function AdminSettingsIndex({
                                             'bg-primary/10 text-primary hover:bg-primary/15',
                                     )}
                                 >
-                                    <Link href={sectionLinks[key] ?? '/admin/settings'}>
+                                    <Link
+                                        href={
+                                            sectionLinks[key] ??
+                                            '/admin/settings'
+                                        }
+                                    >
                                         {section.title}
                                     </Link>
                                 </Button>
@@ -154,26 +159,30 @@ export default function AdminSettingsIndex({
                                             {field.input === 'textarea' ? (
                                                 <textarea
                                                     id={field.key}
-                                                    value={data[field.key] ?? ''}
+                                                    value={
+                                                        data[field.key] ?? ''
+                                                    }
                                                     onChange={(event) =>
                                                         setData(
                                                             field.key,
                                                             event.target.value,
                                                         )
                                                     }
-                                                    className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 min-h-28 w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:ring-[3px]"
+                                                    className="min-h-28 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                                                 />
                                             ) : field.input === 'select' ? (
                                                 <select
                                                     id={field.key}
-                                                    value={data[field.key] ?? ''}
+                                                    value={
+                                                        data[field.key] ?? ''
+                                                    }
                                                     onChange={(event) =>
                                                         setData(
                                                             field.key,
                                                             event.target.value,
                                                         )
                                                     }
-                                                    className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
+                                                    className="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                                                 >
                                                     <option value="">
                                                         Select option
@@ -193,7 +202,9 @@ export default function AdminSettingsIndex({
                                                 <Input
                                                     id={field.key}
                                                     type={field.input ?? 'text'}
-                                                    value={data[field.key] ?? ''}
+                                                    value={
+                                                        data[field.key] ?? ''
+                                                    }
                                                     onChange={(event) =>
                                                         setData(
                                                             field.key,
@@ -222,7 +233,9 @@ export default function AdminSettingsIndex({
                                     </Button>
                                     <Button type="submit" disabled={processing}>
                                         <Save />
-                                        {processing ? 'Saving...' : 'Save Settings'}
+                                        {processing
+                                            ? 'Saving...'
+                                            : 'Save Settings'}
                                     </Button>
                                 </div>
                             </form>

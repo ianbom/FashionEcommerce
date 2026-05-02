@@ -63,8 +63,8 @@ function ImageUploadField({
         onFileChange(file);
 
         if (file) {
-onPreviewChange(URL.createObjectURL(file));
-}
+            onPreviewChange(URL.createObjectURL(file));
+        }
     };
 
     const clear = () => {
@@ -72,8 +72,8 @@ onPreviewChange(URL.createObjectURL(file));
         onPreviewChange(null);
 
         if (fileInputRef.current) {
-fileInputRef.current.value = '';
-}
+            fileInputRef.current.value = '';
+        }
     };
 
     const display = previewUrl ?? currentUrl;
@@ -85,11 +85,15 @@ fileInputRef.current.value = '';
                 <div className="relative flex h-28 w-40 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted">
                     {display ? (
                         <>
-                            <img src={display} alt="Preview" className="h-full w-full object-cover" />
+                            <img
+                                src={display}
+                                alt="Preview"
+                                className="h-full w-full object-cover"
+                            />
                             <button
                                 type="button"
                                 onClick={clear}
-                                className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+                                className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
                             >
                                 <X className="h-3 w-3" />
                             </button>
@@ -103,8 +107,12 @@ fileInputRef.current.value = '';
                     onClick={() => fileInputRef.current?.click()}
                 >
                     <Upload className="h-5 w-5 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">Klik untuk upload gambar</p>
-                    <p className="text-xs text-muted-foreground/60">{description}</p>
+                    <p className="text-sm text-muted-foreground">
+                        Klik untuk upload gambar
+                    </p>
+                    <p className="text-xs text-muted-foreground/60">
+                        {description}
+                    </p>
                     <input
                         ref={fileInputRef}
                         type="file"
@@ -138,7 +146,9 @@ export default function CollectionForm({ mode, collection }: Props) {
 
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        const url = isEdit ? `/admin/collections/${collection.id}` : '/admin/collections';
+        const url = isEdit
+            ? `/admin/collections/${collection.id}`
+            : '/admin/collections';
         post(url, { forceFormData: true });
     };
 
@@ -156,7 +166,8 @@ export default function CollectionForm({ mode, collection }: Props) {
                     <CardHeader>
                         <CardTitle>Collection Information</CardTitle>
                         <CardDescription>
-                            Upload banner desktop (landscape) dan mobile (portrait) untuk collection ini.
+                            Upload banner desktop (landscape) dan mobile
+                            (portrait) untuk collection ini.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -171,7 +182,10 @@ export default function CollectionForm({ mode, collection }: Props) {
                                             setData('name', event.target.value);
 
                                             if (!data.slug) {
-                                                setData('slug', slugify(event.target.value));
+                                                setData(
+                                                    'slug',
+                                                    slugify(event.target.value),
+                                                );
                                             }
                                         }}
                                     />
@@ -182,7 +196,12 @@ export default function CollectionForm({ mode, collection }: Props) {
                                     <Input
                                         id="slug"
                                         value={data.slug}
-                                        onChange={(event) => setData('slug', slugify(event.target.value))}
+                                        onChange={(event) =>
+                                            setData(
+                                                'slug',
+                                                slugify(event.target.value),
+                                            )
+                                        }
                                     />
                                     <InputError message={errors.slug} />
                                 </div>
@@ -193,28 +212,41 @@ export default function CollectionForm({ mode, collection }: Props) {
                                 <textarea
                                     id="description"
                                     value={data.description}
-                                    onChange={(event) => setData('description', event.target.value)}
-                                    className="border-input focus-visible:border-ring focus-visible:ring-ring/50 min-h-28 rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
+                                    onChange={(event) =>
+                                        setData(
+                                            'description',
+                                            event.target.value,
+                                        )
+                                    }
+                                    className="min-h-28 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                                 />
                                 <InputError message={errors.description} />
                             </div>
 
                             <ImageUploadField
                                 label="Desktop Banner"
-                                currentUrl={collection?.banner_desktop_url ?? null}
+                                currentUrl={
+                                    collection?.banner_desktop_url ?? null
+                                }
                                 previewUrl={desktopPreview}
                                 onPreviewChange={setDesktopPreview}
-                                onFileChange={(file) => setData('banner_desktop', file)}
+                                onFileChange={(file) =>
+                                    setData('banner_desktop', file)
+                                }
                                 error={errors.banner_desktop}
                                 description="Landscape — maks. 4 MB (JPG, PNG, WEBP)"
                             />
 
                             <ImageUploadField
                                 label="Mobile Banner"
-                                currentUrl={collection?.banner_mobile_url ?? null}
+                                currentUrl={
+                                    collection?.banner_mobile_url ?? null
+                                }
                                 previewUrl={mobilePreview}
                                 onPreviewChange={setMobilePreview}
-                                onFileChange={(file) => setData('banner_mobile', file)}
+                                onFileChange={(file) =>
+                                    setData('banner_mobile', file)
+                                }
                                 error={errors.banner_mobile}
                                 description="Portrait — maks. 2 MB (JPG, PNG, WEBP)"
                             />
@@ -224,31 +256,52 @@ export default function CollectionForm({ mode, collection }: Props) {
                                     <input
                                         type="checkbox"
                                         checked={data.is_featured}
-                                        onChange={(event) => setData('is_featured', event.target.checked)}
+                                        onChange={(event) =>
+                                            setData(
+                                                'is_featured',
+                                                event.target.checked,
+                                            )
+                                        }
                                         className="mt-1"
                                     />
                                     <span>
-                                        <span className="block font-medium">Featured collection</span>
-                                        <span className="text-muted-foreground">Bisa ditampilkan di homepage.</span>
+                                        <span className="block font-medium">
+                                            Featured collection
+                                        </span>
+                                        <span className="text-muted-foreground">
+                                            Bisa ditampilkan di homepage.
+                                        </span>
                                     </span>
                                 </label>
                                 <label className="flex items-start gap-3 rounded-lg border p-4 text-sm">
                                     <input
                                         type="checkbox"
                                         checked={data.is_active}
-                                        onChange={(event) => setData('is_active', event.target.checked)}
+                                        onChange={(event) =>
+                                            setData(
+                                                'is_active',
+                                                event.target.checked,
+                                            )
+                                        }
                                         className="mt-1"
                                     />
                                     <span>
-                                        <span className="block font-medium">Active collection</span>
-                                        <span className="text-muted-foreground">Collection aktif bisa tampil ke customer.</span>
+                                        <span className="block font-medium">
+                                            Active collection
+                                        </span>
+                                        <span className="text-muted-foreground">
+                                            Collection aktif bisa tampil ke
+                                            customer.
+                                        </span>
                                     </span>
                                 </label>
                             </div>
 
                             <div className="flex justify-end gap-3 border-t pt-5">
                                 <Button asChild type="button" variant="outline">
-                                    <Link href="/admin/collections">Cancel</Link>
+                                    <Link href="/admin/collections">
+                                        Cancel
+                                    </Link>
                                 </Button>
                                 <Button type="submit" disabled={processing}>
                                     <Save />

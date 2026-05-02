@@ -141,9 +141,7 @@ export default function AdminUserForm({ mode, adminUser }: Props) {
 
                                 <div className="grid gap-2">
                                     <Label htmlFor="password">
-                                        {isEdit
-                                            ? 'New Password'
-                                            : 'Password'}
+                                        {isEdit ? 'New Password' : 'Password'}
                                     </Label>
                                     <Input
                                         id="password"
@@ -203,12 +201,10 @@ export default function AdminUserForm({ mode, adminUser }: Props) {
                             <InputError message={errors.is_active} />
 
                             <div className="flex items-center justify-end gap-3 border-t pt-6">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    asChild
-                                >
-                                    <Link href="/admin/admin-users">Cancel</Link>
+                                <Button type="button" variant="outline" asChild>
+                                    <Link href="/admin/admin-users">
+                                        Cancel
+                                    </Link>
                                 </Button>
                                 <Button type="submit" disabled={processing}>
                                     <Save />

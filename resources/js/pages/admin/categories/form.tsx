@@ -40,7 +40,9 @@ function slugify(value: string) {
 export default function CategoryForm({ mode, category }: Props) {
     const isEdit = mode === 'edit' && category !== null;
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [preview, setPreview] = useState<string | null>(category?.image_url ?? null);
+    const [preview, setPreview] = useState<string | null>(
+        category?.image_url ?? null,
+    );
 
     const { data, setData, post, processing, errors } = useForm({
         _method: isEdit ? 'PUT' : 'POST',
@@ -65,13 +67,15 @@ export default function CategoryForm({ mode, category }: Props) {
         setPreview(null);
 
         if (fileInputRef.current) {
-fileInputRef.current.value = '';
-}
+            fileInputRef.current.value = '';
+        }
     };
 
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        const url = isEdit ? `/admin/categories/${category.id}` : '/admin/categories';
+        const url = isEdit
+            ? `/admin/categories/${category.id}`
+            : '/admin/categories';
         post(url, { forceFormData: true });
     };
 
@@ -89,7 +93,8 @@ fileInputRef.current.value = '';
                     <CardHeader>
                         <CardTitle>Category Information</CardTitle>
                         <CardDescription>
-                            Upload gambar category langsung dari komputer kamu (maks. 2 MB).
+                            Upload gambar category langsung dari komputer kamu
+                            (maks. 2 MB).
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -104,7 +109,10 @@ fileInputRef.current.value = '';
                                             setData('name', event.target.value);
 
                                             if (!data.slug) {
-                                                setData('slug', slugify(event.target.value));
+                                                setData(
+                                                    'slug',
+                                                    slugify(event.target.value),
+                                                );
                                             }
                                         }}
                                     />
@@ -115,7 +123,12 @@ fileInputRef.current.value = '';
                                     <Input
                                         id="slug"
                                         value={data.slug}
-                                        onChange={(event) => setData('slug', slugify(event.target.value))}
+                                        onChange={(event) =>
+                                            setData(
+                                                'slug',
+                                                slugify(event.target.value),
+                                            )
+                                        }
                                     />
                                     <InputError message={errors.slug} />
                                 </div>
@@ -126,8 +139,13 @@ fileInputRef.current.value = '';
                                 <textarea
                                     id="description"
                                     value={data.description}
-                                    onChange={(event) => setData('description', event.target.value)}
-                                    className="border-input focus-visible:border-ring focus-visible:ring-ring/50 min-h-28 rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
+                                    onChange={(event) =>
+                                        setData(
+                                            'description',
+                                            event.target.value,
+                                        )
+                                    }
+                                    className="min-h-28 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                                 />
                                 <InputError message={errors.description} />
                             </div>
@@ -140,11 +158,15 @@ fileInputRef.current.value = '';
                                     <div className="relative flex h-32 w-32 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted">
                                         {preview ? (
                                             <>
-                                                <img src={preview} alt="Preview" className="h-full w-full object-cover" />
+                                                <img
+                                                    src={preview}
+                                                    alt="Preview"
+                                                    className="h-full w-full object-cover"
+                                                />
                                                 <button
                                                     type="button"
                                                     onClick={clearImage}
-                                                    className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+                                                    className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
                                                 >
                                                     <X className="h-3 w-3" />
                                                 </button>
@@ -157,13 +179,18 @@ fileInputRef.current.value = '';
                                     {/* Drop zone */}
                                     <div
                                         className="flex flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-6 text-center transition hover:border-primary/60 hover:bg-muted/50"
-                                        onClick={() => fileInputRef.current?.click()}
+                                        onClick={() =>
+                                            fileInputRef.current?.click()
+                                        }
                                     >
                                         <Upload className="h-6 w-6 text-muted-foreground" />
                                         <p className="text-sm text-muted-foreground">
-                                            Klik untuk upload atau drag &amp; drop gambar
+                                            Klik untuk upload atau drag &amp;
+                                            drop gambar
                                         </p>
-                                        <p className="text-xs text-muted-foreground/60">JPG, PNG, WEBP — maks. 2 MB</p>
+                                        <p className="text-xs text-muted-foreground/60">
+                                            JPG, PNG, WEBP — maks. 2 MB
+                                        </p>
                                         <input
                                             ref={fileInputRef}
                                             type="file"
@@ -180,13 +207,21 @@ fileInputRef.current.value = '';
                                 <input
                                     type="checkbox"
                                     checked={data.is_active}
-                                    onChange={(event) => setData('is_active', event.target.checked)}
+                                    onChange={(event) =>
+                                        setData(
+                                            'is_active',
+                                            event.target.checked,
+                                        )
+                                    }
                                     className="mt-1"
                                 />
                                 <span>
-                                    <span className="block font-medium">Active category</span>
+                                    <span className="block font-medium">
+                                        Active category
+                                    </span>
                                     <span className="text-muted-foreground">
-                                        Category aktif bisa ditampilkan sebagai filter customer.
+                                        Category aktif bisa ditampilkan sebagai
+                                        filter customer.
                                     </span>
                                 </span>
                             </label>

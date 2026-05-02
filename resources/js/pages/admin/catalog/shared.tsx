@@ -151,21 +151,17 @@ export function ActiveBadge({ active }: { active: boolean }) {
     );
 }
 
-export function FlagBadge({ active, children }: { active: boolean; children: ReactNode }) {
-    return (
-        <Badge variant={active ? 'secondary' : 'outline'}>
-            {children}
-        </Badge>
-    );
+export function FlagBadge({
+    active,
+    children,
+}: {
+    active: boolean;
+    children: ReactNode;
+}) {
+    return <Badge variant={active ? 'secondary' : 'outline'}>{children}</Badge>;
 }
 
-export function Thumbnail({
-    src,
-    alt,
-}: {
-    src?: string | null;
-    alt: string;
-}) {
+export function Thumbnail({ src, alt }: { src?: string | null; alt: string }) {
     return src ? (
         <img
             src={src}

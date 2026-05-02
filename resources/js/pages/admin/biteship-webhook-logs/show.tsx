@@ -1,6 +1,12 @@
 import { Head, Link } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { JsonBlock, PageHeader } from '@/pages/admin/sales/shared';
 
 type Log = {
@@ -20,10 +26,28 @@ export default function BiteshipWebhookLogShow({ log }: Props) {
         <>
             <Head title={`Biteship Webhook #${log.id}`} />
             <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">
-                <PageHeader eyebrow="Sales Management" title={`Biteship Webhook #${log.id}`} description="Raw payload Biteship webhook untuk audit/debugging." action={<Button asChild variant="outline"><Link href="/admin/biteship-webhook-logs">Back</Link></Button>} />
+                <PageHeader
+                    eyebrow="Sales Management"
+                    title={`Biteship Webhook #${log.id}`}
+                    description="Raw payload Biteship webhook untuk audit/debugging."
+                    action={
+                        <Button asChild variant="outline">
+                            <Link href="/admin/biteship-webhook-logs">
+                                Back
+                            </Link>
+                        </Button>
+                    }
+                />
                 <Card>
-                    <CardHeader><CardTitle>{log.event_type ?? '-'}</CardTitle><CardDescription>{log.waybill_id ?? '-'} · {log.processed_at ?? '-'}</CardDescription></CardHeader>
-                    <CardContent><JsonBlock value={log.payload} /></CardContent>
+                    <CardHeader>
+                        <CardTitle>{log.event_type ?? '-'}</CardTitle>
+                        <CardDescription>
+                            {log.waybill_id ?? '-'} · {log.processed_at ?? '-'}
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <JsonBlock value={log.payload} />
+                    </CardContent>
                 </Card>
             </div>
         </>

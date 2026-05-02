@@ -247,176 +247,201 @@ export default function ListProduct({ products, filters, options }: Props) {
 
                         <div className="rounded-xl border border-border/50 bg-card/30 px-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md">
                             <FilterSection title="Categories">
-                            <div className="space-y-3.5 text-[11px] tracking-wide">
-                                <FilterRadio
-                                    label="All Categories"
-                                    active={form.category === ''}
-                                    onClick={() => setFilter('category', '')}
-                                />
-                                {options.categories.map((category) => (
+                                <div className="space-y-3.5 text-[11px] tracking-wide">
                                     <FilterRadio
-                                        key={category.id ?? category.slug}
-                                        label={
-                                            category.name ?? 'Untitled category'
-                                        }
-                                        active={form.category === category.slug}
+                                        label="All Categories"
+                                        active={form.category === ''}
                                         onClick={() =>
-                                            setFilter(
-                                                'category',
-                                                category.slug ?? '',
-                                            )
+                                            setFilter('category', '')
                                         }
                                     />
-                                ))}
-                            </div>
-                        </FilterSection>
+                                    {options.categories.map((category) => (
+                                        <FilterRadio
+                                            key={category.id ?? category.slug}
+                                            label={
+                                                category.name ??
+                                                'Untitled category'
+                                            }
+                                            active={
+                                                form.category === category.slug
+                                            }
+                                            onClick={() =>
+                                                setFilter(
+                                                    'category',
+                                                    category.slug ?? '',
+                                                )
+                                            }
+                                        />
+                                    ))}
+                                </div>
+                            </FilterSection>
 
-                        <FilterSection title="Collections">
-                            <div className="space-y-3.5 text-[11px] tracking-wide">
-                                <FilterRadio
-                                    label="All Collections"
-                                    active={form.collection === ''}
-                                    onClick={() => setFilter('collection', '')}
-                                />
-                                {options.collections.map((collection) => (
+                            <FilterSection title="Collections">
+                                <div className="space-y-3.5 text-[11px] tracking-wide">
                                     <FilterRadio
-                                        key={collection.id ?? collection.slug}
-                                        label={
-                                            collection.name ??
-                                            'Untitled collection'
-                                        }
-                                        active={
-                                            form.collection === collection.slug
-                                        }
+                                        label="All Collections"
+                                        active={form.collection === ''}
                                         onClick={() =>
-                                            setFilter(
-                                                'collection',
-                                                collection.slug ?? '',
-                                            )
+                                            setFilter('collection', '')
                                         }
                                     />
-                                ))}
-                            </div>
-                        </FilterSection>
+                                    {options.collections.map((collection) => (
+                                        <FilterRadio
+                                            key={
+                                                collection.id ?? collection.slug
+                                            }
+                                            label={
+                                                collection.name ??
+                                                'Untitled collection'
+                                            }
+                                            active={
+                                                form.collection ===
+                                                collection.slug
+                                            }
+                                            onClick={() =>
+                                                setFilter(
+                                                    'collection',
+                                                    collection.slug ?? '',
+                                                )
+                                            }
+                                        />
+                                    ))}
+                                </div>
+                            </FilterSection>
 
-                        <FilterSection title="Product Type">
-                            <div className="space-y-3.5 text-[11px] tracking-wide">
-                                {typeOptions.map((type) => (
+                            <FilterSection title="Product Type">
+                                <div className="space-y-3.5 text-[11px] tracking-wide">
+                                    {typeOptions.map((type) => (
+                                        <FilterRadio
+                                            key={type.value}
+                                            label={type.label}
+                                            active={form.type === type.value}
+                                            onClick={() =>
+                                                setFilter('type', type.value)
+                                            }
+                                        />
+                                    ))}
+                                </div>
+                            </FilterSection>
+
+                            <FilterSection title="Availability">
+                                <div className="space-y-3.5 text-[11px] tracking-wide">
+                                    {availabilityOptions.map((availability) => (
+                                        <FilterRadio
+                                            key={availability.value}
+                                            label={availability.label}
+                                            active={
+                                                form.availability ===
+                                                availability.value
+                                            }
+                                            onClick={() =>
+                                                setFilter(
+                                                    'availability',
+                                                    availability.value,
+                                                )
+                                            }
+                                        />
+                                    ))}
+                                </div>
+                            </FilterSection>
+
+                            <FilterSection title="Price">
+                                <div className="space-y-3.5 text-[11px] tracking-wide">
                                     <FilterRadio
-                                        key={type.value}
-                                        label={type.label}
-                                        active={form.type === type.value}
+                                        label="All Prices"
+                                        active={form.price === 'all'}
                                         onClick={() =>
-                                            setFilter('type', type.value)
+                                            setFilter('price', 'all')
                                         }
                                     />
-                                ))}
-                            </div>
-                        </FilterSection>
+                                    {options.priceRanges.map((price) => (
+                                        <FilterRadio
+                                            key={price.value}
+                                            label={price.label}
+                                            active={form.price === price.value}
+                                            onClick={() =>
+                                                setFilter('price', price.value)
+                                            }
+                                        />
+                                    ))}
+                                </div>
+                            </FilterSection>
 
-                        <FilterSection title="Availability">
-                            <div className="space-y-3.5 text-[11px] tracking-wide">
-                                {availabilityOptions.map((availability) => (
-                                    <FilterRadio
-                                        key={availability.value}
-                                        label={availability.label}
-                                        active={
-                                            form.availability ===
-                                            availability.value
-                                        }
-                                        onClick={() =>
-                                            setFilter(
-                                                'availability',
-                                                availability.value,
-                                            )
-                                        }
-                                    />
-                                ))}
-                            </div>
-                        </FilterSection>
-
-                        <FilterSection title="Price">
-                            <div className="space-y-3.5 text-[11px] tracking-wide">
-                                <FilterRadio
-                                    label="All Prices"
-                                    active={form.price === 'all'}
-                                    onClick={() => setFilter('price', 'all')}
-                                />
-                                {options.priceRanges.map((price) => (
-                                    <FilterRadio
-                                        key={price.value}
-                                        label={price.label}
-                                        active={form.price === price.value}
-                                        onClick={() =>
-                                            setFilter('price', price.value)
-                                        }
-                                    />
-                                ))}
-                            </div>
-                        </FilterSection>
-
-                        <FilterSection title="Color">
-                            <div className="flex flex-wrap gap-2.5">
-                                <button
-                                    type="button"
-                                    onClick={() => setFilter('color', '')}
-                                    className={`h-5 w-5 rounded-full border bg-white shadow-sm transition ${
-                                        form.color === ''
-                                            ? 'border-primary ring-2 ring-primary/20'
-                                            : 'border-gray-300 hover:scale-110'
-                                    }`}
-                                    aria-label="All colors"
-                                />
-                                {options.colors.map((color) => (
+                            <FilterSection title="Color">
+                                <div className="flex flex-wrap gap-2.5">
                                     <button
-                                        key={color.hex ?? color.name ?? 'color'}
                                         type="button"
-                                        onClick={() =>
-                                            setFilter('color', color.hex ?? '')
-                                        }
-                                        className={`h-5 w-5 rounded-full border shadow-sm transition ${
-                                            form.color === color.hex
-                                                ? 'border-primary ring-2 ring-primary/25'
-                                                : 'border-white/80 hover:scale-110'
+                                        onClick={() => setFilter('color', '')}
+                                        className={`h-5 w-5 rounded-full border bg-white shadow-sm transition ${
+                                            form.color === ''
+                                                ? 'border-primary ring-2 ring-primary/20'
+                                                : 'border-gray-300 hover:scale-110'
                                         }`}
-                                        style={{ backgroundColor: color.hex }}
-                                        aria-label={
-                                            color.name ?? color.hex ?? 'Color'
-                                        }
+                                        aria-label="All colors"
                                     />
-                                ))}
-                            </div>
-                        </FilterSection>
+                                    {options.colors.map((color) => (
+                                        <button
+                                            key={
+                                                color.hex ??
+                                                color.name ??
+                                                'color'
+                                            }
+                                            type="button"
+                                            onClick={() =>
+                                                setFilter(
+                                                    'color',
+                                                    color.hex ?? '',
+                                                )
+                                            }
+                                            className={`h-5 w-5 rounded-full border shadow-sm transition ${
+                                                form.color === color.hex
+                                                    ? 'border-primary ring-2 ring-primary/25'
+                                                    : 'border-white/80 hover:scale-110'
+                                            }`}
+                                            style={{
+                                                backgroundColor: color.hex,
+                                            }}
+                                            aria-label={
+                                                color.name ??
+                                                color.hex ??
+                                                'Color'
+                                            }
+                                        />
+                                    ))}
+                                </div>
+                            </FilterSection>
 
-                        <FilterSection title="Size">
-                            <div className="flex flex-wrap gap-2 text-[10px] font-semibold text-muted-foreground">
-                                <button
-                                    type="button"
-                                    onClick={() => setFilter('size', '')}
-                                    className={`flex h-7 min-w-9 items-center justify-center rounded border px-2 transition-colors ${
-                                        form.size === ''
-                                            ? 'border-primary bg-primary text-primary-foreground'
-                                            : 'border-input bg-card/50 hover:border-secondary-foreground hover:text-secondary-foreground'
-                                    }`}
-                                >
-                                    All
-                                </button>
-                                {options.sizes.map((size) => (
+                            <FilterSection title="Size">
+                                <div className="flex flex-wrap gap-2 text-[10px] font-semibold text-muted-foreground">
                                     <button
-                                        key={size}
                                         type="button"
-                                        onClick={() => setFilter('size', size)}
+                                        onClick={() => setFilter('size', '')}
                                         className={`flex h-7 min-w-9 items-center justify-center rounded border px-2 transition-colors ${
-                                            form.size === size
+                                            form.size === ''
                                                 ? 'border-primary bg-primary text-primary-foreground'
                                                 : 'border-input bg-card/50 hover:border-secondary-foreground hover:text-secondary-foreground'
                                         }`}
                                     >
-                                        {size}
+                                        All
                                     </button>
-                                ))}
-                            </div>
-                        </FilterSection>
+                                    {options.sizes.map((size) => (
+                                        <button
+                                            key={size}
+                                            type="button"
+                                            onClick={() =>
+                                                setFilter('size', size)
+                                            }
+                                            className={`flex h-7 min-w-9 items-center justify-center rounded border px-2 transition-colors ${
+                                                form.size === size
+                                                    ? 'border-primary bg-primary text-primary-foreground'
+                                                    : 'border-input bg-card/50 hover:border-secondary-foreground hover:text-secondary-foreground'
+                                            }`}
+                                        >
+                                            {size}
+                                        </button>
+                                    ))}
+                                </div>
+                            </FilterSection>
                         </div>
                     </div>
                 </aside>
@@ -640,7 +665,7 @@ function FilterSection({
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="group flex w-full cursor-pointer items-center justify-between text-[11px] font-semibold tracking-wide transition-colors hover:text-foreground outline-none"
+                className="group flex w-full cursor-pointer items-center justify-between text-[11px] font-semibold tracking-wide transition-colors outline-none hover:text-foreground"
             >
                 <span>{title}</span>
                 <div
@@ -648,17 +673,20 @@ function FilterSection({
                         isOpen ? 'rotate-180' : 'rotate-0'
                     }`}
                 >
-                    <ChevronDown size={14} className="text-muted-foreground transition-colors group-hover:text-foreground" />
+                    <ChevronDown
+                        size={14}
+                        className="text-muted-foreground transition-colors group-hover:text-foreground"
+                    />
                 </div>
             </button>
             <div
                 className={`grid transition-[grid-template-rows,opacity,padding] duration-500 ease-[cubic-bezier(0.87,_0,_0.13,_1)] ${
-                    isOpen ? 'grid-rows-[1fr] opacity-100 pt-4' : 'grid-rows-[0fr] opacity-0 pt-0 pointer-events-none'
+                    isOpen
+                        ? 'grid-rows-[1fr] pt-4 opacity-100'
+                        : 'pointer-events-none grid-rows-[0fr] pt-0 opacity-0'
                 }`}
             >
-                <div className="overflow-hidden">
-                    {children}
-                </div>
+                <div className="overflow-hidden">{children}</div>
             </div>
         </div>
     );
@@ -687,15 +715,21 @@ function FilterRadio({
                             : 'border-input group-hover:border-primary/50'
                     }`}
                 >
-                    <span 
+                    <span
                         className={`h-[6px] w-[6px] rounded-full bg-primary transition-all duration-300 ${
-                            active ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
-                        }`} 
+                            active
+                                ? 'scale-100 opacity-100'
+                                : 'scale-0 opacity-0'
+                        }`}
                     />
                 </span>
-                <span className={`transition-colors duration-300 text-[11px] tracking-wide ${
-                    active ? 'text-foreground font-medium' : 'text-secondary-foreground group-hover:text-foreground'
-                }`}>
+                <span
+                    className={`text-[11px] tracking-wide transition-colors duration-300 ${
+                        active
+                            ? 'font-medium text-foreground'
+                            : 'text-secondary-foreground group-hover:text-foreground'
+                    }`}
+                >
                     {label}
                 </span>
             </span>

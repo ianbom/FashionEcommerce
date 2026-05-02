@@ -1,7 +1,18 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Box, Heart, Minus, Plus, ShieldCheck, ShoppingBag, Trash2 } from 'lucide-react';
+import {
+    Box,
+    Heart,
+    Minus,
+    Plus,
+    ShieldCheck,
+    ShoppingBag,
+    Trash2,
+} from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { removeCartItem, updateCartItemQuantity } from '@/actions/App/Http/Controllers/Customer/CartController';
+import {
+    removeCartItem,
+    updateCartItemQuantity,
+} from '@/actions/App/Http/Controllers/Customer/CartController';
 import ShopLayout from '@/layouts/shop-layout';
 import { checkout, detail, list } from '@/routes';
 
@@ -62,7 +73,9 @@ const formatPrice = (price: number) =>
         currency: 'IDR',
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
-    }).format(price).replace('Rp', 'Rp ');
+    })
+        .format(price)
+        .replace('Rp', 'Rp ');
 
 export default function MyCart({
     cartItems,
@@ -70,11 +83,16 @@ export default function MyCart({
     suggestedProducts,
 }: PageProps) {
     const { errors } = usePage<{ errors: Record<string, string> }>().props;
-    const [processingItemId, setProcessingItemId] = useState<number | null>(null);
-    const [processingAction, setProcessingAction] = useState<'update' | 'remove' | null>(null);
+    const [processingItemId, setProcessingItemId] = useState<number | null>(
+        null,
+    );
+    const [processingAction, setProcessingAction] = useState<
+        'update' | 'remove' | null
+    >(null);
 
     const isEmpty = cartItems.length === 0;
-    const errorMessage = errors.quantity || errors.cart_item || errors.product_variant_id;
+    const errorMessage =
+        errors.quantity || errors.cart_item || errors.product_variant_id;
     const checkoutHref = useMemo(() => checkout.url(), []);
 
     const updateQuantity = (item: CartItem, nextQuantity: number) => {
@@ -128,7 +146,10 @@ export default function MyCart({
 
             <main className="mx-auto min-h-screen max-w-[1200px] bg-[#FAF9F6] px-4 py-8 md:px-8 md:py-12">
                 <div className="mb-6 flex items-center space-x-2 text-[10px] font-medium tracking-wide text-[#8C8578] md:mb-8 md:text-xs">
-                    <Link href="/" className="transition-colors hover:text-black">
+                    <Link
+                        href="/"
+                        className="transition-colors hover:text-black"
+                    >
                         Home
                     </Link>
                     <span>/</span>
@@ -138,7 +159,7 @@ export default function MyCart({
                 {!isEmpty ? (
                     <>
                         <div className="mb-8 md:mb-10">
-                            <h1 className="mb-2 font-serif text-3xl italic text-[#3C3428] md:text-4xl">
+                            <h1 className="mb-2 font-serif text-3xl text-[#3C3428] italic md:text-4xl">
                                 My Cart
                             </h1>
                             <p className="text-xs text-[#8C8578] md:text-sm">
@@ -160,21 +181,27 @@ export default function MyCart({
                                     const isRemoving =
                                         processingItemId === item.id &&
                                         processingAction === 'remove';
-                                    const itemDisabled = isUpdating || isRemoving;
+                                    const itemDisabled =
+                                        isUpdating || isRemoving;
                                     const productHref = item.product_slug
                                         ? detail.url({
-                                              query: { product: item.product_slug },
+                                              query: {
+                                                  product: item.product_slug,
+                                              },
                                           })
                                         : undefined;
                                     const canIncrease =
                                         item.is_available &&
-                                        item.quantity < Math.max(1, item.available_stock);
+                                        item.quantity <
+                                            Math.max(1, item.available_stock);
 
                                     return (
                                         <div
                                             key={item.id}
                                             className="animate-fade-in-up rounded-xl border border-[#EAE8E3]/60 bg-white/40 p-4 backdrop-blur-sm transition-all duration-500 ease-out hover:-translate-y-1 hover:shadow-lg hover:shadow-black/5"
-                                            style={{ animationDelay: `${index * 100}ms` }}
+                                            style={{
+                                                animationDelay: `${index * 100}ms`,
+                                            }}
                                         >
                                             <div className="flex flex-col gap-4 sm:flex-row">
                                                 {productHref ? (
@@ -224,7 +251,9 @@ export default function MyCart({
                                                         <div className="pr-4">
                                                             {productHref ? (
                                                                 <Link
-                                                                    href={productHref}
+                                                                    href={
+                                                                        productHref
+                                                                    }
                                                                     className="line-clamp-2 cursor-pointer text-sm font-semibold text-[#333333] transition-colors hover:text-black md:line-clamp-1 md:text-base"
                                                                 >
                                                                     {item.title}
@@ -236,32 +265,57 @@ export default function MyCart({
                                                             )}
                                                             <div className="mt-1 space-y-0.5 text-[11px] text-[#8C8578] md:text-xs">
                                                                 {item.color && (
-                                                                    <p>Color: {item.color}</p>
+                                                                    <p>
+                                                                        Color:{' '}
+                                                                        {
+                                                                            item.color
+                                                                        }
+                                                                    </p>
                                                                 )}
                                                                 {item.size && (
-                                                                    <p>Size: {item.size}</p>
+                                                                    <p>
+                                                                        Size:{' '}
+                                                                        {
+                                                                            item.size
+                                                                        }
+                                                                    </p>
                                                                 )}
                                                                 {!item.is_available && (
                                                                     <p className="font-semibold text-[#B24B4B]">
-                                                                        Variant ini sedang tidak tersedia.
+                                                                        Variant
+                                                                        ini
+                                                                        sedang
+                                                                        tidak
+                                                                        tersedia.
                                                                     </p>
                                                                 )}
                                                             </div>
                                                         </div>
                                                         <button
                                                             type="button"
-                                                            onClick={() => removeItem(item)}
-                                                            disabled={itemDisabled}
+                                                            onClick={() =>
+                                                                removeItem(item)
+                                                            }
+                                                            disabled={
+                                                                itemDisabled
+                                                            }
                                                             className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-50"
                                                             aria-label="Remove item"
                                                         >
-                                                            <Trash2 size={18} strokeWidth={1.5} />
+                                                            <Trash2
+                                                                size={18}
+                                                                strokeWidth={
+                                                                    1.5
+                                                                }
+                                                            />
                                                         </button>
                                                     </div>
 
                                                     <div className="mt-2 mb-4 hidden sm:block">
                                                         <span className="text-[13px] font-medium text-[#4A4A4A]">
-                                                            {formatPrice(item.price)}
+                                                            {formatPrice(
+                                                                item.price,
+                                                            )}
                                                         </span>
                                                     </div>
 
@@ -273,7 +327,9 @@ export default function MyCart({
                                                             <Heart
                                                                 size={14}
                                                                 className="mr-1.5 transition-colors group-hover:fill-red-50 group-hover:text-red-500"
-                                                                strokeWidth={1.5}
+                                                                strokeWidth={
+                                                                    1.5
+                                                                }
                                                             />
                                                             <span className="underline underline-offset-2">
                                                                 Move to Wishlist
@@ -287,44 +343,60 @@ export default function MyCart({
                                                                     onClick={() =>
                                                                         updateQuantity(
                                                                             item,
-                                                                            item.quantity - 1,
+                                                                            item.quantity -
+                                                                                1,
                                                                         )
                                                                     }
                                                                     disabled={
                                                                         itemDisabled ||
-                                                                        item.quantity <= 1
+                                                                        item.quantity <=
+                                                                            1
                                                                     }
                                                                     className="flex h-8 w-8 items-center justify-center text-[#4A4A4A] transition-colors hover:bg-[#F5F2E6] hover:text-black disabled:cursor-not-allowed disabled:opacity-40"
                                                                 >
                                                                     <Minus
-                                                                        size={14}
-                                                                        strokeWidth={2}
+                                                                        size={
+                                                                            14
+                                                                        }
+                                                                        strokeWidth={
+                                                                            2
+                                                                        }
                                                                     />
                                                                 </button>
                                                                 <span className="w-8 text-center text-xs font-semibold text-[#333333]">
-                                                                    {item.quantity}
+                                                                    {
+                                                                        item.quantity
+                                                                    }
                                                                 </span>
                                                                 <button
                                                                     type="button"
                                                                     onClick={() =>
                                                                         updateQuantity(
                                                                             item,
-                                                                            item.quantity + 1,
+                                                                            item.quantity +
+                                                                                1,
                                                                         )
                                                                     }
                                                                     disabled={
-                                                                        itemDisabled || !canIncrease
+                                                                        itemDisabled ||
+                                                                        !canIncrease
                                                                     }
                                                                     className="flex h-8 w-8 items-center justify-center text-[#4A4A4A] transition-colors hover:bg-[#F5F2E6] hover:text-black disabled:cursor-not-allowed disabled:opacity-40"
                                                                 >
                                                                     <Plus
-                                                                        size={14}
-                                                                        strokeWidth={2}
+                                                                        size={
+                                                                            14
+                                                                        }
+                                                                        strokeWidth={
+                                                                            2
+                                                                        }
                                                                     />
                                                                 </button>
                                                             </div>
                                                             <span className="min-w-[90px] text-right text-sm font-bold text-[#333333]">
-                                                                {formatPrice(item.subtotal)}
+                                                                {formatPrice(
+                                                                    item.subtotal,
+                                                                )}
                                                             </span>
                                                         </div>
                                                     </div>
@@ -336,14 +408,16 @@ export default function MyCart({
                             </div>
 
                             <div className="w-full flex-shrink-0 lg:w-[380px]">
-                                <div className="sticky top-24 rounded-2xl border border-[#EAE8E3]/80 bg-white p-6 shadow-xl shadow-black/5 lg:top-32 md:p-8">
-                                    <h2 className="mb-6 font-serif text-xl italic text-[#3C3428] md:text-2xl">
+                                <div className="sticky top-24 rounded-2xl border border-[#EAE8E3]/80 bg-white p-6 shadow-xl shadow-black/5 md:p-8 lg:top-32">
+                                    <h2 className="mb-6 font-serif text-xl text-[#3C3428] italic md:text-2xl">
                                         Order Summary
                                     </h2>
 
                                     <div className="mb-6 space-y-4 text-[13px] text-[#4A4A4A]">
                                         <div className="flex items-center justify-between">
-                                            <span>Items ({summary.item_count})</span>
+                                            <span>
+                                                Items ({summary.item_count})
+                                            </span>
                                             <span className="font-semibold text-[#333333]">
                                                 {formatPrice(summary.subtotal)}
                                             </span>
@@ -357,7 +431,8 @@ export default function MyCart({
                                         <div className="flex items-center justify-between text-[#C05D5D]">
                                             <span>Discount</span>
                                             <span className="font-semibold">
-                                                - {formatPrice(summary.discount)}
+                                                -{' '}
+                                                {formatPrice(summary.discount)}
                                             </span>
                                         </div>
                                     </div>
@@ -374,7 +449,8 @@ export default function MyCart({
                                     </div>
 
                                     <div className="mb-6 rounded-lg border border-[#EAE8E3] bg-[#FAF9F6] px-4 py-3 text-[12px] text-[#8C8578]">
-                                        Voucher discount can be applied on checkout after selecting shipping.
+                                        Voucher discount can be applied on
+                                        checkout after selecting shipping.
                                     </div>
 
                                     <div className="space-y-4">
@@ -401,7 +477,10 @@ export default function MyCart({
                                                 className="mt-0.5 flex-shrink-0 text-[#A89F91]"
                                                 strokeWidth={1.5}
                                             />
-                                            <p>Secure payment powered by Midtrans</p>
+                                            <p>
+                                                Secure payment powered by
+                                                Midtrans
+                                            </p>
                                         </div>
                                         <div className="flex items-start space-x-3 text-[11px] text-[#8C8578]">
                                             <Box
@@ -410,8 +489,8 @@ export default function MyCart({
                                                 strokeWidth={1.5}
                                             />
                                             <p>
-                                                Shipping calculated using Biteship at
-                                                checkout
+                                                Shipping calculated using
+                                                Biteship at checkout
                                             </p>
                                         </div>
                                     </div>
@@ -419,7 +498,7 @@ export default function MyCart({
                             </div>
                         </div>
 
-                        <div className="fixed right-0 bottom-0 left-0 z-40 flex translate-y-0 items-center justify-between bg-[#3C3428] p-4 pb-safe text-white shadow-[0_-10px_40px_rgba(0,0,0,0.15)] transition-transform lg:hidden">
+                        <div className="pb-safe fixed right-0 bottom-0 left-0 z-40 flex translate-y-0 items-center justify-between bg-[#3C3428] p-4 text-white shadow-[0_-10px_40px_rgba(0,0,0,0.15)] transition-transform lg:hidden">
                             <div>
                                 <p className="mb-0.5 text-[10px] font-medium text-white/60">
                                     Total
@@ -471,12 +550,12 @@ export default function MyCart({
                                 />
                             </svg>
                         </div>
-                        <h2 className="mb-4 font-serif text-3xl italic text-[#3C3428] md:text-4xl">
+                        <h2 className="mb-4 font-serif text-3xl text-[#3C3428] italic md:text-4xl">
                             Your cart is empty
                         </h2>
                         <p className="mb-10 max-w-sm text-center text-sm text-[#8C8578] md:text-base">
-                            Looks like you haven&apos;t added anything to your cart
-                            yet.
+                            Looks like you haven&apos;t added anything to your
+                            cart yet.
                         </p>
                         <Link
                             href={list.url()}
@@ -500,7 +579,7 @@ export default function MyCart({
                                         query: { product: product.slug },
                                     })}
                                     key={product.id}
-                                    className="group flex cursor-pointer flex-col animate-fade-in-up"
+                                    className="group animate-fade-in-up flex cursor-pointer flex-col"
                                     style={{
                                         animationDelay: `${(idx + cartItems.length) * 100}ms`,
                                     }}

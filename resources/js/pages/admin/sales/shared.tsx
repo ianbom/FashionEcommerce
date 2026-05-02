@@ -1,7 +1,13 @@
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
-export { EmptyState, formatPrice, PageHeader, Pagination, TableShell } from '@/pages/admin/catalog/shared';
+export {
+    EmptyState,
+    formatPrice,
+    PageHeader,
+    Pagination,
+    TableShell,
+} from '@/pages/admin/catalog/shared';
 export type { Paginated } from '@/pages/admin/catalog/shared';
 
 export function StatusBadge({
@@ -15,11 +21,34 @@ export function StatusBadge({
     const resolvedTone =
         tone !== 'neutral'
             ? tone
-            : ['paid', 'settlement', 'capture', 'completed', 'delivered'].includes(value)
+            : [
+                    'paid',
+                    'settlement',
+                    'capture',
+                    'completed',
+                    'delivered',
+                ].includes(value)
               ? 'good'
-              : ['pending', 'pending_payment', 'processing', 'ready_to_ship', 'confirmed', 'allocated', 'picked', 'in_transit'].includes(value)
+              : [
+                      'pending',
+                      'pending_payment',
+                      'processing',
+                      'ready_to_ship',
+                      'confirmed',
+                      'allocated',
+                      'picked',
+                      'in_transit',
+                  ].includes(value)
                 ? 'warn'
-                : ['expired', 'failed', 'cancelled', 'cancel', 'deny', 'failure', 'problem'].includes(value)
+                : [
+                        'expired',
+                        'failed',
+                        'cancelled',
+                        'cancel',
+                        'deny',
+                        'failure',
+                        'problem',
+                    ].includes(value)
                   ? 'bad'
                   : 'info';
 
