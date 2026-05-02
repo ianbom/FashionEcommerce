@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class ProductRequest extends FormRequest
@@ -78,7 +79,7 @@ class ProductRequest extends FormRequest
                 }
 
                 $images = collect($this->input('images', []))
-                    ->filter(fn (array $image, int $index): bool => filled($image['image_url'] ?? null) || $this->hasFile("images.{$index}.image"));
+                    ->filter(fn (array $image, int $index): bool => $this->hasStoredImageUrl($image['image_url'] ?? null) || $this->hasFile("images.{$index}.image"));
 
                 if ($images->isEmpty()) {
                     $validator->errors()->add('images', 'Produk published minimal memiliki satu gambar.');
@@ -96,5 +97,10 @@ class ProductRequest extends FormRequest
                 }
             },
         ];
+    }
+
+    private function hasStoredImageUrl(?string $imageUrl): bool
+    {
+        return filled($imageUrl) && ! Str::startsWith($imageUrl, 'blob:');
     }
 }

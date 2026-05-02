@@ -1,1 +1,0 @@
-import{et as e}from"./app-DLCTRAYc.js";var t=e(`ChevronLeft`,[[`path`,{d:`m15 18-6-6 6-6`,key:`1wnfg3`}]]);export{t};

@@ -1,20 +1,17 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import {
-    ArrowLeft, Image as ImageIcon, Plus, Trash2, X, Info, HelpCircle,
-    LayoutGrid, Settings, FileText, Anchor, ShoppingBag, Eye,
-    UploadCloud, GripVertical, AlertTriangle, CheckCircle2, ChevronDown, Check,
-    Layers, Tag, DollarSign, Package, Star, Sparkles, TrendingUp
+    Image as ImageIcon, Plus, Trash2, X, Info,
+    GripVertical, AlertTriangle, Check,
+    Layers, Tag, DollarSign, Package, Star, Sparkles, TrendingUp, LayoutGrid
 } from 'lucide-react';
-import type { FormEvent } from 'react';
+import { type FormEvent, useState, useEffect } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { PageHeader } from '@/pages/admin/catalog/shared';
 
 type Option = { id: number; name: string };
 type ProductImagePayload = {
@@ -107,26 +104,73 @@ const blankVariant = (): ProductVariantRow => ({
     is_active: true,
 });
 
-function SectionCard({ title, description, children, headerRight, noPaddingTitle = false }: any) {
+function SectionCard({ title, description, children, icon }: {
+    title: string;
+    description?: string;
+    children: React.ReactNode;
+    icon?: React.ReactNode;
+}) {
     return (
-        <div className="bg-white rounded-xl border border-zinc-100 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md hover:border-zinc-200 group h-full flex flex-col">
-            <div className={`px-5 pt-5 pb-3 border-b border-zinc-50 flex items-center justify-between ${noPaddingTitle ? 'pb-4' : ''}`}>
+        <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-zinc-100 flex items-start gap-3">
+                {icon && (
+                    <div className="w-8 h-8 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center shrink-0 mt-0.5">
+                        {icon}
+                    </div>
+                )}
                 <div>
-                    <h2 className="text-base font-serif text-zinc-900 leading-tight group-hover:text-[#422d25] transition-colors">{title}</h2>
-                    {description && <p className="text-xs text-zinc-400 mt-1">{description}</p>}
+                    <h2 className="text-sm font-semibold text-zinc-900">{title}</h2>
+                    {description && <p className="text-xs text-zinc-500 mt-0.5">{description}</p>}
                 </div>
-                {headerRight && <div>{headerRight}</div>}
             </div>
-            <div className="p-5 flex-1 flex flex-col">
+            <div className="p-6">
                 {children}
             </div>
         </div>
     );
 }
 
+function FieldRow({ children, cols = 1 }: { children: React.ReactNode; cols?: 1 | 2 | 3 | 4 }) {
+    const gridClass = {
+        1: 'grid-cols-1',
+        2: 'grid-cols-1 sm:grid-cols-2',
+        3: 'grid-cols-1 sm:grid-cols-3',
+        4: 'grid-cols-2 sm:grid-cols-4',
+    }[cols];
+    return <div className={`grid ${gridClass} gap-4`}>{children}</div>;
+}
+
+function FieldGroup({ label, hint, required, error, children, charCount, maxChar }: {
+    label: string;
+    hint?: string;
+    required?: boolean;
+    error?: string;
+    children: React.ReactNode;
+    charCount?: number;
+    maxChar?: number;
+}) {
+    return (
+        <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+                <Label className="text-xs font-medium text-zinc-700">
+                    {label}{required && <span className="text-red-500 ml-0.5">*</span>}
+                </Label>
+                {maxChar !== undefined && (
+                    <span className={`text-[11px] tabular-nums ${(charCount ?? 0) > maxChar * 0.9 ? 'text-amber-500' : 'text-zinc-400'}`}>
+                        {charCount ?? 0}/{maxChar}
+                    </span>
+                )}
+            </div>
+            {children}
+            {error && <p className="text-[11px] text-red-500 flex items-center gap-1"><AlertTriangle className="w-3 h-3" />{error}</p>}
+            {hint && !error && <p className="text-[11px] text-zinc-400">{hint}</p>}
+        </div>
+    );
+}
+
 export default function ProductForm({ mode, product, options }: Props) {
     const isEdit = mode === 'edit' && product !== null;
-    const { data, setData, post, put, processing, errors } =
+    const { data, setData, post, processing, errors, transform } =
         useForm<ProductFormData>({
             category_id: product?.category_id ?? '',
             collection_id: product?.collection_id ?? '',
@@ -157,6 +201,20 @@ export default function ProductForm({ mode, product, options }: Props) {
 
     const fieldError = (key: string) =>
         (errors as Record<string, string | undefined>)[key];
+
+    // Local blob previews — never sent to server, never stored in image_url
+    const [previews, setPreviews] = useState<(string | null)[]>(() =>
+        (product?.images ?? [{ image_url: null }]).map(img => img.image_url ?? null)
+    );
+
+    // Revoke old blob URLs on unmount to avoid memory leaks
+    useEffect(() => {
+        return () => {
+            previews.forEach(url => {
+                if (url && url.startsWith('blob:')) URL.revokeObjectURL(url);
+            });
+        };
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const updateImage = (
         index: number,
@@ -190,590 +248,831 @@ export default function ProductForm({ mode, product, options }: Props) {
 
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-
         if (isEdit) {
-            put(`/admin/products/${product.id}`, { forceFormData: true });
-
+            transform((data) => ({ ...data, _method: 'put' }));
+            post(`/admin/products/${product.id}`, { forceFormData: true });
             return;
         }
-
+        transform((data) => data);
         post('/admin/products', { forceFormData: true });
     };
 
-    const hasImages = data.images.filter(i => i.image || i.image_url).length > 0;
     const variantsCount = data.variants.filter(v => v.sku).length;
+    // Preview: use blob URL if new file selected, else fall back to stored image_url
+    const getPreview = (index: number): string | null =>
+        previews[index] ?? data.images[index]?.image_url ?? null;
+    const primaryIndex = data.images.findIndex(i => i.is_primary);
+    const primaryPreview = getPreview(primaryIndex >= 0 ? primaryIndex : 0);
+
+    const statusColors: Record<string, string> = {
+        draft: 'bg-zinc-100 text-zinc-600',
+        published: 'bg-emerald-100 text-emerald-700',
+        archived: 'bg-rose-100 text-rose-700',
+    };
 
     return (
         <>
             <Head title={isEdit ? 'Edit Product' : 'Create Product'} />
-            
-            <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto w-full min-h-screen">
-                
-                {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 pb-2">
-                    <div>
-                        <div className="flex items-center gap-2 text-sm text-zinc-500 mb-2">
-                            <Link href="/admin/dashboard" className="hover:text-zinc-900 transition-colors">Dashboard</Link>
-                            <span>/</span>
-                            <Link href="/admin/products" className="hover:text-zinc-900 transition-colors">Products</Link>
-                            <span>/</span>
-                            <span className="text-zinc-900">{isEdit ? 'Edit Product' : 'Create Product'}</span>
+
+            <div className="min-h-screen bg-zinc-50/50">
+                {/* Page Header */}
+                <div className="bg-white border-b border-zinc-200 sticky top-0 z-20">
+                    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex items-center justify-between h-14">
+                            <div className="flex items-center gap-3">
+                                <Link
+                                    href={isEdit ? `/admin/products/${product?.id}` : '/admin/products'}
+                                    className="text-zinc-400 hover:text-zinc-700 transition-colors"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                                    </svg>
+                                </Link>
+                                <div className="w-px h-5 bg-zinc-200" />
+                                <div>
+                                    <h1 className="text-sm font-semibold text-zinc-900">
+                                        {isEdit ? `Edit: ${product?.name ?? 'Product'}` : 'Create Product'}
+                                    </h1>
+                                    <p className="text-[11px] text-zinc-400 hidden sm:block">
+                                        {isEdit ? 'Update product details, images, and variants' : 'Fill in details to create a new product'}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Badge className={`text-[11px] font-medium capitalize border-0 ${statusColors[data.status] ?? 'bg-zinc-100 text-zinc-600'}`}>
+                                    {data.status}
+                                </Badge>
+                            </div>
                         </div>
-                        <h1 className="text-3xl md:text-4xl font-serif text-zinc-900 leading-tight">{isEdit ? 'Edit Product' : 'Create Product'}</h1>
-                        <p className="text-sm text-zinc-500 mt-1">Kelola data utama, gambar, varian, stok awal, label, dan SEO product.</p>
-                    </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                        <Button variant="outline" className="h-10 px-4 bg-white border-zinc-200 text-zinc-700 hover:bg-zinc-50 shadow-sm rounded-lg font-medium" onClick={() => setData('status', 'draft')}>
-                            Save as Draft
-                        </Button>
-                        {isEdit && (
-                            <Button variant="outline" className="h-10 px-4 bg-white border-zinc-200 text-zinc-700 hover:bg-zinc-50 shadow-sm rounded-lg font-medium" asChild>
-                                <a href={`/products/${product.slug}`} target="_blank" rel="noreferrer">Preview Product</a>
-                            </Button>
-                        )}
-                        <Button className="h-10 px-6 bg-[#422d25] hover:bg-[#34231d] text-white shadow-md rounded-lg font-medium transition-all hover:shadow-lg" onClick={(e) => { e.preventDefault(); submit(e as any); }}>
-                            {isEdit ? 'Save Changes' : 'Publish Product'}
-                        </Button>
                     </div>
                 </div>
 
-                <form onSubmit={submit} className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                    
-                    {/* Left & Middle Columns (Main Form) */}
-                    <div className="lg:col-span-9 flex flex-col gap-6">
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                            {/* Column 1 */}
-                            <div className="flex flex-col gap-6">
+                <form onSubmit={submit}>
+                    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                        <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-6 items-start">
+
+                            {/* ── Main Column ── */}
+                            <div className="flex flex-col gap-5">
+
                                 {/* 1. Basic Information */}
-                                <SectionCard title="1. Basic Information" description="Provide the essential details about your product.">
-                                    <div className="grid gap-5">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-1.5">
-                                                <Label htmlFor="name">Product Name <span className="text-red-500">*</span></Label>
+                                <SectionCard
+                                    title="Basic Information"
+                                    description="Essential details about your product"
+                                    icon={<Tag className="w-4 h-4 text-zinc-500" />}
+                                >
+                                    <div className="space-y-4">
+                                        <FieldRow cols={2}>
+                                            <FieldGroup label="Product Name" required error={errors.name}>
                                                 <Input
-                                                    id="name"
                                                     value={data.name}
-                                                    onChange={(event) => {
-                                                        setData('name', event.target.value);
-                
-                                                        if (!data.slug && !isEdit) {
-                                                            setData('slug', slugify(event.target.value));
-                                                        }
+                                                    onChange={(e) => {
+                                                        setData('name', e.target.value);
+                                                        if (!isEdit) setData('slug', slugify(e.target.value));
                                                     }}
-                                                    className="border-zinc-200 focus:border-[#422d25] focus:ring-[#422d25] rounded-lg shadow-sm"
+                                                    placeholder="e.g. Gamis Syar'i Pita"
+                                                    className="h-9 text-sm border-zinc-200 focus:border-[#422d25] focus:ring-[#422d25]"
                                                 />
-                                                <InputError message={errors.name} />
-                                            </div>
-                                            <div className="space-y-1.5">
-                                                <Label htmlFor="sku">SKU <span className="text-red-500">*</span></Label>
+                                            </FieldGroup>
+                                            <FieldGroup label="SKU" required error={errors.sku} hint="Unique product identifier">
                                                 <Input
-                                                    id="sku"
                                                     value={data.sku}
-                                                    onChange={(event) => setData('sku', event.target.value)}
-                                                    className="border-zinc-200 focus:border-[#422d25] focus:ring-[#422d25] rounded-lg shadow-sm bg-zinc-50/50"
+                                                    onChange={(e) => setData('sku', e.target.value)}
+                                                    placeholder="e.g. GMS-001"
+                                                    className="h-9 text-sm border-zinc-200 focus:border-[#422d25] focus:ring-[#422d25] font-mono"
                                                 />
-                                                <InputError message={errors.sku} />
-                                            </div>
-                                        </div>
-                                        
-                                        <div className="space-y-1.5">
-                                            <Label htmlFor="slug">Product Slug <span className="text-red-500">*</span></Label>
+                                            </FieldGroup>
+                                        </FieldRow>
+
+                                        <FieldGroup label="URL Slug" required error={errors.slug} hint="Used in the product URL — lowercase letters, numbers, hyphens only">
                                             <div className="flex gap-2">
                                                 <Input
-                                                    id="slug"
                                                     value={data.slug}
-                                                    onChange={(event) => setData('slug', slugify(event.target.value))}
-                                                    className={`rounded-lg shadow-sm ${errors.slug ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-zinc-200 focus:border-[#422d25] focus:ring-[#422d25]'}`}
+                                                    onChange={(e) => setData('slug', slugify(e.target.value))}
+                                                    placeholder="e.g. gamis-syari-pita"
+                                                    className="h-9 text-sm border-zinc-200 focus:border-[#422d25] focus:ring-[#422d25] font-mono flex-1"
                                                 />
-                                                <Button type="button" variant="outline" className="shrink-0 text-sm font-medium border-zinc-200" onClick={() => setData('slug', slugify(data.name))}>Generate</Button>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="h-9 px-3 text-xs shrink-0 border-zinc-200"
+                                                    onClick={() => setData('slug', slugify(data.name))}
+                                                >
+                                                    Generate
+                                                </Button>
                                             </div>
-                                            <InputError message={errors.slug} />
-                                            <p className="text-[11px] text-zinc-400">The slug is used for the product URL.</p>
-                                        </div>
+                                        </FieldGroup>
 
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-1.5">
-                                                <Label htmlFor="category_id">Category</Label>
+                                        <FieldRow cols={2}>
+                                            <FieldGroup label="Category" error={errors.category_id}>
                                                 <select
-                                                    id="category_id"
                                                     value={data.category_id}
-                                                    onChange={(event) => setData('category_id', event.target.value)}
-                                                    className="border-zinc-200 h-10 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm focus:border-[#422d25] focus:ring-[#422d25]"
+                                                    onChange={(e) => setData('category_id', e.target.value)}
+                                                    className="h-9 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900 shadow-sm focus:border-[#422d25] focus:outline-none focus:ring-1 focus:ring-[#422d25]"
                                                 >
                                                     <option value="">No category</option>
-                                                    {options.categories.map((category) => (
-                                                        <option key={category.id} value={category.id}>
-                                                            {category.name}
-                                                        </option>
+                                                    {options.categories.map((c) => (
+                                                        <option key={c.id} value={c.id}>{c.name}</option>
                                                     ))}
                                                 </select>
-                                                <InputError message={errors.category_id} />
-                                            </div>
-                                            <div className="space-y-1.5">
-                                                <Label htmlFor="collection_id">Collection</Label>
+                                            </FieldGroup>
+                                            <FieldGroup label="Collection" error={errors.collection_id}>
                                                 <select
-                                                    id="collection_id"
                                                     value={data.collection_id}
-                                                    onChange={(event) => setData('collection_id', event.target.value)}
-                                                    className="border-zinc-200 h-10 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm focus:border-[#422d25] focus:ring-[#422d25]"
+                                                    onChange={(e) => setData('collection_id', e.target.value)}
+                                                    className="h-9 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900 shadow-sm focus:border-[#422d25] focus:outline-none focus:ring-1 focus:ring-[#422d25]"
                                                 >
                                                     <option value="">No collection</option>
-                                                    {options.collections.map((collection) => (
-                                                        <option key={collection.id} value={collection.id}>
-                                                            {collection.name}
-                                                        </option>
+                                                    {options.collections.map((c) => (
+                                                        <option key={c.id} value={c.id}>{c.name}</option>
                                                     ))}
                                                 </select>
-                                                <InputError message={errors.collection_id} />
-                                            </div>
-                                        </div>
+                                            </FieldGroup>
+                                        </FieldRow>
 
-                                        <div className="space-y-1.5">
-                                            <div className="flex justify-between">
-                                                <Label htmlFor="short_description">Short Description <span className="text-red-500">*</span></Label>
-                                                <span className="text-xs text-zinc-400">{data.short_description?.length || 0} / 160</span>
-                                            </div>
-                                            <Input
-                                                id="short_description"
-                                                value={data.short_description}
-                                                onChange={(event) => setData('short_description', event.target.value)}
-                                                className="border-zinc-200 rounded-lg shadow-sm"
-                                            />
-                                            <InputError message={errors.short_description} />
-                                        </div>
-
-                                        <div className="space-y-1.5">
-                                            <Label htmlFor="description">Description <span className="text-red-500">*</span></Label>
-                                            <div className={`border rounded-lg overflow-hidden shadow-sm focus-within:ring-2 focus-within:ring-[#422d25] focus-within:border-transparent transition-all ${errors.description ? 'border-red-300' : 'border-zinc-200'}`}>
-                                                <div className="flex items-center gap-1 border-b border-zinc-200 bg-zinc-50 p-1">
-                                                    <select className="h-8 border-none bg-transparent w-32 shadow-none focus:ring-0 text-sm">
-                                                        <option value="p">Paragraph</option>
-                                                        <option value="h1">Heading 1</option>
-                                                        <option value="h2">Heading 2</option>
-                                                    </select>
-                                                    <div className="w-px h-4 bg-zinc-300 mx-1" />
-                                                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-zinc-600"><span className="font-bold">B</span></Button>
-                                                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-zinc-600"><span className="italic font-serif">I</span></Button>
-                                                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-zinc-600"><span className="underline">U</span></Button>
-                                                    <div className="w-px h-4 bg-zinc-300 mx-1" />
-                                                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-zinc-600"><Anchor className="w-4 h-4" /></Button>
-                                                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-zinc-600"><ImageIcon className="w-4 h-4" /></Button>
-                                                </div>
-                                                <Textarea 
-                                                    id="description"
-                                                    value={data.description}
-                                                    onChange={(event) => setData('description', event.target.value)}
-                                                    className="border-none focus-visible:ring-0 min-h-[120px] resize-y rounded-none"
-                                                />
-                                            </div>
-                                            <InputError message={errors.description} />
-                                        </div>
-                                    </div>
-                                </SectionCard>
-
-                                {/* 5. Product Images */}
-                                <SectionCard title="5. Product Images" description="Upload high-quality images of your product.">
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                        
-                                        {/* Dropzone / Add Button */}
-                                        <div
-                                            className="col-span-2 md:col-span-1 aspect-[3/4] rounded-xl border-2 border-dashed border-zinc-200 bg-zinc-50 hover:bg-zinc-100/50 transition-colors flex flex-col items-center justify-center p-4 text-center cursor-pointer relative overflow-hidden group"
-                                            onClick={() => setData('images', [...data.images, blankImage()])}
+                                        <FieldGroup
+                                            label="Short Description"
+                                            required
+                                            error={errors.short_description}
+                                            charCount={data.short_description?.length}
+                                            maxChar={160}
                                         >
-                                            <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center mb-3 text-zinc-400 group-hover:text-[#422d25] group-hover:scale-110 transition-all">
-                                                <Plus className="w-5 h-5" />
-                                            </div>
-                                            <p className="text-xs font-medium text-zinc-600 mb-1">Add another image</p>
-                                        </div>
+                                            <Input
+                                                value={data.short_description}
+                                                onChange={(e) => setData('short_description', e.target.value)}
+                                                placeholder="Brief product summary for listings"
+                                                className="h-9 text-sm border-zinc-200 focus:border-[#422d25] focus:ring-[#422d25]"
+                                            />
+                                        </FieldGroup>
 
-                                        {data.images.map((image, index) => (
-                                            <div key={index} className={`col-span-1 aspect-[3/4] rounded-xl border p-1.5 relative group ${image.is_primary ? 'border-amber-200 bg-amber-50/30 ring-1 ring-amber-400/50' : 'border-zinc-200 bg-white shadow-sm hover:border-zinc-300 transition-all'}`}>
-                                                {image.is_primary && <div className="absolute top-2 left-2 bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider z-10 shadow-sm border border-amber-200">Primary</div>}
-                                                <button type="button" onClick={() => setData('images', data.images.filter((_, imageIndex) => imageIndex !== index))} className="absolute top-2 right-2 w-6 h-6 rounded-full bg-white/80 hover:bg-red-50 text-zinc-500 hover:text-red-500 flex items-center justify-center z-10 backdrop-blur-sm shadow-sm transition-all opacity-0 group-hover:opacity-100">
-                                                    <X className="w-3 h-3" />
-                                                </button>
-                                                <div className="w-full h-[65%] rounded-lg bg-zinc-100 mb-1.5 overflow-hidden flex items-center justify-center relative">
-                                                    {image.image_url ? (
-                                                        <img src={image.image_url} className="w-full h-full object-cover" alt={image.alt_text} />
-                                                    ) : (
-                                                        <ImageIcon className="w-8 h-8 text-zinc-300" />
-                                                    )}
-                                                    <input
-                                                        type="file"
-                                                        accept="image/*"
-                                                        className="absolute inset-0 opacity-0 cursor-pointer"
-                                                        onChange={(event) => updateImage(index, 'image', event.target.files?.[0] ?? null)}
-                                                    />
-                                                </div>
-                                                <div className="space-y-1.5 px-1">
-                                                    <div className="flex items-center gap-1">
-                                                        <span className="text-[9px] font-medium text-zinc-500">Alt:</span>
-                                                        <input type="text" value={image.alt_text} onChange={(event) => updateImage(index, 'alt_text', event.target.value)} placeholder="Alt text" className="w-full text-[10px] border-none bg-transparent p-0 h-4 focus:ring-0 text-zinc-700 placeholder:text-zinc-300" />
-                                                    </div>
-                                                    <div className="flex items-center justify-between">
-                                                        <div className="flex items-center gap-1">
-                                                            <span className="text-[9px] font-medium text-zinc-500">Order</span>
-                                                            <input type="number" value={image.sort_order} onChange={(event) => updateImage(index, 'sort_order', event.target.value)} className="w-8 text-center text-[10px] border border-zinc-200 rounded p-0 h-4" />
-                                                        </div>
-                                                        <div className="flex items-center gap-1">
-                                                            <input type="radio" checked={image.is_primary} onChange={() => setPrimaryImage(index)} className={`w-3 h-3 focus:ring-1 ${image.is_primary ? 'text-[#422d25] focus:ring-[#422d25]' : 'text-zinc-300 focus:ring-zinc-300'}`} />
-                                                            <span className={`text-[9px] font-medium ${image.is_primary ? 'text-zinc-600' : 'text-zinc-400'}`}>Primary</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-
+                                        <FieldGroup label="Description" required error={errors.description}>
+                                            <Textarea
+                                                value={data.description}
+                                                onChange={(e) => setData('description', e.target.value)}
+                                                placeholder="Detailed product description..."
+                                                className="min-h-[120px] text-sm border-zinc-200 focus:border-[#422d25] focus:ring-[#422d25] resize-y"
+                                            />
+                                        </FieldGroup>
                                     </div>
-                                    <InputError message={fieldError('images')} className="mt-2" />
                                 </SectionCard>
-                            </div>
 
-                            {/* Column 2 */}
-                            <div className="flex flex-col gap-6">
                                 {/* 2. Material & Care */}
-                                <SectionCard title="2. Material & Care" description="Specify material composition and care instructions.">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-1.5">
-                                            <Label htmlFor="material">Material <span className="text-red-500">*</span></Label>
+                                <SectionCard
+                                    title="Material & Care"
+                                    description="Material composition and care instructions"
+                                    icon={<Info className="w-4 h-4 text-zinc-500" />}
+                                >
+                                    <FieldRow cols={2}>
+                                        <FieldGroup label="Material" required error={errors.material} hint="e.g. 100% Premium Voile, Linen">
                                             <Textarea
-                                                id="material"
                                                 value={data.material}
-                                                onChange={(event) => setData('material', event.target.value)}
-                                                className={`min-h-[80px] rounded-lg shadow-sm ${errors.material ? 'border-red-300' : 'border-zinc-200'}`}
+                                                onChange={(e) => setData('material', e.target.value)}
+                                                placeholder="Describe material composition..."
+                                                className="min-h-[90px] text-sm border-zinc-200 focus:border-[#422d25] focus:ring-[#422d25] resize-y"
                                             />
-                                            <InputError message={errors.material} />
-                                            <div className="flex items-center gap-1.5 mt-1.5 text-xs text-zinc-500">
-                                                <Info className="w-3.5 h-3.5" />
-                                                <span>Soft, breathable, and flowy.</span>
-                                            </div>
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <Label htmlFor="care_instruction">Care Instruction <span className="text-red-500">*</span></Label>
+                                        </FieldGroup>
+                                        <FieldGroup label="Care Instruction" required error={errors.care_instruction} hint="e.g. Hand wash cold, do not bleach">
                                             <Textarea
-                                                id="care_instruction"
                                                 value={data.care_instruction}
-                                                onChange={(event) => setData('care_instruction', event.target.value)}
-                                                className={`min-h-[80px] rounded-lg shadow-sm ${errors.care_instruction ? 'border-red-300' : 'border-zinc-200'}`}
+                                                onChange={(e) => setData('care_instruction', e.target.value)}
+                                                placeholder="Washing and care instructions..."
+                                                className="min-h-[90px] text-sm border-zinc-200 focus:border-[#422d25] focus:ring-[#422d25] resize-y"
                                             />
-                                            <InputError message={errors.care_instruction} />
-                                            <div className="flex items-center gap-1.5 mt-1.5 text-xs text-zinc-500">
-                                                <Info className="w-3.5 h-3.5" />
-                                                <span>Keep your item in good condition.</span>
-                                            </div>
-                                        </div>
-                                    </div>
+                                        </FieldGroup>
+                                    </FieldRow>
                                 </SectionCard>
 
                                 {/* 3. Pricing */}
-                                <SectionCard title="3. Pricing" description="Set the pricing for your product.">
-                                    <div className="grid grid-cols-2 gap-6 items-start">
+                                <SectionCard
+                                    title="Pricing"
+                                    description="Set base and sale prices (IDR)"
+                                    icon={<DollarSign className="w-4 h-4 text-zinc-500" />}
+                                >
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                         <div className="space-y-4">
-                                            <div className="space-y-1.5">
-                                                <Label htmlFor="base_price">Base Price (IDR) <span className="text-red-500">*</span></Label>
-                                                <div className="relative">
-                                                    <Input
-                                                        id="base_price"
-                                                        type="number" min="0"
-                                                        value={data.base_price}
-                                                        onChange={(event) => setData('base_price', event.target.value)}
-                                                        className={`pl-4 rounded-lg shadow-sm font-medium ${errors.base_price ? 'border-red-300 focus:border-red-500 focus:ring-red-500 bg-red-50/30 text-red-600' : 'border-zinc-200'}`}
-                                                    />
-                                                    {errors.base_price && <AlertTriangle className="w-4 h-4 text-red-500 absolute right-3 top-1/2 -translate-y-1/2" />}
-                                                </div>
-                                                <InputError message={errors.base_price} />
-                                            </div>
-                                            <div className="space-y-1.5">
-                                                <Label htmlFor="sale_price">Sale Price (IDR)</Label>
+                                            <FieldGroup label="Base Price (IDR)" required error={errors.base_price}>
                                                 <Input
-                                                    id="sale_price"
-                                                    type="number" min="0"
-                                                    value={data.sale_price}
-                                                    onChange={(event) => setData('sale_price', event.target.value)}
-                                                    className="pl-4 border-zinc-200 rounded-lg shadow-sm font-medium"
+                                                    type="number"
+                                                    min="0"
+                                                    value={data.base_price}
+                                                    onChange={(e) => setData('base_price', e.target.value)}
+                                                    placeholder="0"
+                                                    className="h-9 text-sm border-zinc-200 focus:border-[#422d25] focus:ring-[#422d25] font-mono"
                                                 />
-                                                <InputError message={errors.sale_price} />
-                                                <p className="text-[11px] text-zinc-400 mt-1">Sale price must be lower than or equal to the base price.</p>
-                                            </div>
+                                            </FieldGroup>
+                                            <FieldGroup label="Sale Price (IDR)" error={errors.sale_price} hint="Must be lower than or equal to base price">
+                                                <Input
+                                                    type="number"
+                                                    min="0"
+                                                    value={data.sale_price}
+                                                    onChange={(e) => setData('sale_price', e.target.value)}
+                                                    placeholder="Leave empty for no discount"
+                                                    className="h-9 text-sm border-zinc-200 focus:border-[#422d25] focus:ring-[#422d25] font-mono"
+                                                />
+                                            </FieldGroup>
                                         </div>
-                                        <div className="bg-zinc-50 rounded-xl p-4 border border-zinc-100 flex flex-col justify-center h-full">
-                                            <div className="flex justify-between items-center mb-2">
-                                                <span className="text-xs text-zinc-500">Base Price</span>
-                                                <span className="text-sm font-medium text-zinc-900">IDR {data.base_price || 0}</span>
-                                            </div>
-                                            <div className="flex justify-between items-center mb-3">
-                                                <span className="text-xs text-zinc-500">Sale Price</span>
-                                                <span className="text-sm font-medium text-zinc-900">IDR {data.sale_price || 0}</span>
-                                            </div>
-                                            <div className="border-t border-zinc-200 border-dashed my-1" />
-                                            <div className="flex justify-between items-center mt-2">
-                                                <span className="text-sm font-bold text-zinc-900">Final Price</span>
-                                                <span className="text-lg font-bold text-zinc-900">IDR {data.sale_price ? data.sale_price : data.base_price || 0}</span>
+
+                                        {/* Pricing Summary */}
+                                        <div className="bg-zinc-50 rounded-lg border border-zinc-100 p-4 flex flex-col justify-between">
+                                            <p className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider mb-3">Price Summary</p>
+                                            <div className="space-y-2">
+                                                <div className="flex justify-between items-center text-sm">
+                                                    <span className="text-zinc-500">Base</span>
+                                                    <span className="font-mono text-zinc-900">IDR {Number(data.base_price || 0).toLocaleString('id-ID')}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center text-sm">
+                                                    <span className="text-zinc-500">Sale</span>
+                                                    <span className="font-mono text-zinc-900">IDR {Number(data.sale_price || 0).toLocaleString('id-ID')}</span>
+                                                </div>
+                                                <div className="border-t border-zinc-200 border-dashed pt-2 mt-2">
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-sm font-semibold text-zinc-900">Final</span>
+                                                        <span className="font-mono font-bold text-base text-[#422d25]">
+                                                            IDR {Number(data.sale_price || data.base_price || 0).toLocaleString('id-ID')}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                {data.sale_price && Number(data.sale_price) < Number(data.base_price) && (
+                                                    <div className="flex items-center gap-1.5 mt-1">
+                                                        <Badge className="bg-emerald-100 text-emerald-700 border-0 text-[10px] font-medium">
+                                                            {Math.round((1 - Number(data.sale_price) / Number(data.base_price)) * 100)}% OFF
+                                                        </Badge>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
                                 </SectionCard>
 
                                 {/* 4. Shipping & Dimensions */}
-                                <SectionCard title="4. Shipping & Dimensions" description="Weight and dimensions are used to calculate shipping costs.">
-                                    <div className="grid grid-cols-4 gap-4">
-                                        <div className="space-y-1.5">
-                                            <Label htmlFor="weight">Weight (g) <span className="text-red-500">*</span></Label>
-                                            <Input id="weight" type="number" min="0" value={data.weight} onChange={(event) => setData('weight', event.target.value)} className={`rounded-lg shadow-sm ${errors.weight ? 'border-red-300' : 'border-zinc-200'}`} />
-                                            <InputError message={errors.weight} />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <Label htmlFor="length">Length (cm) <span className="text-red-500">*</span></Label>
-                                            <Input id="length" type="number" min="0" value={data.length} onChange={(event) => setData('length', event.target.value)} className={`rounded-lg shadow-sm ${errors.length ? 'border-red-300' : 'border-zinc-200'}`} />
-                                            <InputError message={errors.length} />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <Label htmlFor="width">Width (cm) <span className="text-red-500">*</span></Label>
-                                            <Input id="width" type="number" min="0" value={data.width} onChange={(event) => setData('width', event.target.value)} className={`rounded-lg shadow-sm ${errors.width ? 'border-red-300' : 'border-zinc-200'}`} />
-                                            <InputError message={errors.width} />
-                                        </div>
-                                        <div className="space-y-1.5 relative z-10">
-                                            <Label htmlFor="height">Height (cm) <span className="text-red-500">*</span></Label>
-                                            <Input id="height" type="number" min="0" value={data.height} onChange={(event) => setData('height', event.target.value)} className={`rounded-lg shadow-sm ${errors.height ? 'border-red-300' : 'border-zinc-200'}`} />
-                                            <InputError message={errors.height} />
-                                            <Package className="w-10 h-10 text-zinc-100 absolute right-1 top-6 -z-10" />
-                                        </div>
+                                <SectionCard
+                                    title="Shipping & Dimensions"
+                                    description="Used for shipping cost calculations"
+                                    icon={<Package className="w-4 h-4 text-zinc-500" />}
+                                >
+                                    <FieldRow cols={4}>
+                                        <FieldGroup label="Weight (g)" required error={errors.weight}>
+                                            <Input
+                                                type="number" min="0"
+                                                value={data.weight}
+                                                onChange={(e) => setData('weight', e.target.value)}
+                                                placeholder="0"
+                                                className="h-9 text-sm border-zinc-200 focus:border-[#422d25] focus:ring-[#422d25] font-mono"
+                                            />
+                                        </FieldGroup>
+                                        <FieldGroup label="Length (cm)" required error={errors.length}>
+                                            <Input
+                                                type="number" min="0"
+                                                value={data.length}
+                                                onChange={(e) => setData('length', e.target.value)}
+                                                placeholder="0"
+                                                className="h-9 text-sm border-zinc-200 focus:border-[#422d25] focus:ring-[#422d25] font-mono"
+                                            />
+                                        </FieldGroup>
+                                        <FieldGroup label="Width (cm)" required error={errors.width}>
+                                            <Input
+                                                type="number" min="0"
+                                                value={data.width}
+                                                onChange={(e) => setData('width', e.target.value)}
+                                                placeholder="0"
+                                                className="h-9 text-sm border-zinc-200 focus:border-[#422d25] focus:ring-[#422d25] font-mono"
+                                            />
+                                        </FieldGroup>
+                                        <FieldGroup label="Height (cm)" required error={errors.height}>
+                                            <Input
+                                                type="number" min="0"
+                                                value={data.height}
+                                                onChange={(e) => setData('height', e.target.value)}
+                                                placeholder="0"
+                                                className="h-9 text-sm border-zinc-200 focus:border-[#422d25] focus:ring-[#422d25] font-mono"
+                                            />
+                                        </FieldGroup>
+                                    </FieldRow>
+                                </SectionCard>
+
+                                {/* 5. Product Images */}
+                                <SectionCard
+                                    title="Product Images"
+                                    description="Upload high-quality product photos (recommended: 800×1067px)"
+                                    icon={<ImageIcon className="w-4 h-4 text-zinc-500" />}
+                                >
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                                        {data.images.map((image, index) => (
+                                            <div
+                                                key={index}
+                                                className={`relative rounded-lg border-2 overflow-hidden group transition-all ${image.is_primary
+                                                    ? 'border-[#422d25] ring-2 ring-[#422d25]/20'
+                                                    : 'border-zinc-200 hover:border-zinc-300'
+                                                    }`}
+                                            >
+                                                {/* Image area */}
+                                                <div className="aspect-[3/4] bg-zinc-50 relative flex items-center justify-center">
+                                                    {getPreview(index) ? (
+                                                        <img
+                                                            src={getPreview(index)!}
+                                                            className="w-full h-full object-cover"
+                                                            alt={image.alt_text}
+                                                        />
+                                                    ) : (
+                                                        <div className="flex flex-col items-center gap-1 text-zinc-300">
+                                                            <ImageIcon className="w-7 h-7" />
+                                                            <span className="text-[10px]">Click to upload</span>
+                                                        </div>
+                                                    )}
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        className="absolute inset-0 opacity-0 cursor-pointer"
+                                                        onChange={(e) => {
+                                                            const file = e.target.files?.[0] ?? null;
+                                                            // Store File object for upload — do NOT touch image_url
+                                                            updateImage(index, 'image', file);
+                                                            // Preview via blob URL (local only, never sent to server)
+                                                            const next = [...previews];
+                                                            if (next[index] && next[index]!.startsWith('blob:')) {
+                                                                URL.revokeObjectURL(next[index]!);
+                                                            }
+                                                            next[index] = file ? URL.createObjectURL(file) : null;
+                                                            setPreviews(next);
+                                                        }}
+                                                    />
+                                                    {/* Remove button */}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            if (previews[index]?.startsWith('blob:')) {
+                                                                URL.revokeObjectURL(previews[index]!);
+                                                            }
+                                                            setData('images', data.images.filter((_, i) => i !== index));
+                                                            setPreviews(previews.filter((_, i) => i !== index));
+                                                        }}
+                                                        className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-white/90 border border-zinc-200 text-zinc-500 hover:text-red-500 hover:border-red-200 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-sm z-10"
+                                                    >
+                                                        <X className="w-3 h-3" />
+                                                    </button>
+                                                    {/* Primary badge */}
+                                                    {image.is_primary && (
+                                                        <div className="absolute bottom-1.5 left-1.5 bg-[#422d25] text-white text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider z-10">
+                                                            Primary
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Controls */}
+                                                <div className="px-2 py-1.5 bg-white border-t border-zinc-100 space-y-1">
+                                                    <input
+                                                        type="text"
+                                                        value={image.alt_text}
+                                                        onChange={(e) => updateImage(index, 'alt_text', e.target.value)}
+                                                        placeholder="Alt text"
+                                                        className="w-full text-[10px] text-zinc-700 border border-zinc-100 rounded px-1.5 py-0.5 focus:ring-0 focus:border-zinc-300 bg-zinc-50 placeholder:text-zinc-300"
+                                                    />
+                                                    <div className="flex items-center justify-between">
+                                                        <label className="flex items-center gap-1 cursor-pointer">
+                                                            <input
+                                                                type="radio"
+                                                                checked={image.is_primary}
+                                                                onChange={() => setPrimaryImage(index)}
+                                                                className="w-3 h-3 accent-[#422d25]"
+                                                            />
+                                                            <span className="text-[10px] text-zinc-500">Primary</span>
+                                                        </label>
+                                                        <div className="flex items-center gap-0.5">
+                                                            <span className="text-[10px] text-zinc-400">Order:</span>
+                                                            <input
+                                                                type="number"
+                                                                value={image.sort_order}
+                                                                onChange={(e) => updateImage(index, 'sort_order', Number(e.target.value))}
+                                                                className="w-8 text-center text-[10px] border border-zinc-100 rounded bg-zinc-50 focus:ring-0 focus:border-zinc-300 py-0"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+
+                                        {/* Add image button */}
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setData('images', [...data.images, blankImage()]);
+                                                setPreviews([...previews, null]);
+                                            }}
+                                            className="aspect-[3/4] rounded-lg border-2 border-dashed border-zinc-200 bg-zinc-50 hover:bg-zinc-100 hover:border-zinc-300 transition-all flex flex-col items-center justify-center gap-2 text-zinc-400 hover:text-zinc-600 cursor-pointer"
+                                        >
+                                            <Plus className="w-6 h-6" />
+                                            <span className="text-[11px] font-medium">Add Image</span>
+                                        </button>
                                     </div>
+                                    {fieldError('images') && (
+                                        <p className="mt-3 text-[11px] text-red-500 flex items-center gap-1">
+                                            <AlertTriangle className="w-3 h-3" />{fieldError('images')}
+                                        </p>
+                                    )}
                                 </SectionCard>
 
                                 {/* 6. Product Variants */}
-                                <SectionCard title="6. Product Variants" description="Add variants for different sizes or colors.">
-                                    <div className="border border-zinc-200 rounded-lg overflow-hidden shadow-sm">
+                                <SectionCard
+                                    title="Product Variants"
+                                    description="Add size/color combinations with individual stock and pricing"
+                                    icon={<Layers className="w-4 h-4 text-zinc-500" />}
+                                >
+                                    <div className="rounded-lg border border-zinc-200 overflow-hidden">
                                         <div className="overflow-x-auto">
-                                            <table className="w-full text-[11px] text-left">
-                                                <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-500">
-                                                    <tr>
-                                                        <th className="px-2 py-2 w-8 text-center">#</th>
-                                                        <th className="px-2 py-2 font-medium">Variant SKU</th>
-                                                        <th className="px-2 py-2 font-medium">Color Name</th>
-                                                        <th className="px-2 py-2 font-medium">Color Hex</th>
-                                                        <th className="px-2 py-2 font-medium w-16">Size</th>
-                                                        <th className="px-2 py-2 font-medium">Price Add.</th>
-                                                        <th className="px-2 py-2 font-medium w-12 text-right">Stock</th>
-                                                        <th className="px-2 py-2 font-medium w-12 text-right">Reserved</th>
-                                                        <th className="px-2 py-2 font-medium text-center">Active</th>
-                                                        <th className="px-2 py-2 font-medium text-center">Actions</th>
+                                            <table className="w-full text-xs min-w-[700px]">
+                                                <thead>
+                                                    <tr className="bg-zinc-50 border-b border-zinc-200">
+                                                        <th className="px-3 py-2.5 text-left text-[11px] font-medium text-zinc-500 w-8"></th>
+                                                        <th className="px-3 py-2.5 text-left text-[11px] font-medium text-zinc-500">Variant SKU</th>
+                                                        <th className="px-3 py-2.5 text-left text-[11px] font-medium text-zinc-500">Color Name</th>
+                                                        <th className="px-3 py-2.5 text-left text-[11px] font-medium text-zinc-500 w-28">Color</th>
+                                                        <th className="px-3 py-2.5 text-left text-[11px] font-medium text-zinc-500 w-20">Size</th>
+                                                        <th className="px-3 py-2.5 text-right text-[11px] font-medium text-zinc-500 w-24">Price Add.</th>
+                                                        <th className="px-3 py-2.5 text-right text-[11px] font-medium text-zinc-500 w-20">Stock</th>
+                                                        <th className="px-3 py-2.5 text-right text-[11px] font-medium text-zinc-500 w-20">Reserved</th>
+                                                        <th className="px-3 py-2.5 text-center text-[11px] font-medium text-zinc-500 w-16">Active</th>
+                                                        <th className="px-3 py-2.5 text-center text-[11px] font-medium text-zinc-500 w-12"></th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-zinc-100 bg-white">
                                                     {data.variants.map((variant, index) => (
-                                                        <tr key={index} className="group hover:bg-zinc-50 transition-colors">
-                                                            <td className="px-2 py-1.5 text-center text-zinc-400"><GripVertical className="w-3 h-3 inline-block cursor-grab" /></td>
-                                                            <td className="px-2 py-1.5"><Input value={variant.sku} onChange={(event) => updateVariant(index, 'sku', event.target.value)} className={`h-7 text-[11px] rounded shadow-none w-28 ${fieldError(`variants.${index}.sku`) ? 'border-red-300' : 'border-zinc-200'}`} /></td>
-                                                            <td className="px-2 py-1.5"><Input value={variant.color_name} onChange={(event) => updateVariant(index, 'color_name', event.target.value)} className={`h-7 text-[11px] rounded shadow-none w-20 ${fieldError(`variants.${index}.color_name`) ? 'border-red-300' : 'border-zinc-200'}`} /></td>
-                                                            <td className="px-2 py-1.5">
-                                                                <div className={`flex items-center gap-1.5 border rounded px-1.5 h-7 bg-white ${fieldError(`variants.${index}.color_hex`) ? 'border-red-300' : 'border-zinc-200'}`}>
-                                                                    <div className="w-3 h-3 rounded-full border border-zinc-200 shrink-0 relative overflow-hidden">
-                                                                        <input type="color" value={variant.color_hex || '#000000'} onChange={(event) => updateVariant(index, 'color_hex', event.target.value)} className="absolute inset-[-50%] w-[200%] h-[200%] cursor-pointer" />
+                                                        <tr key={index} className="group hover:bg-zinc-50/60 transition-colors">
+                                                            <td className="px-3 py-2 text-center">
+                                                                <GripVertical className="w-3.5 h-3.5 text-zinc-300 cursor-grab" />
+                                                            </td>
+                                                            <td className="px-3 py-2">
+                                                                <Input
+                                                                    value={variant.sku}
+                                                                    onChange={(e) => updateVariant(index, 'sku', e.target.value)}
+                                                                    className={`h-7 text-xs font-mono border-zinc-200 ${fieldError(`variants.${index}.sku`) ? 'border-red-300' : ''}`}
+                                                                />
+                                                            </td>
+                                                            <td className="px-3 py-2">
+                                                                <Input
+                                                                    value={variant.color_name}
+                                                                    onChange={(e) => updateVariant(index, 'color_name', e.target.value)}
+                                                                    className={`h-7 text-xs border-zinc-200 ${fieldError(`variants.${index}.color_name`) ? 'border-red-300' : ''}`}
+                                                                />
+                                                            </td>
+                                                            <td className="px-3 py-2">
+                                                                <div className={`flex items-center gap-2 border rounded px-2 h-7 bg-white ${fieldError(`variants.${index}.color_hex`) ? 'border-red-300' : 'border-zinc-200'}`}>
+                                                                    <div className="relative w-4 h-4 rounded-full border border-zinc-200 overflow-hidden shrink-0">
+                                                                        <input
+                                                                            type="color"
+                                                                            value={variant.color_hex || '#000000'}
+                                                                            onChange={(e) => updateVariant(index, 'color_hex', e.target.value)}
+                                                                            className="absolute inset-[-4px] w-[calc(100%+8px)] h-[calc(100%+8px)] cursor-pointer border-none p-0"
+                                                                        />
                                                                     </div>
-                                                                    <input type="text" value={variant.color_hex || '#000000'} readOnly className="w-14 border-none p-0 text-[11px] h-full focus:ring-0 text-zinc-600" />
+                                                                    <input
+                                                                        type="text"
+                                                                        value={variant.color_hex || '#000000'}
+                                                                        readOnly
+                                                                        className="w-14 border-none bg-transparent p-0 text-[11px] font-mono text-zinc-600 focus:ring-0"
+                                                                    />
                                                                 </div>
                                                             </td>
-                                                            <td className="px-2 py-1.5"><Input value={variant.size} onChange={(event) => updateVariant(index, 'size', event.target.value)} className={`h-7 text-[11px] rounded shadow-none text-center ${fieldError(`variants.${index}.size`) ? 'border-red-300' : 'border-zinc-200'}`} /></td>
-                                                            <td className="px-2 py-1.5"><Input type="number" min="0" value={variant.additional_price} onChange={(event) => updateVariant(index, 'additional_price', event.target.value)} className={`h-7 text-[11px] rounded shadow-none text-right w-16 ${fieldError(`variants.${index}.additional_price`) ? 'border-red-300' : 'border-zinc-200'}`} /></td>
-                                                            <td className="px-2 py-1.5"><Input type="number" min="0" value={variant.stock} onChange={(event) => updateVariant(index, 'stock', event.target.value)} className={`h-7 text-[11px] rounded shadow-none text-right ${fieldError(`variants.${index}.stock`) ? 'border-red-300' : 'border-zinc-200'}`} /></td>
-                                                            <td className="px-2 py-1.5"><Input type="number" min="0" value={variant.reserved_stock} onChange={(event) => updateVariant(index, 'reserved_stock', event.target.value)} className={`h-7 text-[11px] rounded shadow-none text-right ${fieldError(`variants.${index}.reserved_stock`) ? 'border-red-300' : 'border-zinc-200'}`} /></td>
-                                                            <td className="px-2 py-1.5 text-center"><Switch checked={variant.is_active} onCheckedChange={(checked) => updateVariant(index, 'is_active', checked)} className="scale-75 data-[state=checked]:bg-[#422d25]" /></td>
-                                                            <td className="px-2 py-1.5 text-center">
-                                                                <div className="flex justify-center gap-1">
-                                                                    <Button type="button" variant="ghost" size="icon" onClick={() => setData('variants', data.variants.filter((_, variantIndex) => variantIndex !== index))} className="h-6 w-6 text-zinc-400 hover:text-red-500"><Trash2 className="w-3 h-3" /></Button>
-                                                                </div>
+                                                            <td className="px-3 py-2">
+                                                                <Input
+                                                                    value={variant.size}
+                                                                    onChange={(e) => updateVariant(index, 'size', e.target.value)}
+                                                                    className={`h-7 text-xs text-center border-zinc-200 ${fieldError(`variants.${index}.size`) ? 'border-red-300' : ''}`}
+                                                                />
+                                                            </td>
+                                                            <td className="px-3 py-2">
+                                                                <Input
+                                                                    type="number" min="0"
+                                                                    value={variant.additional_price}
+                                                                    onChange={(e) => updateVariant(index, 'additional_price', e.target.value)}
+                                                                    className={`h-7 text-xs text-right font-mono border-zinc-200 ${fieldError(`variants.${index}.additional_price`) ? 'border-red-300' : ''}`}
+                                                                />
+                                                            </td>
+                                                            <td className="px-3 py-2">
+                                                                <Input
+                                                                    type="number" min="0"
+                                                                    value={variant.stock}
+                                                                    onChange={(e) => updateVariant(index, 'stock', e.target.value)}
+                                                                    className={`h-7 text-xs text-right font-mono border-zinc-200 ${fieldError(`variants.${index}.stock`) ? 'border-red-300' : ''}`}
+                                                                />
+                                                            </td>
+                                                            <td className="px-3 py-2">
+                                                                <Input
+                                                                    type="number" min="0"
+                                                                    value={variant.reserved_stock}
+                                                                    onChange={(e) => updateVariant(index, 'reserved_stock', e.target.value)}
+                                                                    className={`h-7 text-xs text-right font-mono border-zinc-200 ${fieldError(`variants.${index}.reserved_stock`) ? 'border-red-300' : ''}`}
+                                                                />
+                                                            </td>
+                                                            <td className="px-3 py-2 text-center">
+                                                                <Switch
+                                                                    checked={variant.is_active}
+                                                                    onCheckedChange={(v) => updateVariant(index, 'is_active', v)}
+                                                                    className="scale-[0.8] data-[state=checked]:bg-[#422d25]"
+                                                                />
+                                                            </td>
+                                                            <td className="px-3 py-2 text-center">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setData('variants', data.variants.filter((_, i) => i !== index))}
+                                                                    className="w-6 h-6 rounded flex items-center justify-center text-zinc-300 hover:text-red-500 hover:bg-red-50 transition-all mx-auto"
+                                                                >
+                                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                                </button>
                                                             </td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
                                             </table>
                                         </div>
-                                        <div className="p-3 border-t border-zinc-200 bg-zinc-50 flex items-center justify-between">
-                                            <Button type="button" variant="outline" size="sm" onClick={() => setData('variants', [...data.variants, blankVariant()])} className="h-7 text-[11px] bg-white gap-1"><Plus className="w-3 h-3" /> Add Variant</Button>
+                                        <div className="px-3 py-2.5 border-t border-zinc-100 bg-zinc-50 flex items-center justify-between">
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => setData('variants', [...data.variants, blankVariant()])}
+                                                className="h-7 text-xs gap-1.5 bg-white border-zinc-200 text-zinc-700"
+                                            >
+                                                <Plus className="w-3.5 h-3.5" />
+                                                Add Variant
+                                            </Button>
+                                            <span className="text-[11px] text-zinc-400">{variantsCount} variant{variantsCount !== 1 ? 's' : ''} with SKU</span>
                                         </div>
-                                        <InputError message={fieldError('variants')} className="p-3" />
+                                    </div>
+                                    {fieldError('variants') && (
+                                        <p className="mt-2 text-[11px] text-red-500 flex items-center gap-1">
+                                            <AlertTriangle className="w-3 h-3" />{fieldError('variants')}
+                                        </p>
+                                    )}
+                                </SectionCard>
+
+                                {/* 7. SEO Metadata */}
+                                <SectionCard
+                                    title="SEO Metadata"
+                                    description="Optimize your product for search engines"
+                                    icon={
+                                        <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                        </svg>
+                                    }
+                                >
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        <div className="space-y-4">
+                                            <FieldGroup
+                                                label="Meta Title"
+                                                error={errors.meta_title}
+                                                hint="Recommended: 50–60 characters"
+                                                charCount={data.meta_title?.length}
+                                                maxChar={60}
+                                            >
+                                                <Input
+                                                    value={data.meta_title}
+                                                    onChange={(e) => setData('meta_title', e.target.value)}
+                                                    placeholder={data.name || 'Product title for search results'}
+                                                    className="h-9 text-sm border-zinc-200 focus:border-[#422d25] focus:ring-[#422d25]"
+                                                />
+                                            </FieldGroup>
+                                            <FieldGroup
+                                                label="Meta Description"
+                                                error={errors.meta_description}
+                                                hint="Recommended: 120–160 characters"
+                                                charCount={data.meta_description?.length}
+                                                maxChar={160}
+                                            >
+                                                <Textarea
+                                                    value={data.meta_description}
+                                                    onChange={(e) => setData('meta_description', e.target.value)}
+                                                    placeholder={data.short_description || 'Brief description for search results...'}
+                                                    className="min-h-[80px] text-sm border-zinc-200 focus:border-[#422d25] focus:ring-[#422d25] resize-y"
+                                                />
+                                            </FieldGroup>
+                                        </div>
+
+                                        {/* SERP Preview */}
+                                        <div>
+                                            <p className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-2">Search Preview</p>
+                                            <div className="border border-zinc-200 rounded-lg p-4 bg-white">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <div className="w-5 h-5 rounded-full bg-zinc-100 flex items-center justify-center shrink-0">
+                                                        <svg className="w-3 h-3 text-zinc-400" fill="currentColor" viewBox="0 0 24 24">
+                                                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+                                                        </svg>
+                                                    </div>
+                                                    <span className="text-[11px] text-zinc-500 truncate">
+                                                        aureasyari.com › product › {data.slug || 'product-slug'}
+                                                    </span>
+                                                </div>
+                                                <h3 className="text-[#1a0dab] text-base font-medium leading-tight mb-1 line-clamp-1">
+                                                    {data.meta_title || data.name || 'Product Title'} — Auréa Syar'i
+                                                </h3>
+                                                <p className="text-[#4d5156] text-xs leading-relaxed line-clamp-2">
+                                                    {data.meta_description || data.short_description || 'Product description will appear here in search engine results.'}
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </SectionCard>
 
-                            </div>
-                        </div>
-
-                        {/* 7. SEO Metadata */}
-                        <SectionCard title="7. SEO Metadata" description="Optimize your product for search engines.">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-                                <div className="space-y-5">
-                                    <div className="space-y-1.5">
-                                        <div className="flex justify-between">
-                                            <Label htmlFor="meta_title">Meta Title</Label>
-                                            <span className="text-xs text-zinc-400">{data.meta_title?.length || 0} / 60</span>
-                                        </div>
-                                        <Input id="meta_title" value={data.meta_title} onChange={(event) => setData('meta_title', event.target.value)} className="border-zinc-200 rounded-lg shadow-sm" />
-                                        <InputError message={errors.meta_title} />
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <div className="flex justify-between">
-                                            <Label htmlFor="meta_description">Meta Description</Label>
-                                            <span className="text-xs text-zinc-400">{data.meta_description?.length || 0} / 160</span>
-                                        </div>
-                                        <Textarea id="meta_description" value={data.meta_description} onChange={(event) => setData('meta_description', event.target.value)} className="min-h-[80px] border-zinc-200 rounded-lg shadow-sm" />
-                                        <InputError message={errors.meta_description} />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <Label className="mb-2 block text-zinc-500 text-xs">Search Engine Preview</Label>
-                                    <div className="p-4 border border-zinc-200 rounded-xl bg-white shadow-sm hover:shadow-md transition-all">
-                                        <div className="text-xs text-zinc-500 mb-1 flex items-center gap-2">
-                                            <div className="w-6 h-6 rounded-full bg-zinc-100 flex items-center justify-center shrink-0 border border-zinc-200">
-                                                <ImageIcon className="w-3.5 h-3.5 text-zinc-400" />
-                                            </div>
-                                            <span className="truncate">https://aureasyari.com/product/{data.slug || 'product-slug'}</span>
-                                        </div>
-                                        <h3 className="text-[#1a0dab] text-lg font-medium hover:underline cursor-pointer leading-tight mb-1">{data.meta_title || data.name || 'Product Title'} - Auréa Syar'i</h3>
-                                        <p className="text-[#4d5156] text-sm leading-snug">{data.meta_description || data.short_description || 'Product description will appear here...'}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </SectionCard>
-                    </div>
-
-                    {/* Right Column (Sidebar) */}
-                    <div className="lg:col-span-3 flex flex-col gap-6">
-                        
-                        {/* Publishing Settings */}
-                        <SectionCard title="Publishing Settings" description="Control the visibility and status of your product." noPaddingTitle>
-                            <div className="space-y-5">
-                                <div className="space-y-2">
-                                    <Label>Status <span className="text-red-500">*</span></Label>
-                                    <div className="flex gap-2">
-                                        <select
-                                            value={data.status}
-                                            onChange={(event) => setData('status', event.target.value)}
-                                            className="border-zinc-200 h-10 rounded-lg border bg-transparent px-3 py-1 text-sm shadow-sm flex-1 focus:border-[#422d25] focus:ring-[#422d25]"
+                                {/* Form Actions (bottom) */}
+                                <div className="flex items-center justify-between pt-2 pb-8">
+                                    <Button asChild variant="outline" className="h-10 px-5 border-zinc-200 text-zinc-600 hover:bg-zinc-50">
+                                        <Link href={isEdit ? `/admin/products/${product?.id}` : '/admin/products'}>
+                                            Cancel
+                                        </Link>
+                                    </Button>
+                                    <div className="flex items-center gap-2">
+                                        {/* <Button
+                                            type="button"
+                                            variant="outline"
+                                            className="h-10 px-5 border-zinc-200 text-zinc-600 hover:bg-zinc-50"
+                                            onClick={() => {
+                                                setData('status', 'draft');
+                                                submit({ preventDefault: () => {} } as any);
+                                            }}
+                                            disabled={processing}
                                         >
-                                            {options.statuses.map((status) => (
-                                                <option key={status} value={status}>
-                                                    {status}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-none px-3 font-medium shrink-0 capitalize">{data.status}</Badge>
-                                    </div>
-                                    <InputError message={errors.status} />
-                                    <div className="text-[11px] text-zinc-500 space-y-1.5 mt-3 bg-zinc-50 p-3 rounded-lg border border-zinc-100">
-                                        <p><strong className="text-zinc-700 font-semibold">Draft:</strong> Product is not visible to customers.</p>
-                                        <p><strong className="text-zinc-700 font-semibold">Published:</strong> Product is live and visible.</p>
-                                        <p><strong className="text-zinc-700 font-semibold">Archived:</strong> Product is hidden and unavailable.</p>
-                                    </div>
-                                </div>
-
-                                <div className="border-t border-zinc-100 pt-4 space-y-4">
-                                    <div className="flex items-center justify-between group">
-                                        <div className="flex items-center gap-2">
-                                            <Star className={`w-4 h-4 transition-colors ${data.is_featured ? 'text-amber-500' : 'text-zinc-400 group-hover:text-amber-500'}`} />
-                                            <Label htmlFor="is_featured" className="cursor-pointer font-medium text-zinc-700">Is Featured</Label>
-                                        </div>
-                                        <Switch id="is_featured" checked={data.is_featured} onCheckedChange={(checked) => setData('is_featured', checked)} className="data-[state=checked]:bg-[#422d25]" />
-                                    </div>
-                                    <div className="flex items-center justify-between group">
-                                        <div className="flex items-center gap-2">
-                                            <Sparkles className={`w-4 h-4 transition-colors ${data.is_new_arrival ? 'text-emerald-500' : 'text-zinc-400 group-hover:text-emerald-500'}`} />
-                                            <Label htmlFor="is_new_arrival" className="cursor-pointer font-medium text-zinc-700">Is New Arrival</Label>
-                                        </div>
-                                        <Switch id="is_new_arrival" checked={data.is_new_arrival} onCheckedChange={(checked) => setData('is_new_arrival', checked)} className="data-[state=checked]:bg-[#422d25]" />
-                                    </div>
-                                    <div className="flex items-center justify-between group">
-                                        <div className="flex items-center gap-2">
-                                            <TrendingUp className={`w-4 h-4 transition-colors ${data.is_best_seller ? 'text-rose-500' : 'text-zinc-400 group-hover:text-rose-500'}`} />
-                                            <Label htmlFor="is_best_seller" className="cursor-pointer font-medium text-zinc-700">Is Best Seller</Label>
-                                        </div>
-                                        <Switch id="is_best_seller" checked={data.is_best_seller} onCheckedChange={(checked) => setData('is_best_seller', checked)} className="data-[state=checked]:bg-[#422d25]" />
+                                            Save as Draft
+                                        </Button> */}
+                                        <Button
+                                            type="submit"
+                                            className="h-10 px-6 bg-[#422d25] hover:bg-[#34231d] text-white shadow-sm font-medium"
+                                            disabled={processing}
+                                        >
+                                            {processing ? (
+                                                <span className="flex items-center gap-2">
+                                                    <svg className="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                                                    </svg>
+                                                    Saving...
+                                                </span>
+                                            ) : isEdit ? 'Save Changes' : 'Save Product'}
+                                        </Button>
                                     </div>
                                 </div>
                             </div>
-                        </SectionCard>
 
-                        {/* Product Preview */}
-                        <SectionCard title="Product Preview" description="" headerRight={<Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-none px-2 py-0 capitalize">{data.status}</Badge>} noPaddingTitle>
-                            <div className="flex gap-4">
-                                <div className="w-20 h-24 rounded-lg bg-zinc-100 overflow-hidden shrink-0 border border-zinc-200 flex items-center justify-center">
-                                    {data.images.find(i => i.is_primary)?.image_url ? (
-                                        <img src={data.images.find(i => i.is_primary)?.image_url as string} className="w-full h-full object-cover" alt="Preview" />
-                                    ) : (
-                                        <ImageIcon className="w-6 h-6 text-zinc-300" />
-                                    )}
+                            {/* ── Sidebar ── */}
+                            <div className="flex flex-col gap-4 xl:sticky xl:top-[57px]">
+
+                                {/* Publishing */}
+                                <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
+                                    <div className="px-5 py-4 border-b border-zinc-100">
+                                        <h3 className="text-sm font-semibold text-zinc-900">Publishing</h3>
+                                        <p className="text-[11px] text-zinc-500 mt-0.5">Control product visibility</p>
+                                    </div>
+                                    <div className="p-5 space-y-4">
+                                        <div className="space-y-1.5">
+                                            <Label className="text-xs font-medium text-zinc-700">
+                                                Status <span className="text-red-500">*</span>
+                                            </Label>
+                                            <select
+                                                value={data.status}
+                                                onChange={(e) => setData('status', e.target.value)}
+                                                className="h-9 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900 shadow-sm focus:border-[#422d25] focus:outline-none focus:ring-1 focus:ring-[#422d25]"
+                                            >
+                                                {options.statuses.map((s) => (
+                                                    <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                                                ))}
+                                            </select>
+                                            {errors.status && <p className="text-[11px] text-red-500">{errors.status}</p>}
+                                        </div>
+
+                                        <div className="rounded-lg bg-zinc-50 border border-zinc-100 p-3 space-y-1.5 text-[11px] text-zinc-500">
+                                            <p><span className="font-semibold text-zinc-700">Draft</span> — Not visible to customers</p>
+                                            <p><span className="font-semibold text-zinc-700">Published</span> — Live and visible in store</p>
+                                            <p><span className="font-semibold text-zinc-700">Archived</span> — Hidden and unavailable</p>
+                                        </div>
+
+                                        <div className="border-t border-zinc-100 pt-4 space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <Star className={`w-4 h-4 ${data.is_featured ? 'text-amber-500' : 'text-zinc-300'}`} />
+                                                    <Label htmlFor="is_featured" className="text-xs text-zinc-700 cursor-pointer">Featured</Label>
+                                                </div>
+                                                <Switch
+                                                    id="is_featured"
+                                                    checked={data.is_featured}
+                                                    onCheckedChange={(v) => setData('is_featured', v)}
+                                                    className="scale-90 data-[state=checked]:bg-[#422d25]"
+                                                />
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <Sparkles className={`w-4 h-4 ${data.is_new_arrival ? 'text-emerald-500' : 'text-zinc-300'}`} />
+                                                    <Label htmlFor="is_new_arrival" className="text-xs text-zinc-700 cursor-pointer">New Arrival</Label>
+                                                </div>
+                                                <Switch
+                                                    id="is_new_arrival"
+                                                    checked={data.is_new_arrival}
+                                                    onCheckedChange={(v) => setData('is_new_arrival', v)}
+                                                    className="scale-90 data-[state=checked]:bg-[#422d25]"
+                                                />
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <TrendingUp className={`w-4 h-4 ${data.is_best_seller ? 'text-rose-500' : 'text-zinc-300'}`} />
+                                                    <Label htmlFor="is_best_seller" className="text-xs text-zinc-700 cursor-pointer">Best Seller</Label>
+                                                </div>
+                                                <Switch
+                                                    id="is_best_seller"
+                                                    checked={data.is_best_seller}
+                                                    onCheckedChange={(v) => setData('is_best_seller', v)}
+                                                    className="scale-90 data-[state=checked]:bg-[#422d25]"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="flex flex-col">
-                                    <h4 className="font-serif text-[15px] text-zinc-900 leading-tight mb-1">{data.name || 'Product Name'}</h4>
-                                    <p className="text-[11px] text-zinc-500 mb-2">{options.categories.find(c => c.id.toString() === data.category_id.toString())?.name || 'Category'}</p>
-                                    <div className="flex flex-col mb-2">
-                                        {data.sale_price ? (
-                                            <>
-                                                <span className="text-[10px] text-zinc-400 line-through decoration-zinc-300">IDR {data.base_price || 0}</span>
-                                                <span className="text-sm font-bold text-zinc-900">IDR {data.sale_price}</span>
-                                            </>
-                                        ) : (
-                                            <span className="text-sm font-bold text-zinc-900">IDR {data.base_price || 0}</span>
-                                        )}
+
+                                {/* Product Preview */}
+                                <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
+                                    <div className="px-5 py-4 border-b border-zinc-100">
+                                        <h3 className="text-sm font-semibold text-zinc-900">Preview</h3>
+                                        <p className="text-[11px] text-zinc-500 mt-0.5">How it appears in the store</p>
                                     </div>
-                                    <div className="flex flex-wrap gap-1 mt-auto">
-                                        {data.is_featured && <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-amber-200 text-amber-700 bg-amber-50">Featured</Badge>}
-                                        {data.is_new_arrival && <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-emerald-200 text-emerald-700 bg-emerald-50">New Arrival</Badge>}
-                                        {data.is_best_seller && <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-rose-200 text-rose-700 bg-rose-50">Best Seller</Badge>}
+                                    <div className="p-5">
+                                    <div className="flex gap-3">
+                                        <div className="w-16 h-20 rounded-lg bg-zinc-100 border border-zinc-200 overflow-hidden shrink-0 flex items-center justify-center">
+                                            {primaryPreview ? (
+                                                <img src={primaryPreview} className="w-full h-full object-cover" alt="Preview" />
+                                                ) : (
+                                                    <ImageIcon className="w-5 h-5 text-zinc-300" />
+                                                )}
+                                            </div>
+                                            <div className="min-w-0">
+                                                <h4 className="text-sm font-semibold text-zinc-900 leading-tight line-clamp-2 mb-0.5">
+                                                    {data.name || <span className="text-zinc-300">Product Name</span>}
+                                                </h4>
+                                                <p className="text-[11px] text-zinc-400 mb-1.5">
+                                                    {options.categories.find(c => c.id.toString() === data.category_id.toString())?.name || 'No Category'}
+                                                </p>
+                                                <div>
+                                                    {data.sale_price ? (
+                                                        <div className="flex items-center gap-1.5">
+                                                            <span className="text-xs text-zinc-400 line-through">IDR {Number(data.base_price || 0).toLocaleString('id-ID')}</span>
+                                                            <span className="text-sm font-bold text-[#422d25]">IDR {Number(data.sale_price).toLocaleString('id-ID')}</span>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-sm font-bold text-zinc-900">IDR {Number(data.base_price || 0).toLocaleString('id-ID')}</span>
+                                                    )}
+                                                </div>
+                                                <div className="flex flex-wrap gap-1 mt-1.5">
+                                                    {data.is_featured && <Badge className="bg-amber-100 text-amber-700 border-0 text-[9px] px-1.5 py-0">Featured</Badge>}
+                                                    {data.is_new_arrival && <Badge className="bg-emerald-100 text-emerald-700 border-0 text-[9px] px-1.5 py-0">New</Badge>}
+                                                    {data.is_best_seller && <Badge className="bg-rose-100 text-rose-700 border-0 text-[9px] px-1.5 py-0">Best Seller</Badge>}
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
+                                </div>
+
+                                {/* Quick Summary */}
+                                <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
+                                    <div className="px-5 py-4 border-b border-zinc-100">
+                                        <h3 className="text-sm font-semibold text-zinc-900">Summary</h3>
+                                    </div>
+                                    <div className="p-5 space-y-0">
+                                        {[
+                                            { icon: <LayoutGrid className="w-3.5 h-3.5" />, label: 'Category', value: options.categories.find(c => c.id.toString() === data.category_id.toString())?.name || '—' },
+                                            { icon: <Layers className="w-3.5 h-3.5" />, label: 'Collection', value: options.collections.find(c => c.id.toString() === data.collection_id.toString())?.name || '—' },
+                                            { icon: <Tag className="w-3.5 h-3.5" />, label: 'SKU', value: data.sku || '—' },
+                                            { icon: <DollarSign className="w-3.5 h-3.5" />, label: 'Base Price', value: data.base_price ? `IDR ${Number(data.base_price).toLocaleString('id-ID')}` : '—' },
+                                            { icon: <Package className="w-3.5 h-3.5" />, label: 'Variants', value: `${variantsCount} with SKU` },
+                                            { icon: <ImageIcon className="w-3.5 h-3.5" />, label: 'Images', value: `${data.images.filter(i => i.image || i.image_url).length} uploaded` },
+                                        ].map(({ icon, label, value }) => (
+                                            <div key={label} className="flex items-center justify-between py-2 border-b border-zinc-50 last:border-0">
+                                                <span className="flex items-center gap-2 text-[11px] text-zinc-400">{icon}{label}</span>
+                                                <span className="text-[11px] font-medium text-zinc-700 max-w-[120px] text-right truncate">{value}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Save actions (sidebar) */}
+                                <div className="flex flex-col gap-2">
+                                    {/* <Button
+                                        type="submit"
+                                        form="product-form"
+                                        className="w-full h-10 bg-[#422d25] hover:bg-[#34231d] text-white font-medium shadow-sm"
+                                        disabled={processing}
+                                        onClick={() => submit({ preventDefault: () => {} } as any)}
+                                    >
+                                        {isEdit ? 'Save Changes' : 'Publish Product'}
+                                    </Button> */}
+                                    {/* <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="w-full h-10 border-zinc-200 text-zinc-600 hover:bg-zinc-50"
+                                        onClick={() => {
+                                            setData('status', 'draft');
+                                            submit({ preventDefault: () => {} } as any);
+                                        }}
+                                        disabled={processing}
+                                    >
+                                        Save as Draft
+                                    </Button> */}
                                 </div>
                             </div>
-                        </SectionCard>
-
-                        {/* Quick Summary */}
-                        <SectionCard title="Quick Summary" description="" noPaddingTitle>
-                            <div className="space-y-3 text-[13px]">
-                                <div className="flex justify-between items-center py-1.5 border-b border-zinc-50">
-                                    <span className="text-zinc-500 flex items-center gap-2"><LayoutGrid className="w-3.5 h-3.5" /> Category</span>
-                                    <span className="font-medium text-zinc-900">{options.categories.find(c => c.id.toString() === data.category_id.toString())?.name || '-'}</span>
-                                </div>
-                                <div className="flex justify-between items-center py-1.5 border-b border-zinc-50">
-                                    <span className="text-zinc-500 flex items-center gap-2"><Layers className="w-3.5 h-3.5" /> Collection</span>
-                                    <span className="font-medium text-zinc-900">{options.collections.find(c => c.id.toString() === data.collection_id.toString())?.name || '-'}</span>
-                                </div>
-                                <div className="flex justify-between items-center py-1.5 border-b border-zinc-50">
-                                    <span className="text-zinc-500 flex items-center gap-2"><Tag className="w-3.5 h-3.5" /> SKU</span>
-                                    <span className="font-medium text-zinc-900">{data.sku || '-'}</span>
-                                </div>
-                                <div className="flex justify-between items-center py-1.5 border-b border-zinc-50">
-                                    <span className="text-zinc-500 flex items-center gap-2"><DollarSign className="w-3.5 h-3.5" /> Base Price</span>
-                                    <span className="font-medium text-zinc-900">IDR {data.base_price || 0}</span>
-                                </div>
-                                <div className="flex justify-between items-center py-1.5 border-b border-zinc-50">
-                                    <span className="text-zinc-500 flex items-center gap-2"><DollarSign className="w-3.5 h-3.5" /> Sale Price</span>
-                                    <span className="font-medium text-zinc-900">IDR {data.sale_price || 0}</span>
-                                </div>
-                                <div className="flex justify-between items-center py-1.5 border-b border-zinc-50">
-                                    <span className="text-zinc-500 flex items-center gap-2"><Package className="w-3.5 h-3.5" /> Variants</span>
-                                    <span className="font-medium text-zinc-900">{variantsCount}</span>
-                                </div>
-                                <div className="flex justify-between items-center py-1.5 border-b border-zinc-50">
-                                    <span className="text-zinc-500 flex items-center gap-2"><ImageIcon className="w-3.5 h-3.5" /> Images</span>
-                                    <span className="font-medium text-zinc-900">{data.images.length}</span>
-                                </div>
-                            </div>
-                        </SectionCard>
-                    </div>
-
-                    {/* Bottom Actions */}
-                    <div className="lg:col-span-12 flex items-center justify-between pt-6 mt-4 border-t border-zinc-200">
-                        <Button asChild variant="outline" className="h-10 px-6 bg-white border-zinc-200 text-zinc-700 hover:bg-zinc-50 shadow-sm rounded-lg font-medium">
-                            <Link href={isEdit ? `/admin/products/${product.id}` : '/admin/products'}>Cancel</Link>
-                        </Button>
-                        <div className="flex gap-3">
-                            <Button type="button" variant="outline" className="h-10 px-6 bg-white border-zinc-200 text-zinc-700 hover:bg-zinc-50 shadow-sm rounded-lg font-medium" onClick={() => { setData('status', 'draft'); submit({ preventDefault: () => {} } as any); }} disabled={processing}>
-                                Save as Draft
-                            </Button>
-                            <Button type="submit" className="h-10 px-6 bg-[#422d25] hover:bg-[#34231d] text-white shadow-md rounded-lg font-medium transition-all hover:shadow-lg" disabled={processing}>
-                                {isEdit ? 'Save Changes' : 'Publish Product'}
-                            </Button>
                         </div>
                     </div>
                 </form>
