@@ -1,11 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import {
-    Home,
-    LayoutGrid,
-    ShoppingBag,
-    ClipboardList,
-    User,
-} from 'lucide-react';
+import { Home, LayoutGrid, User } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import Footer from '@/components/Footer';
@@ -16,29 +10,29 @@ interface ShopLayoutProps {
     children: ReactNode;
 }
 
+type SharedShopProps = {
+    shop?: {
+        cart_count?: number;
+        featured_collections?: Array<{
+            id: number;
+            name: string;
+            slug: string;
+        }>;
+    };
+};
+
 export default function ShopLayout({ children }: ShopLayoutProps) {
-    const { url } = usePage();
+    const { url, props } = usePage<SharedShopProps>();
+    const cartCount = props.shop?.cart_count ?? 0;
+    const featuredCollections = props.shop?.featured_collections ?? [];
 
     const navItems = [
         { icon: Home, label: 'Home', href: '/', active: url === '/' },
         {
             icon: LayoutGrid,
-            label: 'Categories',
-            href: '/categories',
-            active: url.startsWith('/categories'),
-        },
-        {
-            icon: ShoppingBag,
-            label: 'Cart',
-            href: '/my-cart',
-            active: url.startsWith('/my-cart'),
-            badge: 3,
-        },
-        {
-            icon: ClipboardList,
-            label: 'Orders',
-            href: '/orders',
-            active: url.startsWith('/orders'),
+            label: 'Shop',
+            href: '/list',
+            active: url.startsWith('/list'),
         },
         {
             icon: User,
@@ -50,7 +44,7 @@ export default function ShopLayout({ children }: ShopLayoutProps) {
 
     return (
         <div className="flex min-h-screen flex-col overflow-x-hidden bg-[#FAF9F6] font-sans text-[#3C3428] selection:bg-[#D8D2C4] selection:text-[#3C3428]">
-            <Navbar />
+            <Navbar cartCount={cartCount} collections={featuredCollections} />
             <main className="mx-auto w-full max-w-md flex-grow bg-[#FAF9F6] pb-24 md:max-w-none md:pb-0">
                 {children}
             </main>
@@ -81,11 +75,6 @@ export default function ShopLayout({ children }: ShopLayoutProps) {
                                                 : ''
                                         }
                                     />
-                                    {item.badge && (
-                                        <span className="absolute -top-1.5 -right-2 flex h-[15px] w-[15px] items-center justify-center rounded-full border border-[#FAF9F6] bg-[#8C7A6B] text-[9px] font-bold text-white">
-                                            {item.badge}
-                                        </span>
-                                    )}
                                 </div>
                                 <span className="text-[10px] font-medium">
                                     {item.label}

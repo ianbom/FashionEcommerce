@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
     destroy,
     store,
@@ -108,7 +109,8 @@ const formDataFromAddress = (address?: Address): AddressFormData => {
 };
 
 const normalizePayload = (data: AddressFormData) => {
-    const { google_maps_url: _googleMapsUrl, ...payload } = data;
+    const { google_maps_url, ...payload } = data;
+    void google_maps_url;
 
     return {
         ...payload,
@@ -555,13 +557,15 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                 </div>
             )}
 
-            {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {isModalOpen &&
+                typeof document !== 'undefined' &&
+                createPortal(
+                    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
                     <div
                         className="absolute inset-0 bg-black/40 backdrop-blur-sm"
                         onClick={closeModal}
                     />
-                    <div className="relative z-10 flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+                    <div className="relative z-[10001] flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
                         <div className="flex items-center justify-between border-b border-[#EAE8E3] bg-[#FAF9F6] px-6 py-4">
                             <h3 className="font-serif text-lg text-[#3C3428]">
                                 {editingAddress
@@ -805,8 +809,9 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                             </div>
                         </form>
                     </div>
-                </div>
-            )}
+                    </div>,
+                    document.body,
+                )}
         </ProfileLayout>
     );
 }

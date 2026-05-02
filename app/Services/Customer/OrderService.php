@@ -168,6 +168,7 @@ class OrderService
                 'payment_method' => $order->payment->payment_method,
                 'midtrans_order_id' => $order->payment->midtrans_order_id,
                 'midtrans_transaction_id' => $order->payment->midtrans_transaction_id,
+                'midtrans_snap_token' => $order->payment->midtrans_snap_token,
                 'midtrans_redirect_url' => $order->payment->midtrans_redirect_url,
                 'transaction_status' => $order->payment->transaction_status,
                 'fraud_status' => $order->payment->fraud_status,
@@ -200,6 +201,7 @@ class OrderService
                 'shipped_at' => $order->shipment->shipped_at?->toDateTimeString(),
                 'delivered_at' => $order->shipment->delivered_at?->toDateTimeString(),
                 'cancelled_at' => $order->shipment->cancelled_at?->toDateTimeString(),
+                'raw_order_response' => $order->shipment->raw_order_response,
             ] : null,
             'trackings' => $order->shipment?->trackings?->map(fn ($tracking): array => [
                 'id' => $tracking->id,

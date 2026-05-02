@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Cart;
+use App\Models\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Middleware;
@@ -49,8 +51,43 @@ class HandleInertiaRequests extends Middleware
                 'warning' => fn () => $request->session()->get('warning'),
                 'toast' => fn () => $this->toast($request),
             ],
+            'shop' => [
+                'cart_count' => fn (): int => $this->cartCount($request),
+                'featured_collections' => fn (): array => $this->featuredCollections(),
+            ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
+    }
+
+    private function cartCount(Request $request): int
+    {
+        if (! $request->user()) {
+            return 0;
+        }
+
+        return (int) Cart::query()
+            ->where('user_id', $request->user()->id)
+            ->withSum('items', 'quantity')
+            ->first()?->items_sum_quantity;
+    }
+
+    /**
+     * @return list<array{id: int, name: string, slug: string}>
+     */
+    private function featuredCollections(): array
+    {
+        return Collection::query()
+            ->where('is_active', true)
+            ->where('is_featured', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug'])
+            ->map(fn (Collection $collection): array => [
+                'id' => $collection->id,
+                'name' => $collection->name,
+                'slug' => $collection->slug,
+            ])
+            ->values()
+            ->all();
     }
 
     /**

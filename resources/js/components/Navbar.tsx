@@ -1,8 +1,20 @@
 import { Link } from '@inertiajs/react';
-import { Search, User, ShoppingBag, Menu, Heart } from 'lucide-react';
-import React from 'react';
+import { Search, User, ShoppingBag, Heart } from 'lucide-react';
 
-export default function Navbar() {
+type NavbarCollection = {
+    id: number;
+    name: string;
+    slug: string;
+};
+
+type NavbarProps = {
+    cartCount?: number;
+    collections?: NavbarCollection[];
+};
+
+export default function Navbar({ cartCount = 0, collections = [] }: NavbarProps) {
+    const cartBadge = cartCount > 99 ? '99+' : String(cartCount);
+
     return (
         <nav className="sticky top-0 z-50 flex items-center justify-between bg-[#FAF9F6]/90 px-4 py-4 backdrop-blur-md transition-all duration-300 md:px-10">
             {/* Mobile View */}
@@ -29,9 +41,11 @@ export default function Navbar() {
                                 className="cursor-pointer"
                             />
                         </Link>
-                        <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#8C7A6B] text-[10px] font-bold text-white">
-                            3
-                        </span>
+                        {cartCount > 0 && (
+                            <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#8C7A6B] px-1 text-[9px] font-bold text-white">
+                                {cartBadge}
+                            </span>
+                        )}
                     </div>
                 </div>
             </div>
@@ -52,32 +66,17 @@ export default function Navbar() {
                         href="/list"
                         className="transition-colors hover:text-[#5A4F43]"
                     >
-                        NEW ARRIVAL
-                    </Link>
-                    <Link
-                        href="/list"
-                        className="transition-colors hover:text-[#5A4F43]"
-                    >
                         SHOP ALL
                     </Link>
-                    <Link
-                        href="/list"
-                        className="transition-colors hover:text-[#5A4F43]"
-                    >
-                        ABAYA
-                    </Link>
-                    <Link
-                        href="/list"
-                        className="transition-colors hover:text-[#5A4F43]"
-                    >
-                        KHIMAR
-                    </Link>
-                    <Link
-                        href="/list"
-                        className="transition-colors hover:text-[#5A4F43]"
-                    >
-                        ACCESSORIES
-                    </Link>
+                    {collections.map((collection) => (
+                        <Link
+                            key={collection.id}
+                            href={`/list?collection=${encodeURIComponent(collection.slug)}`}
+                            className="transition-colors hover:text-[#5A4F43]"
+                        >
+                            {collection.name.toUpperCase()}
+                        </Link>
+                    ))}
                 </div>
 
                 <div className="flex items-center space-x-6 text-[#5A4F43]">
@@ -101,9 +100,11 @@ export default function Navbar() {
                                 className="cursor-pointer transition-all hover:text-[#8C7A6B]"
                             />
                         </Link>
-                        <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#8C7A6B] text-[10px] font-bold text-white">
-                            3
-                        </span>
+                        {cartCount > 0 && (
+                            <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#8C7A6B] px-1 text-[9px] font-bold text-white">
+                                {cartBadge}
+                            </span>
+                        )}
                     </div>
                 </div>
             </div>

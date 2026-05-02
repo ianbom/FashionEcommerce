@@ -3,7 +3,6 @@ import {
     Check,
     ClipboardList,
     CreditCard,
-    Download,
     FileText,
     Headphones,
     MapPin,
@@ -59,6 +58,7 @@ type Payment = {
     payment_method: string | null;
     midtrans_order_id: string | null;
     midtrans_transaction_id: string | null;
+    midtrans_snap_token: string | null;
     midtrans_redirect_url: string | null;
     transaction_status: string | null;
     fraud_status: string | null;
@@ -85,6 +85,7 @@ type Shipment = {
     shipped_at: string | null;
     delivered_at: string | null;
     cancelled_at: string | null;
+    raw_order_response: unknown;
 };
 
 type Tracking = {
@@ -390,6 +391,40 @@ function buildProgress(order: Order) {
     ];
 }
 
+function getBiteshipTrackingUrl(shipment: Shipment | null): string | null {
+    const raw = shipment?.raw_order_response;
+
+    if (!raw || typeof raw !== 'object') {
+        return null;
+    }
+
+    const courier = (raw as Record<string, unknown>).courier;
+
+    if (!courier || typeof courier !== 'object') {
+        return null;
+    }
+
+    const link = (courier as Record<string, unknown>).link;
+
+    return typeof link === 'string' && link.length > 0 ? link : null;
+}
+
+function getMidtransReceiptUrl(payment: Payment | null): string | null {
+    if (!payment) {
+        return null;
+    }
+
+    if (payment.midtrans_redirect_url) {
+        return payment.midtrans_redirect_url;
+    }
+
+    if (payment.midtrans_snap_token) {
+        return `https://app.midtrans.com/snap/v2/vtweb/${payment.midtrans_snap_token}`;
+    }
+
+    return null;
+}
+
 export default function DetailOrder({ order }: Props) {
     const progressSteps = buildProgress(order);
     const courier = [
@@ -407,7 +442,8 @@ export default function DetailOrder({ order }: Props) {
         order.payment?.midtrans_transaction_id ??
         order.payment?.midtrans_order_id ??
         '-';
-    const invoiceNumber = `INV-${order.order_number.replace(/^#?ORD-?/i, '')}`;
+    const trackingUrl = getBiteshipTrackingUrl(order.shipment);
+    const paymentReceiptUrl = getMidtransReceiptUrl(order.payment);
 
     return (
         <ProfileLayout
@@ -468,11 +504,7 @@ export default function DetailOrder({ order }: Props) {
                         </div>
                         <div className="grid grid-cols-2 gap-3 border-t border-[#f0ebe4] p-4 sm:grid-cols-4 sm:p-5">
                             <ActionButton
-                                href={
-                                    order.shipment?.waybill_id
-                                        ? `https://cekresi.com/?noresi=${order.shipment.waybill_id}`
-                                        : null
-                                }
+                                href={trackingUrl}
                                 external
                                 icon={Truck}
                                 label="Track Order"
@@ -483,10 +515,10 @@ export default function DetailOrder({ order }: Props) {
                                 label="Buy Again"
                             />
                             <ActionButton
-                                href={order.shipment?.label_url ?? null}
+                                href={paymentReceiptUrl}
                                 external
-                                icon={Download}
-                                label="Shipping Label"
+                                icon={ReceiptText}
+                                label="Payment Receipt"
                             />
                             <ActionButton
                                 href="/notifications"
@@ -528,34 +560,6 @@ export default function DetailOrder({ order }: Props) {
                                 })}
                             </div>
                         </div>
-                        {order.trackings.length > 0 && (
-                            <div className="mt-5 border-t border-[#f0ebe4] pt-4">
-                                {order.trackings.map((tracking, idx) => (
-                                    <div
-                                        key={tracking.id}
-                                        className={`relative flex gap-3 pb-4 ${idx < order.trackings.length - 1 ? 'before:absolute before:top-5 before:left-[6px] before:h-full before:w-px before:bg-[#ede5dc]' : ''}`}
-                                    >
-                                        <div className="mt-1 h-3 w-3 shrink-0 rounded-full border-2 border-[#c9a983] bg-white" />
-                                        <div className="min-w-0">
-                                            <p className="text-[11px] font-semibold text-[#9a8575]">
-                                                {formatDateTime(
-                                                    tracking.happened_at,
-                                                )}
-                                            </p>
-                                            <p className="mt-0.5 text-xs leading-relaxed text-[#3f3025]">
-                                                {labelStatus(tracking.status)}
-                                                {tracking.location
-                                                    ? ` — ${tracking.location}`
-                                                    : ''}
-                                                {tracking.description
-                                                    ? `: ${tracking.description}`
-                                                    : ''}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
                     </SectionCard>
 
                     {/* Ordered Items */}
@@ -587,8 +591,10 @@ export default function DetailOrder({ order }: Props) {
                                         {order.items.map((item) => {
                                             const productUrl = item.product_slug
                                                 ? productShow.url({
-                                                      product:
-                                                          item.product_slug,
+                                                      query: {
+                                                          product:
+                                                              item.product_slug,
+                                                      },
                                                   })
                                                 : '#';
 
@@ -689,7 +695,7 @@ export default function DetailOrder({ order }: Props) {
                             {order.items.map((item) => {
                                 const productUrl = item.product_slug
                                     ? productShow.url({
-                                          product: item.product_slug,
+                                          query: { product: item.product_slug },
                                       })
                                     : '#';
 
@@ -893,34 +899,6 @@ export default function DetailOrder({ order }: Props) {
                             <p className="mt-1 font-serif text-2xl leading-none font-medium text-[#221914] sm:text-3xl">
                                 {formatPrice(order.grand_total)}
                             </p>
-                        </div>
-                    </SectionCard>
-
-                    {/* Invoice & Documents */}
-                    <SectionCard title="Invoice & Docs">
-                        <div className="mb-4 flex items-center justify-between gap-2">
-                            <span className="text-xs text-[#8b7b6e]">
-                                Invoice No.
-                            </span>
-                            <span className="truncate text-[13px] font-bold text-[#3d3027]">
-                                {invoiceNumber}
-                            </span>
-                        </div>
-                        <div className="space-y-2.5">
-                            <ActionButton
-                                href={order.shipment?.label_url ?? null}
-                                external
-                                icon={Download}
-                                label="Shipping Label"
-                            />
-                            <ActionButton
-                                href={
-                                    order.payment?.midtrans_redirect_url ?? null
-                                }
-                                external
-                                icon={FileText}
-                                label="Payment Page"
-                            />
                         </div>
                     </SectionCard>
 

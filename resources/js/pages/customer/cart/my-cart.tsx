@@ -498,7 +498,7 @@ export default function MyCart({
                             </div>
                         </div>
 
-                        <div className="pb-safe fixed right-0 bottom-0 left-0 z-40 flex translate-y-0 items-center justify-between bg-[#3C3428] p-4 text-white shadow-[0_-10px_40px_rgba(0,0,0,0.15)] transition-transform lg:hidden">
+                        {/* <div className="pb-safe fixed right-0 bottom-0 left-0 z-40 flex translate-y-0 items-center justify-between bg-[#3C3428] p-4 text-white shadow-[0_-10px_40px_rgba(0,0,0,0.15)] transition-transform lg:hidden">
                             <div>
                                 <p className="mb-0.5 text-[10px] font-medium text-white/60">
                                     Total
@@ -513,7 +513,7 @@ export default function MyCart({
                             >
                                 Checkout ({summary.item_count})
                             </Link>
-                        </div>
+                        </div> */}
                     </>
                 ) : (
                     <div className="animate-fade-in-up flex flex-col items-center justify-center py-20 md:py-32">

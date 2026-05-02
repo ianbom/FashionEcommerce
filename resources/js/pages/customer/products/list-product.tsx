@@ -164,6 +164,7 @@ export default function ListProduct({ products, filters, options }: Props) {
         [filters],
     );
     const [form, setForm] = useState<FilterState>(initialFilters);
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
 
     const visit = (nextFilters: FilterState) => {
         setForm(nextFilters);
@@ -206,7 +207,39 @@ export default function ListProduct({ products, filters, options }: Props) {
             <Head title="Products - Aurea Syari" />
 
             <main className="mx-auto flex max-w-[1500px] flex-col px-4 py-6 md:px-10 md:py-10 lg:flex-row">
-                <aside className="mb-8 w-full flex-shrink-0 pr-0 lg:mb-0 lg:w-64 lg:pr-10">
+                {isFilterOpen && (
+                    <button
+                        type="button"
+                        aria-label="Close filters"
+                        onClick={() => setIsFilterOpen(false)}
+                        className="fixed inset-0 z-40 bg-black/35 backdrop-blur-[2px] lg:hidden"
+                    />
+                )}
+                <aside
+                    className={`fixed inset-x-0 bottom-0 z-50 max-h-[86vh] w-full flex-shrink-0 overflow-y-auto rounded-t-[28px] border-t border-border bg-background px-5 pt-3 pb-6 shadow-[0_-24px_80px_rgba(0,0,0,0.18)] transition-transform duration-300 ease-out lg:static lg:z-auto lg:mb-0 lg:max-h-none lg:w-64 lg:translate-y-0 lg:overflow-visible lg:rounded-none lg:border-0 lg:bg-transparent lg:px-0 lg:pt-0 lg:pr-10 lg:pb-0 lg:shadow-none ${
+                        isFilterOpen
+                            ? 'translate-y-0'
+                            : 'pointer-events-none translate-y-full lg:pointer-events-auto'
+                    }`}
+                >
+                    <div className="mb-5 flex items-center justify-between lg:hidden">
+                        <div>
+                            <p className="text-[12px] font-semibold tracking-[0.22em] text-foreground uppercase">
+                                Filter & Sort
+                            </p>
+                            <p className="mt-1 text-[11px] text-secondary-foreground">
+                                Search, filter, lalu urutkan produk.
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setIsFilterOpen(false)}
+                            className="rounded-full border border-border px-4 py-2 text-[10px] font-semibold tracking-wider uppercase"
+                        >
+                            Close
+                        </button>
+                    </div>
+                    <div className="mx-auto mb-5 h-1 w-12 rounded-full bg-border lg:hidden" />
                     <form
                         onSubmit={submitSearch}
                         className="group relative mb-8"
@@ -228,6 +261,60 @@ export default function ListProduct({ products, filters, options }: Props) {
                             className="w-full rounded-md border border-border bg-transparent py-2 pr-4 pl-9 text-[11px] tracking-wide transition-all focus:border-ring focus:ring-1 focus:ring-ring/20 focus:outline-none"
                         />
                     </form>
+
+                    <div className="mb-8 grid grid-cols-2 gap-3 text-[11px] text-secondary-foreground lg:hidden">
+                        <label className="col-span-2 grid gap-1.5">
+                            <span className="font-semibold tracking-wider uppercase">
+                                Sort
+                            </span>
+                            <select
+                                value={form.sort}
+                                onChange={(event) =>
+                                    setFilter('sort', event.target.value)
+                                }
+                                className="rounded-xl border border-border bg-background px-3 py-3 font-semibold text-foreground outline-none focus:border-ring"
+                            >
+                                {options.sorts.map((sort) => (
+                                    <option key={sort.value} value={sort.value}>
+                                        {sort.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+                        <label className="grid gap-1.5">
+                            <span className="font-semibold tracking-wider uppercase">
+                                Order
+                            </span>
+                            <select
+                                value={form.order}
+                                onChange={(event) =>
+                                    setFilter('order', event.target.value)
+                                }
+                                className="rounded-xl border border-border bg-background px-3 py-3 font-semibold text-foreground outline-none focus:border-ring"
+                            >
+                                <option value="desc">Desc</option>
+                                <option value="asc">Asc</option>
+                            </select>
+                        </label>
+                        <label className="grid gap-1.5">
+                            <span className="font-semibold tracking-wider uppercase">
+                                Show
+                            </span>
+                            <select
+                                value={form.per_page}
+                                onChange={(event) =>
+                                    setFilter('per_page', event.target.value)
+                                }
+                                className="rounded-xl border border-border bg-background px-3 py-3 font-semibold text-foreground outline-none focus:border-ring"
+                            >
+                                <option value="8">8</option>
+                                <option value="12">12</option>
+                                <option value="16">16</option>
+                                <option value="24">24</option>
+                                <option value="32">32</option>
+                            </select>
+                        </label>
+                    </div>
 
                     <div className="text-secondary-foreground">
                         <div className="mb-3 flex items-center justify-between px-1">
@@ -444,6 +531,22 @@ export default function ListProduct({ products, filters, options }: Props) {
                             </FilterSection>
                         </div>
                     </div>
+                    <div className="sticky bottom-0 -mx-5 mt-5 grid grid-cols-2 gap-3 border-t border-border bg-background px-5 pt-4 lg:hidden">
+                        <button
+                            type="button"
+                            onClick={resetFilters}
+                            className="rounded-full border border-border py-3 text-[11px] font-semibold tracking-wider uppercase"
+                        >
+                            Reset
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setIsFilterOpen(false)}
+                            className="rounded-full bg-primary py-3 text-[11px] font-semibold tracking-wider text-primary-foreground uppercase"
+                        >
+                            View Products
+                        </button>
+                    </div>
                 </aside>
 
                 <div className="flex-1">
@@ -459,7 +562,18 @@ export default function ListProduct({ products, filters, options }: Props) {
                             </p>
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-2 text-[11px] text-secondary-foreground">
+                        <button
+                            type="button"
+                            onClick={() => setIsFilterOpen(true)}
+                            className="flex items-center justify-between rounded-full border border-border bg-background px-4 py-3 text-[11px] font-semibold tracking-wider text-foreground uppercase shadow-sm lg:hidden"
+                        >
+                            <span>
+                                Filter{activeSummary > 0 ? ` (${activeSummary})` : ''}
+                            </span>
+                            <ChevronDown size={14} />
+                        </button>
+
+                        <div className="hidden flex-wrap items-center gap-2 text-[11px] text-secondary-foreground lg:flex">
                             <label className="flex items-center gap-2">
                                 <span>sort</span>
                                 <select
