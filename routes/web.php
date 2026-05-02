@@ -197,6 +197,6 @@ Route::middleware(['auth', 'admin', 'admin.activity'])->prefix('admin')->name('a
     Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
 });
 
-Route::post('/payments/midtrans/notification', MidtransWebhookController::class)->name('payments.midtrans.notification');
+// Route::post('/payments/midtrans/notification', MidtransWebhookController::class)->name('payments.midtrans.notification');
 
 require __DIR__.'/settings.php';

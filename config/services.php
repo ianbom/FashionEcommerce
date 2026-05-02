@@ -37,6 +37,17 @@ return [
 
     'biteship' => [
         'api_key' => env('BITESHIP_API_KEY'),
+        'webhook_secret' => env('BITESHIP_WEBHOOK_SECRET'),
+        'shipper_name' => env('BITESHIP_SHIPPER_NAME'),
+        'shipper_phone' => env('BITESHIP_SHIPPER_PHONE'),
+        'shipper_email' => env('BITESHIP_SHIPPER_EMAIL'),
+        'origin_contact_name' => env('BITESHIP_ORIGIN_CONTACT_NAME'),
+        'origin_contact_phone' => env('BITESHIP_ORIGIN_CONTACT_PHONE'),
+        'origin_contact_email' => env('BITESHIP_ORIGIN_CONTACT_EMAIL'),
+        'origin_address' => env('BITESHIP_ORIGIN_ADDRESS'),
+        'origin_note' => env('BITESHIP_ORIGIN_NOTE'),
+        'origin_postal_code' => env('BITESHIP_ORIGIN_POSTAL_CODE'),
+        'origin_area_id' => env('BITESHIP_ORIGIN_AREA_ID'),
     ],
 
     'midtrans' => [

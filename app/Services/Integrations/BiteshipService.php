@@ -4,6 +4,7 @@ namespace App\Services\Integrations;
 
 use App\Services\Settings\SiteSettingService;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\ValidationException;
 
@@ -88,6 +89,44 @@ class BiteshipService
             ->all();
     }
 
+    public function createOrder(array $payload): array
+    {
+        $response = $this->client()
+            ->post('/v1/orders', $payload);
+
+        if (! $response->successful()) {
+            throw ValidationException::withMessages([
+                'shipment' => $response->json('error') ?? $response->json('message') ?? 'Gagal membuat order Biteship.',
+            ]);
+        }
+
+        return $response->json();
+    }
+
+    public function retrieveOrder(string $biteshipOrderId): array
+    {
+        $response = $this->client()
+            ->get("/v1/orders/{$biteshipOrderId}");
+
+        if (! $response->successful()) {
+            throw ValidationException::withMessages([
+                'shipment' => $response->json('error') ?? $response->json('message') ?? 'Gagal mengambil order Biteship.',
+            ]);
+        }
+
+        return $response->json();
+    }
+
+    public function orderIdentifiers(array $response): array
+    {
+        return [
+            'biteship_order_id' => Arr::get($response, 'id'),
+            'biteship_tracking_id' => Arr::get($response, 'courier.tracking_id'),
+            'waybill_id' => Arr::get($response, 'courier.waybill_id'),
+            'shipping_status' => Arr::get($response, 'status'),
+        ];
+    }
+
     private function client(): PendingRequest
     {
         $apiKey = config('services.biteship.api_key') ?: env('BITESHIP_API_KEY');
@@ -97,7 +136,9 @@ class BiteshipService
         }
 
         return Http::baseUrl('https://api.biteship.com')
+            ->connectTimeout(5)
             ->timeout(15)
+            ->retry(2, 500, throw: false)
             ->acceptJson()
             ->withToken($apiKey);
     }

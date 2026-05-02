@@ -652,7 +652,7 @@ export default function ListProduct({ products, filters, options }: Props) {
 function FilterSection({
     title,
     children,
-    defaultOpen = true,
+    defaultOpen = false,
 }: {
     title: string;
     children: ReactNode;

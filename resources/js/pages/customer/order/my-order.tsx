@@ -137,6 +137,10 @@ const cleanPageLabel = (label: string) => {
     return label.replace('&laquo;', '').replace('&raquo;', '').trim();
 };
 
+const canBuyAgain = (status: string) => {
+    return status === 'delivered' || status === 'completed';
+};
+
 export default function ListOrder({ orders, filters, options }: Props) {
     const [form, setForm] = useState<Filters>({
         search: filters.search ?? '',
@@ -444,20 +448,19 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                         </Link>
                                     )}
                                     <Link
-                                        href={
-                                            order.order_status ===
-                                                'delivered' ||
-                                            order.order_status === 'completed'
-                                                ? '/list'
-                                                : orderShow.url(order.id)
-                                        }
+                                        href={orderShow.url(order.id)}
                                         className="flex-1 rounded-lg border border-[#EAE8E3] bg-white py-2.5 text-center text-[12px] font-bold text-[#3C3428] transition-colors hover:border-[#C4BDB1] hover:bg-[#FAF9F6] lg:w-full"
                                     >
-                                        {order.order_status === 'delivered' ||
-                                        order.order_status === 'completed'
-                                            ? 'Buy Again'
-                                            : 'View Details'}
+                                        View Details
                                     </Link>
+                                    {canBuyAgain(order.order_status) && (
+                                        <Link
+                                            href="/list"
+                                            className="flex-1 rounded-lg bg-[#3C3428] py-2.5 text-center text-[12px] font-bold text-white shadow-md shadow-[#3C3428]/20 transition-colors hover:bg-[#2D261C] lg:w-full"
+                                        >
+                                            Buy Again
+                                        </Link>
+                                    )}
                                 </div>
                             </div>
 

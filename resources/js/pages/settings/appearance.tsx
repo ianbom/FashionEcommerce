@@ -1,5 +1,4 @@
 import { Head } from '@inertiajs/react';
-import AppearanceTabs from '@/components/appearance-tabs';
 import Heading from '@/components/heading';
 import { edit as editAppearance } from '@/routes/appearance';
 
@@ -14,9 +13,11 @@ export default function Appearance() {
                 <Heading
                     variant="small"
                     title="Appearance settings"
-                    description="Update your account's appearance settings"
+                    description="Appearance locked to light mode for whole website"
                 />
-                <AppearanceTabs />
+                <div className="rounded-xl border border-[#EAE8E3] bg-[#FAF8F5] p-4 text-sm leading-relaxed text-[#5C564D]">
+                    This website now uses light mode only. Dark mode and system theme switching have been disabled globally.
+                </div>
             </div>
         </>
     );

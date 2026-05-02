@@ -291,6 +291,41 @@ function EmptyState({ children }: { children: ReactNode }) {
     );
 }
 
+function getShipmentValue(shipment: Order['shipment'], key: string): unknown {
+    return shipment?.[key];
+}
+
+function getRawOrderValue(shipment: Order['shipment'], path: string): unknown {
+    const raw = getShipmentValue(shipment, 'raw_order_response');
+
+    if (!raw || typeof raw !== 'object') {
+        return null;
+    }
+
+    return path.split('.').reduce<unknown>((value, key) => {
+        if (!value || typeof value !== 'object') {
+            return null;
+        }
+
+        return (value as Record<string, unknown>)[key] ?? null;
+    }, raw);
+}
+
+function getShipmentLabelUrl(shipment: Order['shipment']): string | null {
+    const labelUrl = getShipmentValue(shipment, 'label_url');
+    const courierLink = getRawOrderValue(shipment, 'courier.link');
+
+    if (typeof labelUrl === 'string' && labelUrl.length > 0) {
+        return labelUrl;
+    }
+
+    if (typeof courierLink === 'string' && courierLink.length > 0) {
+        return courierLink;
+    }
+
+    return null;
+}
+
 export default function OrderShow({ order }: Props) {
     const noteForm = useForm({ notes: order.notes ?? '' });
     const shipmentForm = useForm<{
@@ -369,6 +404,7 @@ export default function OrderShow({ order }: Props) {
         0,
     );
     const customerPhone = order.customer_phone?.replace(/\D/g, '');
+    const shipmentLabelUrl = getShipmentLabelUrl(order.shipment);
 
     return (
         <>
@@ -1053,9 +1089,22 @@ export default function OrderShow({ order }: Props) {
                                                         )}
                                                     />
                                                 </DetailList>
-                                                <div className="grid gap-2 sm:grid-cols-2">
-                                                    {order.shipment
-                                                        .tracking_url && (
+                                                 <div className="grid gap-2 sm:grid-cols-2">
+                                                    {shipmentLabelUrl && (
+                                                        <ActionLink
+                                                            href={
+                                                                shipmentLabelUrl
+                                                            }
+                                                            external
+                                                        >
+                                                            <Printer
+                                                                size={14}
+                                                            />{' '}
+                                                            Print resi
+                                                        </ActionLink>
+                                                    )}
+                                                     {order.shipment
+                                                         .tracking_url && (
                                                         <ActionLink
                                                             href={String(
                                                                 order.shipment
