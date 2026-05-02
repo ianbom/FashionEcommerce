@@ -46,6 +46,7 @@ Route::inertia('/privacy-policy', 'customer/policy/privacy-policy')->name('polic
 Route::inertia('/no-return-policy', 'customer/policy/no-return-policy')->name('policy.no-return');
 Route::inertia('/shipping-policy', 'customer/policy/shipping-policy')->name('policy.shipping');
 Route::inertia('/terms-conditions', 'customer/policy/term-condition')->name('policy.terms');
+Route::inertia('/admin/order-detail', 'admin/orders/order-detail')->name('detail-order-admin');
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
 });
