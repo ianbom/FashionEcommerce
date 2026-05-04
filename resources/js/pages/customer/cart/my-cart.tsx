@@ -144,7 +144,7 @@ export default function MyCart({
         <ShopLayout>
             <Head title="My Cart - Aurea Syari" />
 
-            <main className="mx-auto min-h-screen max-w-[1200px] bg-[#FAF9F6] px-4 py-8 md:px-8 md:py-12">
+            <main className="mx-auto min-h-screen max-w-[1200px] px-4 py-8 md:px-8 md:py-12">
                 <div className="mb-6 flex items-center space-x-2 text-[10px] font-medium tracking-wide text-[#8A6B62] md:mb-8 md:text-xs">
                     <Link
                         href="/"
@@ -198,206 +198,128 @@ export default function MyCart({
                                     return (
                                         <div
                                             key={item.id}
-                                            className="animate-fade-in-up rounded-xl border border-[#EADBD8]/60 bg-white/40 p-4 backdrop-blur-sm transition-all duration-500 ease-out hover:-translate-y-1 hover:shadow-lg hover:shadow-black/5"
+                                            className="group animate-fade-in-up relative border-b border-[#E5D8D2] py-6 last:border-b-0"
                                             style={{
                                                 animationDelay: `${index * 100}ms`,
                                             }}
                                         >
-                                            <div className="flex flex-col gap-4 sm:flex-row">
+                                            <div className="flex items-stretch gap-4 sm:gap-6">
+                                                {/* Image */}
                                                 {productHref ? (
                                                     <Link
                                                         href={productHref}
-                                                        className="group relative w-full flex-shrink-0 overflow-hidden rounded-lg bg-[#F8EDED] sm:w-[120px] lg:w-[140px]"
+                                                        className="relative h-[110px] w-[85px] flex-shrink-0 overflow-hidden rounded-2xl bg-[#F8EDED] sm:h-[140px] sm:w-[110px] shadow-inner"
                                                     >
-                                                        <div className="aspect-[4/5]">
-                                                            <img
-                                                                src={
-                                                                    item.image ??
-                                                                    fallbackImages[
-                                                                        index %
-                                                                            fallbackImages.length
-                                                                    ]
-                                                                }
-                                                                alt={item.title}
-                                                                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                                                loading="lazy"
-                                                                decoding="async"
-                                                            />
-                                                        </div>
-                                                        <div className="pointer-events-none absolute inset-0 bg-black/0 transition-colors duration-300 group-hover:bg-black/5" />
+                                                        <img
+                                                            src={
+                                                                item.image ??
+                                                                fallbackImages[
+                                                                    index %
+                                                                        fallbackImages.length
+                                                                ]
+                                                            }
+                                                            alt={item.title}
+                                                            className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                                                            loading="lazy"
+                                                            decoding="async"
+                                                        />
+                                                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                                                     </Link>
                                                 ) : (
-                                                    <div className="relative w-full flex-shrink-0 overflow-hidden rounded-lg bg-[#F8EDED] sm:w-[120px] lg:w-[140px]">
-                                                        <div className="aspect-[4/5]">
-                                                            <img
-                                                                src={
-                                                                    item.image ??
-                                                                    fallbackImages[
-                                                                        index %
-                                                                            fallbackImages.length
-                                                                    ]
-                                                                }
-                                                                alt={item.title}
-                                                                className="h-full w-full object-cover"
-                                                                loading="lazy"
-                                                                decoding="async"
-                                                            />
-                                                        </div>
+                                                    <div className="relative h-[110px] w-[85px] flex-shrink-0 overflow-hidden rounded-2xl bg-[#F8EDED] sm:h-[140px] sm:w-[110px] shadow-inner">
+                                                        <img
+                                                            src={
+                                                                item.image ??
+                                                                fallbackImages[
+                                                                    index %
+                                                                        fallbackImages.length
+                                                                ]
+                                                            }
+                                                            alt={item.title}
+                                                            className="h-full w-full object-cover"
+                                                            loading="lazy"
+                                                            decoding="async"
+                                                        />
                                                     </div>
                                                 )}
 
+                                                {/* Content */}
                                                 <div className="flex flex-1 flex-col justify-between py-1">
-                                                    <div className="flex items-start justify-between">
-                                                        <div className="pr-4">
-                                                            {productHref ? (
-                                                                <Link
-                                                                    href={
-                                                                        productHref
-                                                                    }
-                                                                    className="line-clamp-2 cursor-pointer text-sm font-semibold text-[#333333] transition-colors hover:text-black md:line-clamp-1 md:text-base"
-                                                                >
-                                                                    {item.title}
-                                                                </Link>
-                                                            ) : (
-                                                                <h3 className="line-clamp-2 text-sm font-semibold text-[#333333] md:line-clamp-1 md:text-base">
-                                                                    {item.title}
-                                                                </h3>
-                                                            )}
-                                                            <div className="mt-1 space-y-0.5 text-[11px] text-[#8A6B62] md:text-xs">
-                                                                {item.color && (
-                                                                    <p>
-                                                                        Color:{' '}
-                                                                        {
-                                                                            item.color
-                                                                        }
-                                                                    </p>
+                                                    <div>
+                                                        <div className="flex items-start justify-between gap-3">
+                                                            <div className="pr-2">
+                                                                {productHref ? (
+                                                                    <Link
+                                                                        href={productHref}
+                                                                        className="line-clamp-2 text-[13px] font-semibold leading-snug text-[#332b26] transition-colors hover:text-black sm:text-base font-serif"
+                                                                    >
+                                                                        {item.title}
+                                                                    </Link>
+                                                                ) : (
+                                                                    <h3 className="line-clamp-2 text-[13px] font-semibold leading-snug text-[#332b26] sm:text-base font-serif">
+                                                                        {item.title}
+                                                                    </h3>
                                                                 )}
-                                                                {item.size && (
-                                                                    <p>
-                                                                        Size:{' '}
-                                                                        {
-                                                                            item.size
-                                                                        }
-                                                                    </p>
-                                                                )}
+                                                                <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-medium text-[#8A6B62] sm:mt-2 sm:text-xs">
+                                                                    {item.color && (
+                                                                        <span className="flex items-center gap-1.5">
+                                                                            <span 
+                                                                                className="block h-2.5 w-2.5 rounded-full border border-gray-200/60 shadow-sm" 
+                                                                                style={{ backgroundColor: item.color_hex || '#ccc' }} 
+                                                                            />
+                                                                            {item.color}
+                                                                        </span>
+                                                                    )}
+                                                                    {item.size && (
+                                                                        <span className="flex items-center gap-1.5">
+                                                                            <span className="h-1 w-1 rounded-full bg-[#EADBD8]" />
+                                                                            {item.size}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
                                                                 {!item.is_available && (
-                                                                    <p className="font-semibold text-[#B24B4B]">
-                                                                        Variant
-                                                                        ini
-                                                                        sedang
-                                                                        tidak
-                                                                        tersedia.
+                                                                    <p className="mt-1.5 text-[10px] font-semibold text-[#B24B4B] sm:text-[11px]">
+                                                                        Variant unavailable
                                                                     </p>
                                                                 )}
                                                             </div>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => removeItem(item)}
+                                                                disabled={itemDisabled}
+                                                                className="flex-shrink-0 -mt-1 -mr-1 rounded-full p-2 text-gray-400 transition-all hover:bg-red-50 hover:text-red-500 disabled:opacity-50 active:scale-90"
+                                                                aria-label="Remove item"
+                                                            >
+                                                                <Trash2 size={16} strokeWidth={1.5} />
+                                                            </button>
                                                         </div>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                removeItem(item)
-                                                            }
-                                                            disabled={
-                                                                itemDisabled
-                                                            }
-                                                            className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-50"
-                                                            aria-label="Remove item"
-                                                        >
-                                                            <Trash2
-                                                                size={18}
-                                                                strokeWidth={
-                                                                    1.5
-                                                                }
-                                                            />
-                                                        </button>
                                                     </div>
 
-                                                    <div className="mt-2 mb-4 hidden sm:block">
-                                                        <span className="text-[13px] font-medium text-[#4A4A4A]">
-                                                            {formatPrice(
-                                                                item.price,
-                                                            )}
+                                                    <div className="mt-4 flex items-end justify-between sm:mt-auto">
+                                                        <span className="text-[14px] font-bold text-[#4A3B32] sm:text-base tracking-tight">
+                                                            {formatPrice(item.subtotal)}
                                                         </span>
-                                                    </div>
 
-                                                    <div className="mt-4 flex flex-wrap items-center justify-between gap-4 sm:mt-auto sm:flex-nowrap">
-                                                        <button
-                                                            type="button"
-                                                            className="group flex items-center text-[11px] font-medium text-[#8A6B62] transition-colors hover:text-black"
-                                                        >
-                                                            <Heart
-                                                                size={14}
-                                                                className="mr-1.5 transition-colors group-hover:fill-red-50 group-hover:text-red-500"
-                                                                strokeWidth={
-                                                                    1.5
-                                                                }
-                                                            />
-                                                            <span className="underline underline-offset-2">
-                                                                Move to Wishlist
+                                                        <div className="flex items-center overflow-hidden rounded-full border border-[#F2EFEA] bg-[#FAF9F6] p-0.5 shadow-sm">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => updateQuantity(item, item.quantity - 1)}
+                                                                disabled={itemDisabled || item.quantity <= 1}
+                                                                className="flex h-7 w-7 items-center justify-center rounded-full text-[#6B5E55] transition-colors hover:bg-white hover:text-black hover:shadow-sm disabled:bg-transparent disabled:opacity-40 disabled:shadow-none sm:h-8 sm:w-8"
+                                                            >
+                                                                <Minus size={12} strokeWidth={2.5} />
+                                                            </button>
+                                                            <span className="w-6 text-center text-[11px] font-bold text-[#4A3B32] sm:w-8 sm:text-xs">
+                                                                {item.quantity}
                                                             </span>
-                                                        </button>
-
-                                                        <div className="ml-auto flex items-center space-x-6 sm:ml-0">
-                                                            <div className="flex items-center overflow-hidden rounded-md border border-[#EADBD8] bg-white/80 shadow-sm">
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() =>
-                                                                        updateQuantity(
-                                                                            item,
-                                                                            item.quantity -
-                                                                                1,
-                                                                        )
-                                                                    }
-                                                                    disabled={
-                                                                        itemDisabled ||
-                                                                        item.quantity <=
-                                                                            1
-                                                                    }
-                                                                    className="flex h-8 w-8 items-center justify-center text-[#4A4A4A] transition-colors hover:bg-[#F8EDED] hover:text-black disabled:cursor-not-allowed disabled:opacity-40"
-                                                                >
-                                                                    <Minus
-                                                                        size={
-                                                                            14
-                                                                        }
-                                                                        strokeWidth={
-                                                                            2
-                                                                        }
-                                                                    />
-                                                                </button>
-                                                                <span className="w-8 text-center text-xs font-semibold text-[#333333]">
-                                                                    {
-                                                                        item.quantity
-                                                                    }
-                                                                </span>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() =>
-                                                                        updateQuantity(
-                                                                            item,
-                                                                            item.quantity +
-                                                                                1,
-                                                                        )
-                                                                    }
-                                                                    disabled={
-                                                                        itemDisabled ||
-                                                                        !canIncrease
-                                                                    }
-                                                                    className="flex h-8 w-8 items-center justify-center text-[#4A4A4A] transition-colors hover:bg-[#F8EDED] hover:text-black disabled:cursor-not-allowed disabled:opacity-40"
-                                                                >
-                                                                    <Plus
-                                                                        size={
-                                                                            14
-                                                                        }
-                                                                        strokeWidth={
-                                                                            2
-                                                                        }
-                                                                    />
-                                                                </button>
-                                                            </div>
-                                                            <span className="min-w-[90px] text-right text-sm font-bold text-[#333333]">
-                                                                {formatPrice(
-                                                                    item.subtotal,
-                                                                )}
-                                                            </span>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => updateQuantity(item, item.quantity + 1)}
+                                                                disabled={itemDisabled || !canIncrease}
+                                                                className="flex h-7 w-7 items-center justify-center rounded-full text-[#6B5E55] transition-colors hover:bg-white hover:text-black hover:shadow-sm disabled:bg-transparent disabled:opacity-40 disabled:shadow-none sm:h-8 sm:w-8"
+                                                            >
+                                                                <Plus size={12} strokeWidth={2.5} />
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -407,9 +329,13 @@ export default function MyCart({
                                 })}
                             </div>
 
+                            <div className="h-px w-full bg-[#E5D8D2] lg:hidden" />
+
+                            <div className="hidden self-stretch lg:block lg:w-px lg:bg-[#E5D8D2]" />
+
                             <div className="w-full flex-shrink-0 lg:w-[380px]">
-                                <div className="sticky top-24 rounded-2xl border border-[#EADBD8]/80 bg-white p-6 shadow-xl shadow-black/5 md:p-8 lg:top-32">
-                                    <h2 className="mb-6 font-serif text-xl text-[#4A2525] italic md:text-2xl">
+                                <div className="sticky top-24 lg:top-32">
+                                    <h2 className="mb-6 font-serif text-xl text-[#333333] tracking-tight md:text-2xl">
                                         Order Summary
                                     </h2>
 

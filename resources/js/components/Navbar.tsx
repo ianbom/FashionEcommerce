@@ -20,7 +20,7 @@ export default function Navbar({ cartCount = 0, collections = [] }: NavbarProps)
             {/* Mobile View */}
             <div className="flex w-full items-center justify-between md:hidden">
                 <Link href="/" className="font-serif text-2xl text-[#4A2525]">
-                    Auréa Syar'i
+                    Shayda
                 </Link>
                 <div className="flex items-center space-x-4 text-[#4A2525]">
                     <Heart
@@ -52,7 +52,7 @@ export default function Navbar({ cartCount = 0, collections = [] }: NavbarProps)
                     className="flex transform cursor-pointer flex-col items-center justify-center transition-transform duration-300 hover:scale-105"
                 >
                     <span className="font-serif text-xl text-[#4A2525]">
-                        Auréa Syar'i
+                       Shayda
                     </span>
                 </Link>
 

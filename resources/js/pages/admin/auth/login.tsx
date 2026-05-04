@@ -23,8 +23,12 @@ export default function AdminLogin() {
                 <section className="relative hidden overflow-hidden bg-[#4A1111] p-12 text-white lg:block">
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(221,190,161,0.3),transparent_28%),linear-gradient(135deg,rgba(255,255,255,0.08),transparent_40%)]" />
                     <div className="relative z-10 flex h-full flex-col justify-between">
-                        <Link href="/" className="font-serif text-3xl">
-                            Aurea Syar'i
+                        <Link href="/" className="inline-flex items-center">
+                            <img
+                                src="/logo-shay/shayda-logo-text-hitam.png"
+                                alt="Shayda"
+                                className="h-10 w-auto object-contain brightness-0 invert"
+                            />
                         </Link>
                         <div>
                             <p className="mb-4 text-sm font-bold tracking-[0.2em] text-[#E4B5AC] uppercase">
