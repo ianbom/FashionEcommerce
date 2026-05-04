@@ -26,28 +26,28 @@ export default function Login({
         <>
             <Head title="Log in" />
 
-            <Form
-                {...store.form()}
-                resetOnSuccess={['password']}
+                    <Form
+                        {...store.form()}
+                        resetOnSuccess={['password']}
                 className="flex flex-col gap-6"
-            >
-                {({ processing, errors }) => (
-                    <>
+                    >
+                        {({ processing, errors }) => (
+                            <>
                         <div className="grid gap-6">
                             <div className="grid gap-2">
                                 <Label htmlFor="email">Email address</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    name="email"
-                                    required
-                                    autoFocus
-                                    tabIndex={1}
-                                    autoComplete="email"
+                                            <Input
+                                                id="email"
+                                                type="email"
+                                                name="email"
+                                                required
+                                                autoFocus
+                                                tabIndex={1}
+                                                autoComplete="email"
                                     placeholder="email@example.com"
                                 />
                                 <InputError message={errors.email} />
-                            </div>
+                                </div>
 
                             <div className="grid gap-2">
                                 <div className="flex items-center">
@@ -82,17 +82,17 @@ export default function Login({
                                 <Label htmlFor="remember">Remember me</Label>
                             </div>
 
-                            <Button
-                                type="submit"
+                                <Button
+                                    type="submit"
                                 className="mt-4 w-full"
-                                tabIndex={4}
-                                disabled={processing}
-                                data-test="login-button"
-                            >
+                                    tabIndex={4}
+                                    disabled={processing}
+                                    data-test="login-button"
+                                >
                                 {processing && <Spinner />}
                                 Log in
-                            </Button>
-                        </div>
+                                    </Button>
+                                </div>
 
                         {canRegister && (
                             <div className="text-center text-sm text-muted-foreground">
@@ -100,11 +100,11 @@ export default function Login({
                                 <TextLink href={register()} tabIndex={5}>
                                     Sign up
                                 </TextLink>
-                            </div>
+                                </div>
                         )}
-                    </>
-                )}
-            </Form>
+                            </>
+                        )}
+                    </Form>
 
             {status && (
                 <div className="mb-4 text-center text-sm font-medium text-green-600">

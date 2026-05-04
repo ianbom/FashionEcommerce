@@ -13,7 +13,7 @@ class EnsureUserIsAdmin
         $user = $request->user();
 
         if (! $user || $user->role !== 'admin' || ! $user->is_active) {
-            abort(403, 'Only active admin users can access the admin dashboard.');
+            return redirect()->back();
         }
 
         return $next($request);

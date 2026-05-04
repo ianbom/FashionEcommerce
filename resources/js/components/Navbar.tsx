@@ -80,11 +80,6 @@ export default function Navbar({ cartCount = 0, collections = [] }: NavbarProps)
                 </div>
 
                 <div className="flex items-center space-x-6 text-[#5A4F43]">
-                    <Search
-                        strokeWidth={1.5}
-                        size={20}
-                        className="cursor-pointer transition-all hover:text-[#8C7A6B]"
-                    />
                     <Link href="/my-profile" aria-label="Open profile">
                         <User
                             strokeWidth={1.5}
