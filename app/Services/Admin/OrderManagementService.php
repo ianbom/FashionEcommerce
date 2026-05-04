@@ -9,6 +9,8 @@ use Illuminate\Validation\ValidationException;
 
 class OrderManagementService
 {
+    use ResolvesAdminPagination;
+
     public const PAYMENT_STATUSES = ['pending', 'paid', 'expired', 'failed', 'cancelled'];
 
     public const ORDER_STATUSES = ['pending_payment', 'paid', 'processing', 'ready_to_ship', 'shipped', 'delivered', 'completed', 'cancelled', 'expired'];
@@ -46,11 +48,19 @@ class OrderManagementService
                 ->when($filters['date_to'] !== '', fn ($query) => $query->whereDate('created_at', '<=', $filters['date_to']))
                 ->when($filters['courier'] !== '', fn ($query) => $query->whereHas('shipment', fn ($query) => $query->where('courier_company', $filters['courier'])))
                 ->latest()
-                ->paginate(15)
+                ->paginate($this->perPage($request))
                 ->withQueryString()
                 ->through(fn (Order $order): array => $this->row($order)),
             'filters' => $filters,
             'options' => $this->options(),
+            'stats' => [
+                'total' => Order::query()->count(),
+                'new_orders' => Order::query()->where('order_status', 'pending_payment')->count(),
+                'processing' => Order::query()->where('order_status', 'processing')->count(),
+                'shipped' => Order::query()->where('shipping_status', 'shipped')->count(),
+                'completed' => Order::query()->where('order_status', 'completed')->count(),
+                'cancelled' => Order::query()->where('order_status', 'cancelled')->count(),
+            ],
         ];
     }
 

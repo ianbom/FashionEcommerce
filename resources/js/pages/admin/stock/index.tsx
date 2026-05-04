@@ -43,6 +43,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { PerPageSelect } from '../pagination';
 import {
     Select,
     SelectContent,
@@ -82,6 +83,12 @@ interface Filters {
 interface Props {
     variants: PaginatedVariants;
     filters: Filters;
+    stats: {
+        total: number;
+        in_stock: number;
+        low_stock: number;
+        sold_out: number;
+    };
 }
 
 const statusConfig: Record<
@@ -102,7 +109,11 @@ const statusConfig: Record<
     },
 };
 
-export default function StockIndex({ variants, filters }: Props) {
+export default function StockIndex({
+    variants,
+    filters,
+    stats: totals,
+}: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
 
     const applyFilter = (key: string, value: string) =>
@@ -120,20 +131,10 @@ export default function StockIndex({ variants, filters }: Props) {
         applyFilter('search', search);
     };
 
-    const inStockCount = variants.data.filter(
-        (v) => v.available_stock > 5,
-    ).length;
-    const lowStockCount = variants.data.filter(
-        (v) => v.available_stock > 0 && v.available_stock <= 5,
-    ).length;
-    const soldOutCount = variants.data.filter(
-        (v) => v.available_stock === 0,
-    ).length;
-
     const stats = [
         {
             title: 'Total Variants',
-            val: variants.total,
+            val: totals.total,
             sub: 'in inventory',
             icon: Package,
             iconBg: 'bg-white/20',
@@ -147,7 +148,7 @@ export default function StockIndex({ variants, filters }: Props) {
         },
         {
             title: 'In Stock',
-            val: inStockCount,
+            val: totals.in_stock,
             sub: 'healthy levels',
             icon: CheckCircle2,
             iconBg: 'bg-emerald-100',
@@ -161,7 +162,7 @@ export default function StockIndex({ variants, filters }: Props) {
         },
         {
             title: 'Low Stock',
-            val: lowStockCount,
+            val: totals.low_stock,
             sub: 'need restocking',
             icon: TrendingDown,
             iconBg: 'bg-amber-50',
@@ -175,7 +176,7 @@ export default function StockIndex({ variants, filters }: Props) {
         },
         {
             title: 'Sold Out',
-            val: soldOutCount,
+            val: totals.sold_out,
             sub: 'unavailable',
             icon: Ban,
             iconBg: 'bg-red-50',
@@ -562,6 +563,7 @@ export default function StockIndex({ variants, filters }: Props) {
                                     </button>
                                 );
                             })}
+                            <PerPageSelect paginator={variants} />
                         </div>
                     </div>
                 </div>

@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 
 class WishlistInsightService
 {
+    use ResolvesAdminPagination;
+
     public function indexData(Request $request): array
     {
         $filters = [
@@ -26,7 +28,7 @@ class WishlistInsightService
                 ->when($filters['category_id'] !== '', fn ($query) => $query->where('category_id', $filters['category_id']))
                 ->having('wishlists_count', '>', 0)
                 ->orderByDesc('wishlists_count')
-                ->paginate(15)
+                ->paginate($this->perPage($request))
                 ->withQueryString()
                 ->through(fn (Product $product): array => [
                     'id' => $product->id,

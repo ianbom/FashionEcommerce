@@ -22,6 +22,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { PerPageSelect } from '../pagination';
 import {
     Select,
     SelectContent,
@@ -51,6 +52,14 @@ type Props = {
     shipments: Paginated<Shipment>;
     filters: Record<string, string>;
     shippingStatuses: string[];
+    stats: {
+        total: number;
+        delivered: number;
+        pending: number;
+        in_transit: number;
+        issues: number;
+        tracked: number;
+    };
 };
 
 const getStatusConfig = (status: string | null) => {
@@ -115,6 +124,7 @@ export default function ShipmentsIndex({
     shipments,
     filters,
     shippingStatuses,
+    stats: totals,
 }: Props) {
     const { data, setData, get, processing } = useForm({
         search: filters.search ?? '',
@@ -134,34 +144,10 @@ export default function ShipmentsIndex({
         router.get('/admin/shipments', {}, { preserveState: false });
     };
 
-    const deliveredCount = shipments.data.filter((shipment) =>
-        ['delivered', 'completed'].includes(
-            shipment.shipping_status.toLowerCase(),
-        ),
-    ).length;
-    const pendingCount = shipments.data.filter((shipment) =>
-        ['pending', 'ready_to_ship', 'confirmed'].includes(
-            shipment.shipping_status.toLowerCase(),
-        ),
-    ).length;
-    const transitCount = shipments.data.filter((shipment) =>
-        ['shipped', 'in_transit', 'on_hold'].includes(
-            shipment.shipping_status.toLowerCase(),
-        ),
-    ).length;
-    const failedCount = shipments.data.filter((shipment) =>
-        ['failed', 'cancelled', 'returned', 'lost'].includes(
-            shipment.shipping_status.toLowerCase(),
-        ),
-    ).length;
-    const trackedCount = shipments.data.filter(
-        (shipment) => shipment.waybill_id,
-    ).length;
-
     const stats = [
         {
             title: 'Total Shipments',
-            val: shipments.total,
+            val: totals.total,
             sub: 'all deliveries',
             icon: Truck,
             iconBg: 'bg-white/20',
@@ -175,7 +161,7 @@ export default function ShipmentsIndex({
         },
         {
             title: 'Delivered',
-            val: deliveredCount,
+            val: totals.delivered,
             sub: 'received by customer',
             icon: CheckCircle2,
             iconBg: 'bg-emerald-100',
@@ -189,7 +175,7 @@ export default function ShipmentsIndex({
         },
         {
             title: 'Pending',
-            val: pendingCount,
+            val: totals.pending,
             sub: 'awaiting dispatch',
             icon: Clock,
             iconBg: 'bg-amber-100',
@@ -203,7 +189,7 @@ export default function ShipmentsIndex({
         },
         {
             title: 'In Transit',
-            val: transitCount,
+            val: totals.in_transit,
             sub: 'on delivery route',
             icon: Truck,
             iconBg: 'bg-blue-100',
@@ -217,7 +203,7 @@ export default function ShipmentsIndex({
         },
         {
             title: 'Tracked',
-            val: trackedCount,
+            val: totals.tracked,
             sub: 'has waybill',
             icon: PackageCheck,
             iconBg: 'bg-purple-100',
@@ -231,7 +217,7 @@ export default function ShipmentsIndex({
         },
         {
             title: 'Failed',
-            val: failedCount,
+            val: totals.issues,
             sub: 'returned/lost',
             icon: XCircle,
             iconBg: 'bg-rose-100',
@@ -515,10 +501,12 @@ export default function ShipmentsIndex({
                                                         href={`/admin/shipments/${shipment.id}`}
                                                         className="font-medium text-zinc-900 transition-colors hover:text-[#7F2020]"
                                                     >
-                                                        {shipment.order_number ?? '-'}
+                                                        {shipment.order_number ??
+                                                            '-'}
                                                     </Link>
                                                     <span className="text-xs text-zinc-500">
-                                                        {shipment.customer ?? '-'}
+                                                        {shipment.customer ??
+                                                            '-'}
                                                     </span>
                                                 </div>
                                             </td>
@@ -526,7 +514,8 @@ export default function ShipmentsIndex({
                                             <td className="px-4 py-3.5">
                                                 <div className="flex flex-col gap-1">
                                                     <span className="font-medium text-zinc-900">
-                                                        {shipment.waybill_id ?? '-'}
+                                                        {shipment.waybill_id ??
+                                                            '-'}
                                                     </span>
                                                     <span className="text-xs text-zinc-500">
                                                         ETA:{' '}
@@ -538,8 +527,10 @@ export default function ShipmentsIndex({
 
                                             <td className="px-4 py-3.5">
                                                 <div className="flex flex-col gap-1">
-                                                    <span className="text-sm font-medium capitalize text-zinc-700">
-                                                        {shipment.courier_company}{' '}
+                                                    <span className="text-sm font-medium text-zinc-700 capitalize">
+                                                        {
+                                                            shipment.courier_company
+                                                        }{' '}
                                                         {shipment.courier_type}
                                                     </span>
                                                     <span className="text-xs text-zinc-500">
@@ -593,7 +584,9 @@ export default function ShipmentsIndex({
 
                                             <td className="px-4 py-3.5 text-right">
                                                 <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
+                                                    <DropdownMenuTrigger
+                                                        asChild
+                                                    >
                                                         <Button
                                                             variant="ghost"
                                                             size="icon"
@@ -606,7 +599,9 @@ export default function ShipmentsIndex({
                                                         align="end"
                                                         className="w-44"
                                                     >
-                                                        <DropdownMenuItem asChild>
+                                                        <DropdownMenuItem
+                                                            asChild
+                                                        >
                                                             <Link
                                                                 href={`/admin/shipments/${shipment.id}`}
                                                                 className="flex w-full items-center gap-2"
@@ -615,7 +610,9 @@ export default function ShipmentsIndex({
                                                                 View Details
                                                             </Link>
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem asChild>
+                                                        <DropdownMenuItem
+                                                            asChild
+                                                        >
                                                             <Link
                                                                 href={`/admin/shipments/${shipment.id}/refresh-tracking`}
                                                                 method="post"
@@ -688,6 +685,7 @@ export default function ShipmentsIndex({
                                     </button>
                                 );
                             })}
+                            <PerPageSelect paginator={shipments} />
                         </div>
                     </div>
                 </div>

@@ -8,6 +8,8 @@ use Illuminate\Validation\ValidationException;
 
 class AdminUserManagementService
 {
+    use ResolvesAdminPagination;
+
     public function indexData(Request $request): array
     {
         $search = $request->string('search')->toString();
@@ -24,7 +26,7 @@ class AdminUserManagementService
                     });
                 })
                 ->latest()
-                ->paginate(15)
+                ->paginate($this->perPage($request))
                 ->withQueryString()
                 ->through(fn (User $admin): array => $this->row($admin)),
             'filters' => ['search' => $search],

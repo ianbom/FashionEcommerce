@@ -15,6 +15,7 @@ use Illuminate\Validation\ValidationException;
 class ShipmentManagementService
 {
     use StoresUploadedFiles;
+    use ResolvesAdminPagination;
 
     public const SHIPPING_STATUSES = ['confirmed', 'allocated', 'picked', 'in_transit', 'delivered', 'cancelled', 'problem'];
 
@@ -47,11 +48,19 @@ class ShipmentManagementService
                 ->when($filters['date_from'] !== '', fn ($query) => $query->whereDate('created_at', '>=', $filters['date_from']))
                 ->when($filters['date_to'] !== '', fn ($query) => $query->whereDate('created_at', '<=', $filters['date_to']))
                 ->latest()
-                ->paginate(15)
+                ->paginate($this->perPage($request))
                 ->withQueryString()
                 ->through(fn (Shipment $shipment): array => $this->row($shipment)),
             'filters' => $filters,
             'shippingStatuses' => self::SHIPPING_STATUSES,
+            'stats' => [
+                'total' => Shipment::query()->count(),
+                'delivered' => Shipment::query()->whereIn('shipping_status', ['delivered', 'completed'])->count(),
+                'pending' => Shipment::query()->whereIn('shipping_status', ['pending', 'ready_to_ship', 'confirmed'])->count(),
+                'in_transit' => Shipment::query()->whereIn('shipping_status', ['shipped', 'in_transit', 'on_hold'])->count(),
+                'issues' => Shipment::query()->whereIn('shipping_status', ['failed', 'cancelled', 'returned', 'lost'])->count(),
+                'tracked' => Shipment::query()->whereNotNull('waybill_id')->count(),
+            ],
         ];
     }
 

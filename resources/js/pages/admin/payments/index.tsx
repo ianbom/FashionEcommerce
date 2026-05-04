@@ -23,6 +23,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { PerPageSelect } from '../pagination';
 import {
     Select,
     SelectContent,
@@ -52,6 +53,14 @@ type Props = {
     payments: Paginated<Payment>;
     filters: Record<string, string>;
     statuses: string[];
+    stats: {
+        total: number;
+        settled: number;
+        pending: number;
+        challenge: number;
+        failed: number;
+        manual_review: number;
+    };
 };
 
 const getStatusConfig = (status: string | null) => {
@@ -85,7 +94,9 @@ const getStatusConfig = (status: string | null) => {
         };
     }
 
-    if (['deny', 'cancel', 'expire', 'expired', 'failure', 'failed'].includes(s)) {
+    if (
+        ['deny', 'cancel', 'expire', 'expired', 'failure', 'failed'].includes(s)
+    ) {
         return {
             label: safeStatus.replace(/_/g, ' '),
             dot: 'bg-rose-400',
@@ -112,7 +123,12 @@ const formatDate = (value: string | null) => {
     });
 };
 
-export default function PaymentsIndex({ payments, filters, statuses }: Props) {
+export default function PaymentsIndex({
+    payments,
+    filters,
+    statuses,
+    stats: totals,
+}: Props) {
     const { data, setData, get, processing } = useForm({
         transaction_status: filters.transaction_status ?? '',
         payment_method: filters.payment_method ?? '',
@@ -131,35 +147,10 @@ export default function PaymentsIndex({ payments, filters, statuses }: Props) {
         router.get('/admin/payments', {}, { preserveState: false });
     };
 
-    const settledCount = payments.data.filter((payment) =>
-        ['settlement', 'capture', 'paid', 'success'].includes(
-            (payment.transaction_status ?? '').toLowerCase(),
-        ),
-    ).length;
-    const pendingCount = payments.data.filter((payment) =>
-        ['pending', 'authorize'].includes(
-            (payment.transaction_status ?? '').toLowerCase(),
-        ),
-    ).length;
-    const challengeCount = payments.data.filter(
-        (payment) => (payment.fraud_status ?? '').toLowerCase() === 'challenge',
-    ).length;
-    const failedCount = payments.data.filter((payment) =>
-        ['deny', 'cancel', 'expire', 'expired', 'failure', 'failed'].includes(
-            (payment.transaction_status ?? '').toLowerCase(),
-        ),
-    ).length;
-    const manualReviewCount = payments.data.filter(
-        (payment) =>
-            ['challenge', 'deny'].includes(
-                (payment.fraud_status ?? '').toLowerCase(),
-            ),
-    ).length;
-
     const stats = [
         {
             title: 'Total Payments',
-            val: payments.total,
+            val: totals.total,
             sub: 'all transactions',
             icon: Wallet,
             iconBg: 'bg-white/20',
@@ -173,7 +164,7 @@ export default function PaymentsIndex({ payments, filters, statuses }: Props) {
         },
         {
             title: 'Settled',
-            val: settledCount,
+            val: totals.settled,
             sub: 'payment confirmed',
             icon: CheckCircle2,
             iconBg: 'bg-emerald-100',
@@ -187,7 +178,7 @@ export default function PaymentsIndex({ payments, filters, statuses }: Props) {
         },
         {
             title: 'Pending',
-            val: pendingCount,
+            val: totals.pending,
             sub: 'waiting completion',
             icon: Clock,
             iconBg: 'bg-amber-100',
@@ -201,7 +192,7 @@ export default function PaymentsIndex({ payments, filters, statuses }: Props) {
         },
         {
             title: 'Challenge',
-            val: challengeCount,
+            val: totals.challenge,
             sub: 'fraud flagged',
             icon: ShieldAlert,
             iconBg: 'bg-blue-100',
@@ -215,7 +206,7 @@ export default function PaymentsIndex({ payments, filters, statuses }: Props) {
         },
         {
             title: 'Failed',
-            val: failedCount,
+            val: totals.failed,
             sub: 'expired/denied',
             icon: XCircle,
             iconBg: 'bg-rose-100',
@@ -229,7 +220,7 @@ export default function PaymentsIndex({ payments, filters, statuses }: Props) {
         },
         {
             title: 'Manual Review',
-            val: manualReviewCount,
+            val: totals.manual_review,
             sub: 'need sync/check',
             icon: CreditCard,
             iconBg: 'bg-purple-100',
@@ -407,7 +398,10 @@ export default function PaymentsIndex({ payments, filters, statuses }: Props) {
                                     type="number"
                                     value={data.amount_min}
                                     onChange={(event) =>
-                                        setData('amount_min', event.target.value)
+                                        setData(
+                                            'amount_min',
+                                            event.target.value,
+                                        )
                                     }
                                     placeholder="Min"
                                     className="h-9 w-[110px] rounded-lg border-zinc-200 bg-white text-xs shadow-sm"
@@ -416,7 +410,10 @@ export default function PaymentsIndex({ payments, filters, statuses }: Props) {
                                     type="number"
                                     value={data.amount_max}
                                     onChange={(event) =>
-                                        setData('amount_max', event.target.value)
+                                        setData(
+                                            'amount_max',
+                                            event.target.value,
+                                        )
                                     }
                                     placeholder="Max"
                                     className="h-9 w-[110px] rounded-lg border-zinc-200 bg-white text-xs shadow-sm"
@@ -479,8 +476,8 @@ export default function PaymentsIndex({ payments, filters, statuses }: Props) {
                                                     <Wallet className="h-5 w-5 text-zinc-400" />
                                                 </div>
                                                 <p className="text-sm text-zinc-400">
-                                                    No payments found. Try adjusting
-                                                    your filters.
+                                                    No payments found. Try
+                                                    adjusting your filters.
                                                 </p>
                                                 <Button
                                                     size="sm"
@@ -515,10 +512,12 @@ export default function PaymentsIndex({ payments, filters, statuses }: Props) {
                                                         href={`/admin/payments/${payment.id}`}
                                                         className="font-medium text-zinc-900 transition-colors hover:text-[#7F2020]"
                                                     >
-                                                        {payment.order_number ?? '-'}
+                                                        {payment.order_number ??
+                                                            '-'}
                                                     </Link>
                                                     <span className="text-xs text-zinc-500">
-                                                        {payment.customer ?? '-'}
+                                                        {payment.customer ??
+                                                            '-'}
                                                     </span>
                                                 </div>
                                             </td>
@@ -537,13 +536,16 @@ export default function PaymentsIndex({ payments, filters, statuses }: Props) {
                                             </td>
 
                                             <td className="px-4 py-3.5">
-                                                <span className="text-sm font-medium capitalize text-zinc-700">
-                                                    {payment.payment_method ?? '-'}
+                                                <span className="text-sm font-medium text-zinc-700 capitalize">
+                                                    {payment.payment_method ??
+                                                        '-'}
                                                 </span>
                                             </td>
 
                                             <td className="px-4 py-3.5 font-semibold text-zinc-900">
-                                                {formatPrice(payment.gross_amount)}
+                                                {formatPrice(
+                                                    payment.gross_amount,
+                                                )}
                                             </td>
 
                                             <td className="px-4 py-3.5">
@@ -587,7 +589,10 @@ export default function PaymentsIndex({ payments, filters, statuses }: Props) {
                                             <td className="px-4 py-3.5">
                                                 <div className="flex flex-col gap-1">
                                                     <span className="text-xs whitespace-nowrap text-zinc-500">
-                                                        Paid: {formatDate(payment.paid_at)}
+                                                        Paid:{' '}
+                                                        {formatDate(
+                                                            payment.paid_at,
+                                                        )}
                                                     </span>
                                                     <span className="text-xs whitespace-nowrap text-zinc-500">
                                                         Created:{' '}
@@ -600,7 +605,9 @@ export default function PaymentsIndex({ payments, filters, statuses }: Props) {
 
                                             <td className="px-4 py-3.5 text-right">
                                                 <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
+                                                    <DropdownMenuTrigger
+                                                        asChild
+                                                    >
                                                         <Button
                                                             variant="ghost"
                                                             size="icon"
@@ -613,7 +620,9 @@ export default function PaymentsIndex({ payments, filters, statuses }: Props) {
                                                         align="end"
                                                         className="w-44"
                                                     >
-                                                        <DropdownMenuItem asChild>
+                                                        <DropdownMenuItem
+                                                            asChild
+                                                        >
                                                             <Link
                                                                 href={`/admin/payments/${payment.id}`}
                                                                 className="flex w-full items-center gap-2"
@@ -622,7 +631,9 @@ export default function PaymentsIndex({ payments, filters, statuses }: Props) {
                                                                 View Details
                                                             </Link>
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem asChild>
+                                                        <DropdownMenuItem
+                                                            asChild
+                                                        >
                                                             <Link
                                                                 href={`/admin/payments/${payment.id}/sync`}
                                                                 method="post"
@@ -695,6 +706,7 @@ export default function PaymentsIndex({ payments, filters, statuses }: Props) {
                                     </button>
                                 );
                             })}
+                            <PerPageSelect paginator={payments} />
                         </div>
                     </div>
                 </div>

@@ -2,6 +2,7 @@
 
 namespace App\Services\Stock;
 
+use App\Services\Admin\ResolvesAdminPagination;
 use App\Models\ProductVariant;
 use App\Models\StockLog;
 use Illuminate\Http\Request;
@@ -10,6 +11,8 @@ use Illuminate\Validation\ValidationException;
 
 class StockService
 {
+    use ResolvesAdminPagination;
+
     public function __construct(private readonly StockLogService $stockLogs) {}
 
     public function variantsIndex(Request $request): array
@@ -27,10 +30,16 @@ class StockService
                 ->when($stockStatus === 'sold_out', fn ($query) => $query->where('stock', '<=', 0))
                 ->when($stockStatus === 'in_stock', fn ($query) => $query->where('stock', '>', 5))
                 ->orderBy('stock')
-                ->paginate(15)
+                ->paginate($this->perPage($request))
                 ->withQueryString()
                 ->through(fn (ProductVariant $variant): array => $this->variantRow($variant)),
             'filters' => ['search' => $search, 'stock_status' => $stockStatus],
+            'stats' => [
+                'total' => ProductVariant::query()->count(),
+                'in_stock' => ProductVariant::query()->whereRaw('(stock - reserved_stock) > 5')->count(),
+                'low_stock' => ProductVariant::query()->whereRaw('(stock - reserved_stock) > 0')->whereRaw('(stock - reserved_stock) <= 5')->count(),
+                'sold_out' => ProductVariant::query()->whereRaw('(stock - reserved_stock) = 0')->count(),
+            ],
         ];
     }
 
@@ -45,7 +54,7 @@ class StockService
                 ->when($search !== '', fn ($query) => $query->whereHas('variant', fn ($query) => $query->where('sku', 'like', "%{$search}%")))
                 ->when($type !== '', fn ($query) => $query->where('type', $type))
                 ->latest()
-                ->paginate(15)
+                ->paginate($this->perPage($request))
                 ->withQueryString()
                 ->through(fn (StockLog $log): array => $this->logRow($log)),
             'filters' => ['search' => $search, 'type' => $type],

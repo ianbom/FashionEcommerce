@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 
 class BannerManagementService
 {
+    use ResolvesAdminPagination;
+
     use StoresUploadedFiles;
 
     public function indexData(Request $request): array
@@ -26,7 +28,7 @@ class BannerManagementService
                 ->when($filters['is_active'] !== '', fn ($query) => $query->where('is_active', $filters['is_active'] === 'active'))
                 ->orderBy('sort_order')
                 ->latest()
-                ->paginate(15)
+                ->paginate($this->perPage($request))
                 ->withQueryString()
                 ->through(fn (Banner $banner): array => $this->row($banner)),
             'filters' => $filters,

@@ -8,6 +8,8 @@ use Illuminate\Support\Str;
 
 class PageManagementService
 {
+    use ResolvesAdminPagination;
+
     public function indexData(Request $request): array
     {
         $filters = [
@@ -24,7 +26,7 @@ class PageManagementService
                 ->when($filters['type'] !== '', fn ($query) => $query->where('type', $filters['type']))
                 ->when($filters['is_active'] !== '', fn ($query) => $query->where('is_active', $filters['is_active'] === 'active'))
                 ->latest()
-                ->paginate(15)
+                ->paginate($this->perPage($request))
                 ->withQueryString()
                 ->through(fn (Page $page): array => $this->row($page)),
             'filters' => $filters,

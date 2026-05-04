@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 
 class BiteshipWebhookLogService
 {
+    use ResolvesAdminPagination;
+
     public function indexData(Request $request): array
     {
         $filters = [
@@ -23,7 +25,7 @@ class BiteshipWebhookLogService
                 ->when($filters['date_from'] !== '', fn ($query) => $query->whereDate('created_at', '>=', $filters['date_from']))
                 ->when($filters['date_to'] !== '', fn ($query) => $query->whereDate('created_at', '<=', $filters['date_to']))
                 ->latest()
-                ->paginate(15)
+                ->paginate($this->perPage($request))
                 ->withQueryString()
                 ->through(fn (BiteshipWebhookLog $log): array => $this->row($log)),
             'filters' => $filters,

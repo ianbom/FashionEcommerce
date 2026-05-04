@@ -10,6 +10,8 @@ use Illuminate\Validation\ValidationException;
 
 class AdminNotificationManagementService
 {
+    use ResolvesAdminPagination;
+
     public const TYPES = ['order', 'payment', 'shipping', 'promo', 'system'];
 
     public function indexData(Request $request): array
@@ -30,7 +32,7 @@ class AdminNotificationManagementService
                 ->when($filters['type'] !== '', fn ($query) => $query->where('type', $filters['type']))
                 ->when($filters['read'] !== '', fn ($query) => $query->where('is_read', $filters['read'] === 'read'))
                 ->latest()
-                ->paginate(15)
+                ->paginate($this->perPage($request))
                 ->withQueryString()
                 ->through(fn (Notification $notification): array => $this->row($notification)),
             'filters' => $filters,

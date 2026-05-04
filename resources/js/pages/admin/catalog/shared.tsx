@@ -10,6 +10,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { PerPageSelect } from '../pagination';
 
 export type PaginationLink = {
     url: string | null;
@@ -23,6 +24,7 @@ export type Paginated<T> = {
     from: number | null;
     to: number | null;
     total: number;
+    per_page?: number;
 };
 
 export function formatPrice(value: string | number | null | undefined) {
@@ -89,7 +91,7 @@ export function Pagination<T>({ paginator }: { paginator: Paginated<T> }) {
                 Showing {paginator.from ?? 0}-{paginator.to ?? 0} of{' '}
                 {paginator.total}
             </span>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
                 {paginator.links.map((link) =>
                     link.url ? (
                         <Button
@@ -113,6 +115,7 @@ export function Pagination<T>({ paginator }: { paginator: Paginated<T> }) {
                         </Button>
                     ),
                 )}
+                <PerPageSelect paginator={paginator} />
             </div>
         </div>
     );

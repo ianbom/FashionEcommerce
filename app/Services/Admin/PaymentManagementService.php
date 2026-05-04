@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\DB;
 
 class PaymentManagementService
 {
+    use ResolvesAdminPagination;
+
     public function __construct(private readonly NotificationService $notifications) {}
 
     public function indexData(Request $request): array
@@ -34,11 +36,19 @@ class PaymentManagementService
                 ->when($filters['amount_min'] !== '', fn ($query) => $query->where('gross_amount', '>=', $filters['amount_min']))
                 ->when($filters['amount_max'] !== '', fn ($query) => $query->where('gross_amount', '<=', $filters['amount_max']))
                 ->latest()
-                ->paginate(15)
+                ->paginate($this->perPage($request))
                 ->withQueryString()
                 ->through(fn (Payment $payment): array => $this->row($payment)),
             'filters' => $filters,
             'statuses' => ['pending', 'settlement', 'capture', 'expire', 'cancel', 'deny', 'failure'],
+            'stats' => [
+                'total' => Payment::query()->count(),
+                'settled' => Payment::query()->whereIn('transaction_status', ['settlement', 'capture', 'paid', 'success'])->count(),
+                'pending' => Payment::query()->whereIn('transaction_status', ['pending', 'authorize'])->count(),
+                'challenge' => Payment::query()->where('fraud_status', 'challenge')->count(),
+                'failed' => Payment::query()->whereIn('transaction_status', ['deny', 'cancel', 'expire', 'expired', 'failure', 'failed'])->count(),
+                'manual_review' => Payment::query()->whereIn('fraud_status', ['challenge', 'deny'])->count(),
+            ],
         ];
     }
 

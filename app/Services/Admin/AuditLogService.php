@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 
 class AuditLogService
 {
+    use ResolvesAdminPagination;
+
     /**
      * @return array<string, mixed>
      */
@@ -28,7 +30,7 @@ class AuditLogService
                 ->when($filters['date_from'] !== '', fn ($query) => $query->whereDate('created_at', '>=', $filters['date_from']))
                 ->when($filters['date_to'] !== '', fn ($query) => $query->whereDate('created_at', '<=', $filters['date_to']))
                 ->latest()
-                ->paginate(15)
+                ->paginate($this->perPage($request))
                 ->withQueryString()
                 ->through(fn (AdminActivityLog $log): array => [
                     'id' => $log->id,

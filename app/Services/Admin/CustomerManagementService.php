@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 
 class CustomerManagementService
 {
+    use ResolvesAdminPagination;
+
     public function indexData(Request $request): array
     {
         $filters = [
@@ -33,7 +35,7 @@ class CustomerManagementService
                 ->when($filters['spent_min'] !== '', fn ($query) => $query->havingRaw('coalesce(total_spent, 0) >= ?', [$filters['spent_min']]))
                 ->when($filters['spent_max'] !== '', fn ($query) => $query->havingRaw('coalesce(total_spent, 0) <= ?', [$filters['spent_max']]))
                 ->latest()
-                ->paginate(15)
+                ->paginate($this->perPage($request))
                 ->withQueryString()
                 ->through(fn (User $customer): array => $this->row($customer)),
             'filters' => $filters,

@@ -33,6 +33,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { PerPageSelect } from '../pagination';
 
 interface Order {
     id: number;
@@ -78,6 +79,14 @@ interface Props {
         paymentStatuses: string[];
         orderStatuses: string[];
         shippingStatuses: string[];
+    };
+    stats: {
+        total: number;
+        new_orders: number;
+        processing: number;
+        shipped: number;
+        completed: number;
+        cancelled: number;
     };
 }
 
@@ -141,7 +150,12 @@ const getStatusConfig = (status: string) => {
     };
 };
 
-export default function OrdersIndex({ orders, filters, options }: Props) {
+export default function OrdersIndex({
+    orders,
+    filters,
+    options,
+    stats: totals,
+}: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
 
     const applyFilter = (key: string, value: string) =>
@@ -162,26 +176,10 @@ export default function OrdersIndex({ orders, filters, options }: Props) {
     const doAction = (url: string, method: 'post' | 'delete' = 'post') =>
         router[method](url, {}, { preserveScroll: true });
 
-    const newOrdersCount = orders.data.filter(
-        (o) => o.order_status === 'pending',
-    ).length;
-    const processingCount = orders.data.filter(
-        (o) => o.order_status === 'processing',
-    ).length;
-    const shippedCount = orders.data.filter(
-        (o) => o.shipping_status === 'shipped',
-    ).length;
-    const completedCount = orders.data.filter(
-        (o) => o.order_status === 'completed',
-    ).length;
-    const cancelledCount = orders.data.filter(
-        (o) => o.order_status === 'cancelled',
-    ).length;
-
     const stats = [
         {
             title: 'Total Orders',
-            val: orders.total,
+            val: totals.total,
             sub: 'all time',
             icon: Package,
             iconBg: 'bg-white/20',
@@ -195,7 +193,7 @@ export default function OrdersIndex({ orders, filters, options }: Props) {
         },
         {
             title: 'New Orders',
-            val: newOrdersCount,
+            val: totals.new_orders,
             sub: 'needs attention',
             icon: Clock,
             iconBg: 'bg-amber-100',
@@ -209,7 +207,7 @@ export default function OrdersIndex({ orders, filters, options }: Props) {
         },
         {
             title: 'Processing',
-            val: processingCount,
+            val: totals.processing,
             sub: 'being prepared',
             icon: Package,
             iconBg: 'bg-blue-100',
@@ -223,7 +221,7 @@ export default function OrdersIndex({ orders, filters, options }: Props) {
         },
         {
             title: 'Shipped',
-            val: shippedCount,
+            val: totals.shipped,
             sub: 'on the way',
             icon: Truck,
             iconBg: 'bg-purple-100',
@@ -237,7 +235,7 @@ export default function OrdersIndex({ orders, filters, options }: Props) {
         },
         {
             title: 'Completed',
-            val: completedCount,
+            val: totals.completed,
             sub: 'delivered',
             icon: CheckCircle2,
             iconBg: 'bg-emerald-100',
@@ -251,7 +249,7 @@ export default function OrdersIndex({ orders, filters, options }: Props) {
         },
         {
             title: 'Cancelled',
-            val: cancelledCount,
+            val: totals.cancelled,
             sub: 'failed/refunded',
             icon: Ban,
             iconBg: 'bg-red-50',
@@ -770,6 +768,7 @@ export default function OrdersIndex({ orders, filters, options }: Props) {
                                     </button>
                                 );
                             })}
+                            <PerPageSelect paginator={orders} />
                         </div>
                     </div>
                 </div>

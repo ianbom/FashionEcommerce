@@ -11,6 +11,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { PerPageSelect } from '../pagination';
 
 type AdminUser = {
     id: number;
@@ -35,6 +36,7 @@ type Paginated<T> = {
     from: number | null;
     to: number | null;
     total: number;
+    per_page?: number;
 };
 
 type Props = {
@@ -203,7 +205,7 @@ export default function AdminUsersIndex({ admins, filters }: Props) {
                                 Showing {admins.from ?? 0}-{admins.to ?? 0} of{' '}
                                 {admins.total}
                             </span>
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
                                 {admins.links.map((link) =>
                                     link.url ? (
                                         <Button
@@ -237,6 +239,7 @@ export default function AdminUsersIndex({ admins, filters }: Props) {
                                         </Button>
                                     ),
                                 )}
+                                <PerPageSelect paginator={admins} />
                             </div>
                         </div>
                     </CardContent>

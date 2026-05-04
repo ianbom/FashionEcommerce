@@ -33,6 +33,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { PerPageSelect } from '../pagination';
 import {
     Select,
     SelectContent,
@@ -78,6 +79,12 @@ interface Props {
     variants: PaginatedVariants;
     product: { id: number; name: string } | null;
     filters: Filters;
+    stats: {
+        total: number;
+        active: number;
+        inactive: number;
+        low_stock: number;
+    };
 }
 
 const fmt = (v: number | string) =>
@@ -93,6 +100,7 @@ export default function ProductVariantsIndex({
     variants,
     product,
     filters,
+    stats: totals,
 }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [selected, setSelected] = useState<number[]>([]);
@@ -130,16 +138,10 @@ export default function ProductVariantsIndex({
     const doAction = (url: string, method: 'post' | 'delete' = 'post') =>
         router[method](url, {}, { preserveScroll: true });
 
-    const activeCount = variants.data.filter((v) => v.is_active).length;
-    const inactiveCount = variants.data.filter((v) => !v.is_active).length;
-    const lowStockCount = variants.data.filter(
-        (v) => v.available_stock > 0 && v.available_stock <= 5,
-    ).length;
-
     const stats = [
         {
             title: 'Total Variants',
-            val: variants.total,
+            val: totals.total,
             sub: 'registered',
             icon: Package,
             iconBg: 'bg-white/20',
@@ -152,7 +154,7 @@ export default function ProductVariantsIndex({
         },
         {
             title: 'Active',
-            val: activeCount,
+            val: totals.active,
             sub: 'variants active',
             icon: Box,
             iconBg: 'bg-emerald-100',
@@ -165,7 +167,7 @@ export default function ProductVariantsIndex({
         },
         {
             title: 'Inactive',
-            val: inactiveCount,
+            val: totals.inactive,
             sub: 'variants inactive',
             icon: XCircle,
             iconBg: 'bg-zinc-100',
@@ -178,7 +180,7 @@ export default function ProductVariantsIndex({
         },
         {
             title: 'Low Stock',
-            val: lowStockCount,
+            val: totals.low_stock,
             sub: '= 5 items available',
             icon: SlidersHorizontal,
             iconBg: 'bg-rose-100',
@@ -608,6 +610,7 @@ export default function ProductVariantsIndex({
                                     </button>
                                 );
                             })}
+                            <PerPageSelect paginator={variants} />
                         </div>
                     </div>
                 </div>

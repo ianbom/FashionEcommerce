@@ -14,6 +14,8 @@ use Illuminate\Validation\ValidationException;
 
 class ProductManagementService
 {
+    use ResolvesAdminPagination;
+
     public function __construct(
         private readonly ProductImageService $images,
         private readonly StockLogService $stockLogs,
@@ -50,11 +52,19 @@ class ProductManagementService
                 ->when($filters['stock_status'] === 'low_stock', fn ($query) => $query->whereHas('variants', fn ($query) => $query->whereBetween('stock', [1, 5])))
                 ->when($filters['stock_status'] === 'sold_out', fn ($query) => $query->whereDoesntHave('variants', fn ($query) => $query->where('stock', '>', 0)))
                 ->latest()
-                ->paginate(15)
+                ->paginate($this->perPage($request))
                 ->withQueryString()
                 ->through(fn (Product $product): array => $this->row($product)),
             'filters' => $filters,
             'options' => $this->options(),
+            'stats' => [
+                'total' => Product::query()->count(),
+                'published' => Product::query()->where('status', 'published')->count(),
+                'draft' => Product::query()->where('status', 'draft')->count(),
+                'archived' => Product::query()->where('status', 'archived')->count(),
+                'low_stock' => Product::query()->whereHas('variants', fn ($query) => $query->whereBetween('stock', [1, 5]))->count(),
+                'out_of_stock' => Product::query()->whereDoesntHave('variants', fn ($query) => $query->where('stock', '>', 0))->count(),
+            ],
         ];
     }
 

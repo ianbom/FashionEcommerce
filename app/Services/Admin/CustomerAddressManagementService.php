@@ -8,6 +8,8 @@ use Illuminate\Validation\ValidationException;
 
 class CustomerAddressManagementService
 {
+    use ResolvesAdminPagination;
+
     public function indexData(Request $request): array
     {
         $filters = [
@@ -30,7 +32,7 @@ class CustomerAddressManagementService
                 ->when($filters['city'] !== '', fn ($query) => $query->where('city', 'like', "%{$filters['city']}%"))
                 ->when($filters['is_default'] !== '', fn ($query) => $query->where('is_default', $filters['is_default'] === 'yes'))
                 ->latest()
-                ->paginate(15)
+                ->paginate($this->perPage($request))
                 ->withQueryString()
                 ->through(fn (CustomerAddress $address): array => $this->row($address)),
             'filters' => $filters,

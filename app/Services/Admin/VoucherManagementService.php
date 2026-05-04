@@ -8,6 +8,8 @@ use Illuminate\Support\Str;
 
 class VoucherManagementService
 {
+    use ResolvesAdminPagination;
+
     public function indexData(Request $request): array
     {
         $filters = [
@@ -25,7 +27,7 @@ class VoucherManagementService
                 ->when($filters['discount_type'] !== '', fn ($query) => $query->where('discount_type', $filters['discount_type']))
                 ->when($filters['is_active'] !== '', fn ($query) => $query->where('is_active', $filters['is_active'] === 'active'))
                 ->latest()
-                ->paginate(15)
+                ->paginate($this->perPage($request))
                 ->withQueryString()
                 ->through(fn (Voucher $voucher): array => $this->row($voucher)),
             'filters' => $filters,

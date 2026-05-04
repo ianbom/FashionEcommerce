@@ -15,129 +15,123 @@ class ProductImageSeeder extends Seeder
     public function run(): void
     {
         $imagesByProduct = [
-            'aurelia-linen-relaxed-shirt' => [
+            'najran-piping-lace-abaya' => [
                 [
-                    'image_url' => 'https://picsum.photos/seed/product-aurelia-1/1200/1600',
-                    'alt_text' => 'Aurelia Linen Relaxed Shirt warna ivory tampak depan',
+                    'image_url' => 'https://d2kchovjbwl1tk.cloudfront.net/vendor/6241/product/Najran_Offwhite-2_1776392577451_resized1024-JPG.webp',
+                    'alt_text' => 'Najran Piping Lace Abaya Off White tampak depan',
                     'sort_order' => 0,
                     'is_primary' => true,
                 ],
                 [
-                    'image_url' => 'https://picsum.photos/seed/product-aurelia-2/1200/1600',
-                    'alt_text' => 'Detail tekstur bahan linen pada Aurelia Shirt',
+                    'image_url' => 'https://d2kchovjbwl1tk.cloudfront.net/vendor/6241/product/Najran_Offwhite-4_1776392577524_resized1024-JPG.webp',
+                    'alt_text' => 'Najran Piping Lace Abaya detail piping dan lace',
                     'sort_order' => 1,
                     'is_primary' => false,
                 ],
-            ],
-            'selene-pleated-midi-dress' => [
                 [
-                    'image_url' => 'https://picsum.photos/seed/product-selene-1/1200/1600',
-                    'alt_text' => 'Selene Pleated Midi Dress tampilan full body',
-                    'sort_order' => 0,
-                    'is_primary' => true,
-                ],
-                [
-                    'image_url' => 'https://picsum.photos/seed/product-selene-2/1200/1600',
-                    'alt_text' => 'Detail pleats pada Selene Midi Dress',
-                    'sort_order' => 1,
+                    'image_url' => 'https://d2kchovjbwl1tk.cloudfront.net/vendor/6241/product/Najran_Offwhite-3_1776392577582_resized1024-JPG.webp',
+                    'alt_text' => 'Najran Piping Lace Abaya tampak samping',
+                    'sort_order' => 2,
                     'is_primary' => false,
                 ],
             ],
-            'noah-oxford-smart-shirt' => [
+            'abargo-abaya-cargo' => [
                 [
-                    'image_url' => 'https://picsum.photos/seed/product-noah-1/1200/1600',
-                    'alt_text' => 'Noah Oxford Smart Shirt warna biru muda',
+                    'image_url' => 'https://d2kchovjbwl1tk.cloudfront.net/vendor/6241/product/Abargo_Offwhite-3_1776392924292_resized1024-jpeg.webp',
+                    'alt_text' => 'Abargo Abaya Cargo Off White tampak depan',
                     'sort_order' => 0,
                     'is_primary' => true,
                 ],
                 [
-                    'image_url' => 'https://picsum.photos/seed/product-noah-2/1200/1600',
-                    'alt_text' => 'Noah Shirt dipadukan dengan celana formal',
+                    'image_url' => 'https://d2kchovjbwl1tk.cloudfront.net/vendor/6241/product/Abargo_Offwhite-2_1776392924353_resized1024-jpeg.webp',
+                    'alt_text' => 'Abargo Abaya Cargo detail pocket',
                     'sort_order' => 1,
                     'is_primary' => false,
                 ],
-            ],
-            'astra-cropped-blazer' => [
                 [
-                    'image_url' => 'https://picsum.photos/seed/product-astra-1/1200/1600',
-                    'alt_text' => 'Astra Cropped Blazer warna hitam tampak depan',
-                    'sort_order' => 0,
-                    'is_primary' => true,
-                ],
-                [
-                    'image_url' => 'https://picsum.photos/seed/product-astra-2/1200/1600',
-                    'alt_text' => 'Detail tailoring Astra Cropped Blazer',
-                    'sort_order' => 1,
+                    'image_url' => 'https://d2kchovjbwl1tk.cloudfront.net/vendor/6241/product/Abargo_Offwhite-4_1776392924228_resized1024-jpeg.webp',
+                    'alt_text' => 'Abargo Abaya Cargo tampak samping',
+                    'sort_order' => 2,
                     'is_primary' => false,
                 ],
             ],
-            'mira-satin-hijab' => [
+            'kufah-khimar' => [
                 [
-                    'image_url' => 'https://picsum.photos/seed/product-mira-1/1200/1600',
-                    'alt_text' => 'Mira Satin Hijab warna rose gold',
+                    'image_url' => 'https://d2kchovjbwl1tk.cloudfront.net/vendor/6241/product/Kufah_Khimar_-_Dark_Plum_1758282141686_resized1024-JPG.webp',
+                    'alt_text' => 'Kufah Khimar warna Dark Plum',
                     'sort_order' => 0,
                     'is_primary' => true,
                 ],
                 [
-                    'image_url' => 'https://picsum.photos/seed/product-mira-2/1200/1600',
-                    'alt_text' => 'Drape halus Mira Satin Hijab saat dipakai',
+                    'image_url' => 'https://d2kchovjbwl1tk.cloudfront.net/vendor/6241/product/Kufah_Khimar_-_Sepia_1_1758282141797_resized1024-JPG.webp',
+                    'alt_text' => 'Kufah Khimar warna Sepia',
                     'sort_order' => 1,
                     'is_primary' => false,
                 ],
-            ],
-            'arden-knit-cardigan' => [
                 [
-                    'image_url' => 'https://picsum.photos/seed/product-arden-1/1200/1600',
-                    'alt_text' => 'Arden Knit Cardigan tampilan depan',
-                    'sort_order' => 0,
-                    'is_primary' => true,
-                ],
-                [
-                    'image_url' => 'https://picsum.photos/seed/product-arden-2/1200/1600',
-                    'alt_text' => 'Detail tekstur rajut Arden Knit Cardigan',
-                    'sort_order' => 1,
+                    'image_url' => 'https://d2kchovjbwl1tk.cloudfront.net/vendor/6241/product/Kufah_Khimar_-_Silver_1758282142019_resized1024-JPG.webp',
+                    'alt_text' => 'Kufah Khimar warna Silver',
+                    'sort_order' => 2,
                     'is_primary' => false,
                 ],
             ],
-            'luca-slip-on-loafers' => [
+            'sila-scarf-itsar-syari-x-napocut' => [
                 [
-                    'image_url' => 'https://picsum.photos/seed/product-luca-1/1200/1600',
-                    'alt_text' => 'Luca Slip-On Loafers warna black',
+                    'image_url' => 'https://d2kchovjbwl1tk.cloudfront.net/vendor/6241/product/35_1750942152256_resized1024-jpg.webp',
+                    'alt_text' => 'Sila Scarf Itsar Syari x Napocut tampilan utama',
                     'sort_order' => 0,
                     'is_primary' => true,
                 ],
                 [
-                    'image_url' => 'https://picsum.photos/seed/product-luca-2/1200/1600',
-                    'alt_text' => 'Detail insole empuk pada Luca Loafers',
+                    'image_url' => 'https://d2kchovjbwl1tk.cloudfront.net/vendor/6241/product/36_1750942152379_resized1024-jpg.webp',
+                    'alt_text' => 'Sila Scarf detail motif dan warna',
                     'sort_order' => 1,
                     'is_primary' => false,
                 ],
-            ],
-            'elio-utility-overshirt' => [
                 [
-                    'image_url' => 'https://picsum.photos/seed/product-elio-1/1200/1600',
-                    'alt_text' => 'Elio Utility Overshirt warna olive',
-                    'sort_order' => 0,
-                    'is_primary' => true,
-                ],
-                [
-                    'image_url' => 'https://picsum.photos/seed/product-elio-2/1200/1600',
-                    'alt_text' => 'Detail pocket utility pada Elio Overshirt',
-                    'sort_order' => 1,
+                    'image_url' => 'https://d2kchovjbwl1tk.cloudfront.net/vendor/6241/product/37_1750942152462_resized1024-jpg.webp',
+                    'alt_text' => 'Sila Scarf detail handmade fagotting',
+                    'sort_order' => 2,
                     'is_primary' => false,
                 ],
             ],
-            'vera-classic-tote-bag' => [
+            'rabita-abaya-itsar-syari-x-napocut' => [
                 [
-                    'image_url' => 'https://picsum.photos/seed/product-vera-1/1200/1600',
-                    'alt_text' => 'Vera Classic Tote Bag tampilan utama',
+                    'image_url' => 'https://d2kchovjbwl1tk.cloudfront.net/vendor/6241/product/12_1750941526800_resized1024-jpg.webp',
+                    'alt_text' => 'Rabita Abaya Itsar Syari x Napocut tampilan utama',
                     'sort_order' => 0,
                     'is_primary' => true,
                 ],
                 [
-                    'image_url' => 'https://picsum.photos/seed/product-vera-2/1200/1600',
-                    'alt_text' => 'Kompartemen dalam Vera Classic Tote Bag',
+                    'image_url' => 'https://d2kchovjbwl1tk.cloudfront.net/vendor/6241/product/15_1750941526929_resized1024-jpg.webp',
+                    'alt_text' => 'Rabita Abaya detail material dan cutting',
                     'sort_order' => 1,
+                    'is_primary' => false,
+                ],
+                [
+                    'image_url' => 'https://d2kchovjbwl1tk.cloudfront.net/vendor/6241/product/Rabita_Abaya_-_Black_3_-_HEN_5918_1750910260318_resized1024-JPG.webp',
+                    'alt_text' => 'Rabita Abaya warna Black',
+                    'sort_order' => 2,
+                    'is_primary' => false,
+                ],
+            ],
+            'nisbah-khimar-itsar-syari-x-napocut' => [
+                [
+                    'image_url' => 'https://d2kchovjbwl1tk.cloudfront.net/vendor/6241/product/24_1750941944929_resized1024-jpg.webp',
+                    'alt_text' => 'Nisbah Khimar Itsar Syari x Napocut tampilan utama',
+                    'sort_order' => 0,
+                    'is_primary' => true,
+                ],
+                [
+                    'image_url' => 'https://d2kchovjbwl1tk.cloudfront.net/vendor/6241/product/26_1750941944996_resized1024-jpg.webp',
+                    'alt_text' => 'Nisbah Khimar detail side khimar',
+                    'sort_order' => 1,
+                    'is_primary' => false,
+                ],
+                [
+                    'image_url' => 'https://d2kchovjbwl1tk.cloudfront.net/vendor/6241/product/27_1750941945068_resized1024-jpg.webp',
+                    'alt_text' => 'Nisbah Khimar detail handmade fagotting',
+                    'sort_order' => 2,
                     'is_primary' => false,
                 ],
             ],

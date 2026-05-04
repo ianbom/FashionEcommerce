@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 class ProductVariantService
 {
     use StoresUploadedFiles;
+    use ResolvesAdminPagination;
 
     public function __construct(private readonly StockLogService $stockLogs) {}
 
@@ -32,11 +33,19 @@ class ProductVariantService
                 ->when($status === 'active', fn ($query) => $query->where('is_active', true))
                 ->when($status === 'inactive', fn ($query) => $query->where('is_active', false))
                 ->latest()
-                ->paginate(15)
+                ->paginate($this->perPage($request))
                 ->withQueryString()
                 ->through(fn (ProductVariant $variant): array => $this->row($variant)),
             'product' => $product ? ['id' => $product->id, 'name' => $product->name] : null,
             'filters' => ['search' => $search, 'status' => $status],
+            'stats' => [
+                'total' => ProductVariant::query()->when($product, fn ($query) => $query->whereBelongsTo($product))->count(),
+                'active' => ProductVariant::query()->when($product, fn ($query) => $query->whereBelongsTo($product))->where('is_active', true)->count(),
+                'inactive' => ProductVariant::query()->when($product, fn ($query) => $query->whereBelongsTo($product))->where('is_active', false)->count(),
+                'in_stock' => ProductVariant::query()->when($product, fn ($query) => $query->whereBelongsTo($product))->whereRaw('(stock - reserved_stock) > 5')->count(),
+                'low_stock' => ProductVariant::query()->when($product, fn ($query) => $query->whereBelongsTo($product))->whereRaw('(stock - reserved_stock) > 0')->whereRaw('(stock - reserved_stock) <= 5')->count(),
+                'sold_out' => ProductVariant::query()->when($product, fn ($query) => $query->whereBelongsTo($product))->whereRaw('(stock - reserved_stock) = 0')->count(),
+            ],
         ];
     }
 

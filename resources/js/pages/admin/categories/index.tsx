@@ -41,6 +41,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { PerPageSelect } from '../pagination';
 import {
     Select,
     SelectContent,
@@ -79,6 +80,7 @@ interface Filters {
 interface Props {
     categories: PaginatedCategories;
     filters: Filters;
+    stats: { total: number; active: number; inactive: number };
 }
 
 const statusConfig: Record<
@@ -99,7 +101,11 @@ const statusConfig: Record<
     },
 };
 
-export default function CategoriesIndex({ categories, filters }: Props) {
+export default function CategoriesIndex({
+    categories,
+    filters,
+    stats: totals,
+}: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [selected, setSelected] = useState<number[]>([]);
 
@@ -133,13 +139,10 @@ export default function CategoriesIndex({ categories, filters }: Props) {
     const doAction = (url: string, method: 'post' | 'delete' = 'post') =>
         router[method](url, {}, { preserveScroll: true });
 
-    const activeCount = categories.data.filter((c) => c.is_active).length;
-    const inactiveCount = categories.data.filter((c) => !c.is_active).length;
-
     const stats = [
         {
             title: 'Total Categories',
-            val: categories.total,
+            val: totals.total,
             sub: 'in catalog',
             icon: Tags,
             iconBg: 'bg-white/20',
@@ -153,7 +156,7 @@ export default function CategoriesIndex({ categories, filters }: Props) {
         },
         {
             title: 'Active',
-            val: activeCount,
+            val: totals.active,
             sub: 'visible categories',
             icon: Eye,
             iconBg: 'bg-emerald-100',
@@ -167,7 +170,7 @@ export default function CategoriesIndex({ categories, filters }: Props) {
         },
         {
             title: 'Inactive',
-            val: inactiveCount,
+            val: totals.inactive,
             sub: 'hidden categories',
             icon: Archive,
             iconBg: 'bg-zinc-100',
@@ -646,6 +649,7 @@ export default function CategoriesIndex({ categories, filters }: Props) {
                                     </button>
                                 );
                             })}
+                            <PerPageSelect paginator={categories} />
                         </div>
                     </div>
                 </div>

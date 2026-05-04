@@ -40,6 +40,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { PerPageSelect } from '../pagination';
 import {
     Select,
     SelectContent,
@@ -100,6 +101,14 @@ interface Props {
         categories: Option[];
         collections: Option[];
         statuses: string[];
+    };
+    stats: {
+        total: number;
+        published: number;
+        draft: number;
+        archived: number;
+        low_stock: number;
+        out_of_stock: number;
     };
 }
 
@@ -164,7 +173,12 @@ const statusConfig: Record<
     },
 };
 
-export default function ProductsIndex({ products, filters, options }: Props) {
+export default function ProductsIndex({
+    products,
+    filters,
+    options,
+    stats: totals,
+}: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [selected, setSelected] = useState<number[]>([]);
 
@@ -197,24 +211,10 @@ export default function ProductsIndex({ products, filters, options }: Props) {
     const doAction = (url: string, method: 'post' | 'delete' = 'post') =>
         router[method](url, {}, { preserveScroll: true });
 
-    const publishedCount = products.data.filter(
-        (p) => p.status === 'published',
-    ).length;
-    const draftCount = products.data.filter((p) => p.status === 'draft').length;
-    const archivedCount = products.data.filter(
-        (p) => p.status === 'archived',
-    ).length;
-    const lowStockCount = products.data.filter(
-        (p) => p.total_stock > 0 && p.total_stock <= 5,
-    ).length;
-    const outOfStockCount = products.data.filter(
-        (p) => p.total_stock === 0,
-    ).length;
-
     const stats = [
         {
             title: 'Total Products',
-            val: products.total,
+            val: totals.total,
             sub: 'in catalog',
             icon: Package,
             iconBg: 'bg-white/20',
@@ -228,7 +228,7 @@ export default function ProductsIndex({ products, filters, options }: Props) {
         },
         {
             title: 'Published',
-            val: publishedCount,
+            val: totals.published,
             sub: 'live on store',
             icon: Eye,
             iconBg: 'bg-emerald-100',
@@ -242,7 +242,7 @@ export default function ProductsIndex({ products, filters, options }: Props) {
         },
         {
             title: 'Draft',
-            val: draftCount,
+            val: totals.draft,
             sub: 'unpublished',
             icon: FileText,
             iconBg: 'bg-zinc-100',
@@ -256,7 +256,7 @@ export default function ProductsIndex({ products, filters, options }: Props) {
         },
         {
             title: 'Archived',
-            val: archivedCount,
+            val: totals.archived,
             sub: 'hidden from store',
             icon: Archive,
             iconBg: 'bg-zinc-100',
@@ -270,7 +270,7 @@ export default function ProductsIndex({ products, filters, options }: Props) {
         },
         {
             title: 'Low Stock',
-            val: lowStockCount,
+            val: totals.low_stock,
             sub: 'need restocking',
             icon: TrendingDown,
             iconBg: 'bg-amber-50',
@@ -284,7 +284,7 @@ export default function ProductsIndex({ products, filters, options }: Props) {
         },
         {
             title: 'Out of Stock',
-            val: outOfStockCount,
+            val: totals.out_of_stock,
             sub: 'unavailable',
             icon: Ban,
             iconBg: 'bg-red-50',
@@ -1103,6 +1103,7 @@ export default function ProductsIndex({ products, filters, options }: Props) {
                                     </button>
                                 );
                             })}
+                            <PerPageSelect paginator={products} />
                         </div>
                     </div>
                 </div>

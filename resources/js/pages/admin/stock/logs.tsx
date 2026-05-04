@@ -29,6 +29,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { PerPageSelect } from '../pagination';
 
 interface StockLog {
     id: number;
@@ -411,6 +412,7 @@ export default function StockLogs({ logs, filters }: Props) {
                                     </button>
                                 );
                             })}
+                            <PerPageSelect paginator={logs} />
                         </div>
                     </div>
                 </div>

@@ -41,6 +41,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { PerPageSelect } from '../pagination';
 import {
     Select,
     SelectContent,
@@ -79,6 +80,7 @@ interface Filters {
 interface Props {
     collections: PaginatedCollections;
     filters: Filters;
+    stats: { total: number; active: number; featured: number };
 }
 
 const statusConfig: Record<
@@ -99,7 +101,11 @@ const statusConfig: Record<
     },
 };
 
-export default function CollectionsIndex({ collections, filters }: Props) {
+export default function CollectionsIndex({
+    collections,
+    filters,
+    stats: totals,
+}: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [selected, setSelected] = useState<number[]>([]);
 
@@ -133,13 +139,10 @@ export default function CollectionsIndex({ collections, filters }: Props) {
     const doAction = (url: string, method: 'post' | 'delete' = 'post') =>
         router[method](url, {}, { preserveScroll: true });
 
-    const activeCount = collections.data.filter((c) => c.is_active).length;
-    const featuredCount = collections.data.filter((c) => c.is_featured).length;
-
     const stats = [
         {
             title: 'Total Collections',
-            val: collections.total,
+            val: totals.total,
             sub: 'in catalog',
             icon: Layers,
             iconBg: 'bg-white/20',
@@ -153,7 +156,7 @@ export default function CollectionsIndex({ collections, filters }: Props) {
         },
         {
             title: 'Active',
-            val: activeCount,
+            val: totals.active,
             sub: 'visible collections',
             icon: Eye,
             iconBg: 'bg-emerald-100',
@@ -167,7 +170,7 @@ export default function CollectionsIndex({ collections, filters }: Props) {
         },
         {
             title: 'Featured',
-            val: featuredCount,
+            val: totals.featured,
             sub: 'highlighted collections',
             icon: Star,
             iconBg: 'bg-amber-100',
@@ -665,6 +668,7 @@ export default function CollectionsIndex({ collections, filters }: Props) {
                                     </button>
                                 );
                             })}
+                            <PerPageSelect paginator={collections} />
                         </div>
                     </div>
                 </div>

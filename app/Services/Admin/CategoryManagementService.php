@@ -9,6 +9,7 @@ use Illuminate\Validation\ValidationException;
 class CategoryManagementService
 {
     use StoresUploadedFiles;
+    use ResolvesAdminPagination;
 
     public function indexData(Request $request): array
     {
@@ -21,10 +22,15 @@ class CategoryManagementService
                     ->where('name', 'like', "%{$search}%")
                     ->orWhere('slug', 'like', "%{$search}%")))
                 ->latest()
-                ->paginate(15)
+                ->paginate($this->perPage($request))
                 ->withQueryString()
                 ->through(fn (Category $category): array => $this->row($category)),
             'filters' => ['search' => $search],
+            'stats' => [
+                'total' => Category::query()->count(),
+                'active' => Category::query()->where('is_active', true)->count(),
+                'inactive' => Category::query()->where('is_active', false)->count(),
+            ],
         ];
     }
 
