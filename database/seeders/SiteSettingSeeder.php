@@ -14,6 +14,15 @@ class SiteSettingSeeder extends Seeder
         $settings = [
             // ─── Store Identity ──────────────────────────────────────────────────
             ['key' => 'store_name',             'value' => "Auréa Syar'i",                              'type' => 'string'],
+            ['key' => 'store_email',            'value' => 'hello@aureasyari.id',                        'type' => 'string'],
+            ['key' => 'store_phone',            'value' => '+62 812-3456-7890',                          'type' => 'string'],
+            ['key' => 'whatsapp_number',        'value' => '6281234567890',                              'type' => 'string'],
+            ['key' => 'store_address',          'value' => 'Jl. Pahlawan No. 88, Surabaya, Jawa Timur 60123, Indonesia', 'type' => 'text'],
+            ['key' => 'store_logo',             'value' => 'https://itsarsyari.id/logo.png',             'type' => 'string'],
+            ['key' => 'store_favicon',          'value' => 'https://itsarsyari.id/favicon.ico',          'type' => 'string'],
+            ['key' => 'instagram_url',          'value' => 'https://instagram.com/itsarsyari.id',        'type' => 'string'],
+            ['key' => 'tiktok_url',             'value' => 'https://tiktok.com/@itsarsyari.id',          'type' => 'string'],
+            ['key' => 'footer_text',            'value' => "© 2026 Auréa Syar'i. Seluruh hak cipta dilindungi.", 'type' => 'text'],
             ['key' => 'store_tagline',          'value' => 'Modest. Elegant. Timeless.',                'type' => 'string'],
             ['key' => 'store_description',      'value' => "Brand fashion muslimah premium yang menghadirkan koleksi abaya, khimar, dan busana modest berkualitas tinggi untuk wanita Indonesia modern.", 'type' => 'text'],
             ['key' => 'store_logo_url',         'value' => '/images/logo.png',                          'type' => 'string'],
@@ -40,6 +49,10 @@ class SiteSettingSeeder extends Seeder
             ['key' => 'social_pinterest',       'value' => 'https://pinterest.com/aureasyrari',         'type' => 'string'],
 
             // ─── SEO ─────────────────────────────────────────────────────────────
+            ['key' => 'default_meta_title',     'value' => "Auréa Syar'i — Fashion Muslimah Premium",  'type' => 'string'],
+            ['key' => 'default_meta_description','value' => "Temukan koleksi abaya, khimar, hijab, dan busana muslimah premium untuk tampilan modest yang elegan.", 'type' => 'text'],
+            ['key' => 'open_graph_image',       'value' => 'https://itsarsyari.id/og-image.jpg',        'type' => 'string'],
+            ['key' => 'default_keywords',       'value' => 'abaya, khimar, hijab, gamis, busana muslimah, fashion syari, modest wear', 'type' => 'string'],
             ['key' => 'seo_meta_title',         'value' => "Auréa Syar'i — Fashion Muslimah Premium",  'type' => 'string'],
             ['key' => 'seo_meta_description',   'value' => "Temukan koleksi abaya, khimar, hijab, dan busana muslimah premium dari Auréa Syar'i. Kualitas terbaik, pengiriman cepat ke seluruh Indonesia.", 'type' => 'text'],
             ['key' => 'seo_meta_keywords',      'value' => 'abaya, khimar, hijab, gamis, busana muslimah, fashion syar\'i, baju muslim, baju lebaran', 'type' => 'string'],
@@ -49,6 +62,14 @@ class SiteSettingSeeder extends Seeder
             ['key' => 'seo_tiktok_pixel_id',    'value' => '',                                          'type' => 'string'],
 
             // ─── Shipping ────────────────────────────────────────────────────────
+            ['key' => 'origin_address',         'value' => 'Jl. Pahlawan No. 88, Surabaya, Jawa Timur 60123, Indonesia', 'type' => 'text'],
+            ['key' => 'origin_province',        'value' => 'Jawa Timur',                                'type' => 'string'],
+            ['key' => 'origin_city',            'value' => 'Surabaya',                                  'type' => 'string'],
+            ['key' => 'origin_district',        'value' => 'Genteng',                                   'type' => 'string'],
+            ['key' => 'origin_biteship_area_id','value' => 'IDN17609',                                  'type' => 'string'],
+            ['key' => 'shipper_name',           'value' => 'Auréa Syar\'i Warehouse',                  'type' => 'string'],
+            ['key' => 'shipper_phone',          'value' => '+62 812-3456-7890',                         'type' => 'string'],
+            ['key' => 'enabled_couriers',       'value' => 'jne,jnt,sicepat,anteraja',                  'type' => 'string'],
             ['key' => 'shipping_free_minimum',  'value' => '300000',                                    'type' => 'integer'],
             ['key' => 'shipping_default_weight','value' => '300',                                       'type' => 'integer'],
             ['key' => 'shipping_origin_city_id','value' => '444',                                       'type' => 'string'],
@@ -56,6 +77,10 @@ class SiteSettingSeeder extends Seeder
             ['key' => 'shipping_enable_same_day','value' => '1',                                        'type' => 'boolean'],
 
             // ─── Payment ─────────────────────────────────────────────────────────
+            ['key' => 'midtrans_environment',   'value' => 'sandbox',                                   'type' => 'string'],
+            ['key' => 'midtrans_client_key',    'value' => 'SB-Mid-client-demo-aureasyari',            'type' => 'string'],
+            ['key' => 'payment_expiry_duration','value' => '1440',                                      'type' => 'integer'],
+            ['key' => 'payment_service_fee',    'value' => '0',                                         'type' => 'integer'],
             ['key' => 'payment_gateway',        'value' => 'midtrans',                                  'type' => 'string'],
             ['key' => 'payment_midtrans_env',   'value' => 'sandbox',                                   'type' => 'string'],
             ['key' => 'payment_bank_transfer',  'value' => '1',                                         'type' => 'boolean'],

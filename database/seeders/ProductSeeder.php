@@ -15,6 +15,7 @@ class ProductSeeder extends Seeder
      */
     public function run(): void
     {
+        // Kurasi 6 produk dari katalog https://itsarsyari.id/.
         $products = [
             [
                 'category_slug' => 'womens-dresses',
@@ -23,7 +24,7 @@ class ProductSeeder extends Seeder
                 'slug' => 'najran-piping-lace-abaya',
                 'sku' => 'ITS-ABY-NAJ-001',
                 'short_description' => 'Abaya slim cutting dengan piping detail dan lace patch di bagian siku.',
-                'description' => 'Referensi katalog Itsar Syar\'i Hajj Series. Abaya elegan untuk daily hingga semi-formal, memakai material Mina Anti-UV dengan detail piping premium dan lace.',
+                'description' => 'Produk katalog Itsar Syar\'i dengan detail piping premium dan aksen lace pada bagian siku. Cocok untuk tampilan modest yang rapi dari daily hingga semi-formal.',
                 'material' => 'Mina Anti-UV, premium piping list, lace detail',
                 'care_instruction' => 'Cuci tangan lembut, gunakan deterjen ringan, jemur teduh, setrika suhu rendah dari sisi dalam.',
                 'base_price' => 739000,
@@ -36,8 +37,8 @@ class ProductSeeder extends Seeder
                 'is_featured' => true,
                 'is_new_arrival' => true,
                 'is_best_seller' => true,
-                'meta_title' => 'Najran Piping Lace Abaya | Itsar Syar\'i Inspired Catalog',
-                'meta_description' => 'Najran Piping Lace Abaya dengan cutting ramping, piping detail, dan lace patch elegan.',
+                'meta_title' => 'Najran Piping Lace Abaya | Itsar Syar\'i',
+                'meta_description' => 'Najran Piping Lace Abaya dengan cutting ramping, piping premium, dan detail lace elegan.',
             ],
             [
                 'category_slug' => 'womens-dresses',
@@ -46,7 +47,7 @@ class ProductSeeder extends Seeder
                 'slug' => 'abargo-abaya-cargo',
                 'sku' => 'ITS-ABY-ABG-002',
                 'short_description' => 'Abaya cargo kasual-elegan dengan 3D pocket dan overstitch.',
-                'description' => 'Referensi katalog Itsar Syar\'i. Abargo adalah Abaya Cargo dengan pocket 3D, detail overstitch, dan kancing premium untuk tampilan casual syar\'i.',
+                'description' => 'Produk katalog Itsar Syar\'i berupa abaya cargo dengan pocket 3D, detail overstitch, dan siluet casual-modest yang tetap polished.',
                 'material' => 'Premium Anti-UV',
                 'care_instruction' => 'Cuci tangan atau mesin mode lembut, pisahkan warna gelap, hindari pemutih.',
                 'base_price' => 779000,
@@ -59,8 +60,8 @@ class ProductSeeder extends Seeder
                 'is_featured' => true,
                 'is_new_arrival' => true,
                 'is_best_seller' => false,
-                'meta_title' => 'Abargo Abaya Cargo | Itsar Syar\'i Inspired Catalog',
-                'meta_description' => 'Abargo Abaya Cargo dengan 3D pocket, overstitch, dan material premium Anti-UV.',
+                'meta_title' => 'Abargo (Abaya Cargo) | Itsar Syar\'i',
+                'meta_description' => 'Abargo (Abaya Cargo) dengan 3D pocket, overstitch, dan material premium Anti-UV.',
             ],
             [
                 'category_slug' => 'accessories',
@@ -69,7 +70,7 @@ class ProductSeeder extends Seeder
                 'slug' => 'kufah-khimar',
                 'sku' => 'ITS-KHM-KUF-003',
                 'short_description' => 'Khimar basic dengan potongan segitiga depan dan belakang oval.',
-                'description' => 'Referensi katalog Itsar Syar\'i. Kufah Khimar dirancang untuk memberi tampilan ramping di depan serta coverage maksimal pada bagian belakang.',
+                'description' => 'Produk katalog Itsar Syar\'i berupa khimar basic dengan tampilan ramping di depan dan coverage maksimal pada bagian belakang.',
                 'material' => 'Thuba Anti-UV dan Mina Anti-UV',
                 'care_instruction' => 'Cuci tangan lembut, jangan diperas kuat, jemur teduh agar warna tetap awet.',
                 'base_price' => 349000,
@@ -82,7 +83,7 @@ class ProductSeeder extends Seeder
                 'is_featured' => false,
                 'is_new_arrival' => true,
                 'is_best_seller' => true,
-                'meta_title' => 'Kufah Khimar | Itsar Syar\'i Inspired Catalog',
+                'meta_title' => 'Kufah Khimar | Itsar Syar\'i',
                 'meta_description' => 'Kufah Khimar dengan potongan segitiga depan dan coverage belakang maksimal.',
             ],
             [
@@ -92,7 +93,7 @@ class ProductSeeder extends Seeder
                 'slug' => 'sila-scarf-itsar-syari-x-napocut',
                 'sku' => 'ITS-SCF-SIL-004',
                 'short_description' => 'Square scarf 140x140 cm dengan teknik handmade fagotting.',
-                'description' => 'Referensi kolaborasi Itsar Syar\'i x Napocut. Sila Scarf berbahan wool chiffon, ringan, dan tersedia dalam warna netral hingga statement.',
+                'description' => 'Produk kolaborasi Itsar Syar\'i x Napocut berupa square scarf 140x140 cm berbahan wool chiffon dengan detail handmade fagotting.',
                 'material' => 'Wool Chiffon with handmade fagotting technique',
                 'care_instruction' => 'Cuci tangan lembut, hindari sikat kasar pada detail fagotting, jemur teduh.',
                 'base_price' => 349000,
@@ -105,7 +106,7 @@ class ProductSeeder extends Seeder
                 'is_featured' => false,
                 'is_new_arrival' => true,
                 'is_best_seller' => false,
-                'meta_title' => 'Sila Scarf Itsar Syar\'i x Napocut | Inspired Catalog',
+                'meta_title' => 'Sila Scarf (Itsar Syar\'i x Napocut) | Itsar Syar\'i',
                 'meta_description' => 'Sila Scarf square hijab 140x140 cm berbahan wool chiffon dengan handmade fagotting.',
             ],
             [
@@ -115,7 +116,7 @@ class ProductSeeder extends Seeder
                 'slug' => 'rabita-abaya-itsar-syari-x-napocut',
                 'sku' => 'ITS-ABY-RBT-005',
                 'short_description' => 'Abaya kolaborasi dengan textured knit dan siluet clean.',
-                'description' => 'Referensi kolaborasi Itsar Syar\'i x Napocut. Rabita Abaya menghadirkan abaya nyaman dengan material Anti-UV dan pilihan warna klasik.',
+                'description' => 'Produk kolaborasi Itsar Syar\'i x Napocut berupa abaya clean dengan material Anti-UV dan pilihan warna klasik untuk daily refined look.',
                 'material' => 'Mazen Anti-UV, Mina Anti-UV for Broken White',
                 'care_instruction' => 'Cuci tangan, balik pakaian saat mencuci, hindari pemutih dan panas berlebih.',
                 'base_price' => 799000,
@@ -128,7 +129,7 @@ class ProductSeeder extends Seeder
                 'is_featured' => true,
                 'is_new_arrival' => false,
                 'is_best_seller' => true,
-                'meta_title' => 'Rabita Abaya Itsar Syar\'i x Napocut | Inspired Catalog',
+                'meta_title' => 'Rabita Abaya (Itsar Syar\'i x Napocut) | Itsar Syar\'i',
                 'meta_description' => 'Rabita Abaya kolaborasi Itsar Syar\'i x Napocut dengan material Anti-UV dan tekstur nyaman.',
             ],
             [
@@ -138,7 +139,7 @@ class ProductSeeder extends Seeder
                 'slug' => 'nisbah-khimar-itsar-syari-x-napocut',
                 'sku' => 'ITS-KHM-NSB-006',
                 'short_description' => 'Side khimar dengan detail handmade fagotting dan coverage syar\'i.',
-                'description' => 'Referensi kolaborasi Itsar Syar\'i x Napocut. Nisbah Khimar memakai material Anti-UV dengan detail fagotting dan warna mudah dipadukan.',
+                'description' => 'Produk kolaborasi Itsar Syar\'i x Napocut berupa side khimar dengan detail handmade fagotting dan warna yang mudah dipadukan.',
                 'material' => 'Thuba Anti-UV, Mina Anti-UV for Broken White, handmade fagotting detail',
                 'care_instruction' => 'Cuci tangan lembut, jangan diperas kuat, simpan digantung agar bentuk rapi.',
                 'base_price' => 409000,
@@ -151,7 +152,7 @@ class ProductSeeder extends Seeder
                 'is_featured' => false,
                 'is_new_arrival' => false,
                 'is_best_seller' => true,
-                'meta_title' => 'Nisbah Khimar Itsar Syar\'i x Napocut | Inspired Catalog',
+                'meta_title' => 'Nisbah Khimar (Itsar Syar\'i x Napocut) | Itsar Syar\'i',
                 'meta_description' => 'Nisbah Khimar side khimar dengan handmade fagotting dan material Anti-UV.',
             ],
         ];
@@ -161,6 +162,8 @@ class ProductSeeder extends Seeder
 
         $collectionIds = Collection::query()
             ->pluck('id', 'slug');
+
+        $currentSlugs = collect($products)->pluck('slug');
 
         foreach ($products as $product) {
             $categoryId = $categoryIds->get($product['category_slug']);
@@ -174,7 +177,9 @@ class ProductSeeder extends Seeder
                 throw new RuntimeException("Collection slug [{$product['collection_slug']}] tidak ditemukan.");
             }
 
-            Product::query()->updateOrCreate(
+            $record = Product::query()
+                ->withTrashed()
+                ->updateOrCreate(
                 ['slug' => $product['slug']],
                 [
                     'category_id' => $categoryId,
@@ -199,6 +204,15 @@ class ProductSeeder extends Seeder
                     'meta_description' => $product['meta_description'],
                 ],
             );
+
+            if ($record->trashed()) {
+                $record->restore();
+            }
         }
+
+        Product::query()
+            ->where('sku', 'like', 'ITS-%')
+            ->whereNotIn('slug', $currentSlugs)
+            ->delete();
     }
 }

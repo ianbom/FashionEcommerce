@@ -262,52 +262,6 @@ export default function Home({
                 </div>
             </section>
 
-            <section className="mx-auto mb-10 max-w-[1500px] px-4 py-10 md:mb-20 md:px-10">
-                <div className="mb-6 md:mb-8">
-                    <h2 className="text-lg font-bold tracking-wider text-primary md:text-xl">
-                        Our Journal
-                    </h2>
-                </div>
-
-                <div className="hide-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 md:grid md:grid-cols-2 md:gap-6 md:pb-0 lg:grid-cols-4">
-                    {journalPosts.map((post, index) => (
-                        <article
-                            key={post.id}
-                            className="group flex min-w-[75%] cursor-pointer snap-start flex-col sm:min-w-[45%] md:min-w-0"
-                        >
-                            <div className="relative mb-3 aspect-video overflow-hidden rounded-sm md:mb-4">
-                                <img
-                                    src={
-                                        fallbackImages[
-                                            (index + 5) % fallbackImages.length
-                                        ]
-                                    }
-                                    alt={post.title}
-                                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                    loading="lazy"
-                                    decoding="async"
-                                />
-                            </div>
-                            <div className="flex flex-1 flex-col justify-between px-1">
-                                <div>
-                                    <p className="mb-1.5 text-[9px] tracking-wider text-muted-foreground uppercase md:mb-2 md:text-[10px]">
-                                        {post.date ?? post.type}
-                                    </p>
-                                    <h3 className="mb-3 line-clamp-3 text-[11px] leading-relaxed font-semibold transition-colors group-hover:text-primary md:mb-4 md:text-xs">
-                                        {post.title}
-                                    </h3>
-                                </div>
-                                <div className="mt-auto">
-                                    <span className="rounded-full border border-border px-3 py-1 text-[9px] font-bold tracking-wider uppercase transition-colors group-hover:border-foreground md:px-4 md:py-1.5 md:text-[10px]">
-                                        Continue Reading
-                                    </span>
-                                </div>
-                            </div>
-                        </article>
-                    ))}
-                </div>
-            </section>
-
             <style
                 dangerouslySetInnerHTML={{
                     __html: `

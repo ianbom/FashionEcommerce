@@ -237,6 +237,8 @@ class ProductVariantSeeder extends Seeder
             ->whereIn('slug', collect($variants)->pluck('product_slug')->unique()->all())
             ->pluck('id', 'slug');
 
+        $keptVariantSkus = [];
+
         foreach ($variants as $variant) {
             $productId = $productIds->get($variant['product_slug']);
 
@@ -264,6 +266,13 @@ class ProductVariantSeeder extends Seeder
             if ($record->trashed()) {
                 $record->restore();
             }
+
+            $keptVariantSkus[] = $record->sku;
         }
+
+        ProductVariant::query()
+            ->where('sku', 'like', 'ITS-%')
+            ->whereNotIn('sku', $keptVariantSkus)
+            ->delete();
     }
 }

@@ -23,11 +23,6 @@ export default function Navbar({ cartCount = 0, collections = [] }: NavbarProps)
                     Auréa Syar'i
                 </Link>
                 <div className="flex items-center space-x-4 text-[#4A2525]">
-                    <Search
-                        strokeWidth={1.5}
-                        size={22}
-                        className="cursor-pointer"
-                    />
                     <Heart
                         strokeWidth={1.5}
                         size={22}
@@ -64,7 +59,7 @@ export default function Navbar({ cartCount = 0, collections = [] }: NavbarProps)
                 <div className="flex items-center space-x-10 text-[11px] font-semibold tracking-widest text-[#8A6B62]">
                     <Link
                         href="/list"
-                        className="transition-colors hover:text-[#4A2525]"
+                        className="border-b border-transparent pb-1 transition-colors hover:border-[#4A2525] hover:text-[#4A2525]"
                     >
                         SHOP ALL
                     </Link>
@@ -72,7 +67,7 @@ export default function Navbar({ cartCount = 0, collections = [] }: NavbarProps)
                         <Link
                             key={collection.id}
                             href={`/list?collection=${encodeURIComponent(collection.slug)}`}
-                            className="transition-colors hover:text-[#4A2525]"
+                            className="border-b border-transparent pb-1 transition-colors hover:border-[#4A2525] hover:text-[#4A2525]"
                         >
                             {collection.name.toUpperCase()}
                         </Link>

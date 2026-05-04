@@ -216,7 +216,7 @@ export default function ListProduct({ products, filters, options }: Props) {
                     />
                 )}
                 <aside
-                    className={`fixed inset-x-0 bottom-0 z-50 max-h-[86vh] w-full flex-shrink-0 overflow-y-auto rounded-t-[28px] border-t border-border bg-background px-5 pt-3 pb-6 shadow-[0_-24px_80px_rgba(0,0,0,0.18)] transition-transform duration-300 ease-out lg:static lg:z-auto lg:mb-0 lg:max-h-none lg:w-64 lg:translate-y-0 lg:overflow-visible lg:rounded-none lg:border-0 lg:bg-transparent lg:px-0 lg:pt-0 lg:pr-10 lg:pb-0 lg:shadow-none ${
+                    className={`fixed inset-x-0 bottom-0 z-50 max-h-[86vh] w-full flex-shrink-0 overflow-y-auto rounded-t-[28px] border-t border-border bg-background px-5 pt-3 pb-6 shadow-[0_-24px_80px_rgba(0,0,0,0.18)] transition-transform duration-300 ease-out lg:sticky lg:top-24 lg:z-auto lg:mb-0 lg:max-h-[calc(100dvh-7rem)] lg:w-72 lg:translate-y-0 lg:overflow-y-auto lg:rounded-none lg:border-0 lg:bg-transparent lg:px-0 lg:pt-0 lg:pr-12 lg:pb-0 lg:shadow-none ${
                         isFilterOpen
                             ? 'translate-y-0'
                             : 'pointer-events-none translate-y-full lg:pointer-events-auto'
@@ -240,12 +240,9 @@ export default function ListProduct({ products, filters, options }: Props) {
                         </button>
                     </div>
                     <div className="mx-auto mb-5 h-1 w-12 rounded-full bg-border lg:hidden" />
-                    <form
-                        onSubmit={submitSearch}
-                        className="group relative mb-8"
-                    >
+                    <form onSubmit={submitSearch} className="group relative mb-7">
                         <Search
-                            className="absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground transition-colors group-hover:text-foreground"
+                            className="absolute top-1/2 left-0 -translate-y-1/2 text-muted-foreground transition-colors group-hover:text-foreground"
                             size={14}
                         />
                         <input
@@ -258,7 +255,7 @@ export default function ListProduct({ products, filters, options }: Props) {
                                 }))
                             }
                             placeholder="Search products"
-                            className="w-full rounded-md border border-border bg-transparent py-2 pr-4 pl-9 text-[11px] tracking-wide transition-all focus:border-ring focus:ring-1 focus:ring-ring/20 focus:outline-none"
+                            className="w-full border-0 border-b border-border bg-transparent py-3 pr-4 pl-7 text-[11px] tracking-wide transition-all placeholder:text-muted-foreground/70 focus:border-foreground focus:ring-0 focus:outline-none"
                         />
                     </form>
 
@@ -317,23 +314,30 @@ export default function ListProduct({ products, filters, options }: Props) {
                     </div>
 
                     <div className="text-secondary-foreground">
-                        <div className="mb-3 flex items-center justify-between px-1">
-                            <p className="text-[11px] font-semibold tracking-wide text-foreground uppercase">
-                                Filters
-                            </p>
+                        <div className="mb-4 flex items-end justify-between border-b border-foreground pb-3">
+                            <div>
+                                <p className="text-[11px] font-semibold tracking-[0.24em] text-foreground uppercase">
+                                    Refine
+                                </p>
+                                <p className="mt-1 text-[10px] tracking-wide text-muted-foreground">
+                                    {activeSummary > 0
+                                        ? `${activeSummary} filter active`
+                                        : 'Choose product details'}
+                                </p>
+                            </div>
                             {activeSummary > 0 && (
                                 <button
                                     type="button"
                                     onClick={resetFilters}
-                                    className="text-[10px] font-semibold tracking-wider text-primary uppercase transition hover:text-primary/75"
+                                    className="text-[10px] font-semibold tracking-wider text-primary uppercase underline-offset-4 transition hover:text-primary/75 hover:underline"
                                 >
                                     Reset
                                 </button>
                             )}
                         </div>
 
-                        <div className="rounded-xl border border-border/50 bg-card/30 px-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md">
-                            <FilterSection title="Categories">
+                        <div className="divide-y divide-border/70">
+                            <FilterSection title="Categories" defaultOpen>
                                 <div className="space-y-3.5 text-[11px] tracking-wide">
                                     <FilterRadio
                                         label="All Categories"
@@ -454,15 +458,15 @@ export default function ListProduct({ products, filters, options }: Props) {
                                 </div>
                             </FilterSection>
 
-                            <FilterSection title="Color">
-                                <div className="flex flex-wrap gap-2.5">
+                            <FilterSection title="Color" defaultOpen>
+                                <div className="flex flex-wrap gap-3">
                                     <button
                                         type="button"
                                         onClick={() => setFilter('color', '')}
-                                        className={`h-5 w-5 rounded-full border bg-white shadow-sm transition ${
+                                        className={`h-6 w-6 rounded-full border bg-white shadow-sm transition duration-300 hover:-translate-y-0.5 ${
                                             form.color === ''
-                                                ? 'border-primary ring-2 ring-primary/20'
-                                                : 'border-gray-300 hover:scale-110'
+                                                ? 'border-primary ring-4 ring-primary/15'
+                                                : 'border-gray-300 hover:border-foreground'
                                         }`}
                                         aria-label="All colors"
                                     />
@@ -480,10 +484,10 @@ export default function ListProduct({ products, filters, options }: Props) {
                                                     color.hex ?? '',
                                                 )
                                             }
-                                            className={`h-5 w-5 rounded-full border shadow-sm transition ${
+                                            className={`h-6 w-6 rounded-full border shadow-sm transition duration-300 hover:-translate-y-0.5 ${
                                                 form.color === color.hex
-                                                    ? 'border-primary ring-2 ring-primary/25'
-                                                    : 'border-white/80 hover:scale-110'
+                                                    ? 'border-primary ring-4 ring-primary/20'
+                                                    : 'border-white/80 hover:border-foreground'
                                             }`}
                                             style={{
                                                 backgroundColor: color.hex,
@@ -498,15 +502,15 @@ export default function ListProduct({ products, filters, options }: Props) {
                                 </div>
                             </FilterSection>
 
-                            <FilterSection title="Size">
+                            <FilterSection title="Size" defaultOpen>
                                 <div className="flex flex-wrap gap-2 text-[10px] font-semibold text-muted-foreground">
                                     <button
                                         type="button"
                                         onClick={() => setFilter('size', '')}
-                                        className={`flex h-7 min-w-9 items-center justify-center rounded border px-2 transition-colors ${
+                                        className={`flex h-8 min-w-10 items-center justify-center border px-3 transition-all duration-300 ${
                                             form.size === ''
-                                                ? 'border-primary bg-primary text-primary-foreground'
-                                                : 'border-input bg-card/50 hover:border-secondary-foreground hover:text-secondary-foreground'
+                                                ? 'border-foreground bg-foreground text-background'
+                                                : 'border-input bg-transparent hover:border-foreground hover:text-foreground'
                                         }`}
                                     >
                                         All
@@ -518,10 +522,10 @@ export default function ListProduct({ products, filters, options }: Props) {
                                             onClick={() =>
                                                 setFilter('size', size)
                                             }
-                                            className={`flex h-7 min-w-9 items-center justify-center rounded border px-2 transition-colors ${
+                                            className={`flex h-8 min-w-10 items-center justify-center border px-3 transition-all duration-300 ${
                                                 form.size === size
-                                                    ? 'border-primary bg-primary text-primary-foreground'
-                                                    : 'border-input bg-card/50 hover:border-secondary-foreground hover:text-secondary-foreground'
+                                                    ? 'border-foreground bg-foreground text-background'
+                                                    : 'border-input bg-transparent hover:border-foreground hover:text-foreground'
                                             }`}
                                         >
                                             {size}
@@ -775,7 +779,7 @@ function FilterSection({
     const [isOpen, setIsOpen] = useState(defaultOpen);
 
     return (
-        <div className="border-b border-border/60 py-5 last:border-0">
+        <div className="py-5">
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
@@ -823,7 +827,7 @@ function FilterRadio({
         >
             <span className="flex items-center gap-3">
                 <span
-                    className={`flex h-[14px] w-[14px] flex-shrink-0 items-center justify-center rounded-full border transition-all duration-300 ${
+                    className={`flex h-[14px] w-[14px] shrink-0 items-center justify-center rounded-full border transition-all duration-300 ${
                         active
                             ? 'border-primary ring-4 ring-primary/10'
                             : 'border-input group-hover:border-primary/50'
