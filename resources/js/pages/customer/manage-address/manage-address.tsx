@@ -385,10 +385,10 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                 style={{ animationDelay: '150ms' }}
             >
                 <div>
-                    <h2 className="font-serif text-xl text-[#3C3428]">
+                    <h2 className="font-serif text-xl text-[#4A2525]">
                         Saved Addresses
                     </h2>
-                    <p className="mt-1 text-[12px] text-[#8C8578]">
+                    <p className="mt-1 text-[12px] text-[#8A6B62]">
                         You have {addresses.length} saved address
                         {addresses.length !== 1 ? 'es' : ''}
                     </p>
@@ -396,7 +396,7 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                 <button
                     type="button"
                     onClick={() => openModal()}
-                    className="flex items-center justify-center rounded-lg bg-[#3C3428] px-6 py-2.5 text-[12px] font-bold tracking-wider text-white transition-all hover:bg-[#2D261C] hover:shadow-lg active:scale-[0.98]"
+                    className="flex items-center justify-center rounded-lg bg-[#4A2525] px-6 py-2.5 text-[12px] font-bold tracking-wider text-white transition-all hover:bg-[#5F1717] hover:shadow-lg active:scale-[0.98]"
                 >
                     <Plus size={16} className="mr-2" /> Add New Address
                 </button>
@@ -406,15 +406,15 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                 <button
                     type="button"
                     onClick={() => openModal()}
-                    className="group animate-fade-in-up flex min-h-[240px] w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[#EAE8E3] p-6 text-center transition-all duration-300 hover:border-[#C2AA92] hover:bg-[#FAF9F6]"
+                    className="group animate-fade-in-up flex min-h-[240px] w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[#EADBD8] p-6 text-center transition-all duration-300 hover:border-[#B6574B] hover:bg-[#FAF9F6]"
                 >
-                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#F5F2E6] text-[#C2AA92] transition-all duration-300 group-hover:scale-110 group-hover:bg-[#C2AA92] group-hover:text-white">
+                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#F8EDED] text-[#B6574B] transition-all duration-300 group-hover:scale-110 group-hover:bg-[#B6574B] group-hover:text-white">
                         <Plus size={24} />
                     </div>
-                    <h3 className="mb-1 text-[14px] font-bold text-[#333] transition-colors group-hover:text-[#3C3428]">
+                    <h3 className="mb-1 text-[14px] font-bold text-[#333] transition-colors group-hover:text-[#4A2525]">
                         Add Your First Address
                     </h3>
-                    <p className="max-w-[220px] text-[11px] text-[#8C8578]">
+                    <p className="max-w-[220px] text-[11px] text-[#8A6B62]">
                         Save your shipping address to make checkout faster.
                     </p>
                 </button>
@@ -429,8 +429,8 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                                 key={address.id}
                                 className={`group relative rounded-2xl border bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md md:p-8 ${
                                     address.is_default
-                                        ? 'border-[#C2AA92]'
-                                        : 'border-[#EAE8E3]'
+                                        ? 'border-[#B6574B]'
+                                        : 'border-[#EADBD8]'
                                 } animate-fade-in-up`}
                                 style={{
                                     animationDelay: `${200 + index * 50}ms`,
@@ -438,7 +438,7 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                             >
                                 {address.is_default && (
                                     <div className="absolute top-0 right-8 -translate-y-1/2">
-                                        <span className="rounded-full bg-[#3C3428] px-3 py-1 text-[10px] font-bold text-white shadow-sm">
+                                        <span className="rounded-full bg-[#4A2525] px-3 py-1 text-[10px] font-bold text-white shadow-sm">
                                             Default Address
                                         </span>
                                     </div>
@@ -449,8 +449,8 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                                         <div
                                             className={`mr-3 flex h-10 w-10 items-center justify-center rounded-full ${
                                                 address.is_default
-                                                    ? 'bg-[#F5F2E6] text-[#C2AA92]'
-                                                    : 'bg-[#FAF9F6] text-[#A89F91]'
+                                                    ? 'bg-[#F8EDED] text-[#B6574B]'
+                                                    : 'bg-[#FAF9F6] text-[#C99A8F]'
                                             }`}
                                         >
                                             <MapPin size={20} />
@@ -472,7 +472,7 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                                             onClick={() =>
                                                 openModal(address.id)
                                             }
-                                            className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FAF9F6] text-[#8C8578] transition-colors hover:bg-[#F5F2E6] hover:text-[#3C3428] disabled:cursor-not-allowed disabled:opacity-60"
+                                            className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FAF9F6] text-[#8A6B62] transition-colors hover:bg-[#F8EDED] hover:text-[#4A2525] disabled:cursor-not-allowed disabled:opacity-60"
                                         >
                                             <Edit2 size={14} />
                                         </button>
@@ -490,7 +490,7 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                                 </div>
 
                                 <div className="mb-6 space-y-1.5 pl-13 text-[13px] text-[#4A4A4A]">
-                                    <p className="mb-2 text-[11px] font-medium text-[#8C8578]">
+                                    <p className="mb-2 text-[11px] font-medium text-[#8A6B62]">
                                         {address.recipient_phone}
                                     </p>
                                     <p className="leading-relaxed">
@@ -506,7 +506,7 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                                         type="button"
                                         disabled={!canMutateCard}
                                         onClick={() => setAsDefault(address)}
-                                        className="w-full rounded-lg border border-[#EAE8E3] py-2.5 text-[12px] font-bold text-[#4A4A4A] transition-colors hover:border-[#C2AA92] hover:bg-[#FAF9F6] disabled:cursor-not-allowed disabled:opacity-60"
+                                        className="w-full rounded-lg border border-[#EADBD8] py-2.5 text-[12px] font-bold text-[#4A4A4A] transition-colors hover:border-[#B6574B] hover:bg-[#FAF9F6] disabled:cursor-not-allowed disabled:opacity-60"
                                     >
                                         {defaultingThis
                                             ? 'Setting as Default...'
@@ -522,7 +522,7 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                                         <h4 className="mb-1 text-[14px] font-bold text-[#333]">
                                             Delete this address?
                                         </h4>
-                                        <p className="mb-4 text-[11px] text-[#8C8578]">
+                                        <p className="mb-4 text-[11px] text-[#8A6B62]">
                                             This action cannot be undone.
                                         </p>
                                         <div className="flex w-full space-x-3">
@@ -532,7 +532,7 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                                                 onClick={() =>
                                                     setShowDeleteConfirm(null)
                                                 }
-                                                className="flex-1 rounded-lg border border-[#EAE8E3] py-2 text-[12px] font-bold text-[#4A4A4A] transition-colors hover:bg-[#FAF9F6]"
+                                                className="flex-1 rounded-lg border border-[#EADBD8] py-2 text-[12px] font-bold text-[#4A4A4A] transition-colors hover:bg-[#FAF9F6]"
                                             >
                                                 Cancel
                                             </button>
@@ -566,8 +566,8 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                         onClick={closeModal}
                     />
                     <div className="relative z-[10001] flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
-                        <div className="flex items-center justify-between border-b border-[#EAE8E3] bg-[#FAF9F6] px-6 py-4">
-                            <h3 className="font-serif text-lg text-[#3C3428]">
+                        <div className="flex items-center justify-between border-b border-[#EADBD8] bg-[#FAF9F6] px-6 py-4">
+                            <h3 className="font-serif text-lg text-[#4A2525]">
                                 {editingAddress
                                     ? 'Edit Address'
                                     : 'Add New Address'}
@@ -575,7 +575,7 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                             <button
                                 type="button"
                                 onClick={closeModal}
-                                className="p-1 text-[#A89F91] transition-colors hover:text-[#333]"
+                                className="p-1 text-[#C99A8F] transition-colors hover:text-[#333]"
                             >
                                 <X size={20} />
                             </button>
@@ -631,7 +631,7 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                                                 setAreaQuery(event.target.value)
                                             }
                                             placeholder="Search district, city, postal code"
-                                            className="w-full rounded-md border border-[#EAE8E3] bg-white px-4 py-2.5 text-[13px] text-[#333] transition-all focus:border-[#C2AA92] focus:ring-1 focus:ring-[#C2AA92] focus:outline-none"
+                                            className="w-full rounded-md border border-[#EADBD8] bg-white px-4 py-2.5 text-[13px] text-[#333] transition-all focus:border-[#B6574B] focus:ring-1 focus:ring-[#B6574B] focus:outline-none"
                                         />
                                         <button
                                             type="button"
@@ -640,20 +640,20 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                                                 areaLoading ||
                                                 areaQuery.trim().length < 3
                                             }
-                                            className="flex items-center gap-2 rounded-md bg-[#EAE4D9] px-4 py-2.5 text-[12px] font-bold text-[#4A4A4A] disabled:opacity-60"
+                                            className="flex items-center gap-2 rounded-md bg-[#F1E6E2] px-4 py-2.5 text-[12px] font-bold text-[#4A4A4A] disabled:opacity-60"
                                         >
                                             <Search size={14} />
                                             {areaLoading ? '...' : 'Search'}
                                         </button>
                                     </div>
                                     {form.data.biteship_area_id && (
-                                        <p className="mt-1.5 text-[11px] text-[#8C8578]">
+                                        <p className="mt-1.5 text-[11px] text-[#8A6B62]">
                                             Area ID:{' '}
                                             {form.data.biteship_area_id}
                                         </p>
                                     )}
                                     {areaResults.length > 0 && (
-                                        <div className="mt-2 max-h-48 overflow-y-auto rounded-md border border-[#EAE8E3] bg-white">
+                                        <div className="mt-2 max-h-48 overflow-y-auto rounded-md border border-[#EADBD8] bg-white">
                                             {areaResults.map((area) => (
                                                 <button
                                                     key={area.id}
@@ -666,7 +666,7 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                                                     <span className="font-semibold text-[#333]">
                                                         {area.name ?? area.id}
                                                     </span>
-                                                    <span className="block text-[#8C8578]">
+                                                    <span className="block text-[#8A6B62]">
                                                         {[
                                                             area.administrative_division_level_3_name,
                                                             area.administrative_division_level_2_name,
@@ -744,7 +744,7 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                                 />
                                 {(form.data.latitude ||
                                     form.data.longitude) && (
-                                    <p className="-mt-2 text-[11px] text-[#8C8578]">
+                                    <p className="-mt-2 text-[11px] text-[#8A6B62]">
                                         Coordinates: {form.data.latitude},{' '}
                                         {form.data.longitude}
                                     </p>
@@ -777,7 +777,7 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                                                 event.target.checked,
                                             )
                                         }
-                                        className="h-4 w-4 rounded border-[#EAE8E3] text-[#3C3428] focus:ring-[#C2AA92]"
+                                        className="h-4 w-4 rounded border-[#EADBD8] text-[#4A2525] focus:ring-[#B6574B]"
                                     />
                                     <span className="ml-2 cursor-pointer text-[12px] font-medium text-[#4A4A4A]">
                                         Set as default address
@@ -785,11 +785,11 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                                 </label>
                             </div>
 
-                            <div className="flex justify-end gap-3 border-t border-[#EAE8E3] bg-[#FAF9F6] px-6 py-4">
+                            <div className="flex justify-end gap-3 border-t border-[#EADBD8] bg-[#FAF9F6] px-6 py-4">
                                 <button
                                     type="button"
                                     onClick={closeModal}
-                                    className="rounded-md border border-[#EAE8E3] px-6 py-2.5 text-[12px] font-bold text-[#4A4A4A] transition-colors hover:bg-white"
+                                    className="rounded-md border border-[#EADBD8] px-6 py-2.5 text-[12px] font-bold text-[#4A4A4A] transition-colors hover:bg-white"
                                 >
                                     Cancel
                                 </button>
@@ -798,7 +798,7 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                                     disabled={
                                         form.processing || mapLinkError !== ''
                                     }
-                                    className="rounded-md bg-[#3C3428] px-6 py-2.5 text-[12px] font-bold text-white transition-colors hover:bg-[#2D261C] disabled:cursor-not-allowed disabled:opacity-70"
+                                    className="rounded-md bg-[#4A2525] px-6 py-2.5 text-[12px] font-bold text-white transition-colors hover:bg-[#5F1717] disabled:cursor-not-allowed disabled:opacity-70"
                                 >
                                     {form.processing
                                         ? 'Saving...'
@@ -844,8 +844,8 @@ function InputBlock({
                 onChange={(event) => onChange(event.target.value)}
                 placeholder={placeholder}
                 readOnly={readOnly}
-                className={`w-full rounded-md border border-[#EAE8E3] px-4 py-2.5 text-[13px] text-[#333] transition-all focus:border-[#C2AA92] focus:ring-1 focus:ring-[#C2AA92] focus:outline-none ${
-                    readOnly ? 'bg-[#FAF9F6] text-[#8C8578]' : 'bg-white'
+                className={`w-full rounded-md border border-[#EADBD8] px-4 py-2.5 text-[13px] text-[#333] transition-all focus:border-[#B6574B] focus:ring-1 focus:ring-[#B6574B] focus:outline-none ${
+                    readOnly ? 'bg-[#FAF9F6] text-[#8A6B62]' : 'bg-white'
                 }`}
             />
             {error && (
@@ -874,7 +874,7 @@ function TextareaBlock({
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
                 placeholder={placeholder}
-                className="w-full resize-none rounded-md border border-[#EAE8E3] bg-white px-4 py-2.5 text-[13px] text-[#333] transition-all focus:border-[#C2AA92] focus:ring-1 focus:ring-[#C2AA92] focus:outline-none"
+                className="w-full resize-none rounded-md border border-[#EADBD8] bg-white px-4 py-2.5 text-[13px] text-[#333] transition-all focus:border-[#B6574B] focus:ring-1 focus:ring-[#B6574B] focus:outline-none"
             />
             {error && (
                 <p className="mt-1.5 text-[11px] font-medium text-[#B24B4B]">

@@ -68,7 +68,7 @@ export default function ProfileLayout({
             <Head title={`${pageTitle} - Webcare`} />
 
             {/* --- Hero / Header Section --- */}
-            <div className="relative flex h-[200px] w-full items-center overflow-hidden bg-[#EAE8E3] md:h-[280px]">
+            <div className="relative flex h-[200px] w-full items-center overflow-hidden bg-[#EADBD8] md:h-[280px]">
                 {/* Background Image / Pattern */}
                 <div className="absolute inset-0 z-0">
                     <img
@@ -80,7 +80,7 @@ export default function ProfileLayout({
                 </div>
 
                 <div className="relative z-10 mx-auto w-full max-w-[1440px] px-6 md:px-12 lg:px-16">
-                    <div className="mb-4 flex items-center space-x-2 text-[10px] font-medium tracking-wide text-[#8C8578] md:text-xs">
+                    <div className="mb-4 flex items-center space-x-2 text-[10px] font-medium tracking-wide text-[#8A6B62] md:text-xs">
                         {breadcrumbs.map((bc, idx) => (
                             <React.Fragment key={idx}>
                                 {bc.href ? (
@@ -101,10 +101,10 @@ export default function ProfileLayout({
                             </React.Fragment>
                         ))}
                     </div>
-                    <h1 className="mb-2 font-serif text-3xl text-[#3C3428] italic md:text-4xl lg:text-5xl">
+                    <h1 className="mb-2 font-serif text-3xl text-[#4A2525] italic md:text-4xl lg:text-5xl">
                         {title}
                     </h1>
-                    <p className="text-xs text-[#8C8578] md:text-sm">
+                    <p className="text-xs text-[#8A6B62] md:text-sm">
                         {subtitle}
                     </p>
                 </div>
@@ -124,7 +124,7 @@ export default function ProfileLayout({
                                     <Link
                                         key={item.id}
                                         href={item.href}
-                                        className={`flex min-w-[80px] flex-col items-center justify-center rounded-xl border p-3 ${isActive ? 'border-[#C2AA92] bg-[#FAF8F5] text-[#3C3428] shadow-sm' : 'border-[#EAE8E3] bg-white text-[#8C8578] hover:border-[#C4BDB1]'}`}
+                                        className={`flex min-w-[80px] flex-col items-center justify-center rounded-xl border p-3 ${isActive ? 'border-[#B6574B] bg-[#FAF8F5] text-[#4A2525] shadow-sm' : 'border-[#EADBD8] bg-white text-[#8A6B62] hover:border-[#C4BDB1]'}`}
                                     >
                                         <Icon size={20} className="mb-2" />
                                         <span className="text-[10px] font-semibold">
@@ -136,7 +136,7 @@ export default function ProfileLayout({
                         </div>
 
                         {/* Desktop Sidebar Nav */}
-                        <div className="mb-6 hidden rounded-2xl border border-[#EAE8E3] bg-white/60 p-3 shadow-sm backdrop-blur-md lg:block">
+                        <div className="mb-6 hidden rounded-2xl border border-[#EADBD8] bg-white/60 p-3 shadow-sm backdrop-blur-md lg:block">
                             {SIDEBAR_NAV.map((item) => {
                                 const Icon = item.icon;
                                 const isActive = item.id === activePath;
@@ -145,7 +145,7 @@ export default function ProfileLayout({
                                     <Link
                                         key={item.id}
                                         href={item.href}
-                                        className={`mb-1 flex items-center space-x-3 rounded-xl px-4 py-3 transition-all ${isActive ? 'bg-[#EAE4D9] font-semibold text-[#3C3428]' : 'text-[#8C8578] hover:bg-[#F5F2E6] hover:text-[#3C3428]'}`}
+                                        className={`mb-1 flex items-center space-x-3 rounded-xl px-4 py-3 transition-all ${isActive ? 'bg-[#F1E6E2] font-semibold text-[#4A2525]' : 'text-[#8A6B62] hover:bg-[#F8EDED] hover:text-[#4A2525]'}`}
                                     >
                                         <Icon
                                             size={18}
@@ -157,12 +157,12 @@ export default function ProfileLayout({
                                     </Link>
                                 );
                             })}
-                            <div className="mx-2 my-2 h-px bg-[#EAE8E3]"></div>
+                            <div className="mx-2 my-2 h-px bg-[#EADBD8]"></div>
                             <Link
                                 href="/logout"
                                 method="post"
                                 as="button"
-                                className="flex w-full items-center space-x-3 rounded-xl px-4 py-3 text-[#8C8578] transition-all hover:bg-red-50 hover:text-red-600"
+                                className="flex w-full items-center space-x-3 rounded-xl px-4 py-3 text-[#8A6B62] transition-all hover:bg-red-50 hover:text-red-600"
                             >
                                 <LogOut size={18} />
                                 <span className="text-[13px]">Logout</span>
@@ -170,8 +170,8 @@ export default function ProfileLayout({
                         </div>
 
                         {/* Need Help Card (Desktop) */}
-                        <div className="hidden flex-col overflow-hidden rounded-2xl border border-[#EAE8E3] bg-white shadow-sm lg:flex">
-                            <div className="relative h-40 bg-[#F5F2E6]">
+                        <div className="hidden flex-col overflow-hidden rounded-2xl border border-[#EADBD8] bg-white shadow-sm lg:flex">
+                            <div className="relative h-40 bg-[#F8EDED]">
                                 <img
                                     src="/img/hasan-almasi-_X2UAmIcpko-unsplash.webp"
                                     alt="Support"
@@ -180,15 +180,15 @@ export default function ProfileLayout({
                                 <div className="absolute inset-0 bg-gradient-to-t from-white to-transparent"></div>
                             </div>
                             <div className="relative z-10 -mt-6 p-5 pt-0">
-                                <h3 className="mb-2 font-serif text-lg text-[#3C3428]">
+                                <h3 className="mb-2 font-serif text-lg text-[#4A2525]">
                                     Need Help?
                                 </h3>
-                                <p className="mb-4 text-[11px] text-[#8C8578]">
+                                <p className="mb-4 text-[11px] text-[#8A6B62]">
                                     We're here to assist you with any questions.
                                 </p>
                                 <Link
                                     href="/notifications"
-                                    className="flex w-full items-center justify-between rounded-md bg-[#EAE4D9] px-4 py-2.5 text-[11px] font-bold text-[#3C3428] transition-colors hover:bg-[#DFD8CC]"
+                                    className="flex w-full items-center justify-between rounded-md bg-[#F1E6E2] px-4 py-2.5 text-[11px] font-bold text-[#4A2525] transition-colors hover:bg-[#DFD8CC]"
                                 >
                                     Contact Us <ChevronRight size={14} />
                                 </Link>

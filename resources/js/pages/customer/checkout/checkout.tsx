@@ -80,7 +80,7 @@ function CheckoutScreen() {
             <Head title="Checkout - Aurea Syari" />
 
             <main className="mx-auto min-h-screen max-w-[1200px] bg-[#FAF9F6] px-4 py-8 md:px-8 md:py-12">
-                <div className="mb-8 flex items-center space-x-2 text-[10px] font-medium tracking-wide text-[#8C8578] md:text-xs">
+                <div className="mb-8 flex items-center space-x-2 text-[10px] font-medium tracking-wide text-[#8A6B62] md:text-xs">
                     <Link
                         href="/"
                         className="transition-colors hover:text-black"
@@ -100,10 +100,10 @@ function CheckoutScreen() {
 
                 <div className="mb-8 flex flex-col justify-between gap-5 md:flex-row md:items-end">
                     <div>
-                        <h1 className="mb-2 font-serif text-3xl text-[#3C3428] italic md:text-4xl">
+                        <h1 className="mb-2 font-serif text-3xl text-[#4A2525] italic md:text-4xl">
                             Checkout
                         </h1>
-                        <p className="text-xs text-[#8C8578] md:text-sm">
+                        <p className="text-xs text-[#8A6B62] md:text-sm">
                             Pilih alamat tersimpan, ongkir Biteship, voucher,
                             lalu bayar via Midtrans.
                         </p>
@@ -112,7 +112,7 @@ function CheckoutScreen() {
                         {['Cart', 'Checkout', 'Payment'].map((label, index) => (
                             <div key={label} className="flex items-center">
                                 <div
-                                    className={`flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold ${index < 2 ? 'bg-[#3C3428] text-white' : 'bg-white text-[#A89F91] ring-1 ring-[#EAE8E3]'}`}
+                                    className={`flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold ${index < 2 ? 'bg-[#4A2525] text-white' : 'bg-white text-[#C99A8F] ring-1 ring-[#EADBD8]'}`}
                                 >
                                     {index === 0 ? (
                                         <Check size={14} />
@@ -120,11 +120,11 @@ function CheckoutScreen() {
                                         index + 1
                                     )}
                                 </div>
-                                <span className="mx-2 hidden text-[11px] text-[#8C8578] sm:inline">
+                                <span className="mx-2 hidden text-[11px] text-[#8A6B62] sm:inline">
                                     {label}
                                 </span>
                                 {index < 2 && (
-                                    <div className="mx-2 h-px w-10 bg-[#EAE8E3]" />
+                                    <div className="mx-2 h-px w-10 bg-[#EADBD8]" />
                                 )}
                             </div>
                         ))}
@@ -132,13 +132,13 @@ function CheckoutScreen() {
                 </div>
 
                 {cartItems.length === 0 ? (
-                    <div className="rounded-2xl border border-[#EAE8E3] bg-white p-10 text-center">
-                        <p className="mb-4 font-serif text-2xl text-[#3C3428]">
+                    <div className="rounded-2xl border border-[#EADBD8] bg-white p-10 text-center">
+                        <p className="mb-4 font-serif text-2xl text-[#4A2525]">
                             Keranjang kosong
                         </p>
                         <Link
                             href="/list"
-                            className="text-sm font-semibold text-[#3C3428] underline"
+                            className="text-sm font-semibold text-[#4A2525] underline"
                         >
                             Belanja dulu
                         </Link>
@@ -146,20 +146,20 @@ function CheckoutScreen() {
                 ) : (
                     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
                         <div className="space-y-6">
-                            <section className="rounded-2xl border border-[#EAE8E3] bg-white p-6 shadow-sm">
+                            <section className="rounded-2xl border border-[#EADBD8] bg-white p-6 shadow-sm">
                                 <div className="mb-5 flex items-center justify-between gap-4">
                                     <div>
-                                        <h2 className="font-serif text-xl text-[#3C3428]">
+                                        <h2 className="font-serif text-xl text-[#4A2525]">
                                             Alamat Pengiriman
                                         </h2>
-                                        <p className="mt-1 text-[12px] text-[#8C8578]">
+                                        <p className="mt-1 text-[12px] text-[#8A6B62]">
                                             Data berasal dari
                                             customer_addresses.
                                         </p>
                                     </div>
                                     <Link
                                         href="/address?redirect_to=/checkout"
-                                        className="text-[12px] font-bold text-[#3C3428] underline"
+                                        className="text-[12px] font-bold text-[#4A2525] underline"
                                     >
                                         Kelola alamat
                                     </Link>
@@ -172,14 +172,14 @@ function CheckoutScreen() {
                                             onClick={() =>
                                                 void selectAddress(address.id)
                                             }
-                                            className={`rounded-xl border p-4 text-left transition-all ${selectedAddressId === address.id ? 'border-[#C2AA92] bg-[#FAF8F5] ring-1 ring-[#C2AA92]' : 'border-[#EAE8E3] hover:border-[#C4BDB1]'}`}
+                                            className={`rounded-xl border p-4 text-left transition-all ${selectedAddressId === address.id ? 'border-[#B6574B] bg-[#FAF8F5] ring-1 ring-[#B6574B]' : 'border-[#EADBD8] hover:border-[#C4BDB1]'}`}
                                         >
                                             <div className="mb-2 flex items-start justify-between gap-3">
                                                 <p className="text-[13px] font-bold text-[#333]">
                                                     {address.label ?? 'Address'}
                                                 </p>
                                                 {address.is_default && (
-                                                    <span className="rounded bg-[#F5F2E6] px-2 py-1 text-[10px] font-bold text-[#3C3428]">
+                                                    <span className="rounded bg-[#F8EDED] px-2 py-1 text-[10px] font-bold text-[#4A2525]">
                                                         Default
                                                     </span>
                                                 )}
@@ -187,7 +187,7 @@ function CheckoutScreen() {
                                             <p className="text-[12px] font-semibold text-[#4A4A4A]">
                                                 {address.recipient_name}
                                             </p>
-                                            <p className="mt-1 text-[11px] text-[#8C8578]">
+                                            <p className="mt-1 text-[11px] text-[#8A6B62]">
                                                 {address.recipient_phone}
                                             </p>
                                             <p className="mt-2 text-[12px] leading-relaxed text-[#4A4A4A]">
@@ -204,13 +204,13 @@ function CheckoutScreen() {
                                 </div>
                             </section>
 
-                            <section className="rounded-2xl border border-[#EAE8E3] bg-white p-6 shadow-sm">
+                            <section className="rounded-2xl border border-[#EADBD8] bg-white p-6 shadow-sm">
                                 <div className="mb-5 flex items-center gap-2">
                                     <Truck
                                         size={18}
-                                        className="text-[#3C3428]"
+                                        className="text-[#4A2525]"
                                     />
-                                    <h2 className="font-serif text-xl text-[#3C3428]">
+                                    <h2 className="font-serif text-xl text-[#4A2525]">
                                         Ongkir
                                     </h2>
                                 </div>
@@ -225,11 +225,11 @@ function CheckoutScreen() {
                                     </p>
                                 )}
                                 {shippingRatesLoading ? (
-                                    <div className="rounded-xl border border-dashed border-[#EAE8E3] p-6 text-[12px] text-[#8C8578]">
+                                    <div className="rounded-xl border border-dashed border-[#EADBD8] p-6 text-[12px] text-[#8A6B62]">
                                         Memuat harga ongkir...
                                     </div>
                                 ) : shippingRates.length === 0 ? (
-                                    <div className="rounded-xl border border-dashed border-[#EAE8E3] p-6 text-[12px] text-[#8C8578]">
+                                    <div className="rounded-xl border border-dashed border-[#EADBD8] p-6 text-[12px] text-[#8A6B62]">
                                         Pilih alamat dengan postal code untuk
                                         melihat harga ongkir.
                                     </div>
@@ -244,13 +244,13 @@ function CheckoutScreen() {
                                                         rate,
                                                     )
                                                 }
-                                                className={`rounded-xl border p-4 text-left transition-all ${selectedShippingRate?.id === rate.id ? 'border-[#C2AA92] bg-[#FAF8F5] ring-1 ring-[#C2AA92]' : 'border-[#EAE8E3] hover:border-[#C4BDB1]'}`}
+                                                className={`rounded-xl border p-4 text-left transition-all ${selectedShippingRate?.id === rate.id ? 'border-[#B6574B] bg-[#FAF8F5] ring-1 ring-[#B6574B]' : 'border-[#EADBD8] hover:border-[#C4BDB1]'}`}
                                             >
-                                                <p className="text-[13px] font-bold text-[#3C3428]">
+                                                <p className="text-[13px] font-bold text-[#4A2525]">
                                                     {rate.courier_company.toUpperCase()}{' '}
                                                     {rate.courier_type}
                                                 </p>
-                                                <p className="mt-1 text-[11px] text-[#8C8578]">
+                                                <p className="mt-1 text-[11px] text-[#8A6B62]">
                                                     {rate.courier_service_name ??
                                                         rate.description ??
                                                         'Delivery service'}{' '}
@@ -265,13 +265,13 @@ function CheckoutScreen() {
                                 )}
                             </section>
 
-                            <section className="rounded-2xl border border-[#EAE8E3] bg-white p-6 shadow-sm">
+                            <section className="rounded-2xl border border-[#EADBD8] bg-white p-6 shadow-sm">
                                 <div className="mb-5 flex items-center gap-2">
                                     <Ticket
                                         size={18}
-                                        className="text-[#3C3428]"
+                                        className="text-[#4A2525]"
                                     />
-                                    <h2 className="font-serif text-xl text-[#3C3428]">
+                                    <h2 className="font-serif text-xl text-[#4A2525]">
                                         Voucher
                                     </h2>
                                 </div>
@@ -282,14 +282,14 @@ function CheckoutScreen() {
                                             setVoucherCode(event.target.value)
                                         }
                                         placeholder="Masukkan kode voucher"
-                                        className="flex-1 rounded-md border border-[#EAE8E3] bg-[#FAF9F6] px-4 py-2.5 text-[12px] focus:border-[#C4BDB1] focus:ring-1 focus:ring-[#C4BDB1] focus:outline-none"
+                                        className="flex-1 rounded-md border border-[#EADBD8] bg-[#FAF9F6] px-4 py-2.5 text-[12px] focus:border-[#C4BDB1] focus:ring-1 focus:ring-[#C4BDB1] focus:outline-none"
                                     />
                                     <button
                                         type="button"
                                         onClick={() =>
                                             void applyVoucher(voucherCode)
                                         }
-                                        className="rounded-md bg-[#3C3428] px-5 py-2.5 text-[12px] font-bold text-white"
+                                        className="rounded-md bg-[#4A2525] px-5 py-2.5 text-[12px] font-bold text-white"
                                     >
                                         Apply
                                     </button>
@@ -297,7 +297,7 @@ function CheckoutScreen() {
                                         <button
                                             type="button"
                                             onClick={() => void removeVoucher()}
-                                            className="rounded-md border border-[#EAE8E3] px-4 py-2.5 text-[12px] font-bold text-[#4A4A4A]"
+                                            className="rounded-md border border-[#EADBD8] px-4 py-2.5 text-[12px] font-bold text-[#4A4A4A]"
                                         >
                                             Remove
                                         </button>
@@ -316,8 +316,8 @@ function CheckoutScreen() {
                                 )}
                             </section>
 
-                            <section className="rounded-2xl border border-[#EAE8E3] bg-white p-6 shadow-sm">
-                                <h2 className="mb-4 font-serif text-xl text-[#3C3428]">
+                            <section className="rounded-2xl border border-[#EADBD8] bg-white p-6 shadow-sm">
+                                <h2 className="mb-4 font-serif text-xl text-[#4A2525]">
                                     Catatan Order
                                 </h2>
                                 <textarea
@@ -327,7 +327,7 @@ function CheckoutScreen() {
                                     }
                                     maxLength={2000}
                                     placeholder="Opsional"
-                                    className="h-24 w-full resize-none rounded-md border border-[#EAE8E3] bg-white px-4 py-3 text-[13px] focus:border-[#C2AA92] focus:ring-1 focus:ring-[#C2AA92] focus:outline-none"
+                                    className="h-24 w-full resize-none rounded-md border border-[#EADBD8] bg-white px-4 py-3 text-[13px] focus:border-[#B6574B] focus:ring-1 focus:ring-[#B6574B] focus:outline-none"
                                 />
                                 <label className="mt-4 flex items-start gap-2 text-[12px] text-[#4A4A4A]">
                                     <input
@@ -336,7 +336,7 @@ function CheckoutScreen() {
                                         onChange={(event) =>
                                             setAgreed(event.target.checked)
                                         }
-                                        className="mt-0.5 h-4 w-4 rounded border-[#EAE8E3] text-[#3C3428]"
+                                        className="mt-0.5 h-4 w-4 rounded border-[#EADBD8] text-[#4A2525]"
                                     />
                                     <span>
                                         Saya menyetujui no return/refund policy,
@@ -356,14 +356,14 @@ function CheckoutScreen() {
                             </section>
                         </div>
 
-                        <aside className="h-fit rounded-2xl border border-[#EAE8E3] bg-white p-6 shadow-xl shadow-black/5 lg:sticky lg:top-24">
-                            <h2 className="mb-5 border-b border-[#EAE8E3] pb-4 font-serif text-xl text-[#3C3428]">
+                        <aside className="h-fit rounded-2xl border border-[#EADBD8] bg-white p-6 shadow-xl shadow-black/5 lg:sticky lg:top-24">
+                            <h2 className="mb-5 border-b border-[#EADBD8] pb-4 font-serif text-xl text-[#4A2525]">
                                 Order Summary
                             </h2>
                             <div className="mb-5 max-h-[300px] space-y-4 overflow-y-auto pr-2">
                                 {cartItems.map((item) => (
                                     <div key={item.id} className="flex gap-3">
-                                        <div className="relative h-20 w-16 flex-shrink-0 overflow-hidden rounded-md bg-[#F5F2E6]">
+                                        <div className="relative h-20 w-16 flex-shrink-0 overflow-hidden rounded-md bg-[#F8EDED]">
                                             {item.image && (
                                                 <img
                                                     src={item.image}
@@ -379,7 +379,7 @@ function CheckoutScreen() {
                                             <p className="line-clamp-2 text-[12px] font-bold text-[#333]">
                                                 {item.title}
                                             </p>
-                                            <p className="mt-1 text-[10px] text-[#8C8578]">
+                                            <p className="mt-1 text-[10px] text-[#8A6B62]">
                                                 {[item.color, item.size]
                                                     .filter(Boolean)
                                                     .join(' / ') || '-'}
@@ -413,7 +413,7 @@ function CheckoutScreen() {
                                 value={-summary.discount}
                                 danger
                             />
-                            <div className="mt-4 border-t border-[#EAE8E3] pt-4">
+                            <div className="mt-4 border-t border-[#EADBD8] pt-4">
                                 <div className="flex items-end justify-between">
                                     <span className="text-[13px] font-semibold text-[#333]">
                                         Total Payment
@@ -432,14 +432,14 @@ function CheckoutScreen() {
                                     !agreed ||
                                     cartItems.some((item) => !item.is_available)
                                 }
-                                className="mt-6 flex w-full items-center justify-center rounded-lg bg-[#3C3428] py-4 text-[13px] font-bold tracking-wider text-white transition-all hover:bg-[#2D261C] disabled:cursor-not-allowed disabled:opacity-60"
+                                className="mt-6 flex w-full items-center justify-center rounded-lg bg-[#4A2525] py-4 text-[13px] font-bold tracking-wider text-white transition-all hover:bg-[#5F1717] disabled:cursor-not-allowed disabled:opacity-60"
                             >
                                 <Lock size={16} className="mr-2" />
                                 {placingOrder
                                     ? 'Creating Payment...'
                                     : 'Pay with Midtrans'}
                             </button>
-                            <div className="mt-6 space-y-3 rounded-xl bg-[#FAF9F6] p-4 text-[11px] text-[#8C8578]">
+                            <div className="mt-6 space-y-3 rounded-xl bg-[#FAF9F6] p-4 text-[11px] text-[#8A6B62]">
                                 <p className="flex items-center gap-2">
                                     <ShieldCheck size={16} /> Secure payment
                                     powered by Midtrans

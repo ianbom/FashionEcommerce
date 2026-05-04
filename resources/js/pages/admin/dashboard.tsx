@@ -210,12 +210,12 @@ export default function AdminDashboard({
                                         >
                                             <stop
                                                 offset="5%"
-                                                stopColor="#3C3428"
+                                                stopColor="#4A2525"
                                                 stopOpacity={0.25}
                                             />
                                             <stop
                                                 offset="95%"
-                                                stopColor="#3C3428"
+                                                stopColor="#4A2525"
                                                 stopOpacity={0}
                                             />
                                         </linearGradient>
@@ -247,7 +247,7 @@ export default function AdminDashboard({
                                     <Area
                                         type="monotone"
                                         dataKey="revenue"
-                                        stroke="#3C3428"
+                                        stroke="#4A2525"
                                         fill="url(#revenue)"
                                         strokeWidth={2}
                                     />
@@ -419,7 +419,7 @@ function StatusChart({
                         <Tooltip />
                         <Bar
                             dataKey="value"
-                            fill="#3C3428"
+                            fill="#4A2525"
                             radius={[4, 4, 0, 0]}
                         />
                     </BarChart>

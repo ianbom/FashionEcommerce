@@ -19,10 +19,10 @@ export default function Navbar({ cartCount = 0, collections = [] }: NavbarProps)
         <nav className="sticky top-0 z-50 flex items-center justify-between bg-[#FAF9F6]/90 px-4 py-4 backdrop-blur-md transition-all duration-300 md:px-10">
             {/* Mobile View */}
             <div className="flex w-full items-center justify-between md:hidden">
-                <Link href="/" className="font-serif text-2xl text-[#5A4F43]">
+                <Link href="/" className="font-serif text-2xl text-[#4A2525]">
                     Auréa Syar'i
                 </Link>
-                <div className="flex items-center space-x-4 text-[#5A4F43]">
+                <div className="flex items-center space-x-4 text-[#4A2525]">
                     <Search
                         strokeWidth={1.5}
                         size={22}
@@ -42,7 +42,7 @@ export default function Navbar({ cartCount = 0, collections = [] }: NavbarProps)
                             />
                         </Link>
                         {cartCount > 0 && (
-                            <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#8C7A6B] px-1 text-[9px] font-bold text-white">
+                            <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#7F2020] px-1 text-[9px] font-bold text-white">
                                 {cartBadge}
                             </span>
                         )}
@@ -56,15 +56,15 @@ export default function Navbar({ cartCount = 0, collections = [] }: NavbarProps)
                     href="/"
                     className="flex transform cursor-pointer flex-col items-center justify-center transition-transform duration-300 hover:scale-105"
                 >
-                    <span className="font-serif text-xl text-[#5A4F43]">
+                    <span className="font-serif text-xl text-[#4A2525]">
                         Auréa Syar'i
                     </span>
                 </Link>
 
-                <div className="flex items-center space-x-10 text-[11px] font-semibold tracking-widest text-[#8C8578]">
+                <div className="flex items-center space-x-10 text-[11px] font-semibold tracking-widest text-[#8A6B62]">
                     <Link
                         href="/list"
-                        className="transition-colors hover:text-[#5A4F43]"
+                        className="transition-colors hover:text-[#4A2525]"
                     >
                         SHOP ALL
                     </Link>
@@ -72,19 +72,19 @@ export default function Navbar({ cartCount = 0, collections = [] }: NavbarProps)
                         <Link
                             key={collection.id}
                             href={`/list?collection=${encodeURIComponent(collection.slug)}`}
-                            className="transition-colors hover:text-[#5A4F43]"
+                            className="transition-colors hover:text-[#4A2525]"
                         >
                             {collection.name.toUpperCase()}
                         </Link>
                     ))}
                 </div>
 
-                <div className="flex items-center space-x-6 text-[#5A4F43]">
+                <div className="flex items-center space-x-6 text-[#4A2525]">
                     <Link href="/my-profile" aria-label="Open profile">
                         <User
                             strokeWidth={1.5}
                             size={20}
-                            className="cursor-pointer transition-all hover:text-[#8C7A6B]"
+                            className="cursor-pointer transition-all hover:text-[#7F2020]"
                         />
                     </Link>
                     <div className="relative">
@@ -92,11 +92,11 @@ export default function Navbar({ cartCount = 0, collections = [] }: NavbarProps)
                             <ShoppingBag
                                 strokeWidth={1.5}
                                 size={20}
-                                className="cursor-pointer transition-all hover:text-[#8C7A6B]"
+                                className="cursor-pointer transition-all hover:text-[#7F2020]"
                             />
                         </Link>
                         {cartCount > 0 && (
-                            <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#8C7A6B] px-1 text-[9px] font-bold text-white">
+                            <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#7F2020] px-1 text-[9px] font-bold text-white">
                                 {cartBadge}
                             </span>
                         )}

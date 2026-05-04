@@ -200,7 +200,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                 <div className="relative">
                     <Search
                         size={18}
-                        className="absolute top-1/2 left-4 -translate-y-1/2 text-[#A89F91]"
+                        className="absolute top-1/2 left-4 -translate-y-1/2 text-[#C99A8F]"
                     />
                     <input
                         type="search"
@@ -212,7 +212,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                             }))
                         }
                         placeholder="Search by order number or product name"
-                        className="w-full rounded-xl border border-[#EAE8E3] bg-white py-3 pr-4 pl-11 text-[13px] text-[#333] shadow-sm transition-all focus:border-[#C2AA92] focus:ring-1 focus:ring-[#C2AA92] focus:outline-none"
+                        className="w-full rounded-xl border border-[#EADBD8] bg-white py-3 pr-4 pl-11 text-[13px] text-[#333] shadow-sm transition-all focus:border-[#B6574B] focus:ring-1 focus:ring-[#B6574B] focus:outline-none"
                     />
                 </div>
                 <Select
@@ -264,13 +264,13 @@ export default function ListOrder({ orders, filters, options }: Props) {
                 </Select>
                 <button
                     type="submit"
-                    className="rounded-xl bg-[#3C3428] px-5 py-3 text-[12px] font-bold text-white shadow-sm transition-colors hover:bg-[#2D261C]"
+                    className="rounded-xl bg-[#4A2525] px-5 py-3 text-[12px] font-bold text-white shadow-sm transition-colors hover:bg-[#5F1717]"
                 >
                     Search
                 </button>
             </form>
 
-            <div className="hide-scrollbar mb-6 flex overflow-x-auto border-b border-[#EAE8E3]">
+            <div className="hide-scrollbar mb-6 flex overflow-x-auto border-b border-[#EADBD8]">
                 <div className="flex space-x-6 px-1">
                     {tabs.map((tab) => (
                         <button
@@ -279,15 +279,15 @@ export default function ListOrder({ orders, filters, options }: Props) {
                             onClick={() =>
                                 updateFilter({ order_status: tab.id })
                             }
-                            className={`relative pb-3 text-[13px] font-medium whitespace-nowrap transition-all ${form.order_status === tab.id ? 'text-[#3C3428]' : 'text-[#8C8578] hover:text-[#4A4A4A]'}`}
+                            className={`relative pb-3 text-[13px] font-medium whitespace-nowrap transition-all ${form.order_status === tab.id ? 'text-[#4A2525]' : 'text-[#8A6B62] hover:text-[#4A4A4A]'}`}
                         >
                             {form.order_status === tab.id && (
-                                <div className="absolute right-0 bottom-0 left-0 h-0.5 rounded-t-full bg-[#C2AA92]" />
+                                <div className="absolute right-0 bottom-0 left-0 h-0.5 rounded-t-full bg-[#B6574B]" />
                             )}
                             <span
                                 className={
                                     form.order_status === tab.id
-                                        ? 'rounded-full bg-[#C2AA92] px-3 py-1.5 text-xs text-white shadow-sm'
+                                        ? 'rounded-full bg-[#B6574B] px-3 py-1.5 text-xs text-white shadow-sm'
                                         : 'px-1'
                                 }
                             >
@@ -299,25 +299,25 @@ export default function ListOrder({ orders, filters, options }: Props) {
             </div>
 
             {orders.data.length === 0 ? (
-                <div className="flex flex-col items-center justify-center rounded-2xl border border-[#EAE8E3] bg-white px-6 py-20 text-center">
+                <div className="flex flex-col items-center justify-center rounded-2xl border border-[#EADBD8] bg-white px-6 py-20 text-center">
                     <div className="relative mb-6 h-48 w-48">
-                        <div className="absolute inset-0 rounded-full bg-[#F5F2E6] opacity-50 blur-2xl" />
+                        <div className="absolute inset-0 rounded-full bg-[#F8EDED] opacity-50 blur-2xl" />
                         <img
                             src={FALLBACK_IMAGE}
                             alt="Empty orders"
                             className="relative z-10 h-full w-full rounded-xl object-cover shadow-lg"
                         />
                     </div>
-                    <h2 className="mb-2 font-serif text-2xl text-[#3C3428]">
+                    <h2 className="mb-2 font-serif text-2xl text-[#4A2525]">
                         No orders found
                     </h2>
-                    <p className="mb-8 max-w-[280px] text-[13px] text-[#8C8578]">
+                    <p className="mb-8 max-w-[280px] text-[13px] text-[#8A6B62]">
                         Try a different filter or start exploring our
                         collection.
                     </p>
                     <Link
                         href="/list"
-                        className="rounded-lg bg-[#3C3428] px-8 py-3 text-[12px] font-bold tracking-wider text-white transition-all hover:bg-[#2D261C]"
+                        className="rounded-lg bg-[#4A2525] px-8 py-3 text-[12px] font-bold tracking-wider text-white transition-all hover:bg-[#5F1717]"
                     >
                         Shop Now
                     </Link>
@@ -327,21 +327,21 @@ export default function ListOrder({ orders, filters, options }: Props) {
                     {orders.data.map((order, idx) => (
                         <div
                             key={order.id}
-                            className="overflow-hidden rounded-2xl border border-[#EAE8E3] bg-white shadow-sm transition-shadow duration-300 hover:shadow-md"
+                            className="overflow-hidden rounded-2xl border border-[#EADBD8] bg-white shadow-sm transition-shadow duration-300 hover:shadow-md"
                             style={{ animationDelay: `${idx * 50}ms` }}
                         >
-                            <div className="grid grid-cols-2 gap-4 border-b border-[#EAE8E3]/60 bg-[#FAF9F6]/50 p-5 md:grid-cols-4 md:p-6">
+                            <div className="grid grid-cols-2 gap-4 border-b border-[#EADBD8]/60 bg-[#FAF9F6]/50 p-5 md:grid-cols-4 md:p-6">
                                 <div className="col-span-2 md:col-span-1">
                                     <p className="mb-1 font-serif text-[13px] text-[#333333]">
                                         Order #{order.order_number}
                                     </p>
-                                    <p className="text-[11px] text-[#8C8578]">
+                                    <p className="text-[11px] text-[#8A6B62]">
                                         {order.created_date ?? '-'} •{' '}
                                         {order.created_time ?? '-'}
                                     </p>
                                 </div>
                                 <div className="hidden md:block">
-                                    <p className="mb-1 text-[10px] text-[#8C8578]">
+                                    <p className="mb-1 text-[10px] text-[#8A6B62]">
                                         Payment
                                     </p>
                                     <span
@@ -351,7 +351,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                     </span>
                                 </div>
                                 <div className="hidden md:block">
-                                    <p className="mb-1 text-[10px] text-[#8C8578]">
+                                    <p className="mb-1 text-[10px] text-[#8A6B62]">
                                         Total
                                     </p>
                                     <p className="font-serif text-[14px] text-[#333333]">
@@ -359,7 +359,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                     </p>
                                 </div>
                                 <div className="col-span-2 flex flex-col items-start justify-center text-left md:col-span-1 md:items-end md:text-right">
-                                    <p className="mb-1 hidden text-[10px] text-[#8C8578] md:block">
+                                    <p className="mb-1 hidden text-[10px] text-[#8A6B62] md:block">
                                         Order Status
                                     </p>
                                     <span
@@ -377,7 +377,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                             key={item.id}
                                             className="flex min-w-[200px] gap-4 md:min-w-0"
                                         >
-                                            <div className="h-[100px] w-[80px] shrink-0 overflow-hidden rounded-lg bg-[#F5F2E6]">
+                                            <div className="h-[100px] w-[80px] shrink-0 overflow-hidden rounded-lg bg-[#F8EDED]">
                                                 <img
                                                     src={
                                                         item.image ??
@@ -391,19 +391,19 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                                 <h4 className="mb-1 max-w-[150px] truncate text-[13px] font-semibold text-[#333333]">
                                                     {item.title}
                                                 </h4>
-                                                <p className="mb-1 text-[11px] text-[#8C8578]">
+                                                <p className="mb-1 text-[11px] text-[#8A6B62]">
                                                     {item.color ?? '-'} •{' '}
                                                     {item.size ?? '-'}
                                                 </p>
-                                                <p className="text-[11px] text-[#8C8578]">
+                                                <p className="text-[11px] text-[#8A6B62]">
                                                     Qty: {item.qty}
                                                 </p>
                                             </div>
                                         </div>
                                     ))}
                                     {order.extra_items > 0 && (
-                                        <div className="flex h-[100px] w-[80px] shrink-0 flex-col items-center justify-center rounded-lg border border-[#EAE8E3] bg-[#FAF9F6] text-[#8C8578]">
-                                            <span className="font-serif text-lg text-[#3C3428] italic">
+                                        <div className="flex h-[100px] w-[80px] shrink-0 flex-col items-center justify-center rounded-lg border border-[#EADBD8] bg-[#FAF9F6] text-[#8A6B62]">
+                                            <span className="font-serif text-lg text-[#4A2525] italic">
                                                 +{order.extra_items}
                                             </span>
                                             <span className="text-[10px]">
@@ -434,7 +434,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                                     ? 'noreferrer'
                                                     : undefined
                                             }
-                                            className="flex-1 rounded-lg bg-[#3C3428] py-2.5 text-center text-[12px] font-bold text-white shadow-md shadow-[#3C3428]/20 transition-colors hover:bg-[#2D261C] lg:w-full"
+                                            className="flex-1 rounded-lg bg-[#4A2525] py-2.5 text-center text-[12px] font-bold text-white shadow-md shadow-[#4A2525]/20 transition-colors hover:bg-[#5F1717] lg:w-full"
                                         >
                                             Pay Now
                                         </a>
@@ -442,21 +442,21 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                     {order.order_status === 'shipped' && (
                                         <Link
                                             href={orderShow.url(order.id)}
-                                            className="flex-1 rounded-lg bg-[#3C3428] py-2.5 text-center text-[12px] font-bold text-white shadow-md shadow-[#3C3428]/20 transition-colors hover:bg-[#2D261C] lg:w-full"
+                                            className="flex-1 rounded-lg bg-[#4A2525] py-2.5 text-center text-[12px] font-bold text-white shadow-md shadow-[#4A2525]/20 transition-colors hover:bg-[#5F1717] lg:w-full"
                                         >
                                             Track Order
                                         </Link>
                                     )}
                                     <Link
                                         href={orderShow.url(order.id)}
-                                        className="flex-1 rounded-lg border border-[#EAE8E3] bg-white py-2.5 text-center text-[12px] font-bold text-[#3C3428] transition-colors hover:border-[#C4BDB1] hover:bg-[#FAF9F6] lg:w-full"
+                                        className="flex-1 rounded-lg border border-[#EADBD8] bg-white py-2.5 text-center text-[12px] font-bold text-[#4A2525] transition-colors hover:border-[#C4BDB1] hover:bg-[#FAF9F6] lg:w-full"
                                     >
                                         View Details
                                     </Link>
                                     {canBuyAgain(order.order_status) && (
                                         <Link
                                             href="/list"
-                                            className="flex-1 rounded-lg bg-[#3C3428] py-2.5 text-center text-[12px] font-bold text-white shadow-md shadow-[#3C3428]/20 transition-colors hover:bg-[#2D261C] lg:w-full"
+                                            className="flex-1 rounded-lg bg-[#4A2525] py-2.5 text-center text-[12px] font-bold text-white shadow-md shadow-[#4A2525]/20 transition-colors hover:bg-[#5F1717] lg:w-full"
                                         >
                                             Buy Again
                                         </Link>
@@ -465,10 +465,10 @@ export default function ListOrder({ orders, filters, options }: Props) {
                             </div>
 
                             {order.order_status === 'shipped' && (
-                                <div className="hidden border-t border-[#EAE8E3]/60 bg-[#FAF9F6] px-5 py-4 md:block md:px-8">
+                                <div className="hidden border-t border-[#EADBD8]/60 bg-[#FAF9F6] px-5 py-4 md:block md:px-8">
                                     <div className="relative z-10 mx-auto flex max-w-[600px] items-center justify-between">
-                                        <div className="absolute top-4 right-[5%] left-[5%] -z-10 h-[2px] bg-[#EAE8E3]" />
-                                        <div className="absolute top-4 left-[5%] -z-10 h-[2px] w-[60%] bg-[#C2AA92]" />
+                                        <div className="absolute top-4 right-[5%] left-[5%] -z-10 h-[2px] bg-[#EADBD8]" />
+                                        <div className="absolute top-4 left-[5%] -z-10 h-[2px] w-[60%] bg-[#B6574B]" />
                                         {[
                                             {
                                                 label: 'Order Confirmed',
@@ -499,7 +499,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                                     className="flex flex-col items-center"
                                                 >
                                                     <div
-                                                        className={`mb-2 flex h-8 w-8 items-center justify-center rounded-full border-2 transition-colors ${step.active ? 'border-[#C2AA92] bg-[#C2AA92] text-white shadow-md' : 'border-[#EAE8E3] bg-white text-[#A89F91]'}`}
+                                                        className={`mb-2 flex h-8 w-8 items-center justify-center rounded-full border-2 transition-colors ${step.active ? 'border-[#B6574B] bg-[#B6574B] text-white shadow-md' : 'border-[#EADBD8] bg-white text-[#C99A8F]'}`}
                                                     >
                                                         <Icon
                                                             size={14}
@@ -507,7 +507,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                                         />
                                                     </div>
                                                     <p
-                                                        className={`mb-0.5 text-[10px] font-bold ${step.active ? 'text-[#3C3428]' : 'text-[#A89F91]'}`}
+                                                        className={`mb-0.5 text-[10px] font-bold ${step.active ? 'text-[#4A2525]' : 'text-[#C99A8F]'}`}
                                                     >
                                                         {step.label}
                                                     </p>
@@ -520,7 +520,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                         </div>
                     ))}
 
-                    <div className="flex flex-col items-center justify-between gap-4 pt-8 pb-4 text-[12px] text-[#8C8578] md:flex-row">
+                    <div className="flex flex-col items-center justify-between gap-4 pt-8 pb-4 text-[12px] text-[#8A6B62] md:flex-row">
                         <span>
                             Showing {orders.from ?? 0}-{orders.to ?? 0} of{' '}
                             {orders.total} orders
@@ -554,13 +554,13 @@ function Select({
             <select
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
-                className="w-full appearance-none rounded-xl border border-[#EAE8E3] bg-white px-4 py-3 pr-9 text-[13px] text-[#333] shadow-sm focus:border-[#C2AA92] focus:outline-none"
+                className="w-full appearance-none rounded-xl border border-[#EADBD8] bg-white px-4 py-3 pr-9 text-[13px] text-[#333] shadow-sm focus:border-[#B6574B] focus:outline-none"
             >
                 {children}
             </select>
             <ChevronDown
                 size={16}
-                className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-[#A89F91]"
+                className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-[#C99A8F]"
             />
         </div>
     );
@@ -576,7 +576,7 @@ function PaginationButton({ link }: { link: PaginationLink }) {
         ) : (
             label
         );
-    const className = `flex h-8 min-w-8 items-center justify-center rounded-md px-2 font-medium transition-colors ${link.active ? 'bg-[#3C3428] text-white shadow-md' : 'text-[#8C8578] hover:bg-white hover:text-[#3C3428]'}`;
+    const className = `flex h-8 min-w-8 items-center justify-center rounded-md px-2 font-medium transition-colors ${link.active ? 'bg-[#4A2525] text-white shadow-md' : 'text-[#8A6B62] hover:bg-white hover:text-[#4A2525]'}`;
 
     if (!link.url) {
         return <span className={`${className} opacity-40`}>{content}</span>;

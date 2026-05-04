@@ -15,7 +15,7 @@ export default function Appearance() {
                     title="Appearance settings"
                     description="Appearance locked to light mode for whole website"
                 />
-                <div className="rounded-xl border border-[#EAE8E3] bg-[#FAF8F5] p-4 text-sm leading-relaxed text-[#5C564D]">
+                <div className="rounded-xl border border-[#EADBD8] bg-[#FAF8F5] p-4 text-sm leading-relaxed text-[#5C564D]">
                     This website now uses light mode only. Dark mode and system theme switching have been disabled globally.
                 </div>
             </div>

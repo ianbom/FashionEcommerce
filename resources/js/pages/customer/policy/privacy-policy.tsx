@@ -11,20 +11,20 @@ export default function PrivacyPolicy() {
             {/* Hero Section */}
             <div className="relative flex w-full flex-col items-center justify-center overflow-hidden bg-[#FAF9F6] py-20 text-center md:py-28">
                 <div className="absolute inset-0 z-0">
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#EAE8E3]/50 to-[#FAF9F6]"></div>
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#EADBD8]/50 to-[#FAF9F6]"></div>
                 </div>
                 <div className="animate-fade-in-up relative z-10 px-4">
-                    <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-[#EAE8E3] bg-white shadow-sm">
-                        <Shield size={28} className="text-[#3C3428]" />
+                    <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-[#EADBD8] bg-white shadow-sm">
+                        <Shield size={28} className="text-[#4A2525]" />
                     </div>
-                    <h1 className="mb-4 font-serif text-3xl text-[#3C3428] md:text-5xl">
+                    <h1 className="mb-4 font-serif text-3xl text-[#4A2525] md:text-5xl">
                         Privacy Policy
                     </h1>
-                    <p className="mx-auto max-w-[500px] text-[13px] text-[#8C8578] md:text-[14px]">
+                    <p className="mx-auto max-w-[500px] text-[13px] text-[#8A6B62] md:text-[14px]">
                         Learn how we collect, use, and protect your personal
                         information when you use our services.
                     </p>
-                    <p className="mt-6 text-[11px] text-[#A89F91]">
+                    <p className="mt-6 text-[11px] text-[#C99A8F]">
                         Last Updated: May 15, 2024
                     </p>
                 </div>
@@ -33,11 +33,11 @@ export default function PrivacyPolicy() {
             {/* Content Section */}
             <main className="relative z-20 mx-auto max-w-[800px] px-4 py-12 md:px-8 md:py-20">
                 <div
-                    className="animate-fade-in-up rounded-3xl border border-[#EAE8E3] bg-white p-8 shadow-sm md:p-12"
+                    className="animate-fade-in-up rounded-3xl border border-[#EADBD8] bg-white p-8 shadow-sm md:p-12"
                     style={{ animationDelay: '150ms' }}
                 >
                     <div className="prose prose-sm md:prose-base prose-stone max-w-none">
-                        <h2 className="mb-4 font-serif text-xl text-[#3C3428] md:text-2xl">
+                        <h2 className="mb-4 font-serif text-xl text-[#4A2525] md:text-2xl">
                             1. Introduction
                         </h2>
                         <p className="mb-8 text-[13px] leading-relaxed text-[#4A4A4A] md:text-[14px]">
@@ -49,7 +49,7 @@ export default function PrivacyPolicy() {
                             law protects you.
                         </p>
 
-                        <h2 className="mb-4 font-serif text-xl text-[#3C3428] md:text-2xl">
+                        <h2 className="mb-4 font-serif text-xl text-[#4A2525] md:text-2xl">
                             2. The Data We Collect About You
                         </h2>
                         <p className="mb-4 text-[13px] leading-relaxed text-[#4A4A4A] md:text-[14px]">
@@ -80,7 +80,7 @@ export default function PrivacyPolicy() {
                             </li>
                         </ul>
 
-                        <h2 className="mb-4 font-serif text-xl text-[#3C3428] md:text-2xl">
+                        <h2 className="mb-4 font-serif text-xl text-[#4A2525] md:text-2xl">
                             3. How We Use Your Personal Data
                         </h2>
                         <p className="mb-4 text-[13px] leading-relaxed text-[#4A4A4A] md:text-[14px]">
@@ -105,7 +105,7 @@ export default function PrivacyPolicy() {
                             </li>
                         </ul>
 
-                        <h2 className="mb-4 font-serif text-xl text-[#3C3428] md:text-2xl">
+                        <h2 className="mb-4 font-serif text-xl text-[#4A2525] md:text-2xl">
                             4. Data Security
                         </h2>
                         <p className="mb-8 text-[13px] leading-relaxed text-[#4A4A4A] md:text-[14px]">
@@ -118,7 +118,7 @@ export default function PrivacyPolicy() {
                             third parties who have a business need to know.
                         </p>
 
-                        <h2 className="mb-4 font-serif text-xl text-[#3C3428] md:text-2xl">
+                        <h2 className="mb-4 font-serif text-xl text-[#4A2525] md:text-2xl">
                             5. Your Legal Rights
                         </h2>
                         <p className="mb-8 text-[13px] leading-relaxed text-[#4A4A4A] md:text-[14px]">
@@ -132,19 +132,19 @@ export default function PrivacyPolicy() {
                         </p>
                     </div>
 
-                    <div className="mt-12 flex items-center justify-between border-t border-[#EAE8E3] pt-8">
-                        <p className="text-[12px] text-[#8C8578]">
+                    <div className="mt-12 flex items-center justify-between border-t border-[#EADBD8] pt-8">
+                        <p className="text-[12px] text-[#8A6B62]">
                             Have questions?{' '}
                             <a
                                 href="mailto:support@webcare.com"
-                                className="font-semibold text-[#3C3428] hover:underline"
+                                className="font-semibold text-[#4A2525] hover:underline"
                             >
                                 Contact Support
                             </a>
                         </p>
                         <Link
                             href="/"
-                            className="inline-flex items-center text-[12px] font-bold text-[#3C3428] transition-colors hover:text-[#C2AA92]"
+                            className="inline-flex items-center text-[12px] font-bold text-[#4A2525] transition-colors hover:text-[#B6574B]"
                         >
                             Back to Home{' '}
                             <ChevronRight size={14} className="ml-1" />

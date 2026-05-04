@@ -136,9 +136,9 @@ export default function MyProfile() {
             ]}
         >
             {/* Profile Header Card */}
-            <div className="animate-fade-in-up flex flex-col items-start justify-between rounded-2xl border border-[#EAE8E3] bg-white p-6 shadow-sm md:flex-row md:items-center md:p-8">
+            <div className="animate-fade-in-up flex flex-col items-start justify-between rounded-2xl border border-[#EADBD8] bg-white p-6 shadow-sm md:flex-row md:items-center md:p-8">
                 <div className="mb-6 flex items-center space-x-6 md:mb-0">
-                    <div className="group relative h-20 w-20 cursor-pointer overflow-hidden rounded-full border-4 border-[#F5F2E6] md:h-24 md:w-24">
+                    <div className="group relative h-20 w-20 cursor-pointer overflow-hidden rounded-full border-4 border-[#F8EDED] md:h-24 md:w-24">
                         <img
                             src={avatarSrc}
                             alt={user.name}
@@ -149,14 +149,14 @@ export default function MyProfile() {
                         </div>
                     </div>
                     <div>
-                        <h2 className="mb-1 font-serif text-xl text-[#3C3428] md:text-2xl">
+                        <h2 className="mb-1 font-serif text-xl text-[#4A2525] md:text-2xl">
                             {user.name}
                         </h2>
                         <p className="mb-1 text-[12px] text-[#4A4A4A] md:text-[13px]">
                             {user.email}
                         </p>
                         {user.member_since && (
-                            <p className="mb-3 text-[11px] text-[#8C8578]">
+                            <p className="mb-3 text-[11px] text-[#8A6B62]">
                                 Member since {user.member_since}
                             </p>
                         )}
@@ -164,8 +164,8 @@ export default function MyProfile() {
                 </div>
 
                 {/* Default Avatar Info (Desktop Only) */}
-                <div className="hidden max-w-[280px] items-center border-l border-[#EAE8E3] pl-8 lg:flex">
-                    <div className="mr-4 h-12 w-12 flex-shrink-0 overflow-hidden rounded-full border border-[#EAE8E3] bg-[#F5F2E6] opacity-60">
+                <div className="hidden max-w-[280px] items-center border-l border-[#EADBD8] pl-8 lg:flex">
+                    <div className="mr-4 h-12 w-12 flex-shrink-0 overflow-hidden rounded-full border border-[#EADBD8] bg-[#F8EDED] opacity-60">
                         <svg
                             viewBox="0 0 100 100"
                             fill="none"
@@ -174,11 +174,11 @@ export default function MyProfile() {
                         >
                             <path
                                 d="M50 55C63.8071 55 75 43.8071 75 30C75 16.1929 63.8071 5 50 5C36.1929 5 25 16.1929 25 30C25 43.8071 36.1929 55 50 55Z"
-                                fill="#D8D2C4"
+                                fill="#EADBD8"
                             />
                             <path
                                 d="M15 95C15 75.67 30.67 60 50 60C69.33 60 85 75.67 85 95V100H15V95Z"
-                                fill="#D8D2C4"
+                                fill="#EADBD8"
                             />
                         </svg>
                     </div>
@@ -186,13 +186,13 @@ export default function MyProfile() {
                         <h4 className="mb-0.5 text-[12px] font-bold text-[#333]">
                             Default avatar
                         </h4>
-                        <p className="text-[10px] leading-tight text-[#8C8578]">
+                        <p className="text-[10px] leading-tight text-[#8A6B62]">
                             This will be used as your avatar if no photo is set.
                         </p>
                     </div>
                     <ChevronRight
                         size={16}
-                        className="ml-4 flex-shrink-0 text-[#A89F91]"
+                        className="ml-4 flex-shrink-0 text-[#C99A8F]"
                     />
                 </div>
             </div>
@@ -202,12 +202,12 @@ export default function MyProfile() {
                 {/* --- Left Column: Personal Information --- */}
                 <form
                     onSubmit={submitProfile}
-                    className="animate-fade-in-up rounded-2xl border border-[#EAE8E3] bg-white p-6 shadow-sm md:p-8"
+                    className="animate-fade-in-up rounded-2xl border border-[#EADBD8] bg-white p-6 shadow-sm md:p-8"
                     style={{ animationDelay: '150ms' }}
                 >
-                    <div className="mb-6 flex items-center border-b border-[#EAE8E3] pb-4">
-                        <User size={18} className="mr-2 text-[#3C3428]" />
-                        <h3 className="font-serif text-lg text-[#3C3428]">
+                    <div className="mb-6 flex items-center border-b border-[#EADBD8] pb-4">
+                        <User size={18} className="mr-2 text-[#4A2525]" />
+                        <h3 className="font-serif text-lg text-[#4A2525]">
                             Personal Information
                         </h3>
                     </div>
@@ -227,7 +227,7 @@ export default function MyProfile() {
                                 className={`w-full rounded-md border bg-white px-4 py-2.5 text-[13px] text-[#333] transition-all focus:ring-1 focus:outline-none ${
                                     profileForm.errors.name
                                         ? 'border-red-400 focus:border-red-400 focus:ring-red-200'
-                                        : 'border-[#EAE8E3] focus:border-[#C2AA92] focus:ring-[#C2AA92]'
+                                        : 'border-[#EADBD8] focus:border-[#B6574B] focus:ring-[#B6574B]'
                                 }`}
                             />
                             {profileForm.errors.name && (
@@ -251,7 +251,7 @@ export default function MyProfile() {
                                 className={`w-full rounded-md border bg-white px-4 py-2.5 text-[13px] text-[#333] transition-all focus:ring-1 focus:outline-none ${
                                     profileForm.errors.email
                                         ? 'border-red-400 focus:border-red-400 focus:ring-red-200'
-                                        : 'border-[#EAE8E3] focus:border-[#C2AA92] focus:ring-[#C2AA92]'
+                                        : 'border-[#EADBD8] focus:border-[#B6574B] focus:ring-[#B6574B]'
                                 }`}
                             />
                             {profileForm.errors.email && (
@@ -276,7 +276,7 @@ export default function MyProfile() {
                                 className={`w-full rounded-md border bg-white px-4 py-2.5 text-[13px] text-[#333] transition-all focus:ring-1 focus:outline-none ${
                                     profileForm.errors.phone
                                         ? 'border-red-400 focus:border-red-400 focus:ring-red-200'
-                                        : 'border-[#EAE8E3] focus:border-[#C2AA92] focus:ring-[#C2AA92]'
+                                        : 'border-[#EADBD8] focus:border-[#B6574B] focus:ring-[#B6574B]'
                                 }`}
                             />
                             {profileForm.errors.phone && (
@@ -290,7 +290,7 @@ export default function MyProfile() {
                         <div>
                             <label className="mb-1.5 block text-[11px] font-semibold text-[#4A4A4A]">
                                 Avatar Image{' '}
-                                <span className="font-normal text-[#8C8578]">
+                                <span className="font-normal text-[#8A6B62]">
                                     (optional)
                                 </span>
                             </label>
@@ -304,7 +304,7 @@ export default function MyProfile() {
                                 className={`w-full rounded-md border bg-white px-4 py-2.5 text-[13px] text-[#333] transition-all focus:ring-1 focus:outline-none ${
                                     profileForm.errors.avatar_url
                                         ? 'border-red-400 focus:border-red-400 focus:ring-red-200'
-                                        : 'border-[#EAE8E3] focus:border-[#C2AA92] focus:ring-[#C2AA92]'
+                                        : 'border-[#EADBD8] focus:border-[#B6574B] focus:ring-[#B6574B]'
                                 }`}
                             />
                             {profileForm.errors.avatar_url && (
@@ -312,7 +312,7 @@ export default function MyProfile() {
                                     {profileForm.errors.avatar_url}
                                 </p>
                             )}
-                            <p className="mt-1.5 text-[10px] text-[#8C8578]">
+                            <p className="mt-1.5 text-[10px] text-[#8A6B62]">
                                 JPG, PNG, or WEBP. Max 2MB.
                             </p>
                         </div>
@@ -321,7 +321,7 @@ export default function MyProfile() {
                             <button
                                 type="submit"
                                 disabled={profileForm.processing}
-                                className="inline-flex flex-1 items-center justify-center gap-2 rounded-md bg-[#3C3428] px-6 py-2.5 text-[12px] font-bold tracking-wider text-white transition-all hover:bg-[#2D261C] hover:shadow-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                                className="inline-flex flex-1 items-center justify-center gap-2 rounded-md bg-[#4A2525] px-6 py-2.5 text-[12px] font-bold tracking-wider text-white transition-all hover:bg-[#5F1717] hover:shadow-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                             >
                                 {profileForm.processing && (
                                     <Loader2
@@ -334,7 +334,7 @@ export default function MyProfile() {
                             <button
                                 type="button"
                                 onClick={() => profileForm.reset()}
-                                className="rounded-md border border-[#EAE8E3] bg-white px-6 py-2.5 text-[12px] font-bold tracking-wider text-[#4A4A4A] transition-colors hover:bg-[#FAF9F6]"
+                                className="rounded-md border border-[#EADBD8] bg-white px-6 py-2.5 text-[12px] font-bold tracking-wider text-[#4A4A4A] transition-colors hover:bg-[#FAF9F6]"
                             >
                                 Cancel
                             </button>
@@ -347,15 +347,15 @@ export default function MyProfile() {
                     {/* Change Password */}
                     <form
                         onSubmit={submitPassword}
-                        className="animate-fade-in-up rounded-2xl border border-[#EAE8E3] bg-white p-6 shadow-sm md:p-8"
+                        className="animate-fade-in-up rounded-2xl border border-[#EADBD8] bg-white p-6 shadow-sm md:p-8"
                         style={{ animationDelay: '200ms' }}
                     >
-                        <div className="mb-6 flex items-center border-b border-[#EAE8E3] pb-4">
+                        <div className="mb-6 flex items-center border-b border-[#EADBD8] pb-4">
                             <LockIcon
                                 size={18}
-                                className="mr-2 text-[#3C3428]"
+                                className="mr-2 text-[#4A2525]"
                             />
-                            <h3 className="font-serif text-lg text-[#3C3428]">
+                            <h3 className="font-serif text-lg text-[#4A2525]">
                                 Change Password
                             </h3>
                         </div>
@@ -413,7 +413,7 @@ export default function MyProfile() {
                                 <button
                                     type="submit"
                                     disabled={passwordForm.processing}
-                                    className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-[#3C3428] px-6 py-2.5 text-[12px] font-bold tracking-wider text-white transition-colors hover:bg-[#2D261C] disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-[#4A2525] px-6 py-2.5 text-[12px] font-bold tracking-wider text-white transition-colors hover:bg-[#5F1717] disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {passwordForm.processing && (
                                         <Loader2
@@ -429,16 +429,16 @@ export default function MyProfile() {
 
                     {/* Default Address */}
                     <div
-                        className="animate-fade-in-up rounded-2xl border border-[#EAE8E3] bg-white p-6 shadow-sm"
+                        className="animate-fade-in-up rounded-2xl border border-[#EADBD8] bg-white p-6 shadow-sm"
                         style={{ animationDelay: '250ms' }}
                     >
                         <div className="mb-4 flex items-center justify-between">
                             <div className="flex items-center">
                                 <MapPin
                                     size={18}
-                                    className="mr-2 text-[#3C3428]"
+                                    className="mr-2 text-[#4A2525]"
                                 />
-                                <h3 className="font-serif text-lg text-[#3C3428]">
+                                <h3 className="font-serif text-lg text-[#4A2525]">
                                     Default Address
                                 </h3>
                             </div>
@@ -449,7 +449,7 @@ export default function MyProfile() {
                                     <p className="font-semibold text-[#333]">
                                         {defaultAddress.recipient_name}
                                     </p>
-                                    <span className="rounded-md bg-[#F5F2E6] px-3 py-1 text-[10px] font-bold text-[#3C3428]">
+                                    <span className="rounded-md bg-[#F8EDED] px-3 py-1 text-[10px] font-bold text-[#4A2525]">
                                         {defaultAddress.label ?? 'Default'}
                                     </span>
                                 </div>
@@ -459,7 +459,7 @@ export default function MyProfile() {
                                 <p className="leading-relaxed text-[#4A4A4A]">
                                     {defaultAddress.full_address}
                                 </p>
-                                <p className="text-[#8C8578]">
+                                <p className="text-[#8A6B62]">
                                     {[
                                         defaultAddress.district,
                                         defaultAddress.city,
@@ -470,20 +470,20 @@ export default function MyProfile() {
                                         .join(', ')}
                                 </p>
                                 {defaultAddress.note && (
-                                    <p className="rounded-md bg-[#FAF9F6] px-3 py-2 text-[#8C8578]">
+                                    <p className="rounded-md bg-[#FAF9F6] px-3 py-2 text-[#8A6B62]">
                                         {defaultAddress.note}
                                     </p>
                                 )}
                             </div>
                         ) : (
-                            <p className="mb-6 text-[12px] leading-relaxed text-[#8C8578]">
+                            <p className="mb-6 text-[12px] leading-relaxed text-[#8A6B62]">
                                 No default address yet. Add one for faster
                                 checkout.
                             </p>
                         )}
                         <Link
                             href="/address"
-                            className="block w-full rounded-md border border-[#EAE8E3] bg-white px-4 py-2 text-center text-[12px] font-bold tracking-wider text-[#3C3428] transition-colors hover:bg-[#FAF9F6]"
+                            className="block w-full rounded-md border border-[#EADBD8] bg-white px-4 py-2 text-center text-[12px] font-bold tracking-wider text-[#4A2525] transition-colors hover:bg-[#FAF9F6]"
                         >
                             Manage Addresses
                         </Link>
@@ -505,7 +505,7 @@ function PasswordField({
     error,
     autoComplete,
     hint,
-    hintColor = 'text-[#8C8578]',
+    hintColor = 'text-[#8A6B62]',
 }: {
     label: string;
     show: boolean;
@@ -531,13 +531,13 @@ function PasswordField({
                     className={`w-full rounded-md border bg-white px-4 py-2.5 pr-10 text-[13px] text-[#333] transition-all focus:ring-1 focus:outline-none ${
                         error
                             ? 'border-red-400 focus:border-red-400 focus:ring-red-200'
-                            : 'border-[#EAE8E3] focus:border-[#C2AA92] focus:ring-[#C2AA92]'
+                            : 'border-[#EADBD8] focus:border-[#B6574B] focus:ring-[#B6574B]'
                     }`}
                 />
                 <button
                     type="button"
                     onClick={onToggle}
-                    className="absolute top-1/2 right-3 -translate-y-1/2 text-[#A89F91] hover:text-[#333]"
+                    className="absolute top-1/2 right-3 -translate-y-1/2 text-[#C99A8F] hover:text-[#333]"
                 >
                     {show ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>

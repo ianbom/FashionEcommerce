@@ -186,7 +186,7 @@ export default function OrdersIndex({ orders, filters, options }: Props) {
             icon: Package,
             iconBg: 'bg-white/20',
             iconColor: 'text-white',
-            cardBg: 'bg-gradient-to-br from-[#422d25] to-[#7a5c4e]',
+            cardBg: 'bg-gradient-to-br from-[#7F2020] to-[#B6574B]',
             subColor: 'text-white/60',
             valColor: 'text-white',
             titleColor: 'text-white/80',
@@ -272,7 +272,7 @@ export default function OrdersIndex({ orders, filters, options }: Props) {
                 {/* Header */}
                 <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
                     <div>
-                        <p className="mb-1 text-[11px] font-bold tracking-widest text-[#422d25]/50 uppercase">
+                        <p className="mb-1 text-[11px] font-bold tracking-widest text-[#7F2020]/50 uppercase">
                             Sales Management
                         </p>
                         <h1 className="font-serif text-3xl leading-tight text-zinc-900">
@@ -302,7 +302,7 @@ export default function OrdersIndex({ orders, filters, options }: Props) {
                             className={[
                                 'relative overflow-hidden rounded-2xl border transition-all duration-200 hover:-translate-y-0.5',
                                 m.featured
-                                    ? 'border-transparent shadow-lg shadow-[#422d25]/20'
+                                    ? 'border-transparent shadow-lg shadow-[#7F2020]/20'
                                     : 'border-zinc-100 shadow-sm hover:shadow-md',
                                 m.cardBg,
                             ].join(' ')}
@@ -479,7 +479,7 @@ export default function OrdersIndex({ orders, filters, options }: Props) {
                             <Button
                                 type="submit"
                                 size="sm"
-                                className="h-9 gap-1.5 bg-[#422d25] text-white hover:bg-[#34231d]"
+                                className="h-9 gap-1.5 bg-[#7F2020] text-white hover:bg-[#5F1717]"
                             >
                                 <Search className="h-3.5 w-3.5" /> Search
                             </Button>
@@ -570,7 +570,7 @@ export default function OrdersIndex({ orders, filters, options }: Props) {
                                                     href={
                                                         '/admin/orders/' + o.id
                                                     }
-                                                    className="font-medium text-zinc-900 transition-colors hover:text-[#422d25]"
+                                                    className="font-medium text-zinc-900 transition-colors hover:text-[#7F2020]"
                                                 >
                                                     {o.order_number}
                                                 </Link>
@@ -760,7 +760,7 @@ export default function OrdersIndex({ orders, filters, options }: Props) {
                                         className={[
                                             'h-8 min-w-8 rounded-lg px-2.5 text-xs font-medium transition-colors',
                                             link.active
-                                                ? 'bg-[#422d25] text-white shadow-sm'
+                                                ? 'bg-[#7F2020] text-white shadow-sm'
                                                 : !link.url
                                                   ? 'cursor-not-allowed text-zinc-300'
                                                   : 'text-zinc-500 hover:bg-zinc-100',

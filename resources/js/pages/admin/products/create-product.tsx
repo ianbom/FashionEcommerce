@@ -98,7 +98,7 @@ export default function CreateProduct() {
                         >
                             Preview Product
                         </Button>
-                        <Button className="h-10 rounded-lg bg-[#422d25] px-6 font-medium text-white shadow-md transition-all hover:bg-[#34231d] hover:shadow-lg">
+                        <Button className="h-10 rounded-lg bg-[#7F2020] px-6 font-medium text-white shadow-md transition-all hover:bg-[#5F1717] hover:shadow-lg">
                             Publish Product
                         </Button>
                     </div>
@@ -128,7 +128,7 @@ export default function CreateProduct() {
                                                 <Input
                                                     id="name"
                                                     defaultValue="Najran Piping Lace Abaya"
-                                                    className="rounded-lg border-zinc-200 shadow-sm focus:border-[#422d25] focus:ring-[#422d25]"
+                                                    className="rounded-lg border-zinc-200 shadow-sm focus:border-[#7F2020] focus:ring-[#7F2020]"
                                                 />
                                             </div>
                                             <div className="space-y-1.5">
@@ -141,7 +141,7 @@ export default function CreateProduct() {
                                                 <Input
                                                     id="sku"
                                                     defaultValue="ABY-NJRN-001"
-                                                    className="rounded-lg border-zinc-200 bg-zinc-50/50 shadow-sm focus:border-[#422d25] focus:ring-[#422d25]"
+                                                    className="rounded-lg border-zinc-200 bg-zinc-50/50 shadow-sm focus:border-[#7F2020] focus:ring-[#7F2020]"
                                                 />
                                             </div>
                                         </div>
@@ -327,7 +327,7 @@ export default function CreateProduct() {
                                     <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                                         {/* Dropzone */}
                                         <div className="group relative col-span-2 flex aspect-[3/4] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-zinc-200 bg-zinc-50 p-4 text-center transition-colors hover:bg-zinc-100/50 md:col-span-1">
-                                            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-white text-zinc-400 shadow-sm transition-all group-hover:scale-110 group-hover:text-[#422d25]">
+                                            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-white text-zinc-400 shadow-sm transition-all group-hover:scale-110 group-hover:text-[#7F2020]">
                                                 <UploadCloud className="h-5 w-5" />
                                             </div>
                                             <p className="mb-1 text-xs font-medium text-zinc-600">
@@ -386,7 +386,7 @@ export default function CreateProduct() {
                                                         <input
                                                             type="radio"
                                                             checked
-                                                            className="h-3 w-3 text-[#422d25] focus:ring-[#422d25]"
+                                                            className="h-3 w-3 text-[#7F2020] focus:ring-[#7F2020]"
                                                             readOnly
                                                         />
                                                         <span className="text-[9px] font-medium text-zinc-600">
@@ -810,7 +810,7 @@ export default function CreateProduct() {
                                                         <td className="px-2 py-1.5 text-center">
                                                             <Switch
                                                                 defaultChecked
-                                                                className="scale-75 data-[state=checked]:bg-[#422d25]"
+                                                                className="scale-75 data-[state=checked]:bg-[#7F2020]"
                                                             />
                                                         </td>
                                                         <td className="px-2 py-1.5 text-center">
@@ -895,7 +895,7 @@ export default function CreateProduct() {
                                                         <td className="px-2 py-1.5 text-center">
                                                             <Switch
                                                                 defaultChecked
-                                                                className="scale-75 data-[state=checked]:bg-[#422d25]"
+                                                                className="scale-75 data-[state=checked]:bg-[#7F2020]"
                                                             />
                                                         </td>
                                                         <td className="px-2 py-1.5 text-center">
@@ -980,7 +980,7 @@ export default function CreateProduct() {
                                                         <td className="px-2 py-1.5 text-center">
                                                             <Switch
                                                                 defaultChecked
-                                                                className="scale-75 data-[state=checked]:bg-[#422d25]"
+                                                                className="scale-75 data-[state=checked]:bg-[#7F2020]"
                                                             />
                                                         </td>
                                                         <td className="px-2 py-1.5 text-center">
@@ -1065,7 +1065,7 @@ export default function CreateProduct() {
                                                         <td className="px-2 py-1.5 text-center">
                                                             <Switch
                                                                 defaultChecked
-                                                                className="scale-75 data-[state=checked]:bg-[#422d25]"
+                                                                className="scale-75 data-[state=checked]:bg-[#7F2020]"
                                                             />
                                                         </td>
                                                         <td className="px-2 py-1.5 text-center">
@@ -1259,7 +1259,7 @@ export default function CreateProduct() {
                                         </div>
                                         <Switch
                                             defaultChecked
-                                            className="data-[state=checked]:bg-[#422d25]"
+                                            className="data-[state=checked]:bg-[#7F2020]"
                                         />
                                     </div>
                                     <div className="group flex items-center justify-between">
@@ -1271,7 +1271,7 @@ export default function CreateProduct() {
                                         </div>
                                         <Switch
                                             defaultChecked
-                                            className="data-[state=checked]:bg-[#422d25]"
+                                            className="data-[state=checked]:bg-[#7F2020]"
                                         />
                                     </div>
                                     <div className="group flex items-center justify-between">
@@ -1281,7 +1281,7 @@ export default function CreateProduct() {
                                                 Is Best Seller
                                             </Label>
                                         </div>
-                                        <Switch className="data-[state=checked]:bg-[#422d25]" />
+                                        <Switch className="data-[state=checked]:bg-[#7F2020]" />
                                     </div>
                                 </div>
                             </div>
@@ -1437,7 +1437,7 @@ export default function CreateProduct() {
                         >
                             Save as Draft
                         </Button>
-                        <Button className="h-10 rounded-lg bg-[#422d25] px-6 font-medium text-white shadow-md transition-all hover:bg-[#34231d] hover:shadow-lg">
+                        <Button className="h-10 rounded-lg bg-[#7F2020] px-6 font-medium text-white shadow-md transition-all hover:bg-[#5F1717] hover:shadow-lg">
                             Publish Product
                         </Button>
                     </div>
@@ -1462,7 +1462,7 @@ function SectionCard({
                 className={`flex items-center justify-between border-b border-zinc-50 px-5 pt-5 pb-3 ${noPaddingTitle ? 'pb-4' : ''}`}
             >
                 <div>
-                    <h2 className="font-serif text-base leading-tight text-zinc-900 transition-colors group-hover:text-[#422d25]">
+                    <h2 className="font-serif text-base leading-tight text-zinc-900 transition-colors group-hover:text-[#7F2020]">
                         {title}
                     </h2>
                     {description && (

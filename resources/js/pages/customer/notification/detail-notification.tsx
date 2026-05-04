@@ -202,7 +202,7 @@ const typeConfig: Record<NotificationDetail['detail_type'], TypeConfig> = {
         icon: Bell,
         accent: 'text-[#8C5A41]',
         badge: 'bg-[#F6EEE7] text-[#8C5A41]',
-        iconWrap: 'bg-[#EAE4D9] text-[#8C5A41]',
+        iconWrap: 'bg-[#F1E6E2] text-[#8C5A41]',
         panel: 'bg-[#FAF8F5]',
         ctaLabel: 'View Notification',
     },
@@ -245,13 +245,13 @@ function DetailRow({
 }) {
     return (
         <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#FAF8F5] text-[#8C8578]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#FAF8F5] text-[#8A6B62]">
                 <Icon size={18} />
             </div>
             <div className="min-w-0">
-                <p className="mb-1 text-xs text-[#8C8578]">{label}</p>
+                <p className="mb-1 text-xs text-[#8A6B62]">{label}</p>
                 <div
-                    className={`text-sm font-semibold break-words text-[#3C3428] ${valueClassName ?? ''}`}
+                    className={`text-sm font-semibold break-words text-[#4A2525] ${valueClassName ?? ''}`}
                 >
                     {value}
                 </div>
@@ -273,11 +273,11 @@ function SidebarRow({
 }) {
     return (
         <div className="flex items-center justify-between gap-4 text-sm">
-            <div className="flex items-center text-[#8C8578]">
+            <div className="flex items-center text-[#8A6B62]">
                 <Icon size={14} className="mr-2 shrink-0" />
                 <span>{label}</span>
             </div>
-            <span className={`text-right font-medium text-[#3C3428] ${valueClassName ?? ''}`}>
+            <span className={`text-right font-medium text-[#4A2525] ${valueClassName ?? ''}`}>
                 {value}
             </span>
         </div>
@@ -316,7 +316,7 @@ export default function DetailNotification({ notification }: Props) {
                 <div className="flex flex-col items-start">
                     <Link
                         href={notification.actions.back_url}
-                        className="group mb-4 flex items-center font-sans text-sm not-italic text-[#3C3428] transition-colors hover:text-black"
+                        className="group mb-4 flex items-center font-sans text-sm not-italic text-[#4A2525] transition-colors hover:text-black"
                     >
                         <ArrowLeft
                             size={16}
@@ -342,7 +342,7 @@ export default function DetailNotification({ notification }: Props) {
             <div className="flex flex-col gap-6 lg:flex-row">
                 <div className="flex min-w-0 flex-1 flex-col gap-6">
                     <div
-                        className={`flex flex-col justify-between gap-4 rounded-2xl border border-[#EAE8E3] p-6 shadow-sm transition-all hover:shadow-md md:flex-row md:items-start ${config.panel}`}
+                        className={`flex flex-col justify-between gap-4 rounded-2xl border border-[#EADBD8] p-6 shadow-sm transition-all hover:shadow-md md:flex-row md:items-start ${config.panel}`}
                     >
                         <div className="flex gap-4">
                             <div className="relative shrink-0">
@@ -357,10 +357,10 @@ export default function DetailNotification({ notification }: Props) {
                                 <p className={`mb-1 text-xs font-semibold ${config.accent}`}>
                                     {notification.type_label}
                                 </p>
-                                <h2 className="mb-2 font-serif text-lg text-[#3C3428] md:text-xl">
+                                <h2 className="mb-2 font-serif text-lg text-[#4A2525] md:text-xl">
                                     {notification.title}
                                 </h2>
-                                <div className="flex items-center text-xs text-[#8C8578]">
+                                <div className="flex items-center text-xs text-[#8A6B62]">
                                     <Clock size={14} className="mr-1" />
                                     {formatDateTime(notification.created_at)}
                                 </div>
@@ -380,8 +380,8 @@ export default function DetailNotification({ notification }: Props) {
                         </div>
                     </div>
 
-                    <div className="rounded-2xl border border-[#EAE8E3] bg-white p-6 shadow-sm">
-                        <h3 className="mb-3 font-serif text-xl text-[#3C3428]">
+                    <div className="rounded-2xl border border-[#EADBD8] bg-white p-6 shadow-sm">
+                        <h3 className="mb-3 font-serif text-xl text-[#4A2525]">
                             Message Details
                         </h3>
                         <p className="mb-6 text-sm leading-relaxed text-[#5C564D]">
@@ -389,7 +389,7 @@ export default function DetailNotification({ notification }: Props) {
                         </p>
 
                         {notification.detail_type === 'shipping' && (
-                            <div className="grid grid-cols-1 gap-x-8 gap-y-6 border-t border-[#EAE8E3] pt-6 md:grid-cols-2">
+                            <div className="grid grid-cols-1 gap-x-8 gap-y-6 border-t border-[#EADBD8] pt-6 md:grid-cols-2">
                                 <DetailRow
                                     icon={ShoppingBag}
                                     label="Order Number"
@@ -424,7 +424,7 @@ export default function DetailNotification({ notification }: Props) {
                         )}
 
                         {notification.detail_type === 'payment' && (
-                            <div className="grid grid-cols-1 gap-x-8 gap-y-6 border-t border-[#EAE8E3] pt-6 md:grid-cols-2">
+                            <div className="grid grid-cols-1 gap-x-8 gap-y-6 border-t border-[#EADBD8] pt-6 md:grid-cols-2">
                                 <DetailRow
                                     icon={ShoppingBag}
                                     label="Order Number"
@@ -471,7 +471,7 @@ export default function DetailNotification({ notification }: Props) {
 
                         {notification.detail_type !== 'payment' &&
                             notification.detail_type !== 'shipping' && (
-                                <div className="grid grid-cols-1 gap-x-8 gap-y-6 border-t border-[#EAE8E3] pt-6 md:grid-cols-2">
+                                <div className="grid grid-cols-1 gap-x-8 gap-y-6 border-t border-[#EADBD8] pt-6 md:grid-cols-2">
                                     <DetailRow
                                         icon={Bell}
                                         label="Notification Type"
@@ -511,44 +511,44 @@ export default function DetailNotification({ notification }: Props) {
                     </div>
 
                     {order && (
-                        <div className="rounded-2xl border border-[#EAE8E3] bg-white p-6 shadow-sm">
+                        <div className="rounded-2xl border border-[#EADBD8] bg-white p-6 shadow-sm">
                             <div className="mb-5 flex items-center justify-between gap-4">
-                                <h3 className="font-serif text-xl text-[#3C3428]">
+                                <h3 className="font-serif text-xl text-[#4A2525]">
                                     Order Summary
                                 </h3>
-                                <span className="rounded-full bg-[#F5F2E6] px-3 py-1 text-xs font-semibold text-[#6B5C4B]">
+                                <span className="rounded-full bg-[#F8EDED] px-3 py-1 text-xs font-semibold text-[#6B5C4B]">
                                     {order.items_count} item
                                 </span>
                             </div>
 
                             <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
                                 <div className="rounded-xl border border-[#EFEAE3] bg-[#FCFBF9] p-4">
-                                    <p className="text-xs text-[#8C8578]">Subtotal</p>
-                                    <p className="mt-1 text-sm font-semibold text-[#3C3428]">
+                                    <p className="text-xs text-[#8A6B62]">Subtotal</p>
+                                    <p className="mt-1 text-sm font-semibold text-[#4A2525]">
                                         {formatPrice(order.subtotal)}
                                     </p>
                                 </div>
                                 <div className="rounded-xl border border-[#EFEAE3] bg-[#FCFBF9] p-4">
-                                    <p className="text-xs text-[#8C8578]">Shipping</p>
-                                    <p className="mt-1 text-sm font-semibold text-[#3C3428]">
+                                    <p className="text-xs text-[#8A6B62]">Shipping</p>
+                                    <p className="mt-1 text-sm font-semibold text-[#4A2525]">
                                         {formatPrice(order.shipping_cost)}
                                     </p>
                                 </div>
                                 <div className="rounded-xl border border-[#EFEAE3] bg-[#FCFBF9] p-4">
-                                    <p className="text-xs text-[#8C8578]">Service Fee</p>
-                                    <p className="mt-1 text-sm font-semibold text-[#3C3428]">
+                                    <p className="text-xs text-[#8A6B62]">Service Fee</p>
+                                    <p className="mt-1 text-sm font-semibold text-[#4A2525]">
                                         {formatPrice(order.service_fee)}
                                     </p>
                                 </div>
                                 <div className="rounded-xl border border-[#EFEAE3] bg-[#FCFBF9] p-4">
-                                    <p className="text-xs text-[#8C8578]">Grand Total</p>
-                                    <p className="mt-1 text-sm font-semibold text-[#3C3428]">
+                                    <p className="text-xs text-[#8A6B62]">Grand Total</p>
+                                    <p className="mt-1 text-sm font-semibold text-[#4A2525]">
                                         {formatPrice(order.grand_total)}
                                     </p>
                                 </div>
                             </div>
 
-                            <div className="space-y-4 border-t border-[#EAE8E3] pt-6">
+                            <div className="space-y-4 border-t border-[#EADBD8] pt-6">
                                 {order.items.map((item) => (
                                     <div
                                         key={item.id}
@@ -560,10 +560,10 @@ export default function DetailNotification({ notification }: Props) {
                                             className="h-20 w-20 rounded-xl object-cover"
                                         />
                                         <div className="min-w-0 flex-1">
-                                            <p className="text-sm font-semibold text-[#3C3428]">
+                                            <p className="text-sm font-semibold text-[#4A2525]">
                                                 {item.product_name}
                                             </p>
-                                            <p className="mt-1 text-xs text-[#8C8578]">
+                                            <p className="mt-1 text-xs text-[#8A6B62]">
                                                 {[
                                                     item.color_name,
                                                     item.size ? `Size ${item.size}` : null,
@@ -573,7 +573,7 @@ export default function DetailNotification({ notification }: Props) {
                                                     .join(' • ')}
                                             </p>
                                         </div>
-                                        <div className="text-sm font-semibold text-[#3C3428]">
+                                        <div className="text-sm font-semibold text-[#4A2525]">
                                             {formatPrice(item.subtotal)}
                                         </div>
                                     </div>
@@ -582,7 +582,7 @@ export default function DetailNotification({ notification }: Props) {
 
                             {order.address && (
                                 <div className="mt-6 rounded-xl border border-[#EFEAE3] bg-[#FCFBF9] p-4">
-                                    <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[#3C3428]">
+                                    <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[#4A2525]">
                                         <MapPin size={16} /> Shipping Address
                                     </div>
                                     <p className="text-sm text-[#5C564D]">
@@ -600,7 +600,7 @@ export default function DetailNotification({ notification }: Props) {
                     <div className="flex flex-wrap items-center gap-3">
                         <Link
                             href={notification.actions.back_url}
-                            className="flex items-center gap-2 rounded-lg border border-[#EAE8E3] bg-white px-4 py-2.5 text-sm font-medium text-[#5C564D] shadow-sm transition-colors hover:bg-[#FAF8F5]"
+                            className="flex items-center gap-2 rounded-lg border border-[#EADBD8] bg-white px-4 py-2.5 text-sm font-medium text-[#5C564D] shadow-sm transition-colors hover:bg-[#FAF8F5]"
                         >
                             <ArrowLeft size={16} /> Back to Notifications
                         </Link>
@@ -609,7 +609,7 @@ export default function DetailNotification({ notification }: Props) {
                             <button
                                 type="button"
                                 onClick={markAsRead}
-                                className="flex items-center gap-2 rounded-lg border border-[#EAE8E3] bg-white px-4 py-2.5 text-sm font-medium text-[#5C564D] shadow-sm transition-colors hover:bg-[#FAF8F5]"
+                                className="flex items-center gap-2 rounded-lg border border-[#EADBD8] bg-white px-4 py-2.5 text-sm font-medium text-[#5C564D] shadow-sm transition-colors hover:bg-[#FAF8F5]"
                             >
                                 <Check size={16} /> Mark as Read
                             </button>
@@ -618,7 +618,7 @@ export default function DetailNotification({ notification }: Props) {
                         {/* {notification.actions.order_url && (
                             <Link
                                 href={notification.actions.order_url}
-                                className="flex items-center gap-2 rounded-lg border border-[#EAE8E3] bg-white px-4 py-2.5 text-sm font-medium text-[#5C564D] shadow-sm transition-colors hover:bg-[#FAF8F5]"
+                                className="flex items-center gap-2 rounded-lg border border-[#EADBD8] bg-white px-4 py-2.5 text-sm font-medium text-[#5C564D] shadow-sm transition-colors hover:bg-[#FAF8F5]"
                             >
                                 <Package size={16} /> View Order
                             </Link>
@@ -629,7 +629,7 @@ export default function DetailNotification({ notification }: Props) {
                                 href={primaryActionHref}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="ml-auto flex items-center gap-2 rounded-lg bg-[#3C3428] px-6 py-2.5 text-sm font-medium text-white shadow-md transition-colors hover:bg-[#2A241C]"
+                                className="ml-auto flex items-center gap-2 rounded-lg bg-[#4A2525] px-6 py-2.5 text-sm font-medium text-white shadow-md transition-colors hover:bg-[#2A241C]"
                             >
                                 <Icon size={16} /> {config.ctaLabel}
                             </a>
@@ -638,8 +638,8 @@ export default function DetailNotification({ notification }: Props) {
                 </div>
 
                 <div className="flex w-full shrink-0 flex-col gap-6 lg:w-[320px] xl:w-[360px]">
-                    <div className="rounded-2xl border border-[#EAE8E3] bg-white p-6 shadow-sm">
-                        <h3 className="mb-5 font-serif text-lg text-[#3C3428]">
+                    <div className="rounded-2xl border border-[#EADBD8] bg-white p-6 shadow-sm">
+                        <h3 className="mb-5 font-serif text-lg text-[#4A2525]">
                             Related Information
                         </h3>
 
@@ -721,20 +721,20 @@ export default function DetailNotification({ notification }: Props) {
                                 href={primaryActionHref}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#3C3428] py-2.5 text-sm font-medium text-white shadow-md transition-colors hover:bg-[#2A241C]"
+                                className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#4A2525] py-2.5 text-sm font-medium text-white shadow-md transition-colors hover:bg-[#2A241C]"
                             >
                                 {config.ctaLabel} <ExternalLink size={16} />
                             </a>
                         )}
                     </div>
 
-                    <div className="rounded-2xl border border-[#EAE8E3] bg-white p-6 shadow-sm">
-                        <h3 className="mb-6 font-serif text-lg text-[#3C3428]">
+                    <div className="rounded-2xl border border-[#EADBD8] bg-white p-6 shadow-sm">
+                        <h3 className="mb-6 font-serif text-lg text-[#4A2525]">
                             Activity Timeline
                         </h3>
-                        <div className="relative ml-2 space-y-7 border-l border-[#EAE8E3]">
+                        <div className="relative ml-2 space-y-7 border-l border-[#EADBD8]">
                             {notification.timeline.length === 0 ? (
-                                <div className="pl-6 text-sm text-[#8C8578]">
+                                <div className="pl-6 text-sm text-[#8A6B62]">
                                     No activity recorded yet.
                                 </div>
                             ) : (
@@ -743,30 +743,30 @@ export default function DetailNotification({ notification }: Props) {
                                         <div
                                             className={
                                                 item.is_current
-                                                    ? 'absolute -left-[9px] top-0 h-[18px] w-[18px] rounded-full border-[4px] border-[#FAF8F5] bg-[#3C3428] shadow-[0_0_0_1px_#3C3428]'
-                                                    : 'absolute -left-[7px] top-1 h-[14px] w-[14px] rounded-full border-2 border-[#C2AA92] bg-white'
+                                                    ? 'absolute -left-[9px] top-0 h-[18px] w-[18px] rounded-full border-[4px] border-[#FAF8F5] bg-[#4A2525] shadow-[0_0_0_1px_#4A2525]'
+                                                    : 'absolute -left-[7px] top-1 h-[14px] w-[14px] rounded-full border-2 border-[#B6574B] bg-white'
                                             }
                                         ></div>
                                         <div className="flex items-start justify-between gap-4">
                                             <div>
                                                 <p
-                                                    className={`text-sm ${item.is_current ? 'font-bold text-[#3C3428]' : 'font-medium text-[#3C3428]'}`}
+                                                    className={`text-sm ${item.is_current ? 'font-bold text-[#4A2525]' : 'font-medium text-[#4A2525]'}`}
                                                 >
                                                     {item.title}
                                                 </p>
                                                 {item.description && (
-                                                    <p className="mt-1 text-xs leading-relaxed text-[#8C8578]">
+                                                    <p className="mt-1 text-xs leading-relaxed text-[#8A6B62]">
                                                         {item.description}
                                                     </p>
                                                 )}
                                                 {item.location && (
-                                                    <p className="mt-1 text-xs text-[#8C8578]">
+                                                    <p className="mt-1 text-xs text-[#8A6B62]">
                                                         {item.location}
                                                     </p>
                                                 )}
                                             </div>
                                             <p
-                                                className={`shrink-0 text-xs ${item.is_current ? 'font-bold text-[#3C3428]' : 'text-[#8C8578]'}`}
+                                                className={`shrink-0 text-xs ${item.is_current ? 'font-bold text-[#4A2525]' : 'text-[#8A6B62]'}`}
                                             >
                                                 {formatDateTime(item.happened_at)}
                                             </p>
