@@ -54,7 +54,7 @@ class BiteshipService
             throw ValidationException::withMessages(['shipping' => 'Postal code tujuan belum dikonfigurasi.']);
         }
 
-        $couriers = $this->settings->first(['enabled_couriers', 'shipping_couriers'], 'jne,jnt,sicepat,anteraja');
+        $couriers = $this->settings->get('shipping_couriers', 'jne,jnt,sicepat,anteraja');
         $response = $this->client()
             ->post('/v1/rates/couriers', [
                 'origin_postal_code' => $originPostalCode,

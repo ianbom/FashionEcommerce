@@ -27,8 +27,9 @@ import {
     Star,
     Sparkles,
     TrendingUp,
+    Pencil,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -49,7 +50,65 @@ import { Textarea } from '@/components/ui/textarea';
 const CATEGORIES = ['Abaya', 'Dress', 'Hijab', 'Accessories'];
 const COLLECTIONS = ['Ramadan Collection', 'Summer Breeze', 'Eid Al-Fitr'];
 
+// Variant type
+type Variant = {
+    id: number;
+    sku: string;
+    colorName: string;
+    colorHex: string;
+    size: string;
+    priceAdd: string;
+    stock: string;
+    reserved: number;
+    imageUrl: string;
+    active: boolean;
+    hasError?: boolean;
+};
+
+const INITIAL_VARIANTS: Variant[] = [
+    { id: 1, sku: 'ABY-NJRN-001-S',  colorName: 'Off White', colorHex: '#F8F4E6', size: 'S',  priceAdd: '0', stock: '25', reserved: 0, imageUrl: 'https://...', active: true },
+    { id: 2, sku: 'ABY-NJRN-001-M',  colorName: 'Off White', colorHex: '#F8F4E6', size: 'M',  priceAdd: '0', stock: '18', reserved: 0, imageUrl: 'https://...', active: true },
+    { id: 3, sku: 'ABY-NJRN-001-L',  colorName: 'Off White', colorHex: '#F8F4E6', size: 'L',  priceAdd: '0', stock: '12', reserved: 0, imageUrl: 'https://...', active: true },
+    { id: 4, sku: 'ABY-NJRN-001-XL', colorName: 'Off White', colorHex: '#F8F4E6', size: 'XL', priceAdd: '0', stock: '2',  reserved: 0, imageUrl: 'invalid-url', active: true, hasError: true },
+];
+
+const EMPTY_VARIANT: Omit<Variant, 'id'> = {
+    sku: '', colorName: '', colorHex: '#000000', size: '', priceAdd: '0', stock: '0', reserved: 0, imageUrl: '', active: true,
+};
+
 export default function CreateProduct() {
+    const [variants, setVariants] = useState<Variant[]>(INITIAL_VARIANTS);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [editingVariant, setEditingVariant] = useState<Variant | null>(null);
+
+    function openAdd() {
+        setEditingVariant({ ...EMPTY_VARIANT, id: Date.now() });
+        setModalOpen(true);
+    }
+
+    function openEdit(v: Variant) {
+        setEditingVariant({ ...v });
+        setModalOpen(true);
+    }
+
+    function handleSave(v: Variant) {
+        setVariants((prev) => {
+            const idx = prev.findIndex((x) => x.id === v.id);
+            if (idx >= 0) {
+                const next = [...prev];
+                next[idx] = v;
+                return next;
+            }
+            return [...prev, v];
+        });
+        setModalOpen(false);
+        setEditingVariant(null);
+    }
+
+    function handleDelete(id: number) {
+        setVariants((prev) => prev.filter((v) => v.id !== id));
+    }
+
     return (
         <>
             <Head title="Create Product" />
@@ -711,382 +770,90 @@ export default function CreateProduct() {
                                             <table className="w-full text-left text-[11px]">
                                                 <thead className="border-b border-zinc-200 bg-zinc-50 text-zinc-500">
                                                     <tr>
-                                                        <th className="w-8 px-2 py-2 text-center">
-                                                            #
-                                                        </th>
-                                                        <th className="px-2 py-2 font-medium">
-                                                            Variant SKU
-                                                        </th>
-                                                        <th className="px-2 py-2 font-medium">
-                                                            Color Name
-                                                        </th>
-                                                        <th className="px-2 py-2 font-medium">
-                                                            Color Hex
-                                                        </th>
-                                                        <th className="w-16 px-2 py-2 font-medium">
-                                                            Size
-                                                        </th>
-                                                        <th className="px-2 py-2 font-medium">
-                                                            Price Add.
-                                                        </th>
-                                                        <th className="w-12 px-2 py-2 text-right font-medium">
-                                                            Stock
-                                                        </th>
-                                                        <th className="w-12 px-2 py-2 text-right font-medium">
-                                                            Reserved
-                                                        </th>
-                                                        <th className="px-2 py-2 font-medium">
-                                                            Variant Image URL
-                                                        </th>
-                                                        <th className="px-2 py-2 text-center font-medium">
-                                                            Active
-                                                        </th>
-                                                        <th className="px-2 py-2 text-center font-medium">
-                                                            Actions
-                                                        </th>
+                                                        <th className="w-8 px-2 py-2 text-center">#</th>
+                                                        <th className="px-3 py-2 font-medium">SKU</th>
+                                                        <th className="px-3 py-2 font-medium">Color</th>
+                                                        <th className="px-3 py-2 font-medium">Size</th>
+                                                        <th className="px-3 py-2 font-medium text-right">Price Add.</th>
+                                                        <th className="px-3 py-2 font-medium text-right">Stock</th>
+                                                        <th className="px-3 py-2 text-center font-medium">Active</th>
+                                                        <th className="px-3 py-2 text-center font-medium">Actions</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-zinc-100 bg-white">
-                                                    {/* Variant Row 1 */}
-                                                    <tr className="group transition-colors hover:bg-zinc-50">
-                                                        <td className="px-2 py-1.5 text-center text-zinc-400">
-                                                            <GripVertical className="inline-block h-3 w-3 cursor-grab" />
-                                                        </td>
-                                                        <td className="px-2 py-1.5">
-                                                            <Input
-                                                                defaultValue="ABY-NJRN-001-S"
-                                                                className="h-7 w-28 rounded border-zinc-200 text-[11px] shadow-none"
-                                                            />
-                                                        </td>
-                                                        <td className="px-2 py-1.5">
-                                                            <Input
-                                                                defaultValue="Off White"
-                                                                className="h-7 w-20 rounded border-zinc-200 text-[11px] shadow-none"
-                                                            />
-                                                        </td>
-                                                        <td className="px-2 py-1.5">
-                                                            <div className="flex h-7 items-center gap-1.5 rounded border border-zinc-200 bg-white px-1.5">
-                                                                <div
-                                                                    className="h-3 w-3 shrink-0 rounded-full border border-zinc-200"
-                                                                    style={{
-                                                                        backgroundColor:
-                                                                            '#F8F4E6',
-                                                                    }}
+                                                    {variants.map((v) => (
+                                                        <tr
+                                                            key={v.id}
+                                                            className={`group transition-colors hover:bg-zinc-50 ${v.hasError ? 'bg-red-50/40' : ''}`}
+                                                        >
+                                                            <td className="px-2 py-2 text-center text-zinc-400">
+                                                                <GripVertical className="inline-block h-3 w-3 cursor-grab" />
+                                                            </td>
+                                                            <td className="px-3 py-2 font-mono text-zinc-700">{v.sku || <span className="text-zinc-300">—</span>}</td>
+                                                            <td className="px-3 py-2">
+                                                                <div className="flex items-center gap-1.5">
+                                                                    <div
+                                                                        className="h-3 w-3 shrink-0 rounded-full border border-zinc-200"
+                                                                        style={{ backgroundColor: v.colorHex }}
+                                                                    />
+                                                                    <span className="text-zinc-600">{v.colorName}</span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-3 py-2">
+                                                                <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-700">
+                                                                    {v.size || '—'}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-3 py-2 text-right text-zinc-600">
+                                                                {v.priceAdd === '0' ? <span className="text-zinc-300">+0</span> : `+${v.priceAdd}`}
+                                                            </td>
+                                                            <td className="px-3 py-2 text-right">
+                                                                <span className={`font-medium ${parseInt(v.stock) <= 5 ? 'text-red-600' : parseInt(v.stock) <= 15 ? 'text-amber-600' : 'text-zinc-700'}`}>
+                                                                    {v.stock}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-3 py-2 text-center">
+                                                                <Switch
+                                                                    checked={v.active}
+                                                                    onCheckedChange={(checked) =>
+                                                                        setVariants((prev) =>
+                                                                            prev.map((x) => x.id === v.id ? { ...x, active: checked } : x)
+                                                                        )
+                                                                    }
+                                                                    className="scale-75 data-[state=checked]:bg-[#7F2020]"
                                                                 />
-                                                                <input
-                                                                    type="text"
-                                                                    defaultValue="#F8F4E6"
-                                                                    className="h-full w-14 border-none p-0 text-[11px] text-zinc-600 focus:ring-0"
-                                                                />
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-2 py-1.5">
-                                                            <Input
-                                                                defaultValue="S"
-                                                                className="h-7 rounded border-zinc-200 text-center text-[11px] shadow-none"
-                                                            />
-                                                        </td>
-                                                        <td className="px-2 py-1.5">
-                                                            <Input
-                                                                defaultValue="0"
-                                                                className="h-7 w-16 rounded border-zinc-200 text-right text-[11px] shadow-none"
-                                                            />
-                                                        </td>
-                                                        <td className="px-2 py-1.5">
-                                                            <Input
-                                                                defaultValue="25"
-                                                                className="h-7 rounded border-zinc-200 text-right text-[11px] shadow-none"
-                                                            />
-                                                        </td>
-                                                        <td className="px-2 py-1.5 text-right text-zinc-500">
-                                                            0
-                                                        </td>
-                                                        <td className="px-2 py-1.5">
-                                                            <Input
-                                                                defaultValue="https://..."
-                                                                className="h-7 w-24 rounded border-zinc-200 text-[11px] text-zinc-400 shadow-none"
-                                                            />
-                                                        </td>
-                                                        <td className="px-2 py-1.5 text-center">
-                                                            <Switch
-                                                                defaultChecked
-                                                                className="scale-75 data-[state=checked]:bg-[#7F2020]"
-                                                            />
-                                                        </td>
-                                                        <td className="px-2 py-1.5 text-center">
-                                                            <div className="flex justify-center gap-1">
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    className="h-6 w-6 text-zinc-400 hover:text-zinc-700"
-                                                                >
-                                                                    <ImageIcon className="h-3 w-3" />
-                                                                </Button>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    className="h-6 w-6 text-zinc-400 hover:text-red-500"
-                                                                >
-                                                                    <Trash2 className="h-3 w-3" />
-                                                                </Button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                    {/* Variant Row 2 */}
-                                                    <tr className="group transition-colors hover:bg-zinc-50">
-                                                        <td className="px-2 py-1.5 text-center text-zinc-400">
-                                                            <GripVertical className="inline-block h-3 w-3 cursor-grab" />
-                                                        </td>
-                                                        <td className="px-2 py-1.5">
-                                                            <Input
-                                                                defaultValue="ABY-NJRN-001-M"
-                                                                className="h-7 w-28 rounded border-zinc-200 text-[11px] shadow-none"
-                                                            />
-                                                        </td>
-                                                        <td className="px-2 py-1.5">
-                                                            <Input
-                                                                defaultValue="Off White"
-                                                                className="h-7 w-20 rounded border-zinc-200 text-[11px] shadow-none"
-                                                            />
-                                                        </td>
-                                                        <td className="px-2 py-1.5">
-                                                            <div className="flex h-7 items-center gap-1.5 rounded border border-zinc-200 bg-white px-1.5">
-                                                                <div
-                                                                    className="h-3 w-3 shrink-0 rounded-full border border-zinc-200"
-                                                                    style={{
-                                                                        backgroundColor:
-                                                                            '#F8F4E6',
-                                                                    }}
-                                                                />
-                                                                <input
-                                                                    type="text"
-                                                                    defaultValue="#F8F4E6"
-                                                                    className="h-full w-14 border-none p-0 text-[11px] text-zinc-600 focus:ring-0"
-                                                                />
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-2 py-1.5">
-                                                            <Input
-                                                                defaultValue="M"
-                                                                className="h-7 rounded border-zinc-200 text-center text-[11px] shadow-none"
-                                                            />
-                                                        </td>
-                                                        <td className="px-2 py-1.5">
-                                                            <Input
-                                                                defaultValue="0"
-                                                                className="h-7 w-16 rounded border-zinc-200 text-right text-[11px] shadow-none"
-                                                            />
-                                                        </td>
-                                                        <td className="px-2 py-1.5">
-                                                            <Input
-                                                                defaultValue="18"
-                                                                className="h-7 rounded border-zinc-200 text-right text-[11px] shadow-none"
-                                                            />
-                                                        </td>
-                                                        <td className="px-2 py-1.5 text-right text-zinc-500">
-                                                            0
-                                                        </td>
-                                                        <td className="px-2 py-1.5">
-                                                            <Input
-                                                                defaultValue="https://..."
-                                                                className="h-7 w-24 rounded border-zinc-200 text-[11px] text-zinc-400 shadow-none"
-                                                            />
-                                                        </td>
-                                                        <td className="px-2 py-1.5 text-center">
-                                                            <Switch
-                                                                defaultChecked
-                                                                className="scale-75 data-[state=checked]:bg-[#7F2020]"
-                                                            />
-                                                        </td>
-                                                        <td className="px-2 py-1.5 text-center">
-                                                            <div className="flex justify-center gap-1">
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    className="h-6 w-6 text-zinc-400 hover:text-zinc-700"
-                                                                >
-                                                                    <ImageIcon className="h-3 w-3" />
-                                                                </Button>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    className="h-6 w-6 text-zinc-400 hover:text-red-500"
-                                                                >
-                                                                    <Trash2 className="h-3 w-3" />
-                                                                </Button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                    {/* Variant Row 3 */}
-                                                    <tr className="group transition-colors hover:bg-zinc-50">
-                                                        <td className="px-2 py-1.5 text-center text-zinc-400">
-                                                            <GripVertical className="inline-block h-3 w-3 cursor-grab" />
-                                                        </td>
-                                                        <td className="px-2 py-1.5">
-                                                            <Input
-                                                                defaultValue="ABY-NJRN-001-L"
-                                                                className="h-7 w-28 rounded border-zinc-200 text-[11px] shadow-none"
-                                                            />
-                                                        </td>
-                                                        <td className="px-2 py-1.5">
-                                                            <Input
-                                                                defaultValue="Off White"
-                                                                className="h-7 w-20 rounded border-zinc-200 text-[11px] shadow-none"
-                                                            />
-                                                        </td>
-                                                        <td className="px-2 py-1.5">
-                                                            <div className="flex h-7 items-center gap-1.5 rounded border border-zinc-200 bg-white px-1.5">
-                                                                <div
-                                                                    className="h-3 w-3 shrink-0 rounded-full border border-zinc-200"
-                                                                    style={{
-                                                                        backgroundColor:
-                                                                            '#F8F4E6',
-                                                                    }}
-                                                                />
-                                                                <input
-                                                                    type="text"
-                                                                    defaultValue="#F8F4E6"
-                                                                    className="h-full w-14 border-none p-0 text-[11px] text-zinc-600 focus:ring-0"
-                                                                />
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-2 py-1.5">
-                                                            <Input
-                                                                defaultValue="L"
-                                                                className="h-7 rounded border-zinc-200 text-center text-[11px] shadow-none"
-                                                            />
-                                                        </td>
-                                                        <td className="px-2 py-1.5">
-                                                            <Input
-                                                                defaultValue="0"
-                                                                className="h-7 w-16 rounded border-zinc-200 text-right text-[11px] shadow-none"
-                                                            />
-                                                        </td>
-                                                        <td className="px-2 py-1.5">
-                                                            <Input
-                                                                defaultValue="12"
-                                                                className="h-7 rounded border-zinc-200 text-right text-[11px] shadow-none"
-                                                            />
-                                                        </td>
-                                                        <td className="px-2 py-1.5 text-right text-zinc-500">
-                                                            0
-                                                        </td>
-                                                        <td className="px-2 py-1.5">
-                                                            <Input
-                                                                defaultValue="https://..."
-                                                                className="h-7 w-24 rounded border-zinc-200 text-[11px] text-zinc-400 shadow-none"
-                                                            />
-                                                        </td>
-                                                        <td className="px-2 py-1.5 text-center">
-                                                            <Switch
-                                                                defaultChecked
-                                                                className="scale-75 data-[state=checked]:bg-[#7F2020]"
-                                                            />
-                                                        </td>
-                                                        <td className="px-2 py-1.5 text-center">
-                                                            <div className="flex justify-center gap-1">
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    className="h-6 w-6 text-zinc-400 hover:text-zinc-700"
-                                                                >
-                                                                    <ImageIcon className="h-3 w-3" />
-                                                                </Button>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    className="h-6 w-6 text-zinc-400 hover:text-red-500"
-                                                                >
-                                                                    <Trash2 className="h-3 w-3" />
-                                                                </Button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                    {/* Variant Row 4 (Error) */}
-                                                    <tr className="group bg-red-50/30">
-                                                        <td className="px-2 py-1.5 text-center text-zinc-400">
-                                                            <GripVertical className="inline-block h-3 w-3 cursor-grab" />
-                                                        </td>
-                                                        <td className="px-2 py-1.5">
-                                                            <Input
-                                                                defaultValue="ABY-NJRN-001-XL"
-                                                                className="h-7 w-28 rounded border-red-200 bg-white text-[11px] text-red-600 shadow-none"
-                                                            />
-                                                        </td>
-                                                        <td className="px-2 py-1.5">
-                                                            <Input
-                                                                defaultValue="Off White"
-                                                                className="h-7 w-20 rounded border-zinc-200 bg-white text-[11px] shadow-none"
-                                                            />
-                                                        </td>
-                                                        <td className="px-2 py-1.5">
-                                                            <div className="flex h-7 items-center gap-1.5 rounded border border-zinc-200 bg-white px-1.5">
-                                                                <div
-                                                                    className="h-3 w-3 shrink-0 rounded-full border border-zinc-200"
-                                                                    style={{
-                                                                        backgroundColor:
-                                                                            '#F8F4E6',
-                                                                    }}
-                                                                />
-                                                                <input
-                                                                    type="text"
-                                                                    defaultValue="#F8F4E6"
-                                                                    className="h-full w-14 border-none p-0 text-[11px] text-zinc-600 focus:ring-0"
-                                                                />
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-2 py-1.5">
-                                                            <Input
-                                                                defaultValue="XL"
-                                                                className="h-7 rounded border-zinc-200 bg-white text-center text-[11px] shadow-none"
-                                                            />
-                                                        </td>
-                                                        <td className="px-2 py-1.5">
-                                                            <Input
-                                                                defaultValue="0"
-                                                                className="h-7 w-16 rounded border-zinc-200 bg-white text-right text-[11px] shadow-none"
-                                                            />
-                                                        </td>
-                                                        <td className="px-2 py-1.5">
-                                                            <Input
-                                                                defaultValue="2"
-                                                                className="h-7 rounded border-red-300 bg-white text-right text-[11px] font-bold text-red-600 shadow-none"
-                                                            />
-                                                        </td>
-                                                        <td className="px-2 py-1.5 text-right text-zinc-500">
-                                                            0
-                                                        </td>
-                                                        <td className="px-2 py-1.5">
-                                                            <Input
-                                                                defaultValue="invalid-url"
-                                                                className="h-7 w-24 rounded border-red-300 bg-red-50 text-[11px] text-red-600 shadow-none"
-                                                            />
-                                                        </td>
-                                                        <td className="px-2 py-1.5 text-center">
-                                                            <Switch
-                                                                defaultChecked
-                                                                className="scale-75 data-[state=checked]:bg-[#7F2020]"
-                                                            />
-                                                        </td>
-                                                        <td className="px-2 py-1.5 text-center">
-                                                            <div className="flex justify-center gap-1">
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    className="h-6 w-6 text-zinc-400 hover:text-zinc-700"
-                                                                >
-                                                                    <ImageIcon className="h-3 w-3" />
-                                                                </Button>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    className="h-6 w-6 text-zinc-400 hover:text-red-500"
-                                                                >
-                                                                    <Trash2 className="h-3 w-3" />
-                                                                </Button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
+                                                            </td>
+                                                            <td className="px-3 py-2 text-center">
+                                                                <div className="flex justify-center gap-1">
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-6 w-6 text-zinc-400 hover:text-zinc-700"
+                                                                        onClick={() => openEdit(v)}
+                                                                        title="Edit variant"
+                                                                    >
+                                                                        <Pencil className="h-3 w-3" />
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-6 w-6 text-zinc-400 hover:text-red-500"
+                                                                        onClick={() => handleDelete(v.id)}
+                                                                        title="Delete variant"
+                                                                    >
+                                                                        <Trash2 className="h-3 w-3" />
+                                                                    </Button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                    {variants.length === 0 && (
+                                                        <tr>
+                                                            <td colSpan={8} className="py-8 text-center text-xs text-zinc-400">
+                                                                No variants yet. Click "Add Variant" to create one.
+                                                            </td>
+                                                        </tr>
+                                                    )}
                                                 </tbody>
                                             </table>
                                         </div>
@@ -1095,19 +862,21 @@ export default function CreateProduct() {
                                                 variant="outline"
                                                 size="sm"
                                                 className="h-7 gap-1 bg-white text-[11px]"
+                                                onClick={openAdd}
                                             >
-                                                <Plus className="h-3 w-3" /> Add
-                                                Variant
+                                                <Plus className="h-3 w-3" /> Add Variant
                                             </Button>
                                             <div className="mr-2 flex items-center gap-4">
-                                                <div className="flex items-center gap-1.5 text-[11px] font-medium text-amber-600">
-                                                    <AlertTriangle className="h-3.5 w-3.5" />{' '}
-                                                    Low stock
-                                                </div>
-                                                <div className="flex items-center gap-1.5 text-[11px] font-medium text-red-500">
-                                                    <AlertTriangle className="h-3.5 w-3.5" />{' '}
-                                                    Invalid URL
-                                                </div>
+                                                {variants.some((v) => parseInt(v.stock) <= 5 && parseInt(v.stock) > 0) && (
+                                                    <div className="flex items-center gap-1.5 text-[11px] font-medium text-amber-600">
+                                                        <AlertTriangle className="h-3.5 w-3.5" /> Low stock
+                                                    </div>
+                                                )}
+                                                {variants.some((v) => v.hasError) && (
+                                                    <div className="flex items-center gap-1.5 text-[11px] font-medium text-red-500">
+                                                        <AlertTriangle className="h-3.5 w-3.5" /> Invalid URL
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -1443,11 +1212,210 @@ export default function CreateProduct() {
                     </div>
                 </div>
             </div>
+
+            {/* Variant Modal */}
+            {modalOpen && editingVariant && (
+                <VariantModal
+                    variant={editingVariant}
+                    onSave={handleSave}
+                    onClose={() => { setModalOpen(false); setEditingVariant(null); }}
+                />
+            )}
         </>
     );
 }
 
 // Subcomponents
+
+function VariantModal({
+    variant,
+    onSave,
+    onClose,
+}: {
+    variant: Variant;
+    onSave: (v: Variant) => void;
+    onClose: () => void;
+}) {
+    const [form, setForm] = useState<Variant>({ ...variant });
+    const backdropRef = useRef<HTMLDivElement>(null);
+    const isNew = !variant.sku;
+
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+        window.addEventListener('keydown', handler);
+        return () => window.removeEventListener('keydown', handler);
+    }, [onClose]);
+
+    function set<K extends keyof Variant>(key: K, value: Variant[K]) {
+        setForm((prev) => ({ ...prev, [key]: value }));
+    }
+
+    function handleBackdropClick(e: React.MouseEvent) {
+        if (e.target === backdropRef.current) onClose();
+    }
+
+    return (
+        <div
+            ref={backdropRef}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+            onClick={handleBackdropClick}
+        >
+            <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl">
+                {/* Modal Header */}
+                <div className="flex items-center justify-between border-b border-zinc-100 px-6 py-4">
+                    <div>
+                        <h2 className="font-serif text-lg text-zinc-900">
+                            {isNew ? 'Add Variant' : 'Edit Variant'}
+                        </h2>
+                        <p className="mt-0.5 text-xs text-zinc-400">
+                            {isNew ? 'Create a new product variant.' : `Editing: ${variant.sku}`}
+                        </p>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700"
+                    >
+                        <X className="h-4 w-4" />
+                    </button>
+                </div>
+
+                {/* Modal Body */}
+                <div className="space-y-5 px-6 py-5">
+                    {/* SKU */}
+                    <div className="space-y-1.5">
+                        <Label htmlFor="v-sku">
+                            Variant SKU <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                            id="v-sku"
+                            value={form.sku}
+                            onChange={(e) => set('sku', e.target.value)}
+                            placeholder="e.g. ABY-NJRN-001-S"
+                            className="rounded-lg border-zinc-200 shadow-sm"
+                        />
+                    </div>
+
+                    {/* Color */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="v-color-name">Color Name</Label>
+                            <Input
+                                id="v-color-name"
+                                value={form.colorName}
+                                onChange={(e) => set('colorName', e.target.value)}
+                                placeholder="e.g. Off White"
+                                className="rounded-lg border-zinc-200 shadow-sm"
+                            />
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="v-color-hex">Color Hex</Label>
+                            <div className="flex items-center gap-2 rounded-lg border border-zinc-200 px-3 shadow-sm">
+                                <input
+                                    type="color"
+                                    value={form.colorHex}
+                                    onChange={(e) => set('colorHex', e.target.value)}
+                                    className="h-5 w-5 shrink-0 cursor-pointer rounded border-none bg-transparent p-0"
+                                />
+                                <input
+                                    type="text"
+                                    value={form.colorHex}
+                                    onChange={(e) => set('colorHex', e.target.value)}
+                                    className="h-9 flex-1 border-none bg-transparent text-sm text-zinc-700 focus:ring-0"
+                                    placeholder="#000000"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Size & Price Add */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="v-size">Size</Label>
+                            <Input
+                                id="v-size"
+                                value={form.size}
+                                onChange={(e) => set('size', e.target.value)}
+                                placeholder="e.g. S, M, L, XL"
+                                className="rounded-lg border-zinc-200 shadow-sm"
+                            />
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="v-price-add">Price Addition (IDR)</Label>
+                            <Input
+                                id="v-price-add"
+                                type="number"
+                                value={form.priceAdd}
+                                onChange={(e) => set('priceAdd', e.target.value)}
+                                className="rounded-lg border-zinc-200 shadow-sm"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Stock */}
+                    <div className="space-y-1.5">
+                        <Label htmlFor="v-stock">Stock</Label>
+                        <Input
+                            id="v-stock"
+                            type="number"
+                            value={form.stock}
+                            onChange={(e) => set('stock', e.target.value)}
+                            className="rounded-lg border-zinc-200 shadow-sm"
+                        />
+                    </div>
+
+                    {/* Image URL */}
+                    <div className="space-y-1.5">
+                        <Label htmlFor="v-image">Variant Image URL</Label>
+                        <Input
+                            id="v-image"
+                            value={form.imageUrl}
+                            onChange={(e) => set('imageUrl', e.target.value)}
+                            placeholder="https://..."
+                            className={`rounded-lg shadow-sm ${
+                                form.imageUrl && !form.imageUrl.startsWith('http')
+                                    ? 'border-red-300 text-red-600 focus:border-red-500'
+                                    : 'border-zinc-200'
+                            }`}
+                        />
+                        {form.imageUrl && !form.imageUrl.startsWith('http') && (
+                            <p className="text-xs text-red-500">URL must start with http:// or https://</p>
+                        )}
+                    </div>
+
+                    {/* Active toggle */}
+                    <div className="flex items-center justify-between rounded-lg border border-zinc-100 bg-zinc-50 px-4 py-3">
+                        <Label htmlFor="v-active" className="cursor-pointer font-medium text-zinc-700">
+                            Active
+                        </Label>
+                        <Switch
+                            id="v-active"
+                            checked={form.active}
+                            onCheckedChange={(checked) => set('active', checked)}
+                            className="data-[state=checked]:bg-[#7F2020]"
+                        />
+                    </div>
+                </div>
+
+                {/* Modal Footer */}
+                <div className="flex items-center justify-end gap-3 border-t border-zinc-100 px-6 py-4">
+                    <Button
+                        variant="outline"
+                        className="rounded-lg border-zinc-200 font-medium text-zinc-700"
+                        onClick={onClose}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        className="rounded-lg bg-[#7F2020] px-6 font-medium text-white shadow-md transition-all hover:bg-[#5F1717]"
+                        onClick={() => onSave(form)}
+                    >
+                        {isNew ? 'Add Variant' : 'Save Changes'}
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+}
 
 function SectionCard({
     title,

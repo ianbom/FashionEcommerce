@@ -9,6 +9,7 @@ use App\Services\Notifications\NotificationService;
 use App\Services\Settings\SiteSettingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -117,12 +118,13 @@ class ShipmentManagementService
                 ? $this->storePublicFile($request->file('label_photo'), 'shipment-labels')
                 : null;
             $order->loadMissing(['address', 'items']);
+            $shipment = $order->shipment ?: $order->shipment()->make();
+            $payload = $this->shipmentPayload($payload, $shipment);
             $biteshipPayload = $this->biteshipOrderPayload($order, $payload);
             $this->validateBiteshipPayload($biteshipPayload);
             $biteshipOrder = $this->biteship->createOrder($biteshipPayload);
             $identifiers = $this->biteship->orderIdentifiers($biteshipOrder);
 
-            $shipment = $order->shipment ?: $order->shipment()->make();
             $shipment->fill([
                 'shipping_provider' => 'biteship',
                 'biteship_order_id' => $identifiers['biteship_order_id'],
@@ -270,29 +272,34 @@ class ShipmentManagementService
 
     private function biteshipOrderPayload(Order $order, array $payload): array
     {
-        $originPostalCode = config('services.biteship.origin_postal_code') ?: $this->settings->get('store_postal_code');
-        $originAreaId = config('services.biteship.origin_area_id') ?: $this->settings->get('origin_biteship_area_id');
-        $destinationAreaId = $order->address?->biteship_area_id;
+        $originPostalCode = $this->setting('store_postal_code', config('services.biteship.origin_postal_code'));
+        $originAreaId = $this->validBiteshipAreaId($this->setting('origin_biteship_area_id', config('services.biteship.origin_area_id')));
+        $destinationAreaId = $this->validBiteshipAreaId($order->address?->biteship_area_id);
+        $destinationNote = data_get($order->address, 'address_note') ?: $order->address?->note;
 
         return array_filter([
-            'shipper_contact_name' => config('services.biteship.shipper_name') ?: $this->settings->get('shipper_name') ?: $this->settings->get('store_name'),
-            'shipper_contact_phone' => config('services.biteship.shipper_phone') ?: $this->settings->get('shipper_phone') ?: $this->settings->get('store_phone'),
-            'shipper_contact_email' => config('services.biteship.shipper_email') ?: $this->settings->get('store_email'),
+            'shipper_contact_name' => $this->setting('shipper_name', config('services.biteship.shipper_name')) ?: $this->settings->get('store_name'),
+            'shipper_contact_phone' => $this->setting('shipper_phone', config('services.biteship.shipper_phone')) ?: $this->settings->get('store_phone'),
+            'shipper_contact_email' => $this->setting('store_email', config('services.biteship.shipper_email')),
             'shipper_organization' => $this->settings->get('store_name') ?: config('app.name'),
-            'origin_contact_name' => config('services.biteship.origin_contact_name') ?: $this->settings->get('shipper_name') ?: $this->settings->get('store_name'),
-            'origin_contact_phone' => config('services.biteship.origin_contact_phone') ?: $this->settings->get('shipper_phone') ?: $this->settings->get('store_phone'),
-            'origin_contact_email' => config('services.biteship.origin_contact_email') ?: $this->settings->get('store_email'),
-            'origin_address' => config('services.biteship.origin_address') ?: $this->settings->get('origin_address') ?: $this->settings->get('store_address'),
-            'origin_note' => config('services.biteship.origin_note'),
+            'origin_contact_name' => $this->setting('shipper_name', config('services.biteship.origin_contact_name')) ?: $this->settings->get('store_name'),
+            'origin_contact_phone' => $this->setting('shipper_phone', config('services.biteship.origin_contact_phone')) ?: $this->settings->get('store_phone'),
+            'origin_contact_email' => $this->setting('store_email', config('services.biteship.origin_contact_email')),
+            'origin_address' => $this->setting('origin_address', config('services.biteship.origin_address')) ?: $this->settings->get('store_address'),
+            'origin_note' => $this->setting('origin_note', config('services.biteship.origin_note')),
             'origin_postal_code' => $originPostalCode ? (int) $originPostalCode : null,
             'origin_area_id' => $originAreaId,
+            'origin_latitude' => $this->coordinate($this->setting('store_latitude')),
+            'origin_longitude' => $this->coordinate($this->setting('store_longitude')),
             'destination_contact_name' => $order->address?->recipient_name ?: $order->customer_name,
             'destination_contact_phone' => $order->address?->recipient_phone ?: $order->customer_phone,
             'destination_contact_email' => $order->customer_email,
             'destination_address' => $order->address?->full_address,
-            'destination_note' => $order->address?->note,
+            'destination_note' => $destinationNote,
             'destination_postal_code' => $order->address?->postal_code ? (int) $order->address->postal_code : null,
             'destination_area_id' => $destinationAreaId,
+            'destination_latitude' => $this->coordinate($order->address?->latitude),
+            'destination_longitude' => $this->coordinate($order->address?->longitude),
             'courier_company' => $payload['courier_company'],
             'courier_type' => $payload['courier_type'],
             'courier_insurance' => 0,
@@ -300,7 +307,7 @@ class ShipmentManagementService
             'order_note' => $order->notes,
             'reference_id' => $order->order_number,
             'metadata' => ['order_id' => $order->id, 'order_number' => $order->order_number],
-            'items' => $order->items->map(fn ($item): array => collect(array_filter([
+            'items' => $order->items->map(fn ($item): array => array_filter([
                 'name' => mb_substr($item->product_name, 0, 100),
                 'description' => $item->variant_sku ?: $item->product_sku,
                 'category' => 'fashion',
@@ -311,8 +318,36 @@ class ShipmentManagementService
                 'height' => $item->height,
                 'length' => $item->length,
                 'width' => $item->width,
-            ], fn ($value): bool => filled($value) || $value === 0))->values()->all())->values()->all(),
+            ], fn ($value): bool => filled($value) || $value === 0))->values()->all(),
         ], fn ($value): bool => filled($value) || $value === 0 || is_array($value));
+    }
+
+    private function setting(string $key, ?string $fallback = null): ?string
+    {
+        return $this->settings->get($key) ?: $fallback;
+    }
+
+    private function coordinate(mixed $value): ?float
+    {
+        return is_numeric($value) ? (float) $value : null;
+    }
+
+    private function validBiteshipAreaId(?string $areaId): ?string
+    {
+        $areaId = trim((string) $areaId);
+
+        return Str::startsWith($areaId, 'IDNP') ? $areaId : null;
+    }
+
+    private function shipmentPayload(array $payload, Shipment $shipment): array
+    {
+        return [
+            ...$payload,
+            'courier_company' => Str::lower($payload['courier_company'] ?: $shipment->courier_company),
+            'courier_type' => Str::lower($payload['courier_type'] ?: $shipment->courier_type),
+            'courier_service_name' => $payload['courier_service_name'] ?: $shipment->courier_service_name,
+            'estimated_delivery' => $payload['estimated_delivery'] ?: $shipment->estimated_delivery,
+        ];
     }
 
     private function validateBiteshipPayload(array $payload): void

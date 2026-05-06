@@ -58,7 +58,8 @@ class ProductRequest extends FormRequest
             'variants.*.additional_price' => ['nullable', 'numeric', 'min:0'],
             'variants.*.stock' => ['nullable', 'integer', 'min:0'],
             'variants.*.reserved_stock' => ['nullable', 'integer', 'min:0'],
-            'variants.*.image_url' => ['nullable', 'url', 'max:255'],
+            'variants.*.image_url' => ['nullable', 'string', 'max:255'],
+            'variants.*.image' => ['nullable', 'file', 'image', 'max:4096'],
             'variants.*.is_active' => ['sometimes', 'boolean'],
         ];
     }

@@ -1,6 +1,7 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import {
     Image as ImageIcon,
+    Pencil,
     Plus,
     Trash2,
     X,
@@ -18,7 +19,7 @@ import {
     LayoutGrid,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import type { FormEvent } from 'react';
+import type { FormEvent, MouseEvent } from 'react';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -38,7 +39,7 @@ type ProductImagePayload = {
 type ProductImageRow = ProductImagePayload & {
     image: File | null;
 };
-type ProductVariantRow = {
+type ProductVariantPayload = {
     id?: number;
     sku: string;
     color_name: string;
@@ -49,6 +50,9 @@ type ProductVariantRow = {
     reserved_stock: string | number;
     image_url: string;
     is_active: boolean;
+};
+type ProductVariantRow = ProductVariantPayload & {
+    image: File | null;
 };
 type ProductFormData = {
     category_id: string | number;
@@ -75,9 +79,10 @@ type ProductFormData = {
     images: ProductImageRow[];
     variants: ProductVariantRow[];
 };
-type Product = Omit<ProductFormData, 'images'> & {
+type Product = Omit<ProductFormData, 'images' | 'variants'> & {
     id: number;
     images: ProductImagePayload[];
+    variants: ProductVariantPayload[];
 };
 
 type Props = {
@@ -115,6 +120,7 @@ const blankVariant = (): ProductVariantRow => ({
     stock: 0,
     reserved_stock: 0,
     image_url: '',
+    image: null,
     is_active: true,
 });
 
@@ -245,8 +251,11 @@ export default function ProductForm({ mode, product, options }: Props) {
                 ? product.images.map((image) => ({ ...image, image: null }))
                 : [blankImage()],
             variants: product?.variants?.length
-                ? product.variants
-                : [blankVariant()],
+                ? product.variants.map((variant) => ({
+                      ...variant,
+                      image: null,
+                  }))
+                : [],
         });
 
     const fieldError = (key: string) =>
@@ -258,6 +267,16 @@ export default function ProductForm({ mode, product, options }: Props) {
             (img) => img.image_url ?? null,
         ),
     );
+    const [variantModalOpen, setVariantModalOpen] = useState(false);
+    const [editingVariantIndex, setEditingVariantIndex] = useState<
+        number | null
+    >(null);
+    const [variantDraft, setVariantDraft] = useState<ProductVariantRow>(
+        blankVariant(),
+    );
+    const [variantDraftPreview, setVariantDraftPreview] = useState<
+        string | null
+    >(null);
 
     // Revoke old blob URLs on unmount to avoid memory leaks
     useEffect(() => {
@@ -288,6 +307,47 @@ export default function ProductForm({ mode, product, options }: Props) {
         const next = [...data.variants];
         next[index] = { ...next[index], [field]: value };
         setData('variants', next);
+    };
+
+    const openVariantModal = (index: number | null = null) => {
+        setEditingVariantIndex(index);
+        const draft = index === null ? blankVariant() : { ...data.variants[index] };
+        setVariantDraft(draft);
+        setVariantDraftPreview(draft.image_url || null);
+        setVariantModalOpen(true);
+    };
+
+    const closeVariantModal = () => {
+        if (variantDraftPreview?.startsWith('blob:')) {
+            URL.revokeObjectURL(variantDraftPreview);
+        }
+
+        setVariantModalOpen(false);
+        setEditingVariantIndex(null);
+        setVariantDraft(blankVariant());
+        setVariantDraftPreview(null);
+    };
+
+    const saveVariantDraft = () => {
+        const draft = {
+            ...variantDraft,
+            image_url: variantDraft.image
+                ? (variantDraftPreview ?? '')
+                : variantDraft.image_url,
+        };
+
+        if (editingVariantIndex === null) {
+            setData('variants', [...data.variants, draft]);
+        } else {
+            const next = [...data.variants];
+            next[editingVariantIndex] = draft;
+            setData('variants', next);
+        }
+
+        setVariantModalOpen(false);
+        setEditingVariantIndex(null);
+        setVariantDraft(blankVariant());
+        setVariantDraftPreview(null);
     };
 
     const setPrimaryImage = (index: number) => {
@@ -1076,7 +1136,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                 >
                                     <div className="overflow-hidden rounded-lg border border-zinc-200">
                                         <div className="overflow-x-auto">
-                                            <table className="w-full min-w-[700px] text-xs">
+                                            <table className="w-full min-w-[760px] text-xs">
                                                 <thead>
                                                     <tr className="border-b border-zinc-200 bg-zinc-50">
                                                         <th className="w-8 px-3 py-2.5 text-left text-[11px] font-medium text-zinc-500"></th>
@@ -1086,11 +1146,11 @@ export default function ProductForm({ mode, product, options }: Props) {
                                                         <th className="px-3 py-2.5 text-left text-[11px] font-medium text-zinc-500">
                                                             Color Name
                                                         </th>
-                                                        <th className="w-28 px-3 py-2.5 text-left text-[11px] font-medium text-zinc-500">
-                                                            Color
-                                                        </th>
                                                         <th className="w-20 px-3 py-2.5 text-left text-[11px] font-medium text-zinc-500">
                                                             Size
+                                                        </th>
+                                                        <th className="w-16 px-3 py-2.5 text-center text-[11px] font-medium text-zinc-500">
+                                                            Image
                                                         </th>
                                                         <th className="w-24 px-3 py-2.5 text-right text-[11px] font-medium text-zinc-500">
                                                             Price Add.
@@ -1104,7 +1164,9 @@ export default function ProductForm({ mode, product, options }: Props) {
                                                         <th className="w-16 px-3 py-2.5 text-center text-[11px] font-medium text-zinc-500">
                                                             Active
                                                         </th>
-                                                        <th className="w-12 px-3 py-2.5 text-center text-[11px] font-medium text-zinc-500"></th>
+                                                        <th className="w-20 px-3 py-2.5 text-center text-[11px] font-medium text-zinc-500">
+                                                            Actions
+                                                        </th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-zinc-100 bg-white">
@@ -1117,161 +1179,62 @@ export default function ProductForm({ mode, product, options }: Props) {
                                                                 <td className="px-3 py-2 text-center">
                                                                     <GripVertical className="h-3.5 w-3.5 cursor-grab text-zinc-300" />
                                                                 </td>
-                                                                <td className="px-3 py-2">
-                                                                    <Input
-                                                                        value={
-                                                                            variant.sku
-                                                                        }
-                                                                        onChange={(
-                                                                            e,
-                                                                        ) =>
-                                                                            updateVariant(
-                                                                                index,
-                                                                                'sku',
-                                                                                e
-                                                                                    .target
-                                                                                    .value,
-                                                                            )
-                                                                        }
-                                                                        className={`h-7 border-zinc-200 font-mono text-xs ${fieldError(`variants.${index}.sku`) ? 'border-red-300' : ''}`}
-                                                                    />
+                                                                <td className="px-3 py-2 font-mono text-xs text-zinc-700">
+                                                                    {variant.sku || (
+                                                                        <span className="text-zinc-300">
+                                                                            —
+                                                                        </span>
+                                                                    )}
                                                                 </td>
                                                                 <td className="px-3 py-2">
-                                                                    <Input
-                                                                        value={
-                                                                            variant.color_name
-                                                                        }
-                                                                        onChange={(
-                                                                            e,
-                                                                        ) =>
-                                                                            updateVariant(
-                                                                                index,
-                                                                                'color_name',
-                                                                                e
-                                                                                    .target
-                                                                                    .value,
-                                                                            )
-                                                                        }
-                                                                        className={`h-7 border-zinc-200 text-xs ${fieldError(`variants.${index}.color_name`) ? 'border-red-300' : ''}`}
-                                                                    />
-                                                                </td>
-                                                                <td className="px-3 py-2">
-                                                                    <div
-                                                                        className={`flex h-7 items-center gap-2 rounded border bg-white px-2 ${fieldError(`variants.${index}.color_hex`) ? 'border-red-300' : 'border-zinc-200'}`}
-                                                                    >
-                                                                        <div className="relative h-4 w-4 shrink-0 overflow-hidden rounded-full border border-zinc-200">
-                                                                            <input
-                                                                                type="color"
-                                                                                value={
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span
+                                                                            className="h-3.5 w-3.5 rounded-full border border-zinc-200"
+                                                                            style={{
+                                                                                backgroundColor:
                                                                                     variant.color_hex ||
-                                                                                    '#000000'
-                                                                                }
-                                                                                onChange={(
-                                                                                    e,
-                                                                                ) =>
-                                                                                    updateVariant(
-                                                                                        index,
-                                                                                        'color_hex',
-                                                                                        e
-                                                                                            .target
-                                                                                            .value,
-                                                                                    )
-                                                                                }
-                                                                                className="absolute inset-[-4px] h-[calc(100%+8px)] w-[calc(100%+8px)] cursor-pointer border-none p-0"
-                                                                            />
-                                                                        </div>
-                                                                        <input
-                                                                            type="text"
-                                                                            value={
-                                                                                variant.color_hex ||
-                                                                                '#000000'
-                                                                            }
-                                                                            readOnly
-                                                                            className="w-14 border-none bg-transparent p-0 font-mono text-[11px] text-zinc-600 focus:ring-0"
+                                                                                    '#ffffff',
+                                                                            }}
                                                                         />
+                                                                        <span className="text-zinc-700">
+                                                                            {variant.color_name ||
+                                                                                '—'}
+                                                                        </span>
                                                                     </div>
                                                                 </td>
                                                                 <td className="px-3 py-2">
-                                                                    <Input
-                                                                        value={
-                                                                            variant.size
-                                                                        }
-                                                                        onChange={(
-                                                                            e,
-                                                                        ) =>
-                                                                            updateVariant(
-                                                                                index,
-                                                                                'size',
-                                                                                e
-                                                                                    .target
-                                                                                    .value,
-                                                                            )
-                                                                        }
-                                                                        className={`h-7 border-zinc-200 text-center text-xs ${fieldError(`variants.${index}.size`) ? 'border-red-300' : ''}`}
-                                                                    />
+                                                                    <span className="rounded bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-700">
+                                                                        {variant.size || '—'}
+                                                                    </span>
                                                                 </td>
-                                                                <td className="px-3 py-2">
-                                                                    <Input
-                                                                        type="number"
-                                                                        min="0"
-                                                                        value={
-                                                                            variant.additional_price
-                                                                        }
-                                                                        onChange={(
-                                                                            e,
-                                                                        ) =>
-                                                                            updateVariant(
-                                                                                index,
-                                                                                'additional_price',
-                                                                                e
-                                                                                    .target
-                                                                                    .value,
-                                                                            )
-                                                                        }
-                                                                        className={`h-7 border-zinc-200 text-right font-mono text-xs ${fieldError(`variants.${index}.additional_price`) ? 'border-red-300' : ''}`}
-                                                                    />
+                                                                <td className="px-3 py-2 text-center">
+                                                                    {variant.image_url ? (
+                                                                        <img
+                                                                            src={
+                                                                                variant.image_url
+                                                                            }
+                                                                            alt={
+                                                                                variant.sku
+                                                                            }
+                                                                            className="mx-auto h-8 w-8 rounded border border-zinc-200 object-cover"
+                                                                        />
+                                                                    ) : (
+                                                                        <ImageIcon className="mx-auto h-4 w-4 text-zinc-300" />
+                                                                    )}
                                                                 </td>
-                                                                <td className="px-3 py-2">
-                                                                    <Input
-                                                                        type="number"
-                                                                        min="0"
-                                                                        value={
-                                                                            variant.stock
-                                                                        }
-                                                                        onChange={(
-                                                                            e,
-                                                                        ) =>
-                                                                            updateVariant(
-                                                                                index,
-                                                                                'stock',
-                                                                                e
-                                                                                    .target
-                                                                                    .value,
-                                                                            )
-                                                                        }
-                                                                        className={`h-7 border-zinc-200 text-right font-mono text-xs ${fieldError(`variants.${index}.stock`) ? 'border-red-300' : ''}`}
-                                                                    />
+                                                                <td className="px-3 py-2 text-right font-mono text-zinc-700">
+                                                                    {Number(
+                                                                        variant.additional_price ||
+                                                                            0,
+                                                                    ).toLocaleString(
+                                                                        'id-ID',
+                                                                    )}
                                                                 </td>
-                                                                <td className="px-3 py-2">
-                                                                    <Input
-                                                                        type="number"
-                                                                        min="0"
-                                                                        value={
-                                                                            variant.reserved_stock
-                                                                        }
-                                                                        onChange={(
-                                                                            e,
-                                                                        ) =>
-                                                                            updateVariant(
-                                                                                index,
-                                                                                'reserved_stock',
-                                                                                e
-                                                                                    .target
-                                                                                    .value,
-                                                                            )
-                                                                        }
-                                                                        className={`h-7 border-zinc-200 text-right font-mono text-xs ${fieldError(`variants.${index}.reserved_stock`) ? 'border-red-300' : ''}`}
-                                                                    />
+                                                                <td className="px-3 py-2 text-right font-mono text-zinc-700">
+                                                                    {variant.stock}
+                                                                </td>
+                                                                <td className="px-3 py-2 text-right font-mono text-zinc-500">
+                                                                    {variant.reserved_stock}
                                                                 </td>
                                                                 <td className="px-3 py-2 text-center">
                                                                     <Switch
@@ -1291,28 +1254,55 @@ export default function ProductForm({ mode, product, options }: Props) {
                                                                     />
                                                                 </td>
                                                                 <td className="px-3 py-2 text-center">
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() =>
-                                                                            setData(
-                                                                                'variants',
-                                                                                data.variants.filter(
-                                                                                    (
-                                                                                        _,
-                                                                                        i,
-                                                                                    ) =>
-                                                                                        i !==
-                                                                                        index,
-                                                                                ),
-                                                                            )
-                                                                        }
-                                                                        className="mx-auto flex h-6 w-6 items-center justify-center rounded text-zinc-300 transition-all hover:bg-red-50 hover:text-red-500"
-                                                                    >
-                                                                        <Trash2 className="h-3.5 w-3.5" />
-                                                                    </button>
+                                                                    <div className="flex justify-center gap-1">
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() =>
+                                                                                openVariantModal(
+                                                                                    index,
+                                                                                )
+                                                                            }
+                                                                            className="flex h-6 w-6 items-center justify-center rounded text-zinc-300 transition-all hover:bg-zinc-100 hover:text-zinc-700"
+                                                                        >
+                                                                            <Pencil className="h-3.5 w-3.5" />
+                                                                        </button>
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() =>
+                                                                                setData(
+                                                                                    'variants',
+                                                                                    data.variants.filter(
+                                                                                        (
+                                                                                            _,
+                                                                                            i,
+                                                                                        ) =>
+                                                                                            i !==
+                                                                                            index,
+                                                                                    ),
+                                                                                )
+                                                                            }
+                                                                            className="flex h-6 w-6 items-center justify-center rounded text-zinc-300 transition-all hover:bg-red-50 hover:text-red-500"
+                                                                        >
+                                                                            <Trash2 className="h-3.5 w-3.5" />
+                                                                        </button>
+                                                                    </div>
                                                                 </td>
                                                             </tr>
                                                         ),
+                                                    )}
+                                                    {data.variants.length ===
+                                                        0 && (
+                                                        <tr>
+                                                            <td
+                                                                colSpan={10}
+                                                                className="px-3 py-8 text-center text-xs text-zinc-400"
+                                                            >
+                                                                No variants yet.
+                                                                Click Add
+                                                                Variant to
+                                                                create one.
+                                                            </td>
+                                                        </tr>
                                                     )}
                                                 </tbody>
                                             </table>
@@ -1322,12 +1312,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                                 type="button"
                                                 variant="outline"
                                                 size="sm"
-                                                onClick={() =>
-                                                    setData('variants', [
-                                                        ...data.variants,
-                                                        blankVariant(),
-                                                    ])
-                                                }
+                                                onClick={() => openVariantModal()}
                                                 className="h-7 gap-1.5 border-zinc-200 bg-white text-xs text-zinc-700"
                                             >
                                                 <Plus className="h-3.5 w-3.5" />
@@ -1882,6 +1867,281 @@ export default function ProductForm({ mode, product, options }: Props) {
                     </div>
                 </form>
             </div>
+
+            {variantModalOpen && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+                    onMouseDown={(event: MouseEvent<HTMLDivElement>) => {
+                        if (event.target === event.currentTarget) {
+                            closeVariantModal();
+                        }
+                    }}
+                >
+                    <div className="w-full max-w-xl overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-2xl">
+                        <div className="flex items-start justify-between gap-4 border-b border-zinc-100 px-6 py-4">
+                            <div>
+                                <h2 className="text-sm font-semibold text-zinc-900">
+                                    {editingVariantIndex === null
+                                        ? 'Add Variant'
+                                        : 'Edit Variant'}
+                                </h2>
+                                <p className="mt-0.5 text-xs text-zinc-500">
+                                    Input size, color, stock, price, and image file.
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={closeVariantModal}
+                                className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+
+                        <div className="space-y-4 px-6 py-5">
+                            <FieldRow cols={2}>
+                                <FieldGroup label="Variant SKU" required>
+                                    <Input
+                                        value={variantDraft.sku}
+                                        onChange={(e) =>
+                                            setVariantDraft({
+                                                ...variantDraft,
+                                                sku: e.target.value,
+                                            })
+                                        }
+                                        placeholder="e.g. GMS-001-S"
+                                        className="h-9 border-zinc-200 font-mono text-sm focus:border-[#7F2020] focus:ring-[#7F2020]"
+                                    />
+                                </FieldGroup>
+                                <FieldGroup label="Size">
+                                    <Input
+                                        value={variantDraft.size}
+                                        onChange={(e) =>
+                                            setVariantDraft({
+                                                ...variantDraft,
+                                                size: e.target.value,
+                                            })
+                                        }
+                                        placeholder="e.g. S, M, L, XL"
+                                        className="h-9 border-zinc-200 text-sm focus:border-[#7F2020] focus:ring-[#7F2020]"
+                                    />
+                                </FieldGroup>
+                            </FieldRow>
+
+                            <FieldRow cols={2}>
+                                <FieldGroup label="Color Name">
+                                    <Input
+                                        value={variantDraft.color_name}
+                                        onChange={(e) =>
+                                            setVariantDraft({
+                                                ...variantDraft,
+                                                color_name: e.target.value,
+                                            })
+                                        }
+                                        placeholder="e.g. Black"
+                                        className="h-9 border-zinc-200 text-sm focus:border-[#7F2020] focus:ring-[#7F2020]"
+                                    />
+                                </FieldGroup>
+                                <FieldGroup label="Color Hex">
+                                    <div className="flex h-9 items-center gap-2 rounded-md border border-zinc-200 bg-white px-2 shadow-sm focus-within:border-[#7F2020] focus-within:ring-1 focus-within:ring-[#7F2020]">
+                                        <input
+                                            type="color"
+                                            value={
+                                                variantDraft.color_hex ||
+                                                '#000000'
+                                            }
+                                            onChange={(e) =>
+                                                setVariantDraft({
+                                                    ...variantDraft,
+                                                    color_hex: e.target.value,
+                                                })
+                                            }
+                                            className="h-5 w-5 cursor-pointer rounded border-0 bg-transparent p-0"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={
+                                                variantDraft.color_hex ||
+                                                '#000000'
+                                            }
+                                            onChange={(e) =>
+                                                setVariantDraft({
+                                                    ...variantDraft,
+                                                    color_hex: e.target.value,
+                                                })
+                                            }
+                                            className="h-full flex-1 border-0 bg-transparent p-0 font-mono text-sm text-zinc-700 focus:ring-0"
+                                        />
+                                    </div>
+                                </FieldGroup>
+                            </FieldRow>
+
+                            <FieldRow cols={3}>
+                                <FieldGroup label="Price Addition">
+                                    <Input
+                                        type="number"
+                                        min="0"
+                                        value={variantDraft.additional_price}
+                                        onChange={(e) =>
+                                            setVariantDraft({
+                                                ...variantDraft,
+                                                additional_price:
+                                                    e.target.value,
+                                            })
+                                        }
+                                        className="h-9 border-zinc-200 font-mono text-sm focus:border-[#7F2020] focus:ring-[#7F2020]"
+                                    />
+                                </FieldGroup>
+                                <FieldGroup label="Stock">
+                                    <Input
+                                        type="number"
+                                        min="0"
+                                        value={variantDraft.stock}
+                                        onChange={(e) =>
+                                            setVariantDraft({
+                                                ...variantDraft,
+                                                stock: e.target.value,
+                                            })
+                                        }
+                                        className="h-9 border-zinc-200 font-mono text-sm focus:border-[#7F2020] focus:ring-[#7F2020]"
+                                    />
+                                </FieldGroup>
+                                <FieldGroup label="Reserved">
+                                    <Input
+                                        type="number"
+                                        min="0"
+                                        value={variantDraft.reserved_stock}
+                                        onChange={(e) =>
+                                            setVariantDraft({
+                                                ...variantDraft,
+                                                reserved_stock:
+                                                    e.target.value,
+                                            })
+                                        }
+                                        className="h-9 border-zinc-200 font-mono text-sm focus:border-[#7F2020] focus:ring-[#7F2020]"
+                                    />
+                                </FieldGroup>
+                            </FieldRow>
+
+                            <FieldGroup
+                                label="Variant Image"
+                                hint="Stored in Laravel public storage. JPG, PNG, WEBP up to 4MB."
+                            >
+                                <div className="flex items-center gap-4 rounded-lg border border-zinc-200 bg-zinc-50 p-3">
+                                    <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-zinc-200 bg-white">
+                                        {variantDraftPreview ? (
+                                            <img
+                                                src={variantDraftPreview}
+                                                alt="Variant preview"
+                                                className="h-full w-full object-cover"
+                                            />
+                                        ) : (
+                                            <ImageIcon className="h-6 w-6 text-zinc-300" />
+                                        )}
+                                    </div>
+                                    <div className="flex-1 space-y-2">
+                                        <Input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => {
+                                                const file =
+                                                    e.target.files?.[0] ??
+                                                    null;
+
+                                                if (
+                                                    variantDraftPreview?.startsWith(
+                                                        'blob:',
+                                                    )
+                                                ) {
+                                                    URL.revokeObjectURL(
+                                                        variantDraftPreview,
+                                                    );
+                                                }
+
+                                                setVariantDraft({
+                                                    ...variantDraft,
+                                                    image: file,
+                                                });
+                                                setVariantDraftPreview(
+                                                    file
+                                                        ? URL.createObjectURL(
+                                                              file,
+                                                          )
+                                                        : variantDraft.image_url ||
+                                                              null,
+                                                );
+                                            }}
+                                            className="h-9 border-zinc-200 bg-white text-sm file:mr-3 file:rounded file:border-0 file:bg-zinc-100 file:px-3 file:py-1 file:text-xs file:text-zinc-700 hover:file:bg-zinc-200"
+                                        />
+                                        {variantDraft.image_url && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    if (
+                                                        variantDraftPreview?.startsWith(
+                                                            'blob:',
+                                                        )
+                                                    ) {
+                                                        URL.revokeObjectURL(
+                                                            variantDraftPreview,
+                                                        );
+                                                    }
+
+                                                    setVariantDraft({
+                                                        ...variantDraft,
+                                                        image: null,
+                                                        image_url: '',
+                                                    });
+                                                    setVariantDraftPreview(null);
+                                                }}
+                                                className="text-xs font-medium text-red-500 hover:text-red-600"
+                                            >
+                                                Remove current image
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </FieldGroup>
+
+                            <div className="flex items-center justify-between rounded-lg border border-zinc-100 bg-zinc-50 px-4 py-3">
+                                <Label className="cursor-pointer text-xs font-medium text-zinc-700">
+                                    Active Variant
+                                </Label>
+                                <Switch
+                                    checked={variantDraft.is_active}
+                                    onCheckedChange={(value) =>
+                                        setVariantDraft({
+                                            ...variantDraft,
+                                            is_active: value,
+                                        })
+                                    }
+                                    className="scale-90 data-[state=checked]:bg-[#7F2020]"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-end gap-2 border-t border-zinc-100 bg-zinc-50 px-6 py-4">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={closeVariantModal}
+                                className="h-9 border-zinc-200 px-4 text-xs text-zinc-700"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="button"
+                                onClick={saveVariantDraft}
+                                className="h-9 bg-[#7F2020] px-5 text-xs font-medium text-white hover:bg-[#5F1717]"
+                            >
+                                {editingVariantIndex === null
+                                    ? 'Add Variant'
+                                    : 'Save Changes'}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }

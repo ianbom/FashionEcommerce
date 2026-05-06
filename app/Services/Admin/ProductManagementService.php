@@ -9,6 +9,7 @@ use App\Models\ProductVariant;
 use App\Services\Stock\StockLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -76,7 +77,7 @@ class ProductManagementService
         return DB::transaction(function () use ($request, $validated): Product {
             $product = Product::query()->create($this->payload($request, $validated));
             $this->images->sync($request, $product, $validated['images'] ?? []);
-            $this->syncVariants($product, $validated['variants'] ?? [], $request->user()->id);
+            $this->syncVariants($request, $product, $validated['variants'] ?? [], $request->user()->id);
 
             return $product;
         });
@@ -90,7 +91,7 @@ class ProductManagementService
         DB::transaction(function () use ($request, $product, $validated): void {
             $product->update($this->payload($request, $validated));
             $this->images->sync($request, $product, $validated['images'] ?? []);
-            $this->syncVariants($product, $validated['variants'] ?? [], $request->user()->id);
+            $this->syncVariants($request, $product, $validated['variants'] ?? [], $request->user()->id);
         });
     }
 
@@ -205,12 +206,17 @@ class ProductManagementService
         ];
     }
 
-    private function syncVariants(Product $product, array $variants, int $userId): void
+    private function syncVariants(Request $request, Product $product, array $variants, int $userId): void
     {
-        $variants = collect($variants)->filter(fn (array $variant): bool => filled($variant['sku'] ?? null))->values();
+        $variants = collect($variants)
+            ->map(fn (array $variant, int $index): array => [...$variant, '_index' => $index])
+            ->filter(fn (array $variant): bool => filled($variant['sku'] ?? null))
+            ->values();
         $keptIds = [];
+        $folder = 'product/'.Str::slug($product->slug ?: $product->name).'/variants';
 
-        foreach ($variants as $variant) {
+        foreach ($variants as $index => $variant) {
+            $uploadedImage = $request->file("variants.{$variant['_index']}.image");
             $payload = [
                 'sku' => $variant['sku'],
                 'color_name' => $variant['color_name'] ?? null,
@@ -219,13 +225,20 @@ class ProductManagementService
                 'additional_price' => $variant['additional_price'] ?? 0,
                 'stock' => $variant['stock'] ?? 0,
                 'reserved_stock' => $variant['reserved_stock'] ?? 0,
-                'image_url' => $variant['image_url'] ?? null,
+                'image_url' => $uploadedImage
+                    ? Storage::url($uploadedImage->storeAs($folder, $this->makeVariantFilename($variant['sku'], $index, $uploadedImage->getClientOriginalExtension()), 'public'))
+                    : ($variant['image_url'] ?? null),
                 'is_active' => (bool) ($variant['is_active'] ?? false),
             ];
 
             if (! empty($variant['id'])) {
                 $productVariant = $product->variants()->whereKey($variant['id'])->firstOrFail();
                 $stockBefore = $productVariant->stock;
+
+                if ($uploadedImage || blank($payload['image_url'])) {
+                    $this->images->deleteStoredImage($productVariant->image_url);
+                }
+
                 $productVariant->update($payload);
                 $this->stockLogs->logIfChanged($productVariant, $stockBefore, $payload['stock'], $userId, 'adjustment', 'Stock updated from product form.');
                 $keptIds[] = (int) $variant['id'];
@@ -245,8 +258,16 @@ class ProductManagementService
                 return;
             }
 
+            $this->images->deleteStoredImage($variant->image_url);
             $variant->delete();
         });
+    }
+
+    private function makeVariantFilename(string $sku, int $index, string $extension): string
+    {
+        $name = Str::slug($sku) ?: 'variant';
+
+        return $name.'-'.($index + 1).'-'.Str::uuid().'.'.(strtolower($extension) ?: 'jpg');
     }
 
     private function assertVariantSkusAreUnique(array $variants, ?Product $product = null): void

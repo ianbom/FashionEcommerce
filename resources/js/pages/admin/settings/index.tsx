@@ -36,7 +36,7 @@ type Props = {
 
 const sectionLinks: Record<string, string> = {
     store: '/admin/settings/store',
-    seo: '/admin/settings/seo',
+    contact: '/admin/settings/contact',
     payment: '/admin/settings/payment',
     shipping: '/admin/settings/shipping',
 };

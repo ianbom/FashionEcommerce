@@ -182,7 +182,7 @@ Route::middleware(['auth', 'admin', 'admin.activity'])->prefix('admin')->name('a
     Route::get('settings', [SettingController::class, 'index'])->defaults('section', 'store')->name('settings.index');
     Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
     Route::get('settings/store', [SettingController::class, 'index'])->defaults('section', 'store')->name('settings.store');
-    Route::get('settings/seo', [SettingController::class, 'index'])->defaults('section', 'seo')->name('settings.seo');
+    Route::get('settings/contact', [SettingController::class, 'index'])->defaults('section', 'contact')->name('settings.contact');
     Route::get('settings/payment', [SettingController::class, 'index'])->defaults('section', 'payment')->name('settings.payment');
     Route::get('settings/shipping', [SettingController::class, 'index'])->defaults('section', 'shipping')->name('settings.shipping');
 
