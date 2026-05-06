@@ -19,6 +19,12 @@ import {
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -27,12 +33,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { PerPageSelect } from '../pagination';
 
 interface Order {
@@ -101,6 +101,7 @@ const fmt = (v: string | number) =>
 
 const getStatusConfig = (status: string) => {
     const s = status.toLowerCase();
+
     if (
         [
             'paid',
@@ -118,6 +119,7 @@ const getStatusConfig = (status: string) => {
             bg: 'bg-emerald-50 border-emerald-100',
         };
     }
+
     if (['pending', 'processing', 'ready_to_ship'].includes(s)) {
         return {
             label: status.replace(/_/g, ' '),
@@ -126,6 +128,7 @@ const getStatusConfig = (status: string) => {
             bg: 'bg-amber-50 border-amber-100',
         };
     }
+
     if (['shipped', 'shipping'].includes(s)) {
         return {
             label: status.replace(/_/g, ' '),
@@ -134,6 +137,7 @@ const getStatusConfig = (status: string) => {
             bg: 'bg-blue-50 border-blue-100',
         };
     }
+
     if (['cancelled', 'failed', 'expired', 'deny'].includes(s)) {
         return {
             label: status.replace(/_/g, ' '),
@@ -142,6 +146,7 @@ const getStatusConfig = (status: string) => {
             bg: 'bg-rose-50 border-rose-100',
         };
     }
+
     return {
         label: status.replace(/_/g, ' '),
         dot: 'bg-zinc-400',

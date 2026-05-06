@@ -94,11 +94,14 @@ export default function CreateProduct() {
     function handleSave(v: Variant) {
         setVariants((prev) => {
             const idx = prev.findIndex((x) => x.id === v.id);
+
             if (idx >= 0) {
                 const next = [...prev];
                 next[idx] = v;
+
                 return next;
             }
+
             return [...prev, v];
         });
         setModalOpen(false);
@@ -1218,7 +1221,9 @@ export default function CreateProduct() {
                 <VariantModal
                     variant={editingVariant}
                     onSave={handleSave}
-                    onClose={() => { setModalOpen(false); setEditingVariant(null); }}
+                    onClose={() => {
+ setModalOpen(false); setEditingVariant(null); 
+}}
                 />
             )}
         </>
@@ -1241,8 +1246,13 @@ function VariantModal({
     const isNew = !variant.sku;
 
     useEffect(() => {
-        const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+        const handler = (e: KeyboardEvent) => {
+ if (e.key === 'Escape') {
+onClose();
+} 
+};
         window.addEventListener('keydown', handler);
+
         return () => window.removeEventListener('keydown', handler);
     }, [onClose]);
 
@@ -1251,7 +1261,9 @@ function VariantModal({
     }
 
     function handleBackdropClick(e: React.MouseEvent) {
-        if (e.target === backdropRef.current) onClose();
+        if (e.target === backdropRef.current) {
+onClose();
+}
     }
 
     return (

@@ -7,6 +7,7 @@ use App\Models\ProductVariant;
 use App\Models\StockLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class StockService
@@ -90,6 +91,20 @@ class StockService
             if ($stockAfter < 0) {
                 throw ValidationException::withMessages([
                     'quantity' => 'Adjustment tidak boleh membuat stok menjadi negatif.',
+                ]);
+            }
+
+            if ($stockAfter < $variant->reserved_stock) {
+                Log::warning('stock_adjustment_rejected_below_reserved', [
+                    'user_id' => $request->user()?->id,
+                    'variant_id' => $variant->id,
+                    'stock_before' => $variant->stock,
+                    'stock_after' => $stockAfter,
+                    'reserved_stock' => $variant->reserved_stock,
+                ]);
+
+                throw ValidationException::withMessages([
+                    'quantity' => 'Stock tidak boleh lebih kecil dari reserved stock.',
                 ]);
             }
 

@@ -92,6 +92,20 @@ type CheckoutContextValue = {
 
 const CheckoutContext = createContext<CheckoutContextValue | null>(null);
 
+function checkoutIdempotencyKey() {
+    const storageKey = 'checkout.idempotency_key';
+    const existing = window.sessionStorage.getItem(storageKey);
+
+    if (existing) {
+        return existing;
+    }
+
+    const generated = window.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    window.sessionStorage.setItem(storageKey, generated);
+
+    return generated;
+}
+
 function csrfHeaders() {
     const token = document.cookie
         .split('; ')
@@ -160,6 +174,7 @@ export function CheckoutProvider({
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [shippingRatesLoading, setShippingRatesLoading] = useState(false);
     const [placingOrder, setPlacingOrder] = useState(false);
+    const [idempotencyKey] = useState(checkoutIdempotencyKey);
 
     const loadShippingRates = useCallback(async (addressId: number) => {
         setErrors({});
@@ -242,6 +257,10 @@ export function CheckoutProvider({
 
     const placeOrder = useCallback(
         async (notes: string, agreed: boolean) => {
+            if (placingOrder) {
+                return null;
+            }
+
             if (!currentAddressId || !currentRate) {
                 setErrors({
                     checkout: 'Pilih alamat dan ongkir terlebih dahulu.',
@@ -260,11 +279,14 @@ export function CheckoutProvider({
                     {
                         customer_address_id: currentAddressId,
                         shipping_rate_id: currentRate.id,
+                        idempotency_key: idempotencyKey,
                         voucher_code: currentVoucher?.code ?? null,
                         notes,
                         no_return_refund_agreed: agreed,
                     },
                 );
+
+                window.sessionStorage.removeItem('checkout.idempotency_key');
 
                 return payload.redirect_url ?? null;
             } catch (error) {
@@ -275,7 +297,7 @@ export function CheckoutProvider({
                 setPlacingOrder(false);
             }
         },
-        [currentAddressId, currentRate, currentVoucher],
+        [currentAddressId, currentRate, currentVoucher, idempotencyKey, placingOrder],
     );
 
     const value = useMemo<CheckoutContextValue>(

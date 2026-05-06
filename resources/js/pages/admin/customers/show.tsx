@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import {
     ArrowLeft,
     Bell,
@@ -90,14 +90,11 @@ export default function CustomerShow({ customer }: Props) {
                                     <ArrowLeft /> Back
                                 </Link>
                             </Button>
-                            <Button asChild>
-                                <Link
-                                    href={`/admin/customers/${customer.id}/toggle-active`}
-                                    method="post"
-                                    as="button"
-                                >
-                                    <Power /> Toggle Active
-                                </Link>
+                            <Button
+                                type="button"
+                                onClick={() => router.post(`/admin/customers/${customer.id}/toggle-active`, {}, { preserveScroll: true })}
+                            >
+                                <Power /> Toggle Active
                             </Button>
                         </div>
                     }

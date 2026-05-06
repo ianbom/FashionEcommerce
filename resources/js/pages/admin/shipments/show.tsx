@@ -1,4 +1,4 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { PackagePlus, Printer, RefreshCw, Save } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
@@ -270,14 +270,11 @@ export default function ShipmentShow({ shipment, shippingStatuses }: Props) {
                             >
                                 <Printer /> Cetak Resi Biteship
                             </Button>
-                            <Button asChild>
-                                <Link
-                                    href={`/admin/shipments/${shipment.id}/refresh-tracking`}
-                                    method="post"
-                                    as="button"
-                                >
-                                    <RefreshCw /> Refresh Tracking
-                                </Link>
+                            <Button
+                                type="button"
+                                onClick={() => router.post(`/admin/shipments/${shipment.id}/refresh-tracking`, {}, { preserveScroll: true })}
+                            >
+                                <RefreshCw /> Refresh Tracking
                             </Button>
                         </div>
                     }

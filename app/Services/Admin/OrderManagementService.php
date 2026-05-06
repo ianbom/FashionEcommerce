@@ -2,6 +2,9 @@
 
 namespace App\Services\Admin;
 
+use App\Enums\OrderStatus;
+use App\Enums\PaymentStatus;
+use App\Enums\ShippingStatus;
 use App\Models\Order;
 use App\Services\Notifications\NotificationService;
 use Illuminate\Http\Request;
@@ -10,12 +13,6 @@ use Illuminate\Validation\ValidationException;
 class OrderManagementService
 {
     use ResolvesAdminPagination;
-
-    public const PAYMENT_STATUSES = ['pending', 'paid', 'expired', 'failed', 'cancelled'];
-
-    public const ORDER_STATUSES = ['pending_payment', 'paid', 'processing', 'ready_to_ship', 'shipped', 'delivered', 'completed', 'cancelled', 'expired'];
-
-    public const SHIPPING_STATUSES = ['not_created', 'confirmed', 'allocated', 'picked', 'in_transit', 'delivered', 'cancelled', 'problem'];
 
     public function __construct(private readonly NotificationService $notifications) {}
 
@@ -57,9 +54,9 @@ class OrderManagementService
                 'total' => Order::query()->count(),
                 'new_orders' => Order::query()->where('order_status', 'pending_payment')->count(),
                 'processing' => Order::query()->where('order_status', 'processing')->count(),
-                'shipped' => Order::query()->where('shipping_status', 'shipped')->count(),
-                'completed' => Order::query()->where('order_status', 'completed')->count(),
-                'cancelled' => Order::query()->where('order_status', 'cancelled')->count(),
+                'shipped' => Order::query()->where('shipping_status', ShippingStatus::InTransit->value)->count(),
+                'completed' => Order::query()->where('order_status', OrderStatus::Completed->value)->count(),
+                'cancelled' => Order::query()->where('order_status', OrderStatus::Cancelled->value)->count(),
             ],
         ];
     }
@@ -81,15 +78,15 @@ class OrderManagementService
 
     public function updateStatus(Order $order, string $target): void
     {
-        if ($target === 'cancelled' && $order->payment_status === 'paid') {
+        if ($target === OrderStatus::Cancelled->value && $order->payment_status === PaymentStatus::Paid->value) {
             throw ValidationException::withMessages(['status' => 'Order paid tidak bisa dibatalkan dari dashboard tanpa flow khusus.']);
         }
 
         $allowed = match ($target) {
-            'processing' => in_array($order->order_status, ['paid', 'processing'], true) && $order->payment_status === 'paid',
-            'ready_to_ship' => in_array($order->order_status, ['processing', 'ready_to_ship'], true) && $order->payment_status === 'paid',
-            'completed' => in_array($order->order_status, ['delivered', 'completed'], true),
-            'cancelled' => $order->payment_status !== 'paid' && in_array($order->order_status, ['pending_payment', 'cancelled'], true),
+            OrderStatus::Processing->value => in_array($order->order_status, [OrderStatus::Paid->value, OrderStatus::Processing->value], true) && $order->payment_status === PaymentStatus::Paid->value,
+            OrderStatus::ReadyToShip->value => in_array($order->order_status, [OrderStatus::Processing->value, OrderStatus::ReadyToShip->value], true) && $order->payment_status === PaymentStatus::Paid->value,
+            OrderStatus::Completed->value => in_array($order->order_status, [OrderStatus::Delivered->value, OrderStatus::Completed->value], true),
+            OrderStatus::Cancelled->value => $order->payment_status !== PaymentStatus::Paid->value && in_array($order->order_status, [OrderStatus::PendingPayment->value, OrderStatus::Cancelled->value], true),
             default => false,
         };
 
@@ -99,12 +96,12 @@ class OrderManagementService
 
         $payload = ['order_status' => $target];
 
-        if ($target === 'cancelled') {
-            $payload['payment_status'] = 'cancelled';
+        if ($target === OrderStatus::Cancelled->value) {
+            $payload['payment_status'] = PaymentStatus::Cancelled->value;
             $payload['cancelled_at'] = now();
         }
 
-        if ($target === 'completed') {
+        if ($target === OrderStatus::Completed->value) {
             $payload['completed_at'] = now();
         }
 
@@ -120,9 +117,9 @@ class OrderManagementService
     public function options(): array
     {
         return [
-            'paymentStatuses' => self::PAYMENT_STATUSES,
-            'orderStatuses' => self::ORDER_STATUSES,
-            'shippingStatuses' => self::SHIPPING_STATUSES,
+            'paymentStatuses' => PaymentStatus::values(),
+            'orderStatuses' => OrderStatus::values(),
+            'shippingStatuses' => ShippingStatus::values(),
         ];
     }
 

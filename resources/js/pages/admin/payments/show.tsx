@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -58,14 +58,11 @@ export default function PaymentShow({ payment }: Props) {
                     }
                     description="Detail transaksi Midtrans, related order, raw response, dan payment logs."
                     action={
-                        <Button asChild>
-                            <Link
-                                href={`/admin/payments/${payment.id}/sync`}
-                                method="post"
-                                as="button"
-                            >
-                                <RefreshCw /> Sync Status
-                            </Link>
+                        <Button
+                            type="button"
+                            onClick={() => router.post(`/admin/payments/${payment.id}/sync`, {}, { preserveScroll: true })}
+                        >
+                            <RefreshCw /> Sync Status
                         </Button>
                     }
                 />

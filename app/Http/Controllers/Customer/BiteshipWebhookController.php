@@ -9,6 +9,7 @@ use App\Services\Admin\ShipmentManagementService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Log;
 
 class BiteshipWebhookController extends Controller
 {
@@ -19,6 +20,14 @@ class BiteshipWebhookController extends Controller
         }
 
         $payload = $request->json()->all() ?: $request->all();
+        $payloadHash = hash('sha256', json_encode($payload, JSON_THROW_ON_ERROR));
+
+        if (BiteshipWebhookLog::query()->where('payload_hash', $payloadHash)->exists()) {
+            Log::info('duplicate_webhook_ignored', ['provider' => 'biteship']);
+
+            return response()->json(['success' => true, 'duplicate' => true]);
+        }
+
         $event = Arr::get($payload, 'event');
         $orderId = Arr::get($payload, 'order_id') ?? Arr::get($payload, 'id');
         $trackingId = Arr::get($payload, 'courier_tracking_id') ?? Arr::get($payload, 'courier.tracking_id');
@@ -29,6 +38,7 @@ class BiteshipWebhookController extends Controller
             'biteship_order_id' => $orderId,
             'biteship_tracking_id' => $trackingId,
             'waybill_id' => $waybillId,
+            'payload_hash' => $payloadHash,
             'payload' => $payload,
         ]);
 
@@ -58,13 +68,18 @@ class BiteshipWebhookController extends Controller
         $secret = config('services.biteship.webhook_secret');
 
         if (! filled($secret)) {
-            return true;
+            if (app()->environment(['local', 'testing']) && config('services.biteship.webhook_allow_test_bypass')) {
+                return true;
+            }
+
+            Log::warning('biteship_webhook_secret_missing');
+
+            return false;
         }
 
         $given = $request->header('X-Biteship-Webhook-Secret')
             ?: $request->header('X-Webhook-Secret')
-            ?: $request->bearerToken()
-            ?: $request->query('secret');
+            ?: $request->bearerToken();
 
         return is_string($given) && hash_equals($secret, $given);
     }

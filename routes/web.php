@@ -78,7 +78,7 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware('guest')->prefix('admin')->name('admin.')->group(function () {
     Route::get('login', [AdminLoginController::class, 'create'])->name('login');
-    Route::post('login', [AdminLoginController::class, 'store'])->name('login.store');
+    Route::post('login', [AdminLoginController::class, 'store'])->middleware('throttle:admin-login')->name('login.store');
 });
 
 Route::middleware(['auth', 'admin', 'admin.activity'])->prefix('admin')->name('admin.')->group(function () {

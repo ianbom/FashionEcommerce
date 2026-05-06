@@ -216,6 +216,10 @@ class ProductManagementService
         $folder = 'product/'.Str::slug($product->slug ?: $product->name).'/variants';
 
         foreach ($variants as $index => $variant) {
+            if ((int) ($variant['reserved_stock'] ?? 0) > (int) ($variant['stock'] ?? 0)) {
+                throw ValidationException::withMessages(["variants.{$variant['_index']}.reserved_stock" => 'Reserved stock tidak boleh lebih besar dari stock.']);
+            }
+
             $uploadedImage = $request->file("variants.{$variant['_index']}.image");
             $payload = [
                 'sku' => $variant['sku'],

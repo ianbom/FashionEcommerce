@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'provider',
     'event_type',
     'transaction_status',
+    'payload_hash',
     'payload',
     'processed_at',
 ])]

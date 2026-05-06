@@ -2,18 +2,15 @@
 
 namespace App\Services\Admin;
 
-use App\Models\Order;
+use App\Actions\Payments\SyncMidtransPaymentAction;
 use App\Models\Payment;
-use App\Models\ProductVariant;
-use App\Services\Notifications\NotificationService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class PaymentManagementService
 {
     use ResolvesAdminPagination;
 
-    public function __construct(private readonly NotificationService $notifications) {}
+    public function __construct(private readonly SyncMidtransPaymentAction $syncPayment) {}
 
     public function indexData(Request $request): array
     {
@@ -78,27 +75,7 @@ class PaymentManagementService
 
     public function sync(Payment $payment): void
     {
-        DB::transaction(function () use ($payment): void {
-            $payment->refresh()->load('order.items');
-            $status = $payment->transaction_status ?: 'pending';
-
-            $payment->logs()->create([
-                'order_id' => $payment->order_id,
-                'provider' => $payment->payment_provider,
-                'event_type' => 'manual_sync',
-                'transaction_status' => $status,
-                'payload' => ['source' => 'admin_manual_sync', 'status' => $status, 'synced_at' => now()->toDateTimeString()],
-                'processed_at' => now(),
-            ]);
-
-            if (in_array($status, ['settlement', 'capture'], true)) {
-                $this->markOrderPaid($payment->order, $payment);
-            }
-
-            if (in_array($status, ['expire', 'cancel', 'deny', 'failure'], true)) {
-                $this->markOrderFailed($payment->order, $status);
-            }
-        });
+        $this->syncPayment->execute($payment);
     }
 
     public function row(Payment $payment): array
@@ -120,66 +97,4 @@ class PaymentManagementService
         ];
     }
 
-    private function markOrderPaid(Order $order, Payment $payment): void
-    {
-        if ($order->payment_status === 'paid') {
-            return;
-        }
-
-        foreach ($order->items as $item) {
-            if (! $item->product_variant_id) {
-                continue;
-            }
-
-            $variant = ProductVariant::query()->whereKey($item->product_variant_id)->lockForUpdate()->first();
-
-            if (! $variant) {
-                continue;
-            }
-
-            $before = $variant->stock;
-            $after = max(0, $before - $item->quantity);
-            $variant->update([
-                'stock' => $after,
-                'reserved_stock' => max(0, $variant->reserved_stock - $item->quantity),
-            ]);
-            $variant->stockLogs()->create([
-                'type' => 'order',
-                'quantity' => -$item->quantity,
-                'stock_before' => $before,
-                'stock_after' => $after,
-                'reference_type' => 'order',
-                'reference_id' => $order->id,
-                'note' => "Stock reduced after payment {$payment->midtrans_order_id}.",
-            ]);
-        }
-
-        $order->update([
-            'payment_status' => 'paid',
-            'order_status' => 'paid',
-            'paid_at' => $payment->paid_at ?? now(),
-        ]);
-
-        $payment->update(['paid_at' => $payment->paid_at ?? now()]);
-        $this->notifications->forOrder($order, 'Payment received', "Payment untuk order {$order->order_number} berhasil diterima.", 'payment');
-    }
-
-    private function markOrderFailed(Order $order, string $status): void
-    {
-        if ($order->payment_status === 'paid') {
-            return;
-        }
-
-        $order->update([
-            'payment_status' => match ($status) {
-                'expire' => 'expired',
-                'cancel' => 'cancelled',
-                default => 'failed',
-            },
-            'order_status' => $status === 'expire' ? 'expired' : 'cancelled',
-            'expired_at' => $status === 'expire' ? now() : $order->expired_at,
-            'cancelled_at' => $status !== 'expire' ? now() : $order->cancelled_at,
-        ]);
-        $this->notifications->forOrder($order, 'Payment updated', "Payment untuk order {$order->order_number} berstatus {$status}.", 'payment');
-    }
 }

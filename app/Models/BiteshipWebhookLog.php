@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
     'biteship_order_id',
     'biteship_tracking_id',
     'waybill_id',
+    'payload_hash',
     'payload',
     'processed_at',
 ])]

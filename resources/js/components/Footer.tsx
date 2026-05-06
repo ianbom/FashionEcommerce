@@ -40,7 +40,7 @@ export default function Footer() {
                                 />
                             </svg>
                             <span className="text-xl font-bold tracking-[0.3em] text-accent">
-                                WEBCARE
+                                Shayda
                             </span>
                         </div>
                         <p className="max-w-md text-xs leading-relaxed text-white/60 md:text-sm">

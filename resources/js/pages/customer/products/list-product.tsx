@@ -216,7 +216,7 @@ export default function ListProduct({ products, filters, options }: Props) {
                     />
                 )}
                 <aside
-                    className={`fixed inset-x-0 bottom-0 z-50 max-h-[86vh] w-full flex-shrink-0 overflow-y-auto rounded-t-[28px] border-t border-border bg-background px-5 pt-3 pb-6 shadow-[0_-24px_80px_rgba(0,0,0,0.18)] transition-transform duration-300 ease-out lg:sticky lg:top-24 lg:z-auto lg:mb-0 lg:max-h-[calc(100dvh-7rem)] lg:w-72 lg:translate-y-0 lg:overflow-y-auto lg:rounded-none lg:border-0 lg:bg-transparent lg:px-0 lg:pt-0 lg:pr-12 lg:pb-0 lg:shadow-none ${
+                    className={`fixed inset-x-0 bottom-0 z-50 max-h-[86vh] w-full flex-shrink-0 overflow-y-auto rounded-t-[28px] border-t border-border bg-red-500 px-5 pt-3 pb-6 shadow-[0_-24px_80px_rgba(0,0,0,0.18)] transition-transform duration-300 ease-out lg:sticky lg:top-24 lg:z-auto lg:mb-0 lg:max-h-[calc(100dvh-7rem)] lg:w-72 lg:translate-y-0 lg:overflow-y-auto lg:rounded-none lg:border-0 lg:bg-transparent lg:px-0 lg:pt-0 lg:pr-12 lg:pb-0 lg:shadow-none ${
                         isFilterOpen
                             ? 'translate-y-0'
                             : 'pointer-events-none translate-y-full lg:pointer-events-auto'
@@ -716,7 +716,7 @@ export default function ListProduct({ products, filters, options }: Props) {
                             ))}
                         </div>
                     ) : (
-                        <div className="flex min-h-[420px] flex-col items-center justify-center rounded-md border border-dashed border-border bg-card/40 px-6 text-center">
+                        <div className="flex min-h-[420px] flex-col items-center justify-center rounded-md px-6 text-center">
                             <p className="text-sm font-semibold text-foreground">
                                 No products found
                             </p>

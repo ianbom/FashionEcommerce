@@ -27,6 +27,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'cancelled_at',
     'raw_rate_response',
     'raw_order_response',
+    'creating_at',
+    'failed_reason',
+    'last_synced_at',
 ])]
 class Shipment extends Model
 {
@@ -45,6 +48,8 @@ class Shipment extends Model
         return [
             'cancelled_at' => 'datetime',
             'delivered_at' => 'datetime',
+            'creating_at' => 'datetime',
+            'last_synced_at' => 'datetime',
             'insurance_cost' => 'decimal:2',
             'raw_order_response' => 'array',
             'raw_rate_response' => 'array',

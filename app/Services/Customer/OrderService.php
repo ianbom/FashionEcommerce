@@ -2,23 +2,21 @@
 
 namespace App\Services\Customer;
 
+use App\Enums\OrderStatus;
+use App\Enums\PaymentStatus;
 use App\Models\Order;
 use Illuminate\Http\Request;
 
 class OrderService
 {
-    public const ORDER_STATUSES = ['pending_payment', 'paid', 'processing', 'ready_to_ship', 'shipped', 'delivered', 'completed', 'cancelled', 'expired'];
-
-    public const PAYMENT_STATUSES = ['pending', 'paid', 'expired', 'failed', 'cancelled'];
-
     public const SORTS = ['created_at', 'order_number', 'grand_total', 'payment_status', 'order_status'];
 
     public function indexData(Request $request): array
     {
         $filters = [
             'search' => $request->string('search')->trim()->toString(),
-            'order_status' => $this->allowed($request->string('order_status')->toString(), self::ORDER_STATUSES),
-            'payment_status' => $this->allowed($request->string('payment_status')->toString(), self::PAYMENT_STATUSES),
+            'order_status' => $this->allowed($request->string('order_status')->toString(), OrderStatus::values()),
+            'payment_status' => $this->allowed($request->string('payment_status')->toString(), PaymentStatus::values()),
             'sort' => $this->allowed($request->string('sort')->toString(), self::SORTS, 'created_at'),
             'direction' => $request->string('direction')->toString() === 'asc' ? 'asc' : 'desc',
             'per_page' => $this->perPage((int) $request->integer('per_page', 10)),
@@ -53,8 +51,8 @@ class OrderService
                 ->through(fn (Order $order): array => $this->row($order)),
             'filters' => $filters,
             'options' => [
-                'orderStatuses' => self::ORDER_STATUSES,
-                'paymentStatuses' => self::PAYMENT_STATUSES,
+                'orderStatuses' => OrderStatus::values(),
+                'paymentStatuses' => PaymentStatus::values(),
                 'sorts' => self::SORTS,
                 'directions' => ['desc', 'asc'],
                 'perPages' => [5, 10, 15, 25],

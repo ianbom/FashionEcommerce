@@ -41,7 +41,6 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { PerPageSelect } from '../pagination';
 import {
     Select,
     SelectContent,
@@ -49,6 +48,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { PerPageSelect } from '../pagination';
 
 interface Collection {
     id: number;

@@ -61,6 +61,7 @@
     --color-sidebar-ring: var(--sidebar-ring);
 }
 
+
 :root {
     --background: #faf9f6;
     --foreground: #333333;
@@ -139,5 +140,24 @@
 
     body {
         @apply bg-background text-foreground;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+        width: 0px;
+        height: 0px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--muted-foreground);
     }
 }

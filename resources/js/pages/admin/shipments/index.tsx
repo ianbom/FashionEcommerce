@@ -22,7 +22,6 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { PerPageSelect } from '../pagination';
 import {
     Select,
     SelectContent,
@@ -32,6 +31,7 @@ import {
 } from '@/components/ui/select';
 import type { Paginated } from '@/pages/admin/sales/shared';
 import { formatPrice } from '@/pages/admin/sales/shared';
+import { PerPageSelect } from '../pagination';
 
 type Shipment = {
     id: number;
@@ -111,7 +111,9 @@ const getStatusConfig = (status: string | null) => {
 };
 
 const formatDate = (value: string | null) => {
-    if (!value) return '-';
+    if (!value) {
+return '-';
+}
 
     return new Date(value).toLocaleDateString('id-ID', {
         day: '2-digit',
@@ -613,15 +615,14 @@ export default function ShipmentsIndex({
                                                         <DropdownMenuItem
                                                             asChild
                                                         >
-                                                            <Link
-                                                                href={`/admin/shipments/${shipment.id}/refresh-tracking`}
-                                                                method="post"
-                                                                as="button"
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => router.post(`/admin/shipments/${shipment.id}/refresh-tracking`, {}, { preserveScroll: true })}
                                                                 className="flex w-full items-center gap-2"
                                                             >
                                                                 <RefreshCw className="h-3.5 w-3.5" />
                                                                 Track Shipment
-                                                            </Link>
+                                                            </button>
                                                         </DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>

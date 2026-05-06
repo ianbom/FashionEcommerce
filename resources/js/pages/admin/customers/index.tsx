@@ -414,16 +414,14 @@ export default function CustomersIndex({ customers, filters }: Props) {
                                                         </Link>
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem asChild>
-                                                        <Link
-                                                            href={`/admin/customers/${customer.id}/toggle-active`}
-                                                            method="post"
-                                                            as="button"
-                                                            preserveScroll
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => router.post(`/admin/customers/${customer.id}/toggle-active`, {}, { preserveScroll: true })}
                                                             className="flex w-full items-center gap-2"
                                                         >
                                                             <Power className="h-3.5 w-3.5" />{' '}
                                                             Toggle Status
-                                                        </Link>
+                                                        </button>
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>

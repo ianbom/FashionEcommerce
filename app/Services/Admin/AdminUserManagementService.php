@@ -37,10 +37,13 @@ class AdminUserManagementService
     {
         unset($data['password_confirmation']);
 
-        $data['role'] = 'admin';
-        $data['is_active'] = $request->boolean('is_active', true);
+        $admin = User::query()->create($data);
+        $admin->forceFill([
+            'role' => 'admin',
+            'is_active' => $request->boolean('is_active', true),
+        ])->save();
 
-        return User::query()->create($data);
+        return $admin;
     }
 
     public function formData(User $admin): array
@@ -66,21 +69,22 @@ class AdminUserManagementService
             unset($data['password']);
         }
 
-        $data['is_active'] = $request->boolean('is_active');
+        $isActive = $request->boolean('is_active');
 
-        if ($admin->is($request->user()) && ! $data['is_active']) {
+        if ($admin->is($request->user()) && ! $isActive) {
             throw ValidationException::withMessages([
                 'is_active' => 'Admin tidak dapat menonaktifkan akun sendiri.',
             ]);
         }
 
-        if ($admin->is_active && ! $data['is_active'] && $this->activeAdminCount() <= 1) {
+        if ($admin->is_active && ! $isActive && $this->activeAdminCount() <= 1) {
             throw ValidationException::withMessages([
                 'is_active' => 'Minimal harus ada satu admin aktif.',
             ]);
         }
 
         $admin->update($data);
+        $admin->forceFill(['is_active' => $isActive])->save();
     }
 
     private function ensureAdmin(User $user): void

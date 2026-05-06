@@ -103,7 +103,7 @@ class CustomerManagementService
     public function toggleActive(User $customer): void
     {
         $this->ensureCustomer($customer);
-        $customer->update(['is_active' => ! $customer->is_active]);
+        $customer->forceFill(['is_active' => ! $customer->is_active])->save();
     }
 
     private function ensureCustomer(User $customer): void

@@ -38,6 +38,7 @@ return [
     'biteship' => [
         'api_key' => env('BITESHIP_API_KEY'),
         'webhook_secret' => env('BITESHIP_WEBHOOK_SECRET'),
+        'webhook_allow_test_bypass' => env('BITESHIP_WEBHOOK_ALLOW_TEST_BYPASS', false),
         'shipper_name' => env('BITESHIP_SHIPPER_NAME'),
         'shipper_phone' => env('BITESHIP_SHIPPER_PHONE'),
         'shipper_email' => env('BITESHIP_SHIPPER_EMAIL'),
@@ -53,6 +54,11 @@ return [
     'midtrans' => [
         'server_key' => env('MIDTRANS_SERVER_KEY'),
         'client_key' => env('MIDTRANS_CLIENT_KEY'),
+    ],
+
+    'checkout' => [
+        'shipping_rate_ttl_minutes' => env('CHECKOUT_SHIPPING_RATE_TTL_MINUTES', 15),
+        'session_ttl_minutes' => env('CHECKOUT_SESSION_TTL_MINUTES', 30),
     ],
 
 ];

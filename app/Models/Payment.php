@@ -21,7 +21,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'currency',
     'paid_at',
     'expired_at',
+    'expires_at',
     'raw_response',
+    'failure_reason',
+    'last_synced_at',
 ])]
 class Payment extends Model
 {
@@ -39,8 +42,10 @@ class Payment extends Model
     {
         return [
             'expired_at' => 'datetime',
+            'expires_at' => 'datetime',
             'gross_amount' => 'decimal:2',
             'paid_at' => 'datetime',
+            'last_synced_at' => 'datetime',
             'raw_response' => 'array',
         ];
     }

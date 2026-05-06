@@ -12,8 +12,14 @@ class EnsureUserIsAdmin
     {
         $user = $request->user();
 
-        if (! $user || $user->role !== 'admin' || ! $user->is_active) {
-            return redirect()->back();
+        if (! $user) {
+            return $request->expectsJson()
+                ? response()->json(['message' => 'Unauthenticated.'], 401)
+                : redirect()->route('admin.login');
+        }
+
+        if ($user->role !== 'admin' || ! $user->is_active) {
+            abort(403);
         }
 
         return $next($request);

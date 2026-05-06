@@ -3,6 +3,7 @@
 namespace App\Services\Integrations;
 
 use App\Models\Order;
+use App\Models\Payment;
 use App\Services\Settings\SiteSettingService;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
@@ -48,7 +49,23 @@ class MidtransService
         return $response->json();
     }
 
+    public function transactionStatus(string $midtransOrderId): array
+    {
+        $response = $this->client()->get('/v2/'.rawurlencode($midtransOrderId).'/status');
+
+        if (! $response->successful()) {
+            throw ValidationException::withMessages(['payment' => $response->json('status_message') ?? 'Gagal mengambil status Midtrans.']);
+        }
+
+        return $response->json();
+    }
+
     public function notificationIsValid(array $payload): bool
+    {
+        return $this->validateNotificationSignature($payload);
+    }
+
+    public function validateNotificationSignature(array $payload): bool
     {
         $signature = $payload['signature_key'] ?? null;
         $orderId = $payload['order_id'] ?? '';
@@ -57,6 +74,16 @@ class MidtransService
 
         return filled($signature)
             && hash_equals((string) $signature, hash('sha512', $orderId.$statusCode.$grossAmount.$this->serverKey()));
+    }
+
+    public function amountMatches(string|float|int $payloadAmount, Payment $payment): bool
+    {
+        return $this->minorUnits($payloadAmount) === $this->minorUnits($payment->gross_amount);
+    }
+
+    private function minorUnits(string|float|int $amount): int
+    {
+        return (int) round(((float) $amount) * 100);
     }
 
     private function itemDetails(Order $order): array

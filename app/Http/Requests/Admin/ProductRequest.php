@@ -19,6 +19,14 @@ class ProductRequest extends FormRequest
     public function rules(): array
     {
         $product = $this->route('product');
+        $productId = $product?->id;
+        $imageIdRule = Rule::exists('product_images', 'id');
+        $variantIdRule = Rule::exists('product_variants', 'id');
+
+        if ($productId) {
+            $imageIdRule->where('product_id', $productId);
+            $variantIdRule->where('product_id', $productId);
+        }
 
         return [
             'category_id' => ['nullable', 'integer', 'exists:categories,id'],
@@ -43,14 +51,14 @@ class ProductRequest extends FormRequest
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string', 'max:500'],
             'images' => ['nullable', 'array'],
-            'images.*.id' => ['nullable', 'integer', 'exists:product_images,id'],
-            'images.*.image_url' => ['nullable', 'string', 'max:255'],
+            'images.*.id' => ['nullable', 'integer', $imageIdRule],
+            'images.*.image_url' => ['nullable', 'string', 'max:255', 'not_regex:/^blob:/i'],
             'images.*.image' => ['nullable', 'file', 'image', 'max:4096'],
             'images.*.alt_text' => ['nullable', 'string', 'max:255'],
             'images.*.sort_order' => ['nullable', 'integer', 'min:0'],
             'images.*.is_primary' => ['sometimes', 'boolean'],
             'variants' => ['nullable', 'array'],
-            'variants.*.id' => ['nullable', 'integer', 'exists:product_variants,id'],
+            'variants.*.id' => ['nullable', 'integer', $variantIdRule],
             'variants.*.sku' => ['nullable', 'string', 'max:100'],
             'variants.*.color_name' => ['nullable', 'string', 'max:100'],
             'variants.*.color_hex' => ['nullable'],
@@ -58,7 +66,7 @@ class ProductRequest extends FormRequest
             'variants.*.additional_price' => ['nullable', 'numeric', 'min:0'],
             'variants.*.stock' => ['nullable', 'integer', 'min:0'],
             'variants.*.reserved_stock' => ['nullable', 'integer', 'min:0'],
-            'variants.*.image_url' => ['nullable', 'string', 'max:255'],
+            'variants.*.image_url' => ['nullable', 'string', 'max:255', 'not_regex:/^blob:/i'],
             'variants.*.image' => ['nullable', 'file', 'image', 'max:4096'],
             'variants.*.is_active' => ['sometimes', 'boolean'],
         ];
@@ -92,6 +100,12 @@ class ProductRequest extends FormRequest
 
                 $variants = collect($this->input('variants', []))
                     ->filter(fn (array $variant): bool => filled($variant['sku'] ?? null));
+
+                $variants->each(function (array $variant, int $index) use ($validator): void {
+                    if ((int) ($variant['reserved_stock'] ?? 0) > (int) ($variant['stock'] ?? 0)) {
+                        $validator->errors()->add("variants.{$index}.reserved_stock", 'Reserved stock tidak boleh lebih besar dari stock.');
+                    }
+                });
 
                 if (! $variants->contains(fn (array $variant): bool => (bool) ($variant['is_active'] ?? false) && (int) ($variant['stock'] ?? 0) > 0)) {
                     $validator->errors()->add('variants', 'Produk published membutuhkan satu varian aktif dengan stok tersedia.');
