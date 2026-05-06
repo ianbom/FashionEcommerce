@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import {
     Check,
     ClipboardList,
@@ -14,8 +14,12 @@ import {
     UserRound,
     WalletCards,
 } from 'lucide-react';
+import { useState } from 'react';
 import type { ComponentType, ReactNode } from 'react';
-import { index as orderIndex } from '@/actions/App/Http/Controllers/Customer/OrderController';
+import {
+    cancel as orderCancel,
+    index as orderIndex,
+} from '@/actions/App/Http/Controllers/Customer/OrderController';
 import { show as productShow } from '@/actions/App/Http/Controllers/Customer/ProductController';
 import ProfileLayout from '@/layouts/profile-layout';
 
@@ -221,22 +225,46 @@ function ActionButton({
     icon: Icon,
     label,
     href,
+    onClick,
+    disabled = false,
     external = false,
+    tone = 'default',
 }: {
     icon: IconComponent;
     label: string;
     href?: string | null;
+    onClick?: () => void;
+    disabled?: boolean;
     external?: boolean;
+    tone?: 'default' | 'danger';
 }) {
     const base =
-        'group flex w-full items-center justify-center gap-2 rounded-xl border border-[#e5d7ca] bg-white px-4 py-2.5 text-[12px] font-semibold text-[#4a392c] transition-all duration-150 hover:border-[#c9a983] hover:bg-[#fbf4ed] hover:shadow-sm active:scale-[0.98]';
+        'group flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-[12px] font-semibold transition-all duration-150 hover:shadow-sm active:scale-[0.98]';
+    const toneClass =
+        tone === 'danger'
+            ? 'border-red-200 bg-red-50 text-red-700 hover:border-red-300 hover:bg-red-100'
+            : 'border-[#e5d7ca] bg-white text-[#4a392c] hover:border-[#c9a983] hover:bg-[#fbf4ed]';
+
+    if (onClick) {
+        return (
+            <button
+                type="button"
+                onClick={onClick}
+                disabled={disabled}
+                className={`${base} ${toneClass} ${disabled ? 'cursor-not-allowed opacity-60' : ''}`}
+            >
+                <Icon size={14} strokeWidth={1.8} />
+                <span>{label}</span>
+            </button>
+        );
+    }
 
     if (!href) {
         return (
             <button
                 type="button"
                 disabled
-                className={`${base} cursor-not-allowed opacity-40`}
+                className={`${base} ${toneClass} cursor-not-allowed opacity-40`}
             >
                 <Icon size={14} strokeWidth={1.8} />
                 <span>{label}</span>
@@ -246,7 +274,12 @@ function ActionButton({
 
     if (external) {
         return (
-            <a href={href} target="_blank" rel="noreferrer" className={base}>
+            <a
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                className={`${base} ${toneClass}`}
+            >
                 <Icon size={14} strokeWidth={1.8} />
                 <span>{label}</span>
             </a>
@@ -254,7 +287,7 @@ function ActionButton({
     }
 
     return (
-        <Link href={href} className={base}>
+        <Link href={href} className={`${base} ${toneClass}`}>
             <Icon size={14} strokeWidth={1.8} />
             <span>{label}</span>
         </Link>
@@ -426,6 +459,8 @@ function getMidtransReceiptUrl(payment: Payment | null): string | null {
 }
 
 export default function DetailOrder({ order }: Props) {
+    const [isCancelling, setIsCancelling] = useState(false);
+    const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
     const progressSteps = buildProgress(order);
     const courier = [
         order.shipment?.courier_company,
@@ -443,7 +478,43 @@ export default function DetailOrder({ order }: Props) {
         order.payment?.midtrans_order_id ??
         '-';
     const trackingUrl = getBiteshipTrackingUrl(order.shipment);
-    const paymentReceiptUrl = getMidtransReceiptUrl(order.payment);
+    const isPaymentTerminal = [
+        'cancelled',
+        'expired',
+        'failed',
+        'refunded',
+        'partially_refunded',
+    ].includes(order.payment_status);
+    const paymentReceiptUrl = isPaymentTerminal
+        ? null
+        : getMidtransReceiptUrl(order.payment);
+    const canPay = order.payment_status === 'pending' && !!paymentReceiptUrl;
+    const canCancelOrder = order.payment_status === 'pending';
+
+    const cancelOrder = () => {
+        if (isCancelling) {
+            return;
+        }
+
+        router.post(
+            orderCancel.url(order.id),
+            {},
+            {
+                preserveScroll: true,
+                onStart: () => setIsCancelling(true),
+                onSuccess: () => setIsCancelModalOpen(false),
+                onError: (errors) => {
+                    const message = Object.values(errors).join('\n');
+
+                    alert(
+                        message ||
+                            'Gagal membatalkan order. Cek status pembayaran atau coba lagi.',
+                    );
+                },
+                onFinish: () => setIsCancelling(false),
+            },
+        );
+    };
 
     return (
         <ProfileLayout
@@ -510,15 +581,28 @@ export default function DetailOrder({ order }: Props) {
                                 label="Track Order"
                             />
                             <ActionButton
-                                href="/list"
-                                icon={RefreshCcw}
-                                label="Buy Again"
+                                href={canCancelOrder ? undefined : '/list'}
+                                onClick={
+                                    canCancelOrder
+                                        ? () => setIsCancelModalOpen(true)
+                                        : undefined
+                                }
+                                disabled={isCancelling}
+                                icon={canCancelOrder ? ClipboardList : RefreshCcw}
+                                tone={canCancelOrder ? 'danger' : 'default'}
+                                label={
+                                    isCancelling
+                                        ? 'Cancelling...'
+                                        : canCancelOrder
+                                          ? 'Cancel Order'
+                                          : 'Buy Again'
+                                }
                             />
                             <ActionButton
                                 href={paymentReceiptUrl}
                                 external
                                 icon={ReceiptText}
-                                label="Payment Receipt"
+                                label={canPay ? 'Pay Now' : 'Payment Receipt'}
                             />
                             <ActionButton
                                 href="/notifications"
@@ -910,6 +994,66 @@ export default function DetailOrder({ order }: Props) {
                     </SectionCard>
                 </aside>
             </div>
+
+            {isCancelModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4 backdrop-blur-sm">
+                    <div className="w-full max-w-md overflow-hidden rounded-3xl border border-red-100 bg-white shadow-2xl shadow-black/20">
+                        <div className="border-b border-red-100 bg-red-50 px-6 py-5">
+                            <div className="flex items-start gap-4">
+                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-700">
+                                    <ClipboardList size={22} strokeWidth={1.8} />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-semibold tracking-[0.2em] text-red-500 uppercase">
+                                        Cancel Order
+                                    </p>
+                                    <h2 className="mt-1 font-serif text-xl leading-tight text-[#2d2119]">
+                                        Batalkan order ini?
+                                    </h2>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4 px-6 py-5">
+                            <p className="text-sm leading-6 text-[#6f5e52]">
+                                Order belum dibayar. Jika dibatalkan, transaksi
+                                pembayaran Midtrans akan dibuat tidak bisa
+                                dibayar lagi dan stok yang tertahan akan
+                                dilepaskan.
+                            </p>
+                            <div className="rounded-2xl border border-[#f0ebe4] bg-[#faf6f1] px-4 py-3">
+                                <p className="text-[10px] font-semibold tracking-widest text-[#9a8575] uppercase">
+                                    Order Number
+                                </p>
+                                <p className="mt-1 font-mono text-sm font-semibold text-[#3d3027]">
+                                    {order.order_number}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="grid gap-3 border-t border-[#f0ebe4] px-6 py-5 sm:grid-cols-2">
+                            <button
+                                type="button"
+                                onClick={() => setIsCancelModalOpen(false)}
+                                disabled={isCancelling}
+                                className="rounded-xl border border-[#e5d7ca] bg-white px-4 py-2.5 text-[12px] font-semibold text-[#4a392c] transition hover:bg-[#fbf4ed] disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                                Kembali
+                            </button>
+                            <button
+                                type="button"
+                                onClick={cancelOrder}
+                                disabled={isCancelling}
+                                className="rounded-xl border border-red-600 bg-red-600 px-4 py-2.5 text-[12px] font-semibold text-white transition hover:border-red-700 hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                                {isCancelling
+                                    ? 'Membatalkan...'
+                                    : 'Ya, batalkan order'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </ProfileLayout>
     );
 }

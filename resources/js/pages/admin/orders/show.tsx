@@ -16,7 +16,6 @@ import {
     MessageCircle,
     PackagePlus,
     Printer,
-    Save,
     ShieldCheck,
     StickyNote,
     Truck,
@@ -26,6 +25,14 @@ import {
 import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import InputError from '@/components/input-error';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { formatPrice } from '@/pages/admin/sales/shared';
 
 const formatDate = (dateStr: string | null | undefined) => {
@@ -97,6 +104,11 @@ type Order = {
 type Props = {
     order: Order;
 };
+
+type PendingStatusChange = {
+    status: string;
+    label: string;
+} | null;
 
 type BadgeVariant = 'green' | 'blue' | 'gray' | 'red' | 'yellow' | 'outline';
 
@@ -327,7 +339,8 @@ function getShipmentLabelUrl(shipment: Order['shipment']): string | null {
 }
 
 export default function OrderShow({ order }: Props) {
-    const noteForm = useForm({ notes: order.notes ?? '' });
+    const [pendingStatusChange, setPendingStatusChange] =
+        useState<PendingStatusChange>(null);
     const shipmentForm = useForm<{
         courier_company: string;
         courier_type: string;
@@ -344,13 +357,6 @@ export default function OrderShow({ order }: Props) {
         label_photo: null,
     });
 
-    const submitNotes = (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        noteForm.post(`/admin/orders/${order.id}/notes`, {
-            preserveScroll: true,
-        });
-    };
-
     const submitShipment = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         shipmentForm.post(`/admin/orders/${order.id}/shipments`, {
@@ -359,11 +365,28 @@ export default function OrderShow({ order }: Props) {
         });
     };
 
-    const updateStatus = (newStatus: string) => {
+    const formatStatusLabel = (status: string) =>
+        status.replace(/_/g, ' ').toUpperCase();
+
+    const requestStatusChange = (newStatus: string) => {
+        setPendingStatusChange({
+            status: newStatus,
+            label: formatStatusLabel(newStatus),
+        });
+    };
+
+    const confirmStatusChange = () => {
+        if (!pendingStatusChange) {
+            return;
+        }
+
         router.post(
             `/admin/orders/${order.id}/status`,
-            { status: newStatus },
-            { preserveScroll: true },
+            { status: pendingStatusChange.status },
+            {
+                preserveScroll: true,
+                onFinish: () => setPendingStatusChange(null),
+            },
         );
     };
 
@@ -373,7 +396,7 @@ export default function OrderShow({ order }: Props) {
         }
 
         const lower = status.toLowerCase();
-        const label = status.replace(/_/g, ' ').toUpperCase();
+        const label = formatStatusLabel(status);
 
         if (
             ['paid', 'completed', 'settlement', 'capture', 'accept'].includes(
@@ -435,17 +458,23 @@ export default function OrderShow({ order }: Props) {
                                 <MessageCircle size={14} /> Contact customer
                             </ActionLink>
                             <ActionButton
-                                onClick={() => updateStatus('processing')}
+                                onClick={() =>
+                                    requestStatusChange('processing')
+                                }
                             >
                                 <Clock size={14} /> Processing
                             </ActionButton>
                             <ActionButton
-                                onClick={() => updateStatus('ready_to_ship')}
+                                onClick={() =>
+                                    requestStatusChange('ready_to_ship')
+                                }
                             >
                                 <PackagePlus size={14} /> Ready to ship
                             </ActionButton>
                             <ActionButton
-                                onClick={() => updateStatus('completed')}
+                                onClick={() =>
+                                    requestStatusChange('completed')
+                                }
                             >
                                 <CheckCircle2 size={14} /> Completed
                             </ActionButton>
@@ -539,11 +568,11 @@ export default function OrderShow({ order }: Props) {
                                         <div className="mt-5 rounded-lg border border-zinc-200 bg-zinc-50 p-4">
                                             <p className="mb-2 flex items-center gap-2 text-xs font-semibold text-zinc-700">
                                                 <StickyNote size={14} />{' '}
-                                                Internal notes
+                                                Customer note
                                             </p>
                                             <p className="text-sm break-words whitespace-pre-wrap text-zinc-600">
                                                 {order.notes ||
-                                                    'No internal notes for this order.'}
+                                                    'Customer did not leave a note for this order.'}
                                             </p>
                                         </div>
                                     </div>
@@ -551,64 +580,48 @@ export default function OrderShow({ order }: Props) {
 
                                 <Card>
                                     <CardHeader
-                                        icon={ShieldCheck}
-                                        title="Operational controls"
-                                        action={
-                                            <Badge
-                                                variant={
-                                                    order.no_return_refund_agreed
-                                                        ? 'yellow'
-                                                        : 'outline'
-                                                }
-                                            >
-                                                No return/refund:{' '}
+                                        icon={CheckCircle2}
+                                        title="Status summary"
+                                    />
+                                    <div className="space-y-3 p-5">
+                                        <div className="flex items-center justify-between gap-3 text-sm">
+                                            <span className="flex items-center gap-2 text-zinc-600">
+                                                <CreditCard size={14} /> Payment
+                                            </span>
+                                            {getStatusBadge(
+                                                order.payment_status,
+                                            )}
+                                        </div>
+                                        <div className="flex items-center justify-between gap-3 text-sm">
+                                            <span className="flex items-center gap-2 text-zinc-600">
+                                                <Box size={14} /> Order
+                                            </span>
+                                            {getStatusBadge(order.order_status)}
+                                        </div>
+                                        <div className="flex items-center justify-between gap-3 text-sm">
+                                            <span className="flex items-center gap-2 text-zinc-600">
+                                                <Truck size={14} /> Shipping
+                                            </span>
+                                            {getStatusBadge(
+                                                order.shipping_status,
+                                            )}
+                                        </div>
+                                        <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-xs text-zinc-500">
+                                            No return/refund:{' '}
+                                            <span className="font-semibold text-zinc-900">
                                                 {order.no_return_refund_agreed
                                                     ? 'YES'
                                                     : 'NO'}
-                                            </Badge>
-                                        }
-                                        description={
-                                            order.no_return_refund_agreed_at
-                                                ? `Agreed at ${formatDate(order.no_return_refund_agreed_at)}`
-                                                : undefined
-                                        }
-                                    />
-                                    <div className="p-5">
-                                        <form
-                                            onSubmit={submitNotes}
-                                            className="space-y-3"
-                                        >
-                                            <label
-                                                className="text-xs font-medium text-zinc-600"
-                                                htmlFor="notes"
-                                            >
-                                                Update internal note
-                                            </label>
-                                            <textarea
-                                                id="notes"
-                                                value={noteForm.data.notes}
-                                                onChange={(event) =>
-                                                    noteForm.setData(
-                                                        'notes',
-                                                        event.target.value,
-                                                    )
-                                                }
-                                                placeholder="Write internal note here..."
-                                                className="min-h-24 w-full resize-y rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 focus:outline-none"
-                                            />
-                                            {noteForm.errors.notes && (
-                                                <p className="text-xs text-rose-600">
-                                                    {noteForm.errors.notes}
-                                                </p>
+                                            </span>
+                                            {order.no_return_refund_agreed_at && (
+                                                <span className="mt-1 block">
+                                                    Agreed at{' '}
+                                                    {formatDate(
+                                                        order.no_return_refund_agreed_at,
+                                                    )}
+                                                </span>
                                             )}
-                                            <button
-                                                disabled={noteForm.processing}
-                                                type="submit"
-                                                className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-zinc-900 px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-zinc-800 focus:ring-2 focus:ring-zinc-900/20 focus:outline-none disabled:opacity-50"
-                                            >
-                                                <Save size={15} /> Save note
-                                            </button>
-                                        </form>
+                                        </div>
                                     </div>
                                 </Card>
                             </section>
@@ -1142,89 +1155,6 @@ export default function OrderShow({ order }: Props) {
                                 </Card>
                             </section>
 
-                            <section className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-                                <Card>
-                                    <CardHeader
-                                        icon={Clock}
-                                        title="Tracking timeline"
-                                    />
-                                    <div className="p-5">
-                                        {order.trackings?.length > 0 ? (
-                                            <div className="space-y-0">
-                                                {order.trackings.map(
-                                                    (track, index) => (
-                                                        <div
-                                                            key={track.id}
-                                                            className="grid grid-cols-[20px_minmax(0,1fr)] gap-3"
-                                                        >
-                                                            <div className="flex flex-col items-center">
-                                                                <div className="mt-1.5 h-2 w-2 rounded-full bg-zinc-400 ring-4 ring-zinc-50" />
-                                                                {index !==
-                                                                    order
-                                                                        .trackings
-                                                                        .length -
-                                                                        1 && (
-                                                                    <div className="mt-1 h-full min-h-10 w-px bg-zinc-200" />
-                                                                )}
-                                                            </div>
-                                                            <div className="pb-5">
-                                                                <p className="text-sm font-medium break-words text-zinc-900">
-                                                                    {
-                                                                        track.status
-                                                                    }
-                                                                </p>
-                                                                <p className="mt-1 text-xs break-words text-zinc-500">
-                                                                    {track.description ||
-                                                                        'No description'}
-                                                                    {track.location
-                                                                        ? ` - ${track.location}`
-                                                                        : ''}
-                                                                </p>
-                                                                <p className="mt-1 text-xs text-zinc-400">
-                                                                    {formatDate(
-                                                                        track.happened_at,
-                                                                    )}
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    ),
-                                                )}
-                                            </div>
-                                        ) : (
-                                            <EmptyState>
-                                                No tracking updates available.
-                                            </EmptyState>
-                                        )}
-                                    </div>
-                                </Card>
-
-                                <Card>
-                                    <CardHeader
-                                        icon={Code}
-                                        title="Technical data"
-                                        description="Expandable raw data for support and debugging."
-                                    />
-                                    <div className="space-y-3 p-5">
-                                        <Accordion title="Raw order object">
-                                            {JSON.stringify(order, null, 2)}
-                                        </Accordion>
-                                        <Accordion title="Payment logs">
-                                            {JSON.stringify(
-                                                order.payment_logs,
-                                                null,
-                                                2,
-                                            )}
-                                        </Accordion>
-                                        <Accordion title="Tracking logs">
-                                            {JSON.stringify(
-                                                order.trackings,
-                                                null,
-                                                2,
-                                            )}
-                                        </Accordion>
-                                    </div>
-                                </Card>
-                            </section>
                         </div>
 
                         <aside className="flex min-w-0 flex-col gap-5 xl:sticky xl:top-5 xl:self-start">
@@ -1274,33 +1204,6 @@ export default function OrderShow({ order }: Props) {
                                         <span className="font-mono font-medium break-all text-zinc-900">
                                             {order.voucher_code || '—'}
                                         </span>
-                                    </div>
-                                </div>
-                            </Card>
-
-                            <Card>
-                                <CardHeader
-                                    icon={CheckCircle2}
-                                    title="Status summary"
-                                />
-                                <div className="space-y-3 p-5">
-                                    <div className="flex items-center justify-between gap-3 text-sm">
-                                        <span className="flex items-center gap-2 text-zinc-600">
-                                            <CreditCard size={14} /> Payment
-                                        </span>
-                                        {getStatusBadge(order.payment_status)}
-                                    </div>
-                                    <div className="flex items-center justify-between gap-3 text-sm">
-                                        <span className="flex items-center gap-2 text-zinc-600">
-                                            <Box size={14} /> Order
-                                        </span>
-                                        {getStatusBadge(order.order_status)}
-                                    </div>
-                                    <div className="flex items-center justify-between gap-3 text-sm">
-                                        <span className="flex items-center gap-2 text-zinc-600">
-                                            <Truck size={14} /> Shipping
-                                        </span>
-                                        {getStatusBadge(order.shipping_status)}
                                     </div>
                                 </div>
                             </Card>
@@ -1365,7 +1268,7 @@ export default function OrderShow({ order }: Props) {
                                     <button
                                         type="button"
                                         onClick={() =>
-                                            updateStatus('completed')
+                                            requestStatusChange('completed')
                                         }
                                         className="flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left font-medium text-emerald-700 transition hover:bg-emerald-50"
                                     >
@@ -1378,7 +1281,7 @@ export default function OrderShow({ order }: Props) {
                                     <button
                                         type="button"
                                         onClick={() =>
-                                            updateStatus('cancelled')
+                                            requestStatusChange('cancelled')
                                         }
                                         className="flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left font-medium text-rose-700 transition hover:bg-rose-50"
                                     >
@@ -1389,10 +1292,136 @@ export default function OrderShow({ order }: Props) {
                                     </button>
                                 </div>
                             </Card>
+
+                            <Card>
+                                <CardHeader
+                                    icon={Clock}
+                                    title="Tracking timeline"
+                                />
+                                <div className="p-5">
+                                    {order.trackings?.length > 0 ? (
+                                        <div className="space-y-0">
+                                            {order.trackings.map(
+                                                (track, index) => (
+                                                    <div
+                                                        key={track.id}
+                                                        className="grid grid-cols-[20px_minmax(0,1fr)] gap-3"
+                                                    >
+                                                        <div className="flex flex-col items-center">
+                                                            <div className="mt-1.5 h-2 w-2 rounded-full bg-zinc-400 ring-4 ring-zinc-50" />
+                                                            {index !==
+                                                                order.trackings
+                                                                    .length -
+                                                                    1 && (
+                                                                <div className="mt-1 h-full min-h-10 w-px bg-zinc-200" />
+                                                            )}
+                                                        </div>
+                                                        <div className="pb-5">
+                                                            <p className="text-sm font-medium break-words text-zinc-900">
+                                                                {track.status}
+                                                            </p>
+                                                            <p className="mt-1 text-xs break-words text-zinc-500">
+                                                                {track.description ||
+                                                                    'No description'}
+                                                                {track.location
+                                                                    ? ` - ${track.location}`
+                                                                    : ''}
+                                                            </p>
+                                                            <p className="mt-1 text-xs text-zinc-400">
+                                                                {formatDate(
+                                                                    track.happened_at,
+                                                                )}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                ),
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <EmptyState>
+                                            No tracking updates available.
+                                        </EmptyState>
+                                    )}
+                                </div>
+                            </Card>
+
+                            <Card>
+                                <CardHeader
+                                    icon={Code}
+                                    title="Technical data"
+                                    description="Expandable raw data for support and debugging."
+                                />
+                                <div className="space-y-3 p-5">
+                                    <Accordion title="Raw order object">
+                                        {JSON.stringify(order, null, 2)}
+                                    </Accordion>
+                                    <Accordion title="Payment logs">
+                                        {JSON.stringify(
+                                            order.payment_logs,
+                                            null,
+                                            2,
+                                        )}
+                                    </Accordion>
+                                    <Accordion title="Tracking logs">
+                                        {JSON.stringify(
+                                            order.trackings,
+                                            null,
+                                            2,
+                                        )}
+                                    </Accordion>
+                                </div>
+                            </Card>
                         </aside>
                     </div>
                 </div>
             </main>
+
+            <Dialog
+                open={pendingStatusChange !== null}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setPendingStatusChange(null);
+                    }
+                }}
+            >
+                <DialogContent className="border-zinc-200 bg-white text-zinc-900 sm:max-w-md">
+                    <DialogHeader>
+                        <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-amber-50 text-amber-700">
+                            <ShieldCheck size={22} />
+                        </div>
+                        <DialogTitle>Konfirmasi perubahan status</DialogTitle>
+                        <DialogDescription className="text-zinc-500">
+                            Perubahan status order akan tersimpan dan dapat
+                            memengaruhi proses operasional, pengiriman, serta
+                            riwayat order customer.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                        <p className="font-semibold">Status tujuan</p>
+                        <p className="mt-1 font-mono text-xs tracking-wide">
+                            {pendingStatusChange?.label}
+                        </p>
+                    </div>
+
+                    <DialogFooter>
+                        <button
+                            type="button"
+                            onClick={() => setPendingStatusChange(null)}
+                            className="inline-flex h-9 items-center justify-center rounded-lg border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 focus:ring-2 focus:ring-zinc-900/20 focus:outline-none"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="button"
+                            onClick={confirmStatusChange}
+                            className="inline-flex h-9 items-center justify-center rounded-lg bg-zinc-900 px-4 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 focus:ring-2 focus:ring-zinc-900/20 focus:outline-none"
+                        >
+                            Ya, ubah status
+                        </button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

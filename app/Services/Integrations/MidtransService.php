@@ -7,6 +7,7 @@ use App\Models\Payment;
 use App\Services\Settings\SiteSettingService;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class MidtransService
@@ -17,7 +18,7 @@ class MidtransService
     {
         $order->load(['items', 'address']);
 
-        $response = $this->client()->post('/snap/v1/transactions', [
+        $response = $this->snapClient()->post('/snap/v1/transactions', [
             'transaction_details' => [
                 'order_id' => $order->order_number,
                 'gross_amount' => (int) round((float) $order->grand_total),
@@ -51,10 +52,31 @@ class MidtransService
 
     public function transactionStatus(string $midtransOrderId): array
     {
-        $response = $this->client()->get('/v2/'.rawurlencode($midtransOrderId).'/status');
+        $response = $this->apiClient()->get('/v2/'.rawurlencode($midtransOrderId).'/status');
 
         if (! $response->successful()) {
             throw ValidationException::withMessages(['payment' => $response->json('status_message') ?? 'Gagal mengambil status Midtrans.']);
+        }
+
+        return $response->json();
+    }
+
+    public function cancelTransaction(string $midtransOrderId): array
+    {
+        $response = $this->apiClient()->post('/v2/'.rawurlencode($midtransOrderId).'/cancel');
+
+        if (! $response->successful()) {
+            Log::warning('midtrans_cancel_failed', [
+                'order_id' => $midtransOrderId,
+                'status' => $response->status(),
+                'response' => $response->json(),
+                'body' => $response->body(),
+            ]);
+
+            throw ValidationException::withMessages([
+                'payment' => $response->json('status_message')
+                    ?? 'Gagal membatalkan transaksi Midtrans.',
+            ]);
         }
 
         return $response->json();
@@ -110,21 +132,40 @@ class MidtransService
         return $items->all();
     }
 
-    private function client(): PendingRequest
+    private function snapClient(): PendingRequest
     {
-        return Http::baseUrl($this->baseUrl())
+        return $this->client($this->snapBaseUrl());
+    }
+
+    private function apiClient(): PendingRequest
+    {
+        return $this->client($this->apiBaseUrl());
+    }
+
+    private function client(string $baseUrl): PendingRequest
+    {
+        return Http::baseUrl($baseUrl)
             ->timeout(20)
             ->acceptJson()
             ->withBasicAuth($this->serverKey(), '');
     }
 
-    private function baseUrl(): string
+    private function snapBaseUrl(): string
     {
         $environment = $this->settings->first(['midtrans_environment', 'payment_midtrans_env'], 'sandbox');
 
         return $environment === 'production'
             ? 'https://app.midtrans.com'
             : 'https://app.sandbox.midtrans.com';
+    }
+
+    private function apiBaseUrl(): string
+    {
+        $environment = $this->settings->first(['midtrans_environment', 'payment_midtrans_env'], 'sandbox');
+
+        return $environment === 'production'
+            ? 'https://api.midtrans.com'
+            : 'https://api.sandbox.midtrans.com';
     }
 
     private function serverKey(): string

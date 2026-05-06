@@ -2,14 +2,26 @@
 
 namespace App\Services\Customer;
 
+use App\Actions\Payments\ApplyMidtransPaymentStatusAction;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
+use App\Models\Payment;
+use App\Services\Integrations\MidtransService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class OrderService
 {
     public const SORTS = ['created_at', 'order_number', 'grand_total', 'payment_status', 'order_status'];
+
+    public function __construct(
+        private readonly MidtransService $midtrans,
+        private readonly ApplyMidtransPaymentStatusAction $applyPaymentStatus,
+    ) {}
 
     public function indexData(Request $request): array
     {
@@ -73,6 +85,93 @@ class OrderService
 
         return [
             'order' => $this->detail($order),
+        ];
+    }
+
+    public function cancel(Request $request, Order $order): RedirectResponse
+    {
+        abort_unless((int) $order->user_id === (int) $request->user()->id, 404);
+
+        $order->loadMissing('payment');
+
+        Log::info('customer_cancel_requested', [
+            'order_id' => $order->id,
+            'order_number' => $order->order_number,
+            'payment_status' => $order->payment_status,
+            'order_status' => $order->order_status,
+            'midtrans_order_id' => $order->payment?->midtrans_order_id,
+            'user_id' => $request->user()?->id,
+        ]);
+
+        if ($order->payment_status !== PaymentStatus::Pending->value || $order->payment === null) {
+            throw ValidationException::withMessages(['order' => 'Order hanya dapat dibatalkan sebelum pembayaran berhasil.']);
+        }
+
+        $payload = $this->cancelMidtransOrLocal($order);
+
+        DB::transaction(function () use ($order, $payload): void {
+            $payment = Payment::query()->with('order')->whereKey($order->payment->id)->lockForUpdate()->firstOrFail();
+            $isLocalCancel = (bool) ($payload['local_cancel'] ?? false);
+
+            $payment->logs()->create([
+                'order_id' => $payment->order_id,
+                'provider' => $payment->payment_provider,
+                'event_type' => 'customer_cancel',
+                'transaction_status' => $payload['transaction_status'] ?? 'cancel',
+                'payload_hash' => hash('sha256', json_encode(['customer_cancel', $payment->id, now()->toISOString(), $payload], JSON_THROW_ON_ERROR)),
+                'payload' => $payload,
+                'processed_at' => now(),
+            ]);
+
+            $payment->update([
+                'midtrans_transaction_id' => $payload['transaction_id'] ?? $payment->midtrans_transaction_id,
+                'midtrans_snap_token' => $isLocalCancel ? null : $payment->midtrans_snap_token,
+                'midtrans_redirect_url' => $isLocalCancel ? null : $payment->midtrans_redirect_url,
+                'transaction_status' => $payload['transaction_status'] ?? 'cancel',
+                'fraud_status' => $payload['fraud_status'] ?? $payment->fraud_status,
+                'last_synced_at' => now(),
+                'raw_response' => $payload,
+            ]);
+
+            $this->applyPaymentStatus->execute($payment, (string) ($payload['transaction_status'] ?? 'cancel'), $payload['fraud_status'] ?? null);
+        });
+
+        return back()->with('success', 'Order berhasil dibatalkan.');
+    }
+
+    private function cancelMidtransOrLocal(Order $order): array
+    {
+        $payment = $order->payment;
+
+        if (! filled($payment->midtrans_order_id)) {
+            return $this->localCancelPayload($order, 'missing_midtrans_order_id');
+        }
+
+        if (blank($payment->payment_method) && blank($payment->midtrans_transaction_id)) {
+            return $this->localCancelPayload($order, 'payment_method_not_selected');
+        }
+
+        Log::info('midtrans_order_id', ['data' => $payment->midtrans_order_id]);
+
+        return $this->midtrans->cancelTransaction((string) $payment->midtrans_order_id);
+    }
+
+    private function localCancelPayload(Order $order, string $reason): array
+    {
+        Log::info('customer_cancel_local_only', [
+            'order_id' => $order->id,
+            'order_number' => $order->order_number,
+            'reason' => $reason,
+        ]);
+
+        return [
+            'status_code' => '200',
+            'status_message' => 'Local cancellation before Midtrans transaction exists.',
+            'order_id' => $order->payment?->midtrans_order_id ?? $order->order_number,
+            'transaction_status' => 'cancel',
+            'gross_amount' => (string) $order->grand_total,
+            'local_cancel' => true,
+            'local_cancel_reason' => $reason,
         ];
     }
 

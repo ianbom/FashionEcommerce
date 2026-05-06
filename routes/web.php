@@ -60,6 +60,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout');
     Route::get('/my-order', [CustomerOrderController::class, 'index'])->name('my-order');
     Route::get('/my-order/{order}', [CustomerOrderController::class, 'show'])->name('order.detail');
+    Route::post('/my-order/{order}/cancel', [CustomerOrderController::class, 'cancel'])->name('order.cancel');
     Route::get('/notifications', [CustomerNotificationController::class, 'index'])->name('notifications');
     Route::get('/notifications/{notification}', [CustomerNotificationController::class, 'show'])->name('notifications.show');
     Route::post('/notifications/read-all', [CustomerNotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
