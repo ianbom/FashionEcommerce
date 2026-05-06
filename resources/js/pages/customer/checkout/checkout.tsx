@@ -79,7 +79,7 @@ function CheckoutScreen() {
         <ShopLayout>
             <Head title="Checkout - Aurea Syari" />
 
-            <main className="mx-auto min-h-screen max-w-[1200px] bg-[#FAF9F6] px-4 py-8 md:px-8 md:py-12">
+            <main className="mx-auto min-h-screen max-w-[1200px] px-4 py-8 md:px-8 md:py-12">
                 <div className="mb-8 flex items-center space-x-2 text-[10px] font-medium tracking-wide text-[#8A6B62] md:text-xs">
                     <Link
                         href="/"
@@ -144,18 +144,14 @@ function CheckoutScreen() {
                         </Link>
                     </div>
                 ) : (
-                    <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
-                        <div className="space-y-6">
-                            <section className="rounded-2xl border border-[#EADBD8] bg-white p-6 shadow-sm">
+                    <div className="relative flex flex-col gap-8 lg:flex-row lg:gap-10">
+                        <div className="flex-1 space-y-8 md:space-y-10">
+                            <section className="border-b border-[#E5D8D2] pb-8">
                                 <div className="mb-5 flex items-center justify-between gap-4">
                                     <div>
-                                        <h2 className="font-serif text-xl text-[#4A2525]">
+                                        <h2 className="font-serif text-xl text-[#333333]">
                                             Alamat Pengiriman
                                         </h2>
-                                        <p className="mt-1 text-[12px] text-[#8A6B62]">
-                                            Data berasal dari
-                                            customer_addresses.
-                                        </p>
                                     </div>
                                     <Link
                                         href="/address?redirect_to=/checkout"
@@ -204,13 +200,14 @@ function CheckoutScreen() {
                                 </div>
                             </section>
 
-                            <section className="rounded-2xl border border-[#EADBD8] bg-white p-6 shadow-sm">
+                            <section className="border-b border-[#E5D8D2] pb-8">
                                 <div className="mb-5 flex items-center gap-2">
                                     <Truck
                                         size={18}
-                                        className="text-[#4A2525]"
+                                        className="text-[#333333]"
+                                        strokeWidth={1.5}
                                     />
-                                    <h2 className="font-serif text-xl text-[#4A2525]">
+                                    <h2 className="font-serif text-xl text-[#333333]">
                                         Ongkir
                                     </h2>
                                 </div>
@@ -248,7 +245,7 @@ function CheckoutScreen() {
                                             >
                                                 <p className="text-[13px] font-bold text-[#4A2525]">
                                                     {rate.courier_company.toUpperCase()}{' '}
-                                                    {rate.courier_type}
+                                                    {/* {rate.courier_type} */}
                                                 </p>
                                                 <p className="mt-1 text-[11px] text-[#8A6B62]">
                                                     {rate.courier_service_name ??
@@ -265,13 +262,14 @@ function CheckoutScreen() {
                                 )}
                             </section>
 
-                            <section className="rounded-2xl border border-[#EADBD8] bg-white p-6 shadow-sm">
+                            <section className="border-b border-[#E5D8D2] pb-8">
                                 <div className="mb-5 flex items-center gap-2">
                                     <Ticket
                                         size={18}
-                                        className="text-[#4A2525]"
+                                        className="text-[#333333]"
+                                        strokeWidth={1.5}
                                     />
-                                    <h2 className="font-serif text-xl text-[#4A2525]">
+                                    <h2 className="font-serif text-xl text-[#333333]">
                                         Voucher
                                     </h2>
                                 </div>
@@ -316,8 +314,8 @@ function CheckoutScreen() {
                                 )}
                             </section>
 
-                            <section className="rounded-2xl border border-[#EADBD8] bg-white p-6 shadow-sm">
-                                <h2 className="mb-4 font-serif text-xl text-[#4A2525]">
+                            <section className="border-b border-[#E5D8D2] pb-8">
+                                <h2 className="mb-4 font-serif text-xl text-[#333333]">
                                     Catatan Order
                                 </h2>
                                 <textarea
@@ -356,11 +354,16 @@ function CheckoutScreen() {
                             </section>
                         </div>
 
-                        <aside className="h-fit rounded-2xl border border-[#EADBD8] bg-white p-6 shadow-xl shadow-black/5 lg:sticky lg:top-24">
-                            <h2 className="mb-5 border-b border-[#EADBD8] pb-4 font-serif text-xl text-[#4A2525]">
-                                Order Summary
-                            </h2>
-                            <div className="mb-5 max-h-[300px] space-y-4 overflow-y-auto pr-2">
+                        <div className="h-px w-full bg-[#E5D8D2] lg:hidden" />
+
+                        <div className="hidden self-stretch lg:block lg:w-px lg:bg-[#E5D8D2]" />
+
+                        <aside className="w-full flex-shrink-0 lg:w-[380px]">
+                            <div className="sticky top-24 lg:top-32">
+                                <h2 className="mb-6 font-serif text-xl text-[#333333] tracking-tight md:text-2xl">
+                                    Order Summary
+                                </h2>
+                                <div className="mb-6 max-h-[300px] space-y-4 overflow-y-auto pr-2">
                                 {cartItems.map((item) => (
                                     <div key={item.id} className="flex gap-3">
                                         <div className="relative h-20 w-16 flex-shrink-0 overflow-hidden rounded-md bg-[#F8EDED]">
@@ -424,30 +427,31 @@ function CheckoutScreen() {
                                 </div>
                             </div>
                             <button
-                                type="button"
-                                onClick={() => void submitOrder()}
-                                disabled={
-                                    placingOrder ||
-                                    !selectedShippingRate ||
-                                    !agreed ||
-                                    cartItems.some((item) => !item.is_available)
-                                }
-                                className="mt-6 flex w-full items-center justify-center rounded-lg bg-[#4A2525] py-4 text-[13px] font-bold tracking-wider text-white transition-all hover:bg-[#5F1717] disabled:cursor-not-allowed disabled:opacity-60"
-                            >
-                                <Lock size={16} className="mr-2" />
-                                {placingOrder
-                                    ? 'Creating Payment...'
-                                    : 'Pay with Midtrans'}
-                            </button>
-                            <div className="mt-6 space-y-3 rounded-xl bg-[#FAF9F6] p-4 text-[11px] text-[#8A6B62]">
-                                <p className="flex items-center gap-2">
-                                    <ShieldCheck size={16} /> Secure payment
-                                    powered by Midtrans
-                                </p>
-                                <p className="flex items-center gap-2">
-                                    <Box size={16} /> Shipping calculated by
-                                    Biteship
-                                </p>
+                                    type="button"
+                                    onClick={() => void submitOrder()}
+                                    disabled={
+                                        placingOrder ||
+                                        !selectedShippingRate ||
+                                        !agreed ||
+                                        cartItems.some((item) => !item.is_available)
+                                    }
+                                    className="mt-6 flex w-full items-center justify-center rounded-lg bg-[#4A2525] py-4 text-[13px] font-bold tracking-wider text-white transition-all hover:bg-[#5F1717] hover:shadow-lg hover:shadow-[#4A2525]/20 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                    <Lock size={16} className="mr-2" />
+                                    {placingOrder
+                                        ? 'Creating Payment...'
+                                        : 'Pay with Midtrans'}
+                                </button>
+                                <div className="mt-8 space-y-4 border-t border-[#EADBD8]/60 pt-6">
+                                    <div className="flex items-start space-x-3 text-[11px] text-[#8A6B62]">
+                                        <ShieldCheck size={16} className="mt-0.5 flex-shrink-0 text-[#C99A8F]" strokeWidth={1.5} />
+                                        <p>Secure payment powered by Midtrans</p>
+                                    </div>
+                                    <div className="flex items-start space-x-3 text-[11px] text-[#8A6B62]">
+                                        <Box size={16} className="mt-0.5 flex-shrink-0 text-[#C99A8F]" strokeWidth={1.5} />
+                                        <p>Shipping calculated by Biteship</p>
+                                    </div>
+                                </div>
                             </div>
                         </aside>
                     </div>

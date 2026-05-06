@@ -165,13 +165,19 @@ const formatDateTime = (value: string | null) => {
         return '-';
     }
 
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return '-';
+    }
+
     return new Intl.DateTimeFormat('id-ID', {
         day: '2-digit',
         month: 'short',
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
-    }).format(new Date(value));
+    }).format(date);
 };
 
 const formatDate = (value: string | null) => {
@@ -179,11 +185,17 @@ const formatDate = (value: string | null) => {
         return '-';
     }
 
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return '-';
+    }
+
     return new Intl.DateTimeFormat('id-ID', {
         day: '2-digit',
         month: 'long',
         year: 'numeric',
-    }).format(new Date(value));
+    }).format(date);
 };
 
 const labelValue = (value: string | null) => {
