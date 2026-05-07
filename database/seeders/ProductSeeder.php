@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Collection;
 use App\Models\Product;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class ProductSeeder extends Seeder
@@ -157,6 +158,57 @@ class ProductSeeder extends Seeder
             ],
         ];
 
+        $duplicateProducts = [
+            ['source' => 'najran-piping-lace-abaya', 'name' => 'Najran Piping Lace Abaya Sand', 'sku' => 'ITS-ABY-NAJ-007', 'price' => 749000],
+            ['source' => 'najran-piping-lace-abaya', 'name' => 'Najran Piping Lace Abaya Maroon', 'sku' => 'ITS-ABY-NAJ-008', 'price' => 759000],
+            ['source' => 'najran-piping-lace-abaya', 'name' => 'Najran Piping Lace Abaya Navy', 'sku' => 'ITS-ABY-NAJ-009', 'price' => 769000],
+            ['source' => 'najran-piping-lace-abaya', 'name' => 'Najran Piping Lace Abaya Olive', 'sku' => 'ITS-ABY-NAJ-010', 'price' => 779000],
+            ['source' => 'abargo-abaya-cargo', 'name' => 'Abargo Utility Abaya Cream', 'sku' => 'ITS-ABY-ABG-011', 'price' => 789000],
+            ['source' => 'abargo-abaya-cargo', 'name' => 'Abargo Utility Abaya Black', 'sku' => 'ITS-ABY-ABG-012', 'price' => 799000],
+            ['source' => 'abargo-abaya-cargo', 'name' => 'Abargo Utility Abaya Plum', 'sku' => 'ITS-ABY-ABG-013', 'price' => 809000],
+            ['source' => 'abargo-abaya-cargo', 'name' => 'Abargo Utility Abaya Taupe', 'sku' => 'ITS-ABY-ABG-014', 'price' => 819000],
+            ['source' => 'kufah-khimar', 'name' => 'Kufah Khimar Dark Plum', 'sku' => 'ITS-KHM-KUF-015', 'price' => 359000],
+            ['source' => 'kufah-khimar', 'name' => 'Kufah Khimar Sepia', 'sku' => 'ITS-KHM-KUF-016', 'price' => 369000],
+            ['source' => 'kufah-khimar', 'name' => 'Kufah Khimar Silver', 'sku' => 'ITS-KHM-KUF-017', 'price' => 379000],
+            ['source' => 'kufah-khimar', 'name' => 'Kufah Khimar Moss', 'sku' => 'ITS-KHM-KUF-018', 'price' => 389000],
+            ['source' => 'sila-scarf-itsar-syari-x-napocut', 'name' => 'Sila Scarf Crimson', 'sku' => 'ITS-SCF-SIL-019', 'price' => 359000],
+            ['source' => 'sila-scarf-itsar-syari-x-napocut', 'name' => 'Sila Scarf Midnight', 'sku' => 'ITS-SCF-SIL-020', 'price' => 369000],
+            ['source' => 'sila-scarf-itsar-syari-x-napocut', 'name' => 'Sila Scarf Mocha', 'sku' => 'ITS-SCF-SIL-021', 'price' => 379000],
+            ['source' => 'sila-scarf-itsar-syari-x-napocut', 'name' => 'Sila Scarf Ivory', 'sku' => 'ITS-SCF-SIL-022', 'price' => 389000],
+            ['source' => 'rabita-abaya-itsar-syari-x-napocut', 'name' => 'Rabita Abaya Black', 'sku' => 'ITS-ABY-RBT-023', 'price' => 809000],
+            ['source' => 'rabita-abaya-itsar-syari-x-napocut', 'name' => 'Rabita Abaya Broken White', 'sku' => 'ITS-ABY-RBT-024', 'price' => 819000],
+            ['source' => 'rabita-abaya-itsar-syari-x-napocut', 'name' => 'Rabita Abaya Dark Cherry', 'sku' => 'ITS-ABY-RBT-025', 'price' => 829000],
+            ['source' => 'rabita-abaya-itsar-syari-x-napocut', 'name' => 'Rabita Abaya Graphite', 'sku' => 'ITS-ABY-RBT-026', 'price' => 839000],
+            ['source' => 'nisbah-khimar-itsar-syari-x-napocut', 'name' => 'Nisbah Khimar Black', 'sku' => 'ITS-KHM-NSB-027', 'price' => 419000],
+            ['source' => 'nisbah-khimar-itsar-syari-x-napocut', 'name' => 'Nisbah Khimar Drift Wood', 'sku' => 'ITS-KHM-NSB-028', 'price' => 429000],
+            ['source' => 'nisbah-khimar-itsar-syari-x-napocut', 'name' => 'Nisbah Khimar Fawn Pink', 'sku' => 'ITS-KHM-NSB-029', 'price' => 439000],
+            ['source' => 'nisbah-khimar-itsar-syari-x-napocut', 'name' => 'Nisbah Khimar Cocoa', 'sku' => 'ITS-KHM-NSB-030', 'price' => 449000],
+        ];
+
+        $templates = collect($products)->keyBy('slug');
+
+        foreach ($duplicateProducts as $duplicate) {
+            $template = $templates->get($duplicate['source']);
+
+            if (! $template) {
+                throw new RuntimeException("Product template slug [{$duplicate['source']}] tidak ditemukan.");
+            }
+
+            $slug = Str::slug($duplicate['name']);
+
+            $products[] = array_merge($template, [
+                'name' => $duplicate['name'],
+                'slug' => $slug,
+                'sku' => $duplicate['sku'],
+                'base_price' => $duplicate['price'],
+                'is_featured' => ((int) Str::afterLast($duplicate['sku'], '-')) % 2 === 0,
+                'is_new_arrival' => ((int) Str::afterLast($duplicate['sku'], '-')) % 3 !== 0,
+                'is_best_seller' => ((int) Str::afterLast($duplicate['sku'], '-')) % 4 === 0,
+                'meta_title' => "{$duplicate['name']} | Itsar Syar'i",
+                'meta_description' => "{$duplicate['name']} dari katalog Itsar Syar'i dengan foto katalog lama dan detail produk modest premium.",
+            ]);
+        }
+
         $categoryIds = Category::query()
             ->pluck('id', 'slug');
 
@@ -180,30 +232,30 @@ class ProductSeeder extends Seeder
             $record = Product::query()
                 ->withTrashed()
                 ->updateOrCreate(
-                ['slug' => $product['slug']],
-                [
-                    'category_id' => $categoryId,
-                    'collection_id' => $collectionId,
-                    'name' => $product['name'],
-                    'sku' => $product['sku'],
-                    'short_description' => $product['short_description'],
-                    'description' => $product['description'],
-                    'material' => $product['material'],
-                    'care_instruction' => $product['care_instruction'],
-                    'base_price' => $product['base_price'],
-                    'sale_price' => $product['sale_price'],
-                    'weight' => $product['weight'],
-                    'length' => $product['length'],
-                    'width' => $product['width'],
-                    'height' => $product['height'],
-                    'status' => $product['status'],
-                    'is_featured' => $product['is_featured'],
-                    'is_new_arrival' => $product['is_new_arrival'],
-                    'is_best_seller' => $product['is_best_seller'],
-                    'meta_title' => $product['meta_title'],
-                    'meta_description' => $product['meta_description'],
-                ],
-            );
+                    ['slug' => $product['slug']],
+                    [
+                        'category_id' => $categoryId,
+                        'collection_id' => $collectionId,
+                        'name' => $product['name'],
+                        'sku' => $product['sku'],
+                        'short_description' => $product['short_description'],
+                        'description' => $product['description'],
+                        'material' => $product['material'],
+                        'care_instruction' => $product['care_instruction'],
+                        'base_price' => $product['base_price'],
+                        'sale_price' => $product['sale_price'],
+                        'weight' => $product['weight'],
+                        'length' => $product['length'],
+                        'width' => $product['width'],
+                        'height' => $product['height'],
+                        'status' => $product['status'],
+                        'is_featured' => $product['is_featured'],
+                        'is_new_arrival' => $product['is_new_arrival'],
+                        'is_best_seller' => $product['is_best_seller'],
+                        'meta_title' => $product['meta_title'],
+                        'meta_description' => $product['meta_description'],
+                    ],
+                );
 
             if ($record->trashed()) {
                 $record->restore();

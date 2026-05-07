@@ -1,15 +1,15 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import {
-    ChevronLeft,
     ChevronRight,
     Heart,
     MessageCircle,
     Minus,
     Plus,
     ShoppingBag,
+    X,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
-import type { FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { FormEvent, ReactNode } from 'react';
 import { addProductVariantToCart as addProductVariantToCartRoute } from '@/actions/App/Http/Controllers/Customer/CartController';
 import ShopLayout from '@/layouts/shop-layout';
 import { checkout, detail, list } from '@/routes';
@@ -166,6 +166,7 @@ function DetailProductContent({
         initialVariant?.id ?? null,
     );
     const [quantity, setQuantity] = useState(1);
+    const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
     const cartForm = useForm<{
         quantity: number;
         product_variant_id?: number;
@@ -262,7 +263,8 @@ function DetailProductContent({
             <Head title={`${product.title} - Aurea Syari`} />
 
             <main className="mx-auto max-w-[1500px] px-4 py-6 md:px-10 md:py-10">
-                <div className="mb-8 flex flex-wrap items-center gap-2 text-[11px] tracking-wide text-secondary-foreground">
+                <FadeInOnScroll>
+                    <div className="mb-8 flex flex-wrap items-center gap-2 text-[11px] tracking-wide text-secondary-foreground">
                     <Link
                         href={list.url()}
                         className="transition hover:text-primary"
@@ -286,10 +288,11 @@ function DetailProductContent({
                     <span className="font-semibold text-foreground">
                         {product.title}
                     </span>
-                </div>
+                    </div>
+                </FadeInOnScroll>
 
                 <div className="flex flex-col gap-8 lg:grid lg:grid-cols-12 lg:gap-16">
-                    <div className="w-full lg:col-span-6">
+                    <FadeInOnScroll className="w-full lg:col-span-6">
                         <div className="group relative mb-3 aspect-[3/4] cursor-zoom-in overflow-hidden rounded-sm bg-muted">
                             <img
                                 src={mainImage}
@@ -326,9 +329,12 @@ function DetailProductContent({
                                 </button>
                             ))}
                         </div>
-                    </div>
+                    </FadeInOnScroll>
 
-                    <div className="w-full max-w-full pl-0 lg:col-span-6 lg:max-w-[600px] lg:pl-4">
+                    <FadeInOnScroll
+                        className="w-full max-w-full pl-0 lg:col-span-6 lg:max-w-[600px] lg:pl-4"
+                        delay={120}
+                    >
                         <div className="mb-5 flex flex-wrap gap-2">
                             <span className="rounded-sm border border-border bg-secondary px-2 py-1 text-[10px] font-semibold tracking-wider text-secondary-foreground uppercase">
                                 {isAvailable ? 'In Stock' : 'Out of Stock'}
@@ -474,8 +480,11 @@ function DetailProductContent({
                                     <h3 className="text-[11px] font-semibold tracking-wide text-foreground">
                                         Size
                                     </h3>
-                                    <Link
-                                        href={list.url()}
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setIsSizeGuideOpen(true)
+                                        }
                                         className="group flex items-center text-accent transition-colors hover:text-primary"
                                     >
                                         <span className="text-[10px] font-medium tracking-wide">
@@ -485,7 +494,7 @@ function DetailProductContent({
                                             size={14}
                                             className="ml-1 transition-transform group-hover:translate-x-0.5"
                                         />
-                                    </Link>
+                                    </button>
                                 </div>
                                 <div className="flex flex-wrap gap-3">
                                     {sizes.map((size) => (
@@ -546,8 +555,11 @@ function DetailProductContent({
                                 </button>
                             </div>
 
-                            <div className="flex flex-col gap-3">
-                                <form onSubmit={addProductVariantToCart}>
+                            <div className="grid grid-cols-2 gap-3">
+                                <form
+                                    onSubmit={addProductVariantToCart}
+                                    className="min-w-0"
+                                >
                                     <button
                                         type="submit"
                                         disabled={
@@ -555,7 +567,7 @@ function DetailProductContent({
                                             !selectedVariant ||
                                             cartForm.processing
                                         }
-                                        className={`w-full rounded-full border border-input py-3.5 text-center text-[11px] font-bold tracking-widest text-secondary-foreground transition-all active:scale-[0.99] ${
+                                        className={`flex h-full min-h-12 w-full items-center justify-center rounded-full border border-input px-3 py-3.5 text-center text-[10px] font-bold tracking-widest text-secondary-foreground uppercase transition-all active:scale-[0.99] sm:text-[11px] ${
                                             isAvailable &&
                                             selectedVariant &&
                                             !cartForm.processing
@@ -578,7 +590,7 @@ function DetailProductContent({
                                 </form>
                                 <Link
                                     href={checkoutHref}
-                                    className={`w-full rounded-full bg-primary py-3.5 text-center text-[11px] font-bold tracking-widest text-primary-foreground transition-all active:scale-[0.99] ${
+                                    className={`flex min-h-12 min-w-0 items-center justify-center rounded-full bg-primary px-3 py-3.5 text-center text-[10px] font-bold tracking-widest text-primary-foreground uppercase transition-all active:scale-[0.99] sm:text-[11px] ${
                                         isAvailable
                                             ? 'hover:bg-primary/90 hover:shadow-md hover:shadow-primary/20'
                                             : 'pointer-events-none opacity-50'
@@ -642,7 +654,7 @@ function DetailProductContent({
                             />{' '}
                             Message Support
                         </button>
-                    </div>
+                    </FadeInOnScroll>
                 </div>
 
                 <ProductRail
@@ -655,7 +667,95 @@ function DetailProductContent({
                     compact
                 />
             </main>
+
+            {isSizeGuideOpen && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-sm"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Size guide"
+                    onClick={() => setIsSizeGuideOpen(false)}
+                >
+                    <div
+                        className="relative max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-sm bg-background shadow-2xl"
+                        onClick={(event) => event.stopPropagation()}
+                    >
+                        <div className="flex items-center justify-between border-b border-border px-4 py-3">
+                            <div>
+                                <p className="text-[11px] font-semibold tracking-[0.24em] text-foreground uppercase">
+                                    Size Guide
+                                </p>
+                                <p className="mt-1 text-[10px] tracking-wide text-muted-foreground">
+                                    Gunakan panduan ukuran sebelum memilih size.
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsSizeGuideOpen(false)}
+                                className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground transition hover:border-primary hover:text-primary"
+                                aria-label="Close size guide"
+                            >
+                                <X size={16} />
+                            </button>
+                        </div>
+                        <div className="max-h-[calc(90vh-74px)] overflow-auto bg-muted/30 p-3">
+                            <img
+                                src="/size-guide.webp"
+                                alt="Size guide"
+                                className="mx-auto h-auto w-full max-w-full rounded-sm object-contain"
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
         </ShopLayout>
+    );
+}
+
+function FadeInOnScroll({
+    children,
+    className = '',
+    delay = 0,
+}: {
+    children: ReactNode;
+    className?: string;
+    delay?: number;
+}) {
+    const [visible, setVisible] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const element = ref.current;
+
+        if (!element) {
+            return;
+        }
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setVisible(true);
+                    observer.unobserve(entry.target);
+                }
+            },
+            { rootMargin: '0px 0px -12% 0px', threshold: 0.16 },
+        );
+
+        observer.observe(element);
+
+        return () => observer.disconnect();
+    }, []);
+
+    return (
+        <div
+            ref={ref}
+            className={`${className} transition-all duration-700 ease-out motion-reduce:translate-y-0 motion-reduce:opacity-100 ${
+                visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
+            }`}
+            style={{ transitionDelay: `${delay}ms` }}
+        >
+            {children}
+        </div>
     );
 }
 
@@ -673,56 +773,56 @@ function ProductRail({
     }
 
     return (
-        <div className={compact ? 'mt-20' : 'mt-28'}>
+        <FadeInOnScroll className={compact ? 'mt-20' : 'mt-28'}>
             <div className="mb-8 flex items-center justify-between border-b border-border pb-4">
                 <h2 className="text-[13px] font-bold tracking-wider text-foreground">
                     {title}
                 </h2>
-                {!compact && (
-                    <div className="flex gap-2">
-                        <button className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary hover:text-primary">
-                            <ChevronLeft size={16} />
-                        </button>
-                        <button className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary hover:text-primary">
-                            <ChevronRight size={16} />
-                        </button>
-                    </div>
-                )}
+
             </div>
             <div className="scrollbar-hide flex gap-5 overflow-x-auto pb-6">
                 {products.map((product, index) => (
-                    <Link
-                        href={detail.url({ query: { product: product.slug } })}
+                    <FadeInOnScroll
                         key={product.id}
-                        className="group flex max-w-[170px] min-w-[170px] cursor-pointer flex-col transition-transform duration-300 hover:-translate-y-1"
+                        className="max-w-[170px] min-w-[170px]"
+                        delay={index * 60}
                     >
-                        <div className="relative mb-3 aspect-[3/4] overflow-hidden rounded-sm bg-muted shadow-sm transition-shadow group-hover:shadow-md">
-                            <img
-                                src={
-                                    product.image ??
-                                    fallbackImages[
-                                        index % fallbackImages.length
-                                    ]
-                                }
-                                className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                                alt={product.title}
-                                loading="lazy"
-                                decoding="async"
-                            />
-                            <div className="pointer-events-none absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/5" />
-                            <div className="absolute right-2 bottom-2 rounded-full bg-card/90 p-2 text-foreground shadow transition-all hover:scale-110 hover:bg-card">
-                                <ShoppingBag size={14} strokeWidth={2} />
+                        <Link
+                            href={detail.url({
+                                query: { product: product.slug },
+                            })}
+                            className="group flex cursor-pointer flex-col transition-transform duration-300 hover:-translate-y-1"
+                        >
+                            <div className="relative mb-3 aspect-[3/4] overflow-hidden rounded-sm bg-muted shadow-sm transition-shadow group-hover:shadow-md">
+                                <img
+                                    src={
+                                        product.image ??
+                                        fallbackImages[
+                                            index % fallbackImages.length
+                                        ]
+                                    }
+                                    className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                    alt={product.title}
+                                    loading="lazy"
+                                    decoding="async"
+                                />
+                                <div className="pointer-events-none absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/5" />
+                                <div className="absolute right-2 bottom-2 rounded-full bg-card/90 p-2 text-foreground shadow transition-all hover:scale-110 hover:bg-card">
+                                    <ShoppingBag size={14} strokeWidth={2} />
+                                </div>
                             </div>
-                        </div>
-                        <h3 className="mb-1.5 line-clamp-2 text-[11px] leading-[1.4] font-bold tracking-wide text-foreground transition-colors group-hover:text-primary">
-                            {product.title}
-                        </h3>
-                        <p className="mt-auto text-[11px] font-medium text-secondary-foreground">
-                            {formatPrice(product.sale_price ?? product.price)}
-                        </p>
-                    </Link>
+                            <h3 className="mb-1.5 line-clamp-2 text-[11px] leading-[1.4] font-bold tracking-wide text-foreground transition-colors group-hover:text-primary">
+                                {product.title}
+                            </h3>
+                            <p className="mt-auto text-[11px] font-medium text-secondary-foreground">
+                                {formatPrice(
+                                    product.sale_price ?? product.price,
+                                )}
+                            </p>
+                        </Link>
+                    </FadeInOnScroll>
                 ))}
             </div>
-        </div>
+        </FadeInOnScroll>
     );
 }

@@ -8,6 +8,7 @@ use App\Models\Collection;
 use App\Models\Page;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Laravel\Fortify\Features;
 
 class ProductBrowsingService
@@ -68,10 +69,10 @@ class ProductBrowsingService
         $this->applySort($products, $filters['sort'], $filters['order']);
 
         return [
-            'products' => $products
+            'products' => Inertia::scroll($products
                 ->paginate($filters['per_page'])
                 ->withQueryString()
-                ->through(fn (Product $product) => $this->productCard($product)),
+                ->through(fn (Product $product) => $this->productCard($product))),
             'filters' => $filters,
             'options' => $this->filterOptions(),
         ];

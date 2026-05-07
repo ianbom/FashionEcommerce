@@ -1,5 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import { Heart } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import ShopLayout from '@/layouts/shop-layout';
 import { detail, list } from '@/routes';
 
@@ -79,13 +81,13 @@ export default function Home({
     wePresent,
     recentAdditions,
     mostLoved,
-    journalPosts,
 }: Props) {
     return (
         <ShopLayout>
             <Head title="Home - Aurea Syari" />
 
-            <section className="group relative h-[60vh] w-full overflow-hidden md:h-[85vh]">
+            <FadeInOnScroll>
+                <section className="group relative h-[60vh] w-full overflow-hidden md:h-[85vh]">
                 <img
                     src={bannerImage(
                         heroBanner,
@@ -116,7 +118,8 @@ export default function Home({
                         </Link>
                     </div>
                 </div>
-            </section>
+                </section>
+            </FadeInOnScroll>
 
             <section className="mx-auto max-w-[1500px] px-4 py-12 md:px-10 md:py-20">
                 <SectionTitle
@@ -125,13 +128,15 @@ export default function Home({
                 />
 
                 <div className="flex flex-col items-center gap-6 md:gap-8 lg:flex-row">
-                    <div className="group relative aspect-[4/3] w-full overflow-hidden rounded-sm lg:w-[45%]">
+                    <FadeInOnScroll className="w-full lg:w-[45%]">
+                        <div className="group relative aspect-[4/3] w-full overflow-hidden rounded-sm">
                         <img
                             src={productImage(hajjSeries[0], 8)}
                             alt={hajjSeries[0]?.name ?? 'Hajj Series Lifestyle'}
                             className="h-full w-full object-cover transition-transform duration-[1.5s] group-hover:scale-105"
                         />
-                    </div>
+                        </div>
+                    </FadeInOnScroll>
 
                     <div className="relative w-full lg:w-[55%]">
                         <div className="hide-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0">
@@ -176,48 +181,54 @@ export default function Home({
                     <div className="relative">
                         <div className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto pb-4 md:grid md:grid-cols-3 md:gap-4 md:pb-0 lg:grid-cols-6">
                             {recentAdditions.map((item, index) => (
-                                <Link
-                                    href={detail.url({
-                                        query: { product: item.slug },
-                                    })}
+                                <FadeInOnScroll
                                     key={item.id}
-                                    className="group flex min-w-[40%] snap-start flex-col text-center sm:min-w-[30%] md:min-w-0"
+                                    className="min-w-[40%] snap-start sm:min-w-[30%] md:min-w-0"
+                                    delay={index * 60}
                                 >
-                                    <div className="relative mb-3 aspect-[3/4] overflow-hidden rounded-sm bg-background">
-                                        <img
-                                            src={productImage(item, index)}
-                                            alt={item.name}
-                                            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                            loading="lazy"
-                                            decoding="async"
-                                        />
-                                    </div>
-                                    <h3 className="truncate px-1 text-[9px] font-semibold md:text-[10px]">
-                                        {item.name}
-                                    </h3>
-                                    <p className="mb-2 text-[9px] text-muted-foreground md:text-[10px]">
-                                        {formatPrice(
-                                            item.sale_price ?? item.price,
-                                        )}
-                                    </p>
-                                    <div className="flex justify-center gap-1.5">
-                                        {item.colors
-                                            .slice(0, 3)
-                                            .map((color) => (
-                                                <span
-                                                    key={color.hex}
-                                                    className="h-2.5 w-2.5 rounded-full border border-gray-200 md:h-3 md:w-3"
-                                                    style={{
-                                                        backgroundColor:
-                                                            color.hex,
-                                                    }}
-                                                    title={
-                                                        color.name ?? color.hex
-                                                    }
-                                                />
-                                            ))}
-                                    </div>
-                                </Link>
+                                    <Link
+                                        href={detail.url({
+                                            query: { product: item.slug },
+                                        })}
+                                        className="group flex flex-col text-center"
+                                    >
+                                        <div className="relative mb-3 aspect-[3/4] overflow-hidden rounded-sm bg-background">
+                                            <img
+                                                src={productImage(item, index)}
+                                                alt={item.name}
+                                                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                                loading="lazy"
+                                                decoding="async"
+                                            />
+                                        </div>
+                                        <h3 className="truncate px-1 text-[9px] font-semibold md:text-[10px]">
+                                            {item.name}
+                                        </h3>
+                                        <p className="mb-2 text-[9px] text-muted-foreground md:text-[10px]">
+                                            {formatPrice(
+                                                item.sale_price ?? item.price,
+                                            )}
+                                        </p>
+                                        <div className="flex justify-center gap-1.5">
+                                            {item.colors
+                                                .slice(0, 3)
+                                                .map((color) => (
+                                                    <span
+                                                        key={color.hex}
+                                                        className="h-2.5 w-2.5 rounded-full border border-gray-200 md:h-3 md:w-3"
+                                                        style={{
+                                                            backgroundColor:
+                                                                color.hex,
+                                                        }}
+                                                        title={
+                                                            color.name ??
+                                                            color.hex
+                                                        }
+                                                    />
+                                                ))}
+                                        </div>
+                                    </Link>
+                                </FadeInOnScroll>
                             ))}
                         </div>
                     </div>
@@ -245,22 +256,24 @@ export default function Home({
                 </div>
             </section>
 
-            <section className="relative mt-6 mb-12 h-[250px] w-full overflow-hidden md:mt-10 md:mb-20 md:h-[400px]">
-                <div
-                    className="absolute inset-0 bg-cover bg-center"
-                    style={{
-                        backgroundImage: `url('${bannerImage(promoBanner, '/img/sarah-khan-R7p66Oj8ZOQ-unsplash.webp')}')`,
-                    }}
-                />
-                <div className="absolute inset-0 flex items-center justify-center bg-black/10">
-                    <Link
-                        href={promoBanner?.button_url ?? list.url()}
-                        className="rounded-sm border border-white px-5 py-2 text-[9px] font-bold tracking-widest text-white uppercase backdrop-blur-sm transition-colors hover:bg-white hover:text-black md:px-6 md:text-[10px]"
-                    >
-                        {promoBanner?.button_text ?? 'Discover'}
-                    </Link>
-                </div>
-            </section>
+            <FadeInOnScroll>
+                <section className="relative mt-6 mb-12 h-[250px] w-full overflow-hidden md:mt-10 md:mb-20 md:h-[400px]">
+                    <div
+                        className="absolute inset-0 bg-cover bg-center"
+                        style={{
+                            backgroundImage: `url('${bannerImage(promoBanner, '/img/sarah-khan-R7p66Oj8ZOQ-unsplash.webp')}')`,
+                        }}
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                        <Link
+                            href={promoBanner?.button_url ?? list.url()}
+                            className="rounded-sm border border-white px-5 py-2 text-[9px] font-bold tracking-widest text-white uppercase backdrop-blur-sm transition-colors hover:bg-white hover:text-black md:px-6 md:text-[10px]"
+                        >
+                            {promoBanner?.button_text ?? 'Discover'}
+                        </Link>
+                    </div>
+                </section>
+            </FadeInOnScroll>
 
             <style
                 dangerouslySetInnerHTML={{
@@ -271,6 +284,53 @@ export default function Home({
                 }}
             />
         </ShopLayout>
+    );
+}
+
+function FadeInOnScroll({
+    children,
+    className = '',
+    delay = 0,
+}: {
+    children: ReactNode;
+    className?: string;
+    delay?: number;
+}) {
+    const ref = useRef<HTMLDivElement>(null);
+    const [visible, setVisible] = useState(false);
+
+    useEffect(() => {
+        const element = ref.current;
+
+        if (!element) {
+            return;
+        }
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setVisible(true);
+                    observer.unobserve(entry.target);
+                }
+            },
+            { rootMargin: '0px 0px -12% 0px', threshold: 0.16 },
+        );
+
+        observer.observe(element);
+
+        return () => observer.disconnect();
+    }, []);
+
+    return (
+        <div
+            ref={ref}
+            className={`${className} transition-all duration-700 ease-out motion-reduce:translate-y-0 motion-reduce:opacity-100 ${
+                visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
+            }`}
+            style={{ transitionDelay: `${delay}ms` }}
+        >
+            {children}
+        </div>
     );
 }
 
@@ -307,12 +367,16 @@ function ProductTile({
     wide?: boolean;
 }) {
     return (
-        <Link
-            href={detail.url({ query: { product: product.slug } })}
-            className={`group flex cursor-pointer flex-col ${centered ? 'min-w-[45%] text-center sm:min-w-[30%]' : ''} ${
+        <FadeInOnScroll
+            className={`${centered ? 'min-w-[45%] sm:min-w-[30%]' : ''} ${
                 wide ? 'min-w-[65%] sm:min-w-[45%]' : ''
             } snap-start md:min-w-0`}
+            delay={index * 60}
         >
+            <Link
+                href={detail.url({ query: { product: product.slug } })}
+                className={`group flex cursor-pointer flex-col ${centered ? 'text-center' : ''}`}
+            >
             <div className="relative mb-3 aspect-[3/4] overflow-hidden rounded-sm">
                 {product.label && (
                     <span
@@ -360,6 +424,7 @@ function ProductTile({
                     </span>
                 )}
             </div>
-        </Link>
+            </Link>
+        </FadeInOnScroll>
     );
 }

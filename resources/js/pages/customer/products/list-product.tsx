@@ -1,13 +1,7 @@
-import { Head, Link, router } from '@inertiajs/react';
-import {
-    ChevronDown,
-    ChevronLeft,
-    ChevronRight,
-    Heart,
-    Search,
-} from 'lucide-react';
+import { Head, InfiniteScroll, Link, router } from '@inertiajs/react';
+import { ChevronDown, Heart, Search } from 'lucide-react';
 import type { FormEvent, ReactNode } from 'react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import ShopLayout from '@/layouts/shop-layout';
 import { detail, list } from '@/routes';
 
@@ -44,18 +38,16 @@ type ProductCard = {
     available_stock: number;
 };
 
-type PaginationLink = {
-    url: string | null;
-    label: string;
-    active: boolean;
-};
-
 type PaginatedProducts = {
     data: ProductCard[];
     current_page: number;
     from: number | null;
     last_page: number;
-    links: PaginationLink[];
+    links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+    }>;
     per_page: number;
     to: number | null;
     total: number;
@@ -143,18 +135,6 @@ const cleanQuery = (filters: FilterState) =>
         }),
     );
 
-const paginationLabel = (label: string) => {
-    if (label.includes('Previous')) {
-        return <ChevronLeft size={14} />;
-    }
-
-    if (label.includes('Next')) {
-        return <ChevronRight size={14} />;
-    }
-
-    return label.replace('&laquo;', '').replace('&raquo;', '').trim();
-};
-
 export default function ListProduct({ products, filters, options }: Props) {
     const initialFilters = useMemo<FilterState>(
         () => ({
@@ -216,7 +196,7 @@ export default function ListProduct({ products, filters, options }: Props) {
                     />
                 )}
                 <aside
-                    className={`fixed inset-x-0 bottom-0 z-50 max-h-[86vh] w-full flex-shrink-0 overflow-y-auto rounded-t-[28px] border-t border-border bg-red-500 px-5 pt-3 pb-6 shadow-[0_-24px_80px_rgba(0,0,0,0.18)] transition-transform duration-300 ease-out lg:sticky lg:top-24 lg:z-auto lg:mb-0 lg:max-h-[calc(100dvh-7rem)] lg:w-72 lg:translate-y-0 lg:overflow-y-auto lg:rounded-none lg:border-0 lg:bg-transparent lg:px-0 lg:pt-0 lg:pr-12 lg:pb-0 lg:shadow-none ${
+                    className={`fixed inset-x-0 bottom-0 z-50 max-h-[86vh] w-full shrink-0 overflow-y-auto rounded-t-[28px] border-t border-border bg-background px-5 pt-3 pb-6 shadow-[0_-24px_80px_rgba(0,0,0,0.18)] transition-transform duration-300 ease-out lg:sticky lg:top-24 lg:z-auto lg:mb-0 lg:max-h-[calc(100dvh-7rem)] lg:w-72 lg:self-start lg:translate-y-0 lg:overflow-y-auto lg:rounded-none lg:border-0 lg:bg-transparent lg:px-0 lg:pt-0 lg:pr-12 lg:pb-0 lg:shadow-none ${
                         isFilterOpen
                             ? 'translate-y-0'
                             : 'pointer-events-none translate-y-full lg:pointer-events-auto'
@@ -259,58 +239,56 @@ export default function ListProduct({ products, filters, options }: Props) {
                         />
                     </form>
 
-                    <div className="mb-8 grid grid-cols-2 gap-3 text-[11px] text-secondary-foreground lg:hidden">
-                        <label className="col-span-2 grid gap-1.5">
-                            <span className="font-semibold tracking-wider uppercase">
-                                Sort
-                            </span>
-                            <select
-                                value={form.sort}
-                                onChange={(event) =>
-                                    setFilter('sort', event.target.value)
-                                }
-                                className="rounded-xl border border-border bg-background px-3 py-3 font-semibold text-foreground outline-none focus:border-ring"
-                            >
-                                {options.sorts.map((sort) => (
-                                    <option key={sort.value} value={sort.value}>
-                                        {sort.label}
-                                    </option>
-                                ))}
-                            </select>
-                        </label>
-                        <label className="grid gap-1.5">
-                            <span className="font-semibold tracking-wider uppercase">
-                                Order
-                            </span>
-                            <select
-                                value={form.order}
-                                onChange={(event) =>
-                                    setFilter('order', event.target.value)
-                                }
-                                className="rounded-xl border border-border bg-background px-3 py-3 font-semibold text-foreground outline-none focus:border-ring"
-                            >
-                                <option value="desc">Desc</option>
-                                <option value="asc">Asc</option>
-                            </select>
-                        </label>
-                        <label className="grid gap-1.5">
-                            <span className="font-semibold tracking-wider uppercase">
-                                Show
-                            </span>
-                            <select
-                                value={form.per_page}
-                                onChange={(event) =>
-                                    setFilter('per_page', event.target.value)
-                                }
-                                className="rounded-xl border border-border bg-background px-3 py-3 font-semibold text-foreground outline-none focus:border-ring"
-                            >
-                                <option value="8">8</option>
-                                <option value="12">12</option>
-                                <option value="16">16</option>
-                                <option value="24">24</option>
-                                <option value="32">32</option>
-                            </select>
-                        </label>
+                    <div className="mb-8 border-b border-border/70 pb-5 text-secondary-foreground">
+                        <div className="mb-4 flex items-end justify-between border-b border-foreground pb-3">
+                            <div>
+                                <p className="text-[11px] font-semibold tracking-[0.24em] text-foreground uppercase">
+                                    Sort & Order
+                                </p>
+                                <p className="mt-1 text-[10px] tracking-wide text-muted-foreground">
+                                    Atur urutan katalog.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 text-[11px]">
+                            <label className="grid gap-1.5">
+                                <span className="font-semibold tracking-wider text-foreground uppercase">
+                                    Sort
+                                </span>
+                                <select
+                                    value={form.sort}
+                                    onChange={(event) =>
+                                        setFilter('sort', event.target.value)
+                                    }
+                                    className="w-full border-0 border-b border-border bg-transparent px-0 py-2.5 text-[11px] font-medium tracking-wide text-secondary-foreground transition outline-none focus:border-foreground focus:ring-0"
+                                >
+                                    {options.sorts.map((sort) => (
+                                        <option
+                                            key={sort.value}
+                                            value={sort.value}
+                                        >
+                                            {sort.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+                            <label className="grid gap-1.5">
+                                <span className="font-semibold tracking-wider text-foreground uppercase">
+                                    Order
+                                </span>
+                                <select
+                                    value={form.order}
+                                    onChange={(event) =>
+                                        setFilter('order', event.target.value)
+                                    }
+                                    className="w-full border-0 border-b border-border bg-transparent px-0 py-2.5 text-[11px] font-medium tracking-wide text-secondary-foreground transition outline-none focus:border-foreground focus:ring-0"
+                                >
+                                    <option value="desc">Desc</option>
+                                    <option value="asc">Asc</option>
+                                </select>
+                            </label>
+                        </div>
                     </div>
 
                     <div className="text-secondary-foreground">
@@ -559,162 +537,54 @@ export default function ListProduct({ products, filters, options }: Props) {
                             <h1 className="text-[17px] font-medium tracking-wide">
                                 All Products
                             </h1>
-                            <p className="mt-1 text-[11px] tracking-wide text-secondary-foreground">
-                                {products.total > 0
-                                    ? `Showing ${products.from}-${products.to} of ${products.total} products`
-                                    : 'No products match your current filters'}
-                            </p>
                         </div>
 
                         <button
                             type="button"
                             onClick={() => setIsFilterOpen(true)}
-                            className="flex items-center justify-between rounded-full border border-border bg-background px-4 py-3 text-[11px] font-semibold tracking-wider text-foreground uppercase shadow-sm lg:hidden"
+                            className="group flex w-full items-center justify-between border-b border-foreground py-3 text-left transition-colors hover:text-primary sm:w-auto sm:min-w-48 lg:hidden"
                         >
                             <span>
-                                Filter{activeSummary > 0 ? ` (${activeSummary})` : ''}
+                                <span className="block text-[11px] font-semibold tracking-[0.24em] text-foreground uppercase transition-colors group-hover:text-primary">
+                                    Filter & Sort
+                                </span>
+                                <span className="mt-1 block text-[10px] tracking-wide text-muted-foreground">
+                                    {activeSummary > 0
+                                        ? `${activeSummary} filter active`
+                                        : 'Choose product details'}
+                                </span>
                             </span>
-                            <ChevronDown size={14} />
+                            <ChevronDown
+                                size={14}
+                                className="text-muted-foreground transition-transform group-hover:translate-y-0.5 group-hover:text-primary"
+                            />
                         </button>
 
-                        <div className="hidden flex-wrap items-center gap-2 text-[11px] text-secondary-foreground lg:flex">
-                            <label className="flex items-center gap-2">
-                                <span>sort</span>
-                                <select
-                                    value={form.sort}
-                                    onChange={(event) =>
-                                        setFilter('sort', event.target.value)
-                                    }
-                                    className="rounded-md border border-border bg-background px-3 py-2 font-semibold text-foreground transition outline-none focus:border-ring"
-                                >
-                                    {options.sorts.map((sort) => (
-                                        <option
-                                            key={sort.value}
-                                            value={sort.value}
-                                        >
-                                            {sort.label}
-                                        </option>
-                                    ))}
-                                </select>
-                            </label>
-                            <label className="flex items-center gap-2">
-                                <span>order</span>
-                                <select
-                                    value={form.order}
-                                    onChange={(event) =>
-                                        setFilter('order', event.target.value)
-                                    }
-                                    className="rounded-md border border-border bg-background px-3 py-2 font-semibold text-foreground transition outline-none focus:border-ring"
-                                >
-                                    <option value="desc">Desc</option>
-                                    <option value="asc">Asc</option>
-                                </select>
-                            </label>
-                            <label className="flex items-center gap-2">
-                                <span>show</span>
-                                <select
-                                    value={form.per_page}
-                                    onChange={(event) =>
-                                        setFilter(
-                                            'per_page',
-                                            event.target.value,
-                                        )
-                                    }
-                                    className="rounded-md border border-border bg-background px-3 py-2 font-semibold text-foreground transition outline-none focus:border-ring"
-                                >
-                                    <option value="8">8</option>
-                                    <option value="12">12</option>
-                                    <option value="16">16</option>
-                                    <option value="24">24</option>
-                                    <option value="32">32</option>
-                                </select>
-                            </label>
-                        </div>
                     </div>
 
                     {products.data.length > 0 ? (
-                        <div className="grid grid-cols-2 gap-x-3 gap-y-6 md:grid-cols-3 md:gap-x-5 md:gap-y-10 lg:grid-cols-4">
-                            {products.data.map((product, index) => (
-                                <Link
-                                    href={detail.url({
-                                        query: { product: product.slug },
-                                    })}
-                                    key={product.id}
-                                    className="group flex h-full cursor-pointer flex-col"
-                                >
-                                    <div className="relative mb-3 aspect-[3/4] overflow-hidden rounded-sm bg-muted">
-                                        <img
-                                            src={
-                                                product.image ??
-                                                fallbackImages[
-                                                    index %
-                                                        fallbackImages.length
-                                                ]
-                                            }
-                                            alt={product.title}
-                                            loading="lazy"
-                                            decoding="async"
-                                            className="h-full w-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-[1.03]"
-                                        />
-                                        <div className="pointer-events-none absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/5" />
-
-                                        {product.badge && (
-                                            <div className="absolute top-2 left-2 rounded-sm bg-primary px-2 py-1 text-[8px] font-medium tracking-widest text-primary-foreground uppercase shadow-sm">
-                                                {product.badge}
-                                            </div>
-                                        )}
-                                        <div className="absolute right-2 bottom-2 text-white/90 drop-shadow-md transition-colors hover:scale-110 hover:text-white">
-                                            <Heart
-                                                size={18}
-                                                strokeWidth={1.5}
+                        <InfiniteScroll data="products" buffer={400}>
+                            {({ loading }) => (
+                                <>
+                                    <div className="grid grid-cols-2 gap-x-3 gap-y-6 md:grid-cols-3 md:gap-x-5 md:gap-y-10 lg:grid-cols-4">
+                                        {products.data.map((product, index) => (
+                                            <ProductTile
+                                                key={product.id}
+                                                product={product}
+                                                index={index}
                                             />
-                                        </div>
+                                        ))}
                                     </div>
-
-                                    {product.colors.length > 0 && (
-                                        <div className="mb-2 flex space-x-1.5">
-                                            {product.colors.map((color) => (
-                                                <div
-                                                    key={color.hex}
-                                                    className="h-[12px] w-[12px] rounded-full border border-gray-200/60 shadow-sm"
-                                                    style={{
-                                                        backgroundColor:
-                                                            color.hex,
-                                                    }}
-                                                    title={
-                                                        color.name ?? color.hex
-                                                    }
-                                                />
-                                            ))}
+                                    {loading && (
+                                        <div className="mt-10 flex justify-center">
+                                            <span className="rounded-full border border-border px-5 py-2 text-[11px] font-semibold tracking-wider text-secondary-foreground uppercase">
+                                                Loading products...
+                                            </span>
                                         </div>
                                     )}
-
-                                    <h3 className="mb-1 text-[11px] leading-[1.4] font-semibold text-foreground transition-colors hover:text-primary">
-                                        {product.title}
-                                    </h3>
-
-                                    <div className="mb-4 flex flex-wrap items-center gap-2 text-[11px] text-secondary-foreground">
-                                        <span>
-                                            {formatPrice(
-                                                product.sale_price ??
-                                                    product.price,
-                                            )}
-                                        </span>
-                                        {product.sale_price !== null && (
-                                            <span className="text-muted-foreground line-through">
-                                                {formatPrice(product.price)}
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    <span className="mt-auto w-full rounded-full border border-input py-2 text-center text-[11px] font-semibold tracking-wider text-secondary-foreground shadow-sm transition-all duration-300 hover:border-primary hover:bg-primary hover:text-primary-foreground hover:shadow-md active:scale-95">
-                                        {product.available_stock > 0
-                                            ? 'Buy'
-                                            : 'Sold Out'}
-                                    </span>
-                                </Link>
-                            ))}
-                        </div>
+                                </>
+                            )}
+                        </InfiniteScroll>
                     ) : (
                         <div className="flex min-h-[420px] flex-col items-center justify-center rounded-md px-6 text-center">
                             <p className="text-sm font-semibold text-foreground">
@@ -734,36 +604,126 @@ export default function ListProduct({ products, filters, options }: Props) {
                         </div>
                     )}
 
-                    {products.last_page > 1 && (
-                        <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
-                            {products.links.map((link, index) =>
-                                link.url ? (
-                                    <Link
-                                        key={`${link.label}-${index}`}
-                                        href={link.url}
-                                        preserveScroll
-                                        className={`flex h-9 min-w-9 items-center justify-center rounded-full border px-3 text-[11px] font-semibold transition ${
-                                            link.active
-                                                ? 'border-primary bg-primary text-primary-foreground'
-                                                : 'border-border bg-background text-secondary-foreground hover:border-primary hover:text-primary'
-                                        }`}
-                                    >
-                                        {paginationLabel(link.label)}
-                                    </Link>
-                                ) : (
-                                    <span
-                                        key={`${link.label}-${index}`}
-                                        className="flex h-9 min-w-9 items-center justify-center rounded-full border border-border/60 px-3 text-[11px] text-muted-foreground/60"
-                                    >
-                                        {paginationLabel(link.label)}
-                                    </span>
-                                ),
-                            )}
-                        </div>
-                    )}
                 </div>
             </main>
         </ShopLayout>
+    );
+}
+
+function FadeInOnScroll({
+    children,
+    delay = 0,
+}: {
+    children: ReactNode;
+    delay?: number;
+}) {
+    const ref = useRef<HTMLDivElement>(null);
+    const [visible, setVisible] = useState(false);
+
+    useEffect(() => {
+        const element = ref.current;
+
+        if (!element) {
+            return;
+        }
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setVisible(true);
+                    observer.unobserve(entry.target);
+                }
+            },
+            { rootMargin: '0px 0px -12% 0px', threshold: 0.16 },
+        );
+
+        observer.observe(element);
+
+        return () => observer.disconnect();
+    }, []);
+
+    return (
+        <div
+            ref={ref}
+            className={`h-full transition-all duration-700 ease-out motion-reduce:translate-y-0 motion-reduce:opacity-100 ${
+                visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
+            }`}
+            style={{ transitionDelay: `${delay}ms` }}
+        >
+            {children}
+        </div>
+    );
+}
+
+function ProductTile({
+    product,
+    index,
+}: {
+    product: ProductCard;
+    index: number;
+}) {
+    return (
+        <FadeInOnScroll delay={(index % 12) * 60}>
+            <Link
+                href={detail.url({ query: { product: product.slug } })}
+                className="group flex h-full cursor-pointer flex-col"
+            >
+                <div className="relative mb-3 aspect-[3/4] overflow-hidden rounded-sm bg-muted">
+                    <img
+                        src={
+                            product.image ??
+                            fallbackImages[index % fallbackImages.length]
+                        }
+                        alt={product.title}
+                        loading="lazy"
+                        decoding="async"
+                        className="h-full w-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-[1.03]"
+                    />
+                    <div className="pointer-events-none absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/5" />
+
+                    {product.badge && (
+                        <div className="absolute top-2 left-2 rounded-sm bg-primary px-2 py-1 text-[8px] font-medium tracking-widest text-primary-foreground uppercase shadow-sm">
+                            {product.badge}
+                        </div>
+                    )}
+                    <div className="absolute right-2 bottom-2 text-white/90 drop-shadow-md transition-colors hover:scale-110 hover:text-white">
+                        <Heart size={18} strokeWidth={1.5} />
+                    </div>
+                </div>
+
+                {product.colors.length > 0 && (
+                    <div className="mb-2 flex space-x-1.5">
+                        {product.colors.map((color) => (
+                            <div
+                                key={color.hex}
+                                className="h-[12px] w-[12px] rounded-full border border-gray-200/60 shadow-sm"
+                                style={{ backgroundColor: color.hex }}
+                                title={color.name ?? color.hex}
+                            />
+                        ))}
+                    </div>
+                )}
+
+                <h3 className="mb-1 text-[11px] leading-[1.4] font-semibold text-foreground transition-colors hover:text-primary">
+                    {product.title}
+                </h3>
+
+                <div className="mb-4 flex flex-wrap items-center gap-2 text-[11px] text-secondary-foreground">
+                    <span>
+                        {formatPrice(product.sale_price ?? product.price)}
+                    </span>
+                    {product.sale_price !== null && (
+                        <span className="text-muted-foreground line-through">
+                            {formatPrice(product.price)}
+                        </span>
+                    )}
+                </div>
+
+                <span className="mt-auto w-full rounded-full border border-input py-2 text-center text-[11px] font-semibold tracking-wider text-secondary-foreground shadow-sm transition-all duration-300 hover:border-primary hover:bg-primary hover:text-primary-foreground hover:shadow-md active:scale-95">
+                    {product.available_stock > 0 ? 'Buy' : 'Sold Out'}
+                </span>
+            </Link>
+        </FadeInOnScroll>
     );
 }
 

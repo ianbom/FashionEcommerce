@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Product;
 use App\Models\ProductImage;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class ProductImageSeeder extends Seeder
@@ -136,6 +137,42 @@ class ProductImageSeeder extends Seeder
                 ],
             ],
         ];
+
+        $duplicateImageSources = [
+            'najran-piping-lace-abaya-sand' => 'najran-piping-lace-abaya',
+            'najran-piping-lace-abaya-maroon' => 'najran-piping-lace-abaya',
+            'najran-piping-lace-abaya-navy' => 'najran-piping-lace-abaya',
+            'najran-piping-lace-abaya-olive' => 'najran-piping-lace-abaya',
+            'abargo-utility-abaya-cream' => 'abargo-abaya-cargo',
+            'abargo-utility-abaya-black' => 'abargo-abaya-cargo',
+            'abargo-utility-abaya-plum' => 'abargo-abaya-cargo',
+            'abargo-utility-abaya-taupe' => 'abargo-abaya-cargo',
+            'kufah-khimar-dark-plum' => 'kufah-khimar',
+            'kufah-khimar-sepia' => 'kufah-khimar',
+            'kufah-khimar-silver' => 'kufah-khimar',
+            'kufah-khimar-moss' => 'kufah-khimar',
+            'sila-scarf-crimson' => 'sila-scarf-itsar-syari-x-napocut',
+            'sila-scarf-midnight' => 'sila-scarf-itsar-syari-x-napocut',
+            'sila-scarf-mocha' => 'sila-scarf-itsar-syari-x-napocut',
+            'sila-scarf-ivory' => 'sila-scarf-itsar-syari-x-napocut',
+            'rabita-abaya-black' => 'rabita-abaya-itsar-syari-x-napocut',
+            'rabita-abaya-broken-white' => 'rabita-abaya-itsar-syari-x-napocut',
+            'rabita-abaya-dark-cherry' => 'rabita-abaya-itsar-syari-x-napocut',
+            'rabita-abaya-graphite' => 'rabita-abaya-itsar-syari-x-napocut',
+            'nisbah-khimar-black' => 'nisbah-khimar-itsar-syari-x-napocut',
+            'nisbah-khimar-drift-wood' => 'nisbah-khimar-itsar-syari-x-napocut',
+            'nisbah-khimar-fawn-pink' => 'nisbah-khimar-itsar-syari-x-napocut',
+            'nisbah-khimar-cocoa' => 'nisbah-khimar-itsar-syari-x-napocut',
+        ];
+
+        foreach ($duplicateImageSources as $duplicateSlug => $sourceSlug) {
+            $imagesByProduct[$duplicateSlug] = collect($imagesByProduct[$sourceSlug])
+                ->map(fn (array $image): array => [
+                    ...$image,
+                    'alt_text' => Str::headline($duplicateSlug).' foto katalog',
+                ])
+                ->all();
+        }
 
         $products = Product::query()
             ->whereIn('slug', array_keys($imagesByProduct))

@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class ProductVariantSeeder extends Seeder
@@ -232,6 +233,47 @@ class ProductVariantSeeder extends Seeder
                 'is_active' => true,
             ],
         ];
+
+        $duplicateVariantSources = [
+            ['slug' => 'najran-piping-lace-abaya-sand', 'source' => 'najran-piping-lace-abaya', 'source_sku' => 'ITS-ABY-NAJ-001', 'sku' => 'ITS-ABY-NAJ-007'],
+            ['slug' => 'najran-piping-lace-abaya-maroon', 'source' => 'najran-piping-lace-abaya', 'source_sku' => 'ITS-ABY-NAJ-001', 'sku' => 'ITS-ABY-NAJ-008'],
+            ['slug' => 'najran-piping-lace-abaya-navy', 'source' => 'najran-piping-lace-abaya', 'source_sku' => 'ITS-ABY-NAJ-001', 'sku' => 'ITS-ABY-NAJ-009'],
+            ['slug' => 'najran-piping-lace-abaya-olive', 'source' => 'najran-piping-lace-abaya', 'source_sku' => 'ITS-ABY-NAJ-001', 'sku' => 'ITS-ABY-NAJ-010'],
+            ['slug' => 'abargo-utility-abaya-cream', 'source' => 'abargo-abaya-cargo', 'source_sku' => 'ITS-ABY-ABG-002', 'sku' => 'ITS-ABY-ABG-011'],
+            ['slug' => 'abargo-utility-abaya-black', 'source' => 'abargo-abaya-cargo', 'source_sku' => 'ITS-ABY-ABG-002', 'sku' => 'ITS-ABY-ABG-012'],
+            ['slug' => 'abargo-utility-abaya-plum', 'source' => 'abargo-abaya-cargo', 'source_sku' => 'ITS-ABY-ABG-002', 'sku' => 'ITS-ABY-ABG-013'],
+            ['slug' => 'abargo-utility-abaya-taupe', 'source' => 'abargo-abaya-cargo', 'source_sku' => 'ITS-ABY-ABG-002', 'sku' => 'ITS-ABY-ABG-014'],
+            ['slug' => 'kufah-khimar-dark-plum', 'source' => 'kufah-khimar', 'source_sku' => 'ITS-KHM-KUF-003', 'sku' => 'ITS-KHM-KUF-015'],
+            ['slug' => 'kufah-khimar-sepia', 'source' => 'kufah-khimar', 'source_sku' => 'ITS-KHM-KUF-003', 'sku' => 'ITS-KHM-KUF-016'],
+            ['slug' => 'kufah-khimar-silver', 'source' => 'kufah-khimar', 'source_sku' => 'ITS-KHM-KUF-003', 'sku' => 'ITS-KHM-KUF-017'],
+            ['slug' => 'kufah-khimar-moss', 'source' => 'kufah-khimar', 'source_sku' => 'ITS-KHM-KUF-003', 'sku' => 'ITS-KHM-KUF-018'],
+            ['slug' => 'sila-scarf-crimson', 'source' => 'sila-scarf-itsar-syari-x-napocut', 'source_sku' => 'ITS-SCF-SIL-004', 'sku' => 'ITS-SCF-SIL-019'],
+            ['slug' => 'sila-scarf-midnight', 'source' => 'sila-scarf-itsar-syari-x-napocut', 'source_sku' => 'ITS-SCF-SIL-004', 'sku' => 'ITS-SCF-SIL-020'],
+            ['slug' => 'sila-scarf-mocha', 'source' => 'sila-scarf-itsar-syari-x-napocut', 'source_sku' => 'ITS-SCF-SIL-004', 'sku' => 'ITS-SCF-SIL-021'],
+            ['slug' => 'sila-scarf-ivory', 'source' => 'sila-scarf-itsar-syari-x-napocut', 'source_sku' => 'ITS-SCF-SIL-004', 'sku' => 'ITS-SCF-SIL-022'],
+            ['slug' => 'rabita-abaya-black', 'source' => 'rabita-abaya-itsar-syari-x-napocut', 'source_sku' => 'ITS-ABY-RBT-005', 'sku' => 'ITS-ABY-RBT-023'],
+            ['slug' => 'rabita-abaya-broken-white', 'source' => 'rabita-abaya-itsar-syari-x-napocut', 'source_sku' => 'ITS-ABY-RBT-005', 'sku' => 'ITS-ABY-RBT-024'],
+            ['slug' => 'rabita-abaya-dark-cherry', 'source' => 'rabita-abaya-itsar-syari-x-napocut', 'source_sku' => 'ITS-ABY-RBT-005', 'sku' => 'ITS-ABY-RBT-025'],
+            ['slug' => 'rabita-abaya-graphite', 'source' => 'rabita-abaya-itsar-syari-x-napocut', 'source_sku' => 'ITS-ABY-RBT-005', 'sku' => 'ITS-ABY-RBT-026'],
+            ['slug' => 'nisbah-khimar-black', 'source' => 'nisbah-khimar-itsar-syari-x-napocut', 'source_sku' => 'ITS-KHM-NSB-006', 'sku' => 'ITS-KHM-NSB-027'],
+            ['slug' => 'nisbah-khimar-drift-wood', 'source' => 'nisbah-khimar-itsar-syari-x-napocut', 'source_sku' => 'ITS-KHM-NSB-006', 'sku' => 'ITS-KHM-NSB-028'],
+            ['slug' => 'nisbah-khimar-fawn-pink', 'source' => 'nisbah-khimar-itsar-syari-x-napocut', 'source_sku' => 'ITS-KHM-NSB-006', 'sku' => 'ITS-KHM-NSB-029'],
+            ['slug' => 'nisbah-khimar-cocoa', 'source' => 'nisbah-khimar-itsar-syari-x-napocut', 'source_sku' => 'ITS-KHM-NSB-006', 'sku' => 'ITS-KHM-NSB-030'],
+        ];
+
+        $variantsByProduct = collect($variants)->groupBy('product_slug');
+
+        foreach ($duplicateVariantSources as $duplicate) {
+            foreach ($variantsByProduct->get($duplicate['source'], []) as $variant) {
+                $variantSuffix = Str::after($variant['sku'], $duplicate['source_sku'].'-');
+
+                $variants[] = [
+                    ...$variant,
+                    'product_slug' => $duplicate['slug'],
+                    'sku' => "{$duplicate['sku']}-{$variantSuffix}",
+                ];
+            }
+        }
 
         $productIds = Product::query()
             ->whereIn('slug', collect($variants)->pluck('product_slug')->unique()->all())
