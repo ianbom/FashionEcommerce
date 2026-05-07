@@ -101,27 +101,27 @@ const labelStatus = (status: string) => {
         .join(' ');
 };
 
-const getBadgeStyle = (status: string) => {
+const getStatusTextStyle = (status: string) => {
     switch (status) {
         case 'pending':
         case 'pending_payment':
-            return 'bg-orange-100 text-orange-700';
+            return 'text-orange-700';
         case 'paid':
         case 'completed':
-            return 'bg-green-100 text-green-700';
+            return 'text-green-700';
         case 'processing':
         case 'ready_to_ship':
-            return 'bg-blue-100 text-blue-700';
+            return 'text-blue-700';
         case 'shipped':
-            return 'bg-purple-100 text-purple-700';
+            return 'text-purple-700';
         case 'delivered':
-            return 'bg-emerald-100 text-emerald-700';
+            return 'text-emerald-700';
         case 'cancelled':
         case 'expired':
         case 'failed':
-            return 'bg-red-100 text-red-700';
+            return 'text-red-700';
         default:
-            return 'bg-gray-100 text-gray-700';
+            return 'text-gray-700';
     }
 };
 
@@ -212,7 +212,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                             }))
                         }
                         placeholder="Search by order number or product name"
-                        className="w-full rounded-xl border border-[#EADBD8] bg-white py-3 pr-4 pl-11 text-[13px] text-[#333] shadow-sm transition-all focus:border-[#B6574B] focus:ring-1 focus:ring-[#B6574B] focus:outline-none"
+                        className="w-full border-b border-[#EADBD8] bg-transparent py-3 pr-4 pl-11 text-[13px] text-[#333] transition-colors focus:border-[#4A2525] focus:outline-none"
                     />
                 </div>
                 <Select
@@ -264,7 +264,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                 </Select>
                 <button
                     type="submit"
-                    className="rounded-xl bg-[#4A2525] px-5 py-3 text-[12px] font-bold text-white shadow-sm transition-colors hover:bg-[#5F1717]"
+                    className="border-b border-[#4A2525] bg-transparent px-5 py-3 text-[12px] font-bold text-[#4A2525] transition-colors hover:border-[#B6574B] hover:text-[#B6574B]"
                 >
                     Search
                 </button>
@@ -282,15 +282,9 @@ export default function ListOrder({ orders, filters, options }: Props) {
                             className={`relative pb-3 text-[13px] font-medium whitespace-nowrap transition-all ${form.order_status === tab.id ? 'text-[#4A2525]' : 'text-[#8A6B62] hover:text-[#4A4A4A]'}`}
                         >
                             {form.order_status === tab.id && (
-                                <div className="absolute right-0 bottom-0 left-0 h-0.5 rounded-t-full bg-[#B6574B]" />
+                                <div className="absolute right-0 bottom-0 left-0 h-px bg-[#4A2525]" />
                             )}
-                            <span
-                                className={
-                                    form.order_status === tab.id
-                                        ? 'rounded-full bg-[#B6574B] px-3 py-1.5 text-xs text-white shadow-sm'
-                                        : 'px-1'
-                                }
-                            >
+                            <span className="px-1">
                                 {tab.label}
                             </span>
                         </button>
@@ -299,13 +293,13 @@ export default function ListOrder({ orders, filters, options }: Props) {
             </div>
 
             {orders.data.length === 0 ? (
-                <div className="flex flex-col items-center justify-center rounded-2xl border border-[#EADBD8] bg-white px-6 py-20 text-center">
-                    <div className="relative mb-6 h-48 w-48">
-                        <div className="absolute inset-0 rounded-full bg-[#F8EDED] opacity-50 blur-2xl" />
+                <div className="flex flex-col items-center justify-center border-y border-[#EADBD8] px-6 py-20 text-center">
+                    <div className="relative mb-6 h-40 w-32">
+                        <div className="absolute inset-0 bg-[#F8EDED] opacity-50 blur-2xl" />
                         <img
                             src={FALLBACK_IMAGE}
                             alt="Empty orders"
-                            className="relative z-10 h-full w-full rounded-xl object-cover shadow-lg"
+                            className="relative z-10 h-full w-full object-cover"
                         />
                     </div>
                     <h2 className="mb-2 font-serif text-2xl text-[#4A2525]">
@@ -317,20 +311,20 @@ export default function ListOrder({ orders, filters, options }: Props) {
                     </p>
                     <Link
                         href="/list"
-                        className="rounded-lg bg-[#4A2525] px-8 py-3 text-[12px] font-bold tracking-wider text-white transition-all hover:bg-[#5F1717]"
+                        className="border-b border-[#4A2525] px-1 py-2 text-[12px] font-bold tracking-wider text-[#4A2525] transition-colors hover:border-[#B6574B] hover:text-[#B6574B]"
                     >
                         Shop Now
                     </Link>
                 </div>
             ) : (
-                <div className="space-y-6">
+                <div className="divide-y divide-[#EADBD8] border-y border-[#EADBD8]">
                     {orders.data.map((order, idx) => (
-                        <div
+                        <article
                             key={order.id}
-                            className="overflow-hidden rounded-2xl border border-[#EADBD8] bg-white shadow-sm transition-shadow duration-300 hover:shadow-md"
+                            className="py-6 transition-colors duration-300 hover:bg-white/35 md:py-7"
                             style={{ animationDelay: `${idx * 50}ms` }}
                         >
-                            <div className="grid grid-cols-2 gap-4 border-b border-[#EADBD8]/60 bg-[#FAF9F6]/50 p-5 md:grid-cols-4 md:p-6">
+                            <div className="grid grid-cols-2 gap-4 px-1 md:grid-cols-4">
                                 <div className="col-span-2 md:col-span-1">
                                     <p className="mb-1 font-serif text-[13px] text-[#333333]">
                                         Order #{order.order_number}
@@ -344,9 +338,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                     <p className="mb-1 text-[10px] text-[#8A6B62]">
                                         Payment
                                     </p>
-                                    <span
-                                        className={`inline-block rounded-md px-2.5 py-1 text-[10px] font-bold ${getBadgeStyle(order.payment_status)}`}
-                                    >
+                                    <span className={`inline-block text-[10px] font-bold ${getStatusTextStyle(order.payment_status)}`}>
                                         {labelStatus(order.payment_status)}
                                     </span>
                                 </div>
@@ -370,22 +362,20 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                     <p className="mb-1 hidden text-[10px] text-[#8A6B62] md:block">
                                         Order Status
                                     </p>
-                                    <span
-                                        className={`inline-block rounded-md px-3 py-1.5 text-[11px] font-bold ${getBadgeStyle(order.order_status)}`}
-                                    >
+                                    <span className={`inline-block text-[11px] font-bold ${getStatusTextStyle(order.order_status)}`}>
                                         {labelStatus(order.order_status)}
                                     </span>
                                 </div>
                             </div>
 
-                            <div className="flex flex-col items-start justify-between gap-6 p-5 md:p-6 lg:flex-row lg:items-center">
+                            <div className="flex flex-col items-start justify-between gap-6 px-1 pt-5 lg:flex-row lg:items-center">
                                 <div className="hide-scrollbar flex w-full flex-1 gap-4 overflow-x-auto pb-2 lg:pb-0">
                                     {order.items.map((item) => (
                                         <div
                                             key={item.id}
                                             className="flex min-w-[260px] gap-4 md:min-w-0"
                                         >
-                                            <div className="h-[100px] w-[80px] shrink-0 overflow-hidden rounded-lg bg-[#F8EDED]">
+                                            <div className="h-[100px] w-[80px] shrink-0 overflow-hidden rounded-xl bg-[#F8EDED]">
                                                 <img
                                                     src={
                                                         item.image ??
@@ -410,7 +400,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                         </div>
                                     ))}
                                     {order.extra_items > 0 && (
-                                        <div className="flex h-[100px] w-[80px] shrink-0 flex-col items-center justify-center rounded-lg border border-[#EADBD8] bg-[#FAF9F6] text-[#8A6B62]">
+                                        <div className="flex h-[100px] w-[80px] shrink-0 flex-col items-center justify-center rounded-xl border border-[#EADBD8] text-[#8A6B62]">
                                             <span className="font-serif text-lg text-[#4A2525] italic">
                                                 +{order.extra_items}
                                             </span>
@@ -442,7 +432,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                                     ? 'noreferrer'
                                                     : undefined
                                             }
-                                            className="flex-1 rounded-lg bg-[#4A2525] py-2.5 text-center text-[12px] font-bold text-white shadow-md shadow-[#4A2525]/20 transition-colors hover:bg-[#5F1717] lg:w-full"
+                                            className="flex-1 rounded-lg bg-[#4A2525] py-2.5 text-center text-[12px] font-bold text-white transition-colors hover:bg-[#5F1717] lg:w-full"
                                         >
                                             Pay Now
                                         </a>
@@ -450,7 +440,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                     {order.order_status === 'shipped' && (
                                         <Link
                                             href={orderShow.url(order.id)}
-                                            className="flex-1 rounded-lg bg-[#4A2525] py-2.5 text-center text-[12px] font-bold text-white shadow-md shadow-[#4A2525]/20 transition-colors hover:bg-[#5F1717] lg:w-full"
+                                            className="flex-1 rounded-lg bg-[#4A2525] py-2.5 text-center text-[12px] font-bold text-white transition-colors hover:bg-[#5F1717] lg:w-full"
                                         >
                                             Track Order
                                         </Link>
@@ -464,7 +454,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                     {canBuyAgain(order.order_status) && (
                                         <Link
                                             href="/list"
-                                            className="flex-1 rounded-lg bg-[#4A2525] py-2.5 text-center text-[12px] font-bold text-white shadow-md shadow-[#4A2525]/20 transition-colors hover:bg-[#5F1717] lg:w-full"
+                                            className="flex-1 rounded-lg bg-[#4A2525] py-2.5 text-center text-[12px] font-bold text-white transition-colors hover:bg-[#5F1717] lg:w-full"
                                         >
                                             Buy Again
                                         </Link>
@@ -473,7 +463,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                             </div>
 
                             {order.order_status === 'shipped' && (
-                                <div className="hidden border-t border-[#EADBD8]/60 bg-[#FAF9F6] px-5 py-4 md:block md:px-8">
+                                <div className="mt-6 hidden border-t border-[#EADBD8]/60 px-5 pt-5 md:block md:px-8">
                                     <div className="relative z-10 mx-auto flex max-w-[600px] items-center justify-between">
                                         <div className="absolute top-4 right-[5%] left-[5%] -z-10 h-[2px] bg-[#EADBD8]" />
                                         <div className="absolute top-4 left-[5%] -z-10 h-[2px] w-[60%] bg-[#B6574B]" />
@@ -507,7 +497,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                                     className="flex flex-col items-center"
                                                 >
                                                     <div
-                                                        className={`mb-2 flex h-8 w-8 items-center justify-center rounded-full border-2 transition-colors ${step.active ? 'border-[#B6574B] bg-[#B6574B] text-white shadow-md' : 'border-[#EADBD8] bg-white text-[#C99A8F]'}`}
+                                                        className={`mb-2 flex h-8 w-8 items-center justify-center rounded-full border transition-colors ${step.active ? 'border-[#B6574B] text-[#B6574B]' : 'border-[#EADBD8] text-[#C99A8F]'}`}
                                                     >
                                                         <Icon
                                                             size={14}
@@ -525,7 +515,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                     </div>
                                 </div>
                             )}
-                        </div>
+                        </article>
                     ))}
 
                     <div className="flex flex-col items-center justify-between gap-4 pt-8 pb-4 text-[12px] text-[#8A6B62] md:flex-row">
@@ -562,7 +552,7 @@ function Select({
             <select
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
-                className="w-full appearance-none rounded-xl border border-[#EADBD8] bg-white px-4 py-3 pr-9 text-[13px] text-[#333] shadow-sm focus:border-[#B6574B] focus:outline-none"
+                className="w-full appearance-none border-b border-[#EADBD8] bg-transparent px-1 py-3 pr-8 text-[13px] text-[#333] transition-colors focus:border-[#4A2525] focus:outline-none"
             >
                 {children}
             </select>
@@ -584,7 +574,7 @@ function PaginationButton({ link }: { link: PaginationLink }) {
         ) : (
             label
         );
-    const className = `flex h-8 min-w-8 items-center justify-center rounded-md px-2 font-medium transition-colors ${link.active ? 'bg-[#4A2525] text-white shadow-md' : 'text-[#8A6B62] hover:bg-white hover:text-[#4A2525]'}`;
+    const className = `flex h-8 min-w-8 items-center justify-center border-b px-2 font-medium transition-colors ${link.active ? 'border-[#4A2525] text-[#4A2525]' : 'border-transparent text-[#8A6B62] hover:border-[#C99A8F] hover:text-[#4A2525]'}`;
 
     if (!link.url) {
         return <span className={`${className} opacity-40`}>{content}</span>;
