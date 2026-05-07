@@ -2,6 +2,7 @@ import { router, useForm } from '@inertiajs/react';
 import {
     AlertCircle,
     Edit2,
+    LocateFixed,
     MapPin,
     Plus,
     Search,
@@ -9,8 +10,17 @@ import {
     X,
 } from 'lucide-react';
 import type { FormEvent } from 'react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import {
+    MapContainer,
+    Marker,
+    TileLayer,
+    useMap,
+    useMapEvents,
+} from 'react-leaflet';
 import {
     destroy,
     store,
@@ -53,7 +63,6 @@ type AddressFormData = {
     subdistrict: string;
     postal_code: string;
     biteship_area_id: string;
-    google_maps_url: string;
     latitude: string;
     longitude: string;
     note: string;
@@ -71,7 +80,6 @@ const EMPTY_FORM: AddressFormData = {
     subdistrict: '',
     postal_code: '',
     biteship_area_id: '',
-    google_maps_url: '',
     latitude: '',
     longitude: '',
     note: '',
@@ -97,10 +105,6 @@ const formDataFromAddress = (address?: Address): AddressFormData => {
         subdistrict: address.subdistrict ?? '',
         postal_code: address.postal_code,
         biteship_area_id: address.biteship_area_id ?? '',
-        google_maps_url:
-            address.latitude && address.longitude
-                ? `https://www.google.com/maps?q=${address.latitude},${address.longitude}`
-                : '',
         latitude: asText(address.latitude),
         longitude: asText(address.longitude),
         note: address.note ?? '',
@@ -109,11 +113,8 @@ const formDataFromAddress = (address?: Address): AddressFormData => {
 };
 
 const normalizePayload = (data: AddressFormData) => {
-    const { google_maps_url, ...payload } = data;
-    void google_maps_url;
-
     return {
-        ...payload,
+        ...data,
         label: data.label.trim() === '' ? null : data.label.trim(),
         subdistrict:
             data.subdistrict.trim() === '' ? null : data.subdistrict.trim(),
@@ -158,42 +159,18 @@ const validCoordinates = (latitude: number, longitude: number): boolean =>
     longitude >= -180 &&
     longitude <= 180;
 
-const extractGoogleMapsCoordinates = (
-    value: string,
-): { latitude: string; longitude: string } | null => {
-    let decoded = value;
+const DEFAULT_MAP_CENTER: [number, number] = [-6.2, 106.816666];
 
-    try {
-        decoded = decodeURIComponent(value);
-    } catch {
-        decoded = value;
-    }
-
-    const bangMatch = decoded.match(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/);
-    const commaMatch =
-        decoded.match(/@(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/) ??
-        decoded.match(
-            /(?:q|ll|query)=(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/,
-        ) ??
-        decoded.match(/(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/);
-    const match = bangMatch ?? commaMatch;
-
-    if (!match) {
-        return null;
-    }
-
-    const latitude = Number(match[1]);
-    const longitude = Number(match[2]);
-
-    if (!validCoordinates(latitude, longitude)) {
-        return null;
-    }
-
-    return {
-        latitude: formatCoordinate(latitude),
-        longitude: formatCoordinate(longitude),
-    };
-};
+const markerIcon = L.icon({
+    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+    iconRetinaUrl:
+        'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41],
+});
 
 export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -207,7 +184,7 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
     const [areaResults, setAreaResults] = useState<BiteshipArea[]>([]);
     const [areaLoading, setAreaLoading] = useState(false);
     const [areaError, setAreaError] = useState('');
-    const [mapLinkError, setMapLinkError] = useState('');
+    const [mapError, setMapError] = useState('');
 
     const form = useForm<AddressFormData>({ ...EMPTY_FORM });
     const editingAddress = useMemo(
@@ -233,7 +210,7 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
         setAreaQuery('');
         setAreaResults([]);
         setAreaError('');
-        setMapLinkError('');
+        setMapError('');
         setIsModalOpen(true);
     };
 
@@ -245,7 +222,7 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
         setAreaQuery('');
         setAreaResults([]);
         setAreaError('');
-        setMapLinkError('');
+        setMapError('');
     };
 
     const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -317,19 +294,42 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
         setAreaError('');
     };
 
-    const handleGoogleMapsUrlChange = (value: string) => {
-        const coordinates = extractGoogleMapsCoordinates(value);
+    const updateCoordinates = (latitude: number, longitude: number) => {
+        if (!validCoordinates(latitude, longitude)) {
+            setMapError('Koordinat tidak valid. Pilih titik lain di map.');
+
+            return;
+        }
 
         form.setData({
             ...form.data,
-            google_maps_url: value,
-            latitude: coordinates?.latitude ?? '',
-            longitude: coordinates?.longitude ?? '',
+            latitude: formatCoordinate(latitude),
+            longitude: formatCoordinate(longitude),
         });
-        setMapLinkError(
-            value.trim() !== '' && !coordinates
-                ? 'Link Google Maps tidak berisi koordinat yang valid.'
-                : '',
+        setMapError('');
+    };
+
+    const useCurrentLocation = () => {
+        if (!navigator.geolocation) {
+            setMapError('Browser tidak mendukung deteksi lokasi.');
+
+            return;
+        }
+
+        setMapError('Mencari lokasi perangkat...');
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                updateCoordinates(
+                    position.coords.latitude,
+                    position.coords.longitude,
+                );
+            },
+            () => {
+                setMapError(
+                    'Gagal mengambil lokasi perangkat. Izinkan akses lokasi atau pilih pin manual.',
+                );
+            },
+            { enableHighAccuracy: true, timeout: 10000 },
         );
     };
 
@@ -621,7 +621,7 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                                 </div>
                                 <div>
                                     <label className="mb-1.5 block text-[11px] font-semibold text-[#4A4A4A]">
-                                        Biteship Area
+                                        Search by Postal Code
                                     </label>
                                     <div className="flex gap-2">
                                         <input
@@ -731,24 +731,17 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                                     }
                                     error={form.errors.subdistrict}
                                 />
-                                <InputBlock
-                                    label="Google Maps Link"
-                                    value={form.data.google_maps_url}
-                                    onChange={handleGoogleMapsUrlChange}
-                                    placeholder="Paste Google Maps link"
+                                <LocationPicker
+                                    latitude={form.data.latitude}
+                                    longitude={form.data.longitude}
                                     error={
-                                        mapLinkError ||
+                                        mapError ||
                                         form.errors.latitude ||
                                         form.errors.longitude
                                     }
+                                    onChange={updateCoordinates}
+                                    onUseCurrentLocation={useCurrentLocation}
                                 />
-                                {(form.data.latitude ||
-                                    form.data.longitude) && (
-                                    <p className="-mt-2 text-[11px] text-[#8A6B62]">
-                                        Coordinates: {form.data.latitude},{' '}
-                                        {form.data.longitude}
-                                    </p>
-                                )}
                                 <TextareaBlock
                                     label="Full Address"
                                     value={form.data.full_address}
@@ -795,9 +788,7 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                                 </button>
                                 <button
                                     type="submit"
-                                    disabled={
-                                        form.processing || mapLinkError !== ''
-                                    }
+                                    disabled={form.processing}
                                     className="rounded-md bg-[#4A2525] px-6 py-2.5 text-[12px] font-bold text-white transition-colors hover:bg-[#5F1717] disabled:cursor-not-allowed disabled:opacity-70"
                                 >
                                     {form.processing
@@ -824,6 +815,125 @@ type FieldProps = {
     placeholder?: string;
     readOnly?: boolean;
 };
+
+type LocationPickerProps = {
+    latitude: string;
+    longitude: string;
+    error?: string;
+    onChange: (latitude: number, longitude: number) => void;
+    onUseCurrentLocation: () => void;
+};
+
+function LocationPicker({
+    latitude,
+    longitude,
+    error,
+    onChange,
+    onUseCurrentLocation,
+}: LocationPickerProps) {
+    const parsedLatitude = Number(latitude);
+    const parsedLongitude = Number(longitude);
+    const hasCoordinates = validCoordinates(parsedLatitude, parsedLongitude);
+    const position: [number, number] = hasCoordinates
+        ? [parsedLatitude, parsedLongitude]
+        : DEFAULT_MAP_CENTER;
+
+    return (
+        <div>
+            <div className="mb-2 flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+                <div>
+                    <label className="block text-[11px] font-semibold text-[#4A4A4A]">
+                        Pinpoint Location
+                    </label>
+                    <p className="mt-1 text-[11px] text-[#8A6B62]">
+                        Klik map atau drag pin ke titik rumah.
+                    </p>
+                </div>
+                <button
+                    type="button"
+                    onClick={onUseCurrentLocation}
+                    className="inline-flex items-center justify-center gap-2 rounded-md border border-[#EADBD8] bg-white px-3 py-2 text-[11px] font-bold text-[#4A4A4A] transition-colors hover:border-[#B6574B] hover:bg-[#FAF9F6]"
+                >
+                    <LocateFixed size={14} /> Use Current Location
+                </button>
+            </div>
+            <div className="overflow-hidden rounded-xl border border-[#EADBD8] bg-[#FAF9F6]">
+                <MapContainer
+                    center={position}
+                    zoom={hasCoordinates ? 17 : 12}
+                    scrollWheelZoom
+                    className="h-[320px] w-full"
+                >
+                    <TileLayer
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    <MapUpdater center={position} zoom={hasCoordinates ? 17 : 12} />
+                    <MapClickHandler onChange={onChange} />
+                    {hasCoordinates && (
+                        <Marker
+                            draggable
+                            icon={markerIcon}
+                            position={position}
+                            eventHandlers={{
+                                dragend: (event) => {
+                                    const marker = event.target;
+                                    const nextPosition = marker.getLatLng();
+
+                                    onChange(
+                                        nextPosition.lat,
+                                        nextPosition.lng,
+                                    );
+                                },
+                            }}
+                        />
+                    )}
+                </MapContainer>
+            </div>
+            {hasCoordinates && (
+                <p className="mt-2 text-[11px] text-[#8A6B62]">
+                    Coordinates: {latitude}, {longitude}
+                </p>
+            )}
+            {error && (
+                <p className="mt-1.5 text-[11px] font-medium text-[#B24B4B]">
+                    {error}
+                </p>
+            )}
+        </div>
+    );
+}
+
+function MapUpdater({
+    center,
+    zoom,
+}: {
+    center: [number, number];
+    zoom: number;
+}) {
+    const map = useMap();
+
+    useEffect(() => {
+        map.invalidateSize();
+        map.setView(center, zoom);
+    }, [center, map, zoom]);
+
+    return null;
+}
+
+function MapClickHandler({
+    onChange,
+}: {
+    onChange: (latitude: number, longitude: number) => void;
+}) {
+    useMapEvents({
+        click: (event) => {
+            onChange(event.latlng.lat, event.latlng.lng);
+        },
+    });
+
+    return null;
+}
 
 function InputBlock({
     label,

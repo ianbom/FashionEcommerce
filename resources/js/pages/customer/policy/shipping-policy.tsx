@@ -6,7 +6,7 @@ import ShopLayout from '@/layouts/shop-layout';
 export default function ShippingPolicy() {
     return (
         <ShopLayout>
-            <Head title="Shipping Policy - Webcare" />
+            <Head title="Shipping Policy - Shayda" />
 
             {/* Hero Section */}
             <div className="relative flex w-full flex-col items-center justify-center overflow-hidden bg-[#FAF9F6] py-20 text-center md:py-28">
@@ -81,7 +81,7 @@ export default function ShippingPolicy() {
                             countries. Your order may be subject to import
                             duties and taxes (including VAT), which are incurred
                             once a shipment reaches your destination country.
-                            Webcare is not responsible for these charges if they
+                            Shayda is not responsible for these charges if they
                             are applied and are your responsibility as the
                             customer.
                         </p>
@@ -104,7 +104,7 @@ export default function ShippingPolicy() {
                         <p className="text-[12px] text-[#8A6B62]">
                             Have questions?{' '}
                             <a
-                                href="mailto:support@webcare.com"
+                                href="mailto:support@shayda.com"
                                 className="font-semibold text-[#4A2525] hover:underline"
                             >
                                 Contact Support

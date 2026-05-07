@@ -6,7 +6,7 @@ import ShopLayout from '@/layouts/shop-layout';
 export default function TermCondition() {
     return (
         <ShopLayout>
-            <Head title="Terms & Conditions - Webcare" />
+            <Head title="Terms & Conditions - Shayda" />
 
             {/* Hero Section */}
             <div className="relative flex w-full flex-col items-center justify-center overflow-hidden bg-[#FAF9F6] py-20 text-center md:py-28">
@@ -44,7 +44,7 @@ export default function TermCondition() {
                             These Terms and Conditions constitute a legally
                             binding agreement made between you, whether
                             personally or on behalf of an entity ("you") and
-                            Webcare ("we," "us" or "our"), concerning your
+                            Shayda ("we," "us" or "our"), concerning your
                             access to and use of our website as well as any
                             other media form, media channel, mobile website or
                             mobile application related, linked, or otherwise
@@ -125,7 +125,7 @@ export default function TermCondition() {
                         <p className="text-[12px] text-[#8A6B62]">
                             Have questions?{' '}
                             <a
-                                href="mailto:support@webcare.com"
+                                href="mailto:support@shayda.com"
                                 className="font-semibold text-[#4A2525] hover:underline"
                             >
                                 Contact Support

@@ -6,7 +6,7 @@ import ShopLayout from '@/layouts/shop-layout';
 export default function NoReturnPolicy() {
     return (
         <ShopLayout>
-            <Head title="Return & Exchange Policy - Webcare" />
+            <Head title="Return & Exchange Policy - Shayda" />
 
             {/* Hero Section */}
             <div className="relative flex w-full flex-col items-center justify-center overflow-hidden bg-[#FAF9F6] py-20 text-center md:py-28">
@@ -94,7 +94,7 @@ export default function NoReturnPolicy() {
                         <p className="text-[12px] text-[#8A6B62]">
                             Have questions?{' '}
                             <a
-                                href="mailto:support@webcare.com"
+                                href="mailto:support@shayda.com"
                                 className="font-semibold text-[#4A2525] hover:underline"
                             >
                                 Contact Support

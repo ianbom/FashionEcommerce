@@ -6,7 +6,7 @@ import ShopLayout from '@/layouts/shop-layout';
 export default function PrivacyPolicy() {
     return (
         <ShopLayout>
-            <Head title="Privacy Policy - Webcare" />
+            <Head title="Privacy Policy - Shayda" />
 
             {/* Hero Section */}
             <div className="relative flex w-full flex-col items-center justify-center overflow-hidden bg-[#FAF9F6] py-20 text-center md:py-28">
@@ -41,7 +41,7 @@ export default function PrivacyPolicy() {
                             1. Introduction
                         </h2>
                         <p className="mb-8 text-[13px] leading-relaxed text-[#4A4A4A] md:text-[14px]">
-                            Welcome to Webcare. We respect your privacy and are
+                            Welcome to Shayda. We respect your privacy and are
                             committed to protecting your personal data. This
                             privacy policy will inform you as to how we look
                             after your personal data when you visit our website
@@ -136,7 +136,7 @@ export default function PrivacyPolicy() {
                         <p className="text-[12px] text-[#8A6B62]">
                             Have questions?{' '}
                             <a
-                                href="mailto:support@webcare.com"
+                                href="mailto:support@shayda.com"
                                 className="font-semibold text-[#4A2525] hover:underline"
                             >
                                 Contact Support

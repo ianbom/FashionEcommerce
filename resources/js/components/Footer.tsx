@@ -100,7 +100,7 @@ export default function Footer() {
                                     size={16}
                                     className="shrink-0 transition-colors group-hover:text-accent"
                                 />
-                                <span>hello@webcare.com</span>
+                                <span>hello@shayda.com</span>
                             </li>
                         </ul>
                     </div>
@@ -254,7 +254,7 @@ export default function Footer() {
                 {/* Bottom Section */}
                 <div className="flex flex-col items-center justify-between border-t border-white/10 pt-8 text-[10px] tracking-[0.15em] text-white/50 md:flex-row">
                     <p className="mb-4 md:mb-0">
-                        © {new Date().getFullYear()} PT Webcare Digital. All
+                        © {new Date().getFullYear()} Shayda. All
                         Rights Reserved.
                     </p>
 
