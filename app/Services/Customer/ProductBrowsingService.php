@@ -43,6 +43,9 @@ class ProductBrowsingService
         $products = Product::query()
             ->with($this->productRelations())
             ->where('status', 'published')
+            ->when($request->user(), fn ($query, $user) => $query->withExists([
+                'wishlists as is_wishlisted' => fn ($query) => $query->where('user_id', $user->id),
+            ]))
             ->when($filters['search'] !== '', function ($query) use ($filters) {
                 $query->where(function ($query) use ($filters) {
                     $query
@@ -85,6 +88,9 @@ class ProductBrowsingService
         $product = Product::query()
             ->with($this->productRelations())
             ->where('status', 'published')
+            ->when($request->user(), fn ($query, $user) => $query->withExists([
+                'wishlists as is_wishlisted' => fn ($query) => $query->where('user_id', $user->id),
+            ]))
             ->when(
                 $slug !== '',
                 fn ($query) => $query->where('slug', $slug),
@@ -213,6 +219,7 @@ class ProductBrowsingService
                 ]),
             'sizes' => $variants->pluck('size')->filter()->unique()->values(),
             'available_stock' => $variants->sum(fn ($variant) => max(0, $variant->stock - $variant->reserved_stock)),
+            'is_wishlisted' => (bool) ($product->is_wishlisted ?? false),
         ];
     }
 

@@ -26,28 +26,43 @@ export default function Login({
         <>
             <Head title="Log in" />
 
-                    <Form
-                        {...store.form()}
-                        resetOnSuccess={['password']}
+            <Form
+                {...store.form()}
+                resetOnSuccess={['password']}
                 className="flex flex-col gap-6"
-                    >
-                        {({ processing, errors }) => (
-                            <>
+            >
+                {({ processing, errors }) => (
+                    <>
+                        <div className="flex flex-col items-center gap-1 text-center">
+                            <h1 className="text-2xl font-bold">
+                                Login to your account
+                            </h1>
+                            <p className="text-balance text-sm text-muted-foreground">
+                                Enter your email below to login to your account
+                            </p>
+                        </div>
+
+                        {status && (
+                            <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-center text-sm font-medium text-primary">
+                                {status}
+                            </div>
+                        )}
+
                         <div className="grid gap-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
-                                            <Input
-                                                id="email"
-                                                type="email"
-                                                name="email"
-                                                required
-                                                autoFocus
-                                                tabIndex={1}
-                                                autoComplete="email"
-                                    placeholder="email@example.com"
+                                <Label htmlFor="email">Email</Label>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    name="email"
+                                    required
+                                    autoFocus
+                                    tabIndex={1}
+                                    autoComplete="email"
+                                    placeholder="m@example.com"
                                 />
                                 <InputError message={errors.email} />
-                                </div>
+                            </div>
 
                             <div className="grid gap-2">
                                 <div className="flex items-center">
@@ -55,10 +70,10 @@ export default function Login({
                                     {canResetPassword && (
                                         <TextLink
                                             href={request()}
-                                            className="ml-auto text-sm"
+                                            className="ml-auto text-sm underline-offset-4 hover:underline"
                                             tabIndex={5}
                                         >
-                                            Forgot password?
+                                            Forgot your password?
                                         </TextLink>
                                     )}
                                 </div>
@@ -68,12 +83,11 @@ export default function Login({
                                     required
                                     tabIndex={2}
                                     autoComplete="current-password"
-                                    placeholder="Password"
                                 />
                                 <InputError message={errors.password} />
                             </div>
 
-                            <div className="flex items-center space-x-3">
+                            <div className="flex items-center gap-3">
                                 <Checkbox
                                     id="remember"
                                     name="remember"
@@ -82,35 +96,33 @@ export default function Login({
                                 <Label htmlFor="remember">Remember me</Label>
                             </div>
 
-                                <Button
-                                    type="submit"
-                                className="mt-4 w-full"
-                                    tabIndex={4}
-                                    disabled={processing}
-                                    data-test="login-button"
-                                >
+                            <Button
+                                type="submit"
+                                className="w-full"
+                                tabIndex={4}
+                                disabled={processing}
+                                data-test="login-button"
+                            >
                                 {processing && <Spinner />}
-                                Log in
-                                    </Button>
-                                </div>
+                                Login
+                            </Button>
+                        </div>
 
                         {canRegister && (
-                            <div className="text-center text-sm text-muted-foreground">
-                                Don't have an account?{' '}
-                                <TextLink href={register()} tabIndex={5}>
+                            <p className="text-center text-sm text-muted-foreground">
+                                Don&apos;t have an account?{' '}
+                                <TextLink
+                                    href={register()}
+                                    tabIndex={5}
+                                    className="underline underline-offset-4"
+                                >
                                     Sign up
                                 </TextLink>
-                                </div>
+                            </p>
                         )}
-                            </>
-                        )}
-                    </Form>
-
-            {status && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    {status}
-                </div>
-            )}
+                    </>
+                )}
+            </Form>
         </>
     );
 }

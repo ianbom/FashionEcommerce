@@ -16,7 +16,8 @@ class LoginResponse implements LoginResponseContract
 
         $target = match ($user?->role) {
             'admin' => route('admin.dashboard', absolute: false),
-            default => route('home', absolute: false),
+            'customer' => route('my-profile', absolute: false),
+            default => route('my-profile', absolute: false),
         };
 
         return $request->wantsJson()

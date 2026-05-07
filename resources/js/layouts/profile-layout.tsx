@@ -6,6 +6,7 @@ import {
     Bell,
     LogOut,
     ChevronRight,
+    Heart,
 } from 'lucide-react';
 import React from 'react';
 import ShopLayout from '@/layouts/shop-layout';
@@ -31,6 +32,13 @@ const SIDEBAR_NAV = [
         label: 'Address Book',
         mobileLabel: 'Address',
         icon: MapPin,
+    },
+    {
+        id: 'wishlist',
+        href: '/wishlist',
+        label: 'My Wishlist',
+        mobileLabel: 'Wishlist',
+        icon: Heart,
     },
     {
         id: 'notifications',

@@ -1,7 +1,11 @@
 import { Head, InfiniteScroll, Link, router } from '@inertiajs/react';
 import { ChevronDown, Heart, Search } from 'lucide-react';
-import type { FormEvent, ReactNode } from 'react';
+import type { FormEvent, MouseEvent, ReactNode } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+    destroyProduct as removeWishlistProduct,
+    store as addWishlistItem,
+} from '@/actions/App/Http/Controllers/Customer/WishlistController';
 import ShopLayout from '@/layouts/shop-layout';
 import { detail, list } from '@/routes';
 
@@ -36,6 +40,7 @@ type ProductCard = {
     }>;
     sizes: string[];
     available_stock: number;
+    is_wishlisted: boolean;
 };
 
 type PaginatedProducts = {
@@ -196,7 +201,7 @@ export default function ListProduct({ products, filters, options }: Props) {
                     />
                 )}
                 <aside
-                    className={`fixed inset-x-0 bottom-0 z-50 max-h-[86vh] w-full shrink-0 overflow-y-auto rounded-t-[28px] border-t border-border bg-background px-5 pt-3 pb-6 shadow-[0_-24px_80px_rgba(0,0,0,0.18)] transition-transform duration-300 ease-out lg:sticky lg:top-24 lg:z-auto lg:mb-0 lg:max-h-[calc(100dvh-7rem)] lg:w-72 lg:self-start lg:translate-y-0 lg:overflow-y-auto lg:rounded-none lg:border-0 lg:bg-transparent lg:px-0 lg:pt-0 lg:pr-12 lg:pb-0 lg:shadow-none ${
+                    className={`fixed inset-x-0 bottom-0 z-50 max-h-[86vh] w-full shrink-0 overflow-y-auto rounded-t-[28px] border-t border-border bg-background px-5 pt-3 pb-6 shadow-[0_-24px_80px_rgba(0,0,0,0.18)] transition-transform duration-300 ease-out lg:sticky lg:top-24 lg:z-auto lg:mb-0 lg:max-h-[calc(100dvh-7rem)] lg:w-72 lg:translate-y-0 lg:self-start lg:overflow-y-auto lg:rounded-none lg:border-0 lg:bg-transparent lg:px-0 lg:pt-0 lg:pr-12 lg:pb-0 lg:shadow-none ${
                         isFilterOpen
                             ? 'translate-y-0'
                             : 'pointer-events-none translate-y-full lg:pointer-events-auto'
@@ -220,7 +225,10 @@ export default function ListProduct({ products, filters, options }: Props) {
                         </button>
                     </div>
                     <div className="mx-auto mb-5 h-1 w-12 rounded-full bg-border lg:hidden" />
-                    <form onSubmit={submitSearch} className="group relative mb-7">
+                    <form
+                        onSubmit={submitSearch}
+                        className="group relative mb-7"
+                    >
                         <Search
                             className="absolute top-1/2 left-0 -translate-y-1/2 text-muted-foreground transition-colors group-hover:text-foreground"
                             size={14}
@@ -559,7 +567,6 @@ export default function ListProduct({ products, filters, options }: Props) {
                                 className="text-muted-foreground transition-transform group-hover:translate-y-0.5 group-hover:text-primary"
                             />
                         </button>
-
                     </div>
 
                     {products.data.length > 0 ? (
@@ -603,7 +610,6 @@ export default function ListProduct({ products, filters, options }: Props) {
                             </button>
                         </div>
                     )}
-
                 </div>
             </main>
         </ShopLayout>
@@ -646,7 +652,9 @@ function FadeInOnScroll({
         <div
             ref={ref}
             className={`h-full transition-all duration-700 ease-out motion-reduce:translate-y-0 motion-reduce:opacity-100 ${
-                visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
+                visible
+                    ? 'translate-y-0 opacity-100'
+                    : 'translate-y-6 opacity-0'
             }`}
             style={{ transitionDelay: `${delay}ms` }}
         >
@@ -662,6 +670,34 @@ function ProductTile({
     product: ProductCard;
     index: number;
 }) {
+    const [isWishlisted, setIsWishlisted] = useState(product.is_wishlisted);
+    const [isWishlistProcessing, setIsWishlistProcessing] = useState(false);
+
+    const toggleWishlist = (event: MouseEvent<HTMLButtonElement>) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (isWishlistProcessing) {
+            return;
+        }
+
+        setIsWishlistProcessing(true);
+
+        const options = {
+            preserveScroll: true,
+            onSuccess: () => setIsWishlisted((current) => !current),
+            onFinish: () => setIsWishlistProcessing(false),
+        };
+
+        if (isWishlisted) {
+            router.delete(removeWishlistProduct.url(product.id), options);
+
+            return;
+        }
+
+        router.post(addWishlistItem.url(product.id), {}, options);
+    };
+
     return (
         <FadeInOnScroll delay={(index % 12) * 60}>
             <Link
@@ -686,9 +722,23 @@ function ProductTile({
                             {product.badge}
                         </div>
                     )}
-                    <div className="absolute right-2 bottom-2 text-white/90 drop-shadow-md transition-colors hover:scale-110 hover:text-white">
-                        <Heart size={18} strokeWidth={1.5} />
-                    </div>
+                    <button
+                        type="button"
+                        aria-label={
+                            isWishlisted
+                                ? 'Remove product from wishlist'
+                                : 'Add product to wishlist'
+                        }
+                        onClick={toggleWishlist}
+                        disabled={isWishlistProcessing}
+                        className="absolute right-2 bottom-2 text-white/90 drop-shadow-md transition-colors hover:scale-110 hover:text-white disabled:cursor-default"
+                    >
+                        <Heart
+                            size={18}
+                            fill={isWishlisted ? 'currentColor' : 'none'}
+                            strokeWidth={1.5}
+                        />
+                    </button>
                 </div>
 
                 {product.colors.length > 0 && (

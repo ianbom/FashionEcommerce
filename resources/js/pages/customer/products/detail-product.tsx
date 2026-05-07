@@ -1,4 +1,4 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import {
     ChevronRight,
     Heart,
@@ -11,6 +11,10 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { addProductVariantToCart as addProductVariantToCartRoute } from '@/actions/App/Http/Controllers/Customer/CartController';
+import {
+    destroyProduct as removeWishlistProduct,
+    store as addWishlistItem,
+} from '@/actions/App/Http/Controllers/Customer/WishlistController';
 import ShopLayout from '@/layouts/shop-layout';
 import { checkout, detail, list } from '@/routes';
 
@@ -64,6 +68,7 @@ type ProductDetail = ProductCard & {
         alt: string;
     }>;
     variants: Variant[];
+    is_wishlisted: boolean;
 };
 
 type Props = {
@@ -167,6 +172,8 @@ function DetailProductContent({
     );
     const [quantity, setQuantity] = useState(1);
     const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
+    const [isWishlisted, setIsWishlisted] = useState(product.is_wishlisted);
+    const [isWishlistProcessing, setIsWishlistProcessing] = useState(false);
     const cartForm = useForm<{
         quantity: number;
         product_variant_id?: number;
@@ -231,9 +238,31 @@ function DetailProductContent({
             preserveScroll: true,
         });
     };
+    const toggleWishlist = () => {
+        if (isWishlistProcessing) {
+            return;
+        }
+
+        setIsWishlistProcessing(true);
+
+        const options = {
+            preserveScroll: true,
+            onSuccess: () => setIsWishlisted((current) => !current),
+            onFinish: () => setIsWishlistProcessing(false),
+        };
+
+        if (isWishlisted) {
+            router.delete(removeWishlistProduct.url(product.id), options);
+
+            return;
+        }
+
+        router.post(addWishlistItem.url(product.id), {}, options);
+    };
 
     useEffect(() => {
         setSelectedVariantId(initialVariant?.id ?? null);
+        setIsWishlisted(product.is_wishlisted);
     }, [initialVariant?.id, product.id]);
 
     useEffect(() => {
@@ -265,29 +294,31 @@ function DetailProductContent({
             <main className="mx-auto max-w-[1500px] px-4 py-6 md:px-10 md:py-10">
                 <FadeInOnScroll>
                     <div className="mb-8 flex flex-wrap items-center gap-2 text-[11px] tracking-wide text-secondary-foreground">
-                    <Link
-                        href={list.url()}
-                        className="transition hover:text-primary"
-                    >
-                        Products
-                    </Link>
-                    <ChevronRight size={13} />
-                    {product.category && (
-                        <>
-                            <Link
-                                href={list.url({
-                                    query: { category: product.category_slug },
-                                })}
-                                className="transition hover:text-primary"
-                            >
-                                {product.category}
-                            </Link>
-                            <ChevronRight size={13} />
-                        </>
-                    )}
-                    <span className="font-semibold text-foreground">
-                        {product.title}
-                    </span>
+                        <Link
+                            href={list.url()}
+                            className="transition hover:text-primary"
+                        >
+                            Products
+                        </Link>
+                        <ChevronRight size={13} />
+                        {product.category && (
+                            <>
+                                <Link
+                                    href={list.url({
+                                        query: {
+                                            category: product.category_slug,
+                                        },
+                                    })}
+                                    className="transition hover:text-primary"
+                                >
+                                    {product.category}
+                                </Link>
+                                <ChevronRight size={13} />
+                            </>
+                        )}
+                        <span className="font-semibold text-foreground">
+                            {product.title}
+                        </span>
                     </div>
                 </FadeInOnScroll>
 
@@ -366,11 +397,27 @@ function DetailProductContent({
                                         </span>
                                     )}
                                 </div>
-                                <Heart
-                                    size={20}
-                                    className="cursor-pointer text-gray-400 transition-colors hover:scale-110 hover:text-primary active:scale-95"
-                                    strokeWidth={1.5}
-                                />
+                                <button
+                                    type="button"
+                                    onClick={toggleWishlist}
+                                    disabled={isWishlistProcessing}
+                                    className="cursor-pointer text-gray-400 transition-colors hover:scale-110 hover:text-primary active:scale-95 disabled:cursor-default disabled:text-primary"
+                                    aria-label={
+                                        isWishlisted
+                                            ? 'Remove product from wishlist'
+                                            : 'Add product to wishlist'
+                                    }
+                                >
+                                    <Heart
+                                        size={20}
+                                        fill={
+                                            isWishlisted
+                                                ? 'currentColor'
+                                                : 'none'
+                                        }
+                                        strokeWidth={1.5}
+                                    />
+                                </button>
                             </div>
                         </div>
 
@@ -482,9 +529,7 @@ function DetailProductContent({
                                     </h3>
                                     <button
                                         type="button"
-                                        onClick={() =>
-                                            setIsSizeGuideOpen(true)
-                                        }
+                                        onClick={() => setIsSizeGuideOpen(true)}
                                         className="group flex items-center text-accent transition-colors hover:text-primary"
                                     >
                                         <span className="text-[10px] font-medium tracking-wide">
@@ -750,7 +795,9 @@ function FadeInOnScroll({
         <div
             ref={ref}
             className={`${className} transition-all duration-700 ease-out motion-reduce:translate-y-0 motion-reduce:opacity-100 ${
-                visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
+                visible
+                    ? 'translate-y-0 opacity-100'
+                    : 'translate-y-6 opacity-0'
             }`}
             style={{ transitionDelay: `${delay}ms` }}
         >
@@ -778,7 +825,6 @@ function ProductRail({
                 <h2 className="text-[13px] font-bold tracking-wider text-foreground">
                     {title}
                 </h2>
-
             </div>
             <div className="scrollbar-hide flex gap-5 overflow-x-auto pb-6">
                 {products.map((product, index) => (

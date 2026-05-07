@@ -3,7 +3,6 @@
 use App\Http\Controllers\Admin\AdminNotificationController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AuditLogController;
-use App\Http\Controllers\Admin\Auth\LoginController as AdminLoginController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\BiteshipWebhookLogController;
 use App\Http\Controllers\Admin\CategoryController;
@@ -32,6 +31,7 @@ use App\Http\Controllers\Customer\MidtransWebhookController;
 use App\Http\Controllers\Customer\NotificationController as CustomerNotificationController;
 use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\Customer\ProductController as CustomerProductController;
+use App\Http\Controllers\Customer\WishlistController;
 use App\Http\Controllers\Settings\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -46,6 +46,7 @@ Route::inertia('/no-return-policy', 'customer/policy/no-return-policy')->name('p
 Route::inertia('/shipping-policy', 'customer/policy/shipping-policy')->name('policy.shipping');
 Route::inertia('/terms-conditions', 'customer/policy/term-condition')->name('policy.terms');
 Route::inertia('/admin/order-detail', 'admin/orders/order-detail')->name('detail-order-admin');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
 });
@@ -61,6 +62,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/my-order', [CustomerOrderController::class, 'index'])->name('my-order');
     Route::get('/my-order/{order}', [CustomerOrderController::class, 'show'])->name('order.detail');
     Route::post('/my-order/{order}/cancel', [CustomerOrderController::class, 'cancel'])->name('order.cancel');
+    Route::get('/wishlist', [WishlistController::class, 'index'])->name('my-wishlist');
+    Route::post('/wishlist/{product}', [WishlistController::class, 'store'])->name('wishlist.store');
+    Route::delete('/wishlist/products/{product}', [WishlistController::class, 'destroyProduct'])->name('wishlist.products.destroy');
+    Route::delete('/wishlist/{wishlist}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');
     Route::get('/notifications', [CustomerNotificationController::class, 'index'])->name('notifications');
     Route::get('/notifications/{notification}', [CustomerNotificationController::class, 'show'])->name('notifications.show');
     Route::post('/notifications/read-all', [CustomerNotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
@@ -77,13 +82,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/address/{customerAddress}', [AddressController::class, 'destroy'])->name('manage-address.destroy');
 });
 
-Route::middleware('guest')->prefix('admin')->name('admin.')->group(function () {
-    Route::get('login', [AdminLoginController::class, 'create'])->name('login');
-    Route::post('login', [AdminLoginController::class, 'store'])->middleware('throttle:admin-login')->name('login.store');
-});
-
 Route::middleware(['auth', 'admin', 'admin.activity'])->prefix('admin')->name('admin.')->group(function () {
-    Route::post('logout', [AdminLoginController::class, 'destroy'])->name('logout');
     Route::get('dashboard', AdminDashboardController::class)->name('dashboard');
 
     Route::get('products', [ProductController::class, 'index'])->name('products.index');
