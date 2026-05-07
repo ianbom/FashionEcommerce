@@ -350,6 +350,14 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                         {labelStatus(order.payment_status)}
                                     </span>
                                 </div>
+                                <div className="block md:hidden">
+                                    <p className="mb-1 text-[10px] text-[#8A6B62]">
+                                        Total
+                                    </p>
+                                    <p className="font-serif text-[15px] text-[#4A2525]">
+                                        {formatPrice(order.grand_total)}
+                                    </p>
+                                </div>
                                 <div className="hidden md:block">
                                     <p className="mb-1 text-[10px] text-[#8A6B62]">
                                         Total
@@ -358,7 +366,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                         {formatPrice(order.grand_total)}
                                     </p>
                                 </div>
-                                <div className="col-span-2 flex flex-col items-start justify-center text-left md:col-span-1 md:items-end md:text-right">
+                                <div className="flex flex-col items-end justify-center text-right md:items-end md:text-right">
                                     <p className="mb-1 hidden text-[10px] text-[#8A6B62] md:block">
                                         Order Status
                                     </p>
@@ -375,7 +383,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                     {order.items.map((item) => (
                                         <div
                                             key={item.id}
-                                            className="flex min-w-[200px] gap-4 md:min-w-0"
+                                            className="flex min-w-[260px] gap-4 md:min-w-0"
                                         >
                                             <div className="h-[100px] w-[80px] shrink-0 overflow-hidden rounded-lg bg-[#F8EDED]">
                                                 <img
@@ -387,8 +395,8 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                                     className="h-full w-full object-cover"
                                                 />
                                             </div>
-                                            <div className="hidden py-1 pr-4 md:block">
-                                                <h4 className="mb-1 max-w-[150px] truncate text-[13px] font-semibold text-[#333333]">
+                                            <div className="min-w-0 py-1 pr-4">
+                                                <h4 className="mb-1 line-clamp-2 max-w-[150px] text-[13px] leading-snug font-semibold text-[#333333] md:truncate">
                                                     {item.title}
                                                 </h4>
                                                 <p className="mb-1 text-[11px] text-[#8A6B62]">

@@ -5,7 +5,6 @@ import {
     MapPin,
     Bell,
     LogOut,
-    ChevronRight,
     Heart,
 } from 'lucide-react';
 import React from 'react';
@@ -123,28 +122,7 @@ export default function ProfileLayout({
                     {/* --- Sidebar (Desktop) / Horizontal Nav (Mobile) --- */}
                     <div className="w-full flex-shrink-0 lg:w-[240px]">
                         {/* Mobile Horizontal Nav */}
-                        <div className="hide-scrollbar mb-6 flex space-x-2 overflow-x-auto pb-2 lg:hidden">
-                            {SIDEBAR_NAV.slice(0, 4).map((item) => {
-                                const Icon = item.icon;
-                                const isActive = item.id === activePath;
-
-                                return (
-                                    <Link
-                                        key={item.id}
-                                        href={item.href}
-                                        className={`flex min-w-[80px] flex-col items-center justify-center rounded-xl border p-3 ${isActive ? 'border-[#B6574B] bg-[#FAF8F5] text-[#4A2525] shadow-sm' : 'border-[#EADBD8] bg-white text-[#8A6B62] hover:border-[#C4BDB1]'}`}
-                                    >
-                                        <Icon size={20} className="mb-2" />
-                                        <span className="text-[10px] font-semibold">
-                                            {item.mobileLabel || item.label}
-                                        </span>
-                                    </Link>
-                                );
-                            })}
-                        </div>
-
-                        {/* Desktop Sidebar Nav */}
-                        <div className="mb-6 hidden rounded-2xl border border-[#EADBD8] bg-white/60 p-3 shadow-sm backdrop-blur-md lg:block">
+                        <div className="hide-scrollbar mb-8 flex gap-6 overflow-x-auto border-b border-[#EADBD8] lg:hidden">
                             {SIDEBAR_NAV.map((item) => {
                                 const Icon = item.icon;
                                 const isActive = item.id === activePath;
@@ -153,54 +131,52 @@ export default function ProfileLayout({
                                     <Link
                                         key={item.id}
                                         href={item.href}
-                                        className={`mb-1 flex items-center space-x-3 rounded-xl px-4 py-3 transition-all ${isActive ? 'bg-[#F1E6E2] font-semibold text-[#4A2525]' : 'text-[#8A6B62] hover:bg-[#F8EDED] hover:text-[#4A2525]'}`}
+                                        className={`flex min-w-fit items-center gap-2 border-b-2 px-1 pb-3 text-[11px] font-semibold tracking-wide transition-colors ${isActive ? 'border-[#4A2525] text-[#4A2525]' : 'border-transparent text-[#8A6B62] hover:border-[#C99A8F] hover:text-[#4A2525]'}`}
                                     >
-                                        <Icon
-                                            size={18}
-                                            strokeWidth={isActive ? 2.5 : 2}
-                                        />
-                                        <span className="text-[13px]">
-                                            {item.label}
-                                        </span>
+                                        <Icon size={15} strokeWidth={1.8} />
+                                        <span>{item.mobileLabel || item.label}</span>
                                     </Link>
                                 );
                             })}
-                            <div className="mx-2 my-2 h-px bg-[#EADBD8]"></div>
+                        </div>
+
+                        {/* Desktop Sidebar Nav */}
+                        <div className="mb-6 hidden border-l border-[#EADBD8] pl-5 lg:block">
+                            <p className="mb-5 text-[10px] font-bold tracking-[0.24em] text-[#C99A8F] uppercase">
+                                My Account
+                            </p>
+                            {SIDEBAR_NAV.map((item) => {
+                                const Icon = item.icon;
+                                const isActive = item.id === activePath;
+
+                                return (
+                                    <Link
+                                        key={item.id}
+                                        href={item.href}
+                                        className={`group relative mb-1 flex items-center gap-3 py-2.5 text-[13px] transition-colors ${isActive ? 'font-semibold text-[#4A2525]' : 'text-[#8A6B62] hover:text-[#4A2525]'}`}
+                                    >
+                                        <span
+                                            className={`absolute top-1/2 -left-5 h-5 w-px -translate-y-1/2 transition-colors ${isActive ? 'bg-[#4A2525]' : 'bg-transparent group-hover:bg-[#C99A8F]'}`}
+                                        />
+                                        <Icon
+                                            size={16}
+                                            strokeWidth={isActive ? 2.2 : 1.8}
+                                        />
+                                        <span>{item.label}</span>
+                                    </Link>
+                                );
+                            })}
+                            <div className="my-4 h-px bg-[#EADBD8]"></div>
                             <Link
                                 href="/logout"
                                 method="post"
                                 as="button"
-                                className="flex w-full items-center space-x-3 rounded-xl px-4 py-3 text-[#8A6B62] transition-all hover:bg-red-50 hover:text-red-600"
+                                className="group relative flex w-full items-center gap-3 py-2.5 text-[13px] text-[#8A6B62] transition-colors hover:text-red-600"
                             >
-                                <LogOut size={18} />
-                                <span className="text-[13px]">Logout</span>
+                                <span className="absolute top-1/2 -left-5 h-5 w-px -translate-y-1/2 bg-transparent transition-colors group-hover:bg-red-300" />
+                                <LogOut size={16} strokeWidth={1.8} />
+                                <span>Logout</span>
                             </Link>
-                        </div>
-
-                        {/* Need Help Card (Desktop) */}
-                        <div className="hidden flex-col overflow-hidden rounded-2xl border border-[#EADBD8] bg-white shadow-sm lg:flex">
-                            <div className="relative h-40 bg-[#F8EDED]">
-                                <img
-                                    src="/img/hasan-almasi-_X2UAmIcpko-unsplash.webp"
-                                    alt="Support"
-                                    className="h-full w-full object-cover object-top"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-white to-transparent"></div>
-                            </div>
-                            <div className="relative z-10 -mt-6 p-5 pt-0">
-                                <h3 className="mb-2 font-serif text-lg text-[#4A2525]">
-                                    Need Help?
-                                </h3>
-                                <p className="mb-4 text-[11px] text-[#8A6B62]">
-                                    We're here to assist you with any questions.
-                                </p>
-                                <Link
-                                    href="/notifications"
-                                    className="flex w-full items-center justify-between rounded-md bg-[#F1E6E2] px-4 py-2.5 text-[11px] font-bold text-[#4A2525] transition-colors hover:bg-[#DFD8CC]"
-                                >
-                                    Contact Us <ChevronRight size={14} />
-                                </Link>
-                            </div>
                         </div>
                     </div>
 

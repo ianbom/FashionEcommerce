@@ -12,9 +12,8 @@ import {
 import type { FormEvent } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import {
+import type { Icon, LatLng, LeafletMouseEvent, Map as LeafletMap } from 'leaflet';
+import type {
     MapContainer,
     Marker,
     TileLayer,
@@ -161,16 +160,13 @@ const validCoordinates = (latitude: number, longitude: number): boolean =>
 
 const DEFAULT_MAP_CENTER: [number, number] = [-6.2, 106.816666];
 
-const markerIcon = L.icon({
-    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-    iconRetinaUrl:
-        'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41],
-});
+type ReactLeafletModules = {
+    MapContainer: typeof MapContainer;
+    Marker: typeof Marker;
+    TileLayer: typeof TileLayer;
+    useMap: typeof useMap;
+    useMapEvents: typeof useMapEvents;
+};
 
 export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -831,12 +827,55 @@ function LocationPicker({
     onChange,
     onUseCurrentLocation,
 }: LocationPickerProps) {
+    const [leafletModules, setLeafletModules] =
+        useState<ReactLeafletModules | null>(null);
+    const [markerIcon, setMarkerIcon] = useState<Icon | null>(null);
     const parsedLatitude = Number(latitude);
     const parsedLongitude = Number(longitude);
     const hasCoordinates = validCoordinates(parsedLatitude, parsedLongitude);
     const position: [number, number] = hasCoordinates
         ? [parsedLatitude, parsedLongitude]
         : DEFAULT_MAP_CENTER;
+
+    useEffect(() => {
+        let isMounted = true;
+
+        Promise.all([
+            import('leaflet'),
+            import('leaflet/dist/leaflet.css'),
+            import('react-leaflet'),
+        ]).then(([leaflet, , reactLeaflet]) => {
+                if (!isMounted) {
+                    return;
+                }
+
+                setMarkerIcon(
+                    leaflet.icon({
+                        iconUrl:
+                            'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                        iconRetinaUrl:
+                            'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+                        shadowUrl:
+                            'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41],
+                        popupAnchor: [1, -34],
+                        shadowSize: [41, 41],
+                    }),
+                );
+                setLeafletModules({
+                    MapContainer: reactLeaflet.MapContainer,
+                    Marker: reactLeaflet.Marker,
+                    TileLayer: reactLeaflet.TileLayer,
+                    useMap: reactLeaflet.useMap,
+                    useMapEvents: reactLeaflet.useMapEvents,
+                });
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
 
     return (
         <div>
@@ -858,37 +897,19 @@ function LocationPicker({
                 </button>
             </div>
             <div className="overflow-hidden rounded-xl border border-[#EADBD8] bg-[#FAF9F6]">
-                <MapContainer
-                    center={position}
-                    zoom={hasCoordinates ? 17 : 12}
-                    scrollWheelZoom
-                    className="h-[320px] w-full"
-                >
-                    <TileLayer
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                {leafletModules && markerIcon ? (
+                    <ClientMap
+                        hasCoordinates={hasCoordinates}
+                        markerIcon={markerIcon}
+                        modules={leafletModules}
+                        onChange={onChange}
+                        position={position}
                     />
-                    <MapUpdater center={position} zoom={hasCoordinates ? 17 : 12} />
-                    <MapClickHandler onChange={onChange} />
-                    {hasCoordinates && (
-                        <Marker
-                            draggable
-                            icon={markerIcon}
-                            position={position}
-                            eventHandlers={{
-                                dragend: (event) => {
-                                    const marker = event.target;
-                                    const nextPosition = marker.getLatLng();
-
-                                    onChange(
-                                        nextPosition.lat,
-                                        nextPosition.lng,
-                                    );
-                                },
-                            }}
-                        />
-                    )}
-                </MapContainer>
+                ) : (
+                    <div className="flex h-[320px] w-full items-center justify-center text-[12px] font-medium text-[#8A6B62]">
+                        Loading map...
+                    </div>
+                )}
             </div>
             {hasCoordinates && (
                 <p className="mt-2 text-[11px] text-[#8A6B62]">
@@ -904,14 +925,64 @@ function LocationPicker({
     );
 }
 
+function ClientMap({
+    hasCoordinates,
+    markerIcon,
+    modules,
+    onChange,
+    position,
+}: {
+    hasCoordinates: boolean;
+    markerIcon: Icon;
+    modules: ReactLeafletModules;
+    onChange: (latitude: number, longitude: number) => void;
+    position: [number, number];
+}) {
+    const { MapContainer, Marker, TileLayer } = modules;
+    const zoom = hasCoordinates ? 17 : 12;
+
+    return (
+        <MapContainer
+            center={position}
+            zoom={zoom}
+            scrollWheelZoom
+            className="h-[320px] w-full"
+        >
+            <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            <MapUpdater center={position} modules={modules} zoom={zoom} />
+            <MapClickHandler modules={modules} onChange={onChange} />
+            {hasCoordinates && (
+                <Marker
+                    draggable
+                    icon={markerIcon}
+                    position={position}
+                    eventHandlers={{
+                        dragend: (event) => {
+                            const marker = event.target;
+                            const nextPosition = marker.getLatLng() as LatLng;
+
+                            onChange(nextPosition.lat, nextPosition.lng);
+                        },
+                    }}
+                />
+            )}
+        </MapContainer>
+    );
+}
+
 function MapUpdater({
     center,
+    modules,
     zoom,
 }: {
     center: [number, number];
+    modules: ReactLeafletModules;
     zoom: number;
 }) {
-    const map = useMap();
+    const map = modules.useMap() as LeafletMap;
 
     useEffect(() => {
         map.invalidateSize();
@@ -922,12 +993,14 @@ function MapUpdater({
 }
 
 function MapClickHandler({
+    modules,
     onChange,
 }: {
+    modules: ReactLeafletModules;
     onChange: (latitude: number, longitude: number) => void;
 }) {
-    useMapEvents({
-        click: (event) => {
+    modules.useMapEvents({
+        click: (event: LeafletMouseEvent) => {
             onChange(event.latlng.lat, event.latlng.lng);
         },
     });
