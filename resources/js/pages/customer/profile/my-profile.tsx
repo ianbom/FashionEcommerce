@@ -5,7 +5,6 @@ import {
     Camera,
     Eye,
     EyeOff,
-    ChevronRight,
     Loader2,
 } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
@@ -135,10 +134,14 @@ export default function MyProfile() {
                 { label: 'Profile Settings' },
             ]}
         >
-            {/* Profile Header Card */}
-            <div className="animate-fade-in-up flex flex-col items-start justify-between rounded-2xl border border-[#EADBD8] bg-white p-6 shadow-sm md:flex-row md:items-center md:p-8">
+            {/* Profile Header */}
+            <div className="animate-fade-in-up flex flex-col items-start justify-between border-b border-[#EADBD8] pb-8 md:flex-row md:items-center">
                 <div className="mb-6 flex items-center space-x-6 md:mb-0">
-                    <div className="group relative h-20 w-20 cursor-pointer overflow-hidden rounded-full border-4 border-[#F8EDED] md:h-24 md:w-24">
+                    <button
+                        type="button"
+                        onClick={() => avatarInputRef.current?.click()}
+                        className="group relative h-20 w-20 cursor-pointer overflow-hidden rounded-full border border-[#EADBD8] md:h-24 md:w-24"
+                    >
                         <img
                             src={avatarSrc}
                             alt={user.name}
@@ -147,7 +150,7 @@ export default function MyProfile() {
                         <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
                             <Camera className="text-white" size={24} />
                         </div>
-                    </div>
+                    </button>
                     <div>
                         <h2 className="mb-1 font-serif text-xl text-[#4A2525] md:text-2xl">
                             {user.name}
@@ -163,46 +166,20 @@ export default function MyProfile() {
                     </div>
                 </div>
 
-                {/* Default Avatar Info (Desktop Only) */}
-                <div className="hidden max-w-[280px] items-center border-l border-[#EADBD8] pl-8 lg:flex">
-                    <div className="mr-4 h-12 w-12 flex-shrink-0 overflow-hidden rounded-full border border-[#EADBD8] bg-[#F8EDED] opacity-60">
-                        <svg
-                            viewBox="0 0 100 100"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-full w-full pt-2"
-                        >
-                            <path
-                                d="M50 55C63.8071 55 75 43.8071 75 30C75 16.1929 63.8071 5 50 5C36.1929 5 25 16.1929 25 30C25 43.8071 36.1929 55 50 55Z"
-                                fill="#EADBD8"
-                            />
-                            <path
-                                d="M15 95C15 75.67 30.67 60 50 60C69.33 60 85 75.67 85 95V100H15V95Z"
-                                fill="#EADBD8"
-                            />
-                        </svg>
-                    </div>
-                    <div>
-                        <h4 className="mb-0.5 text-[12px] font-bold text-[#333]">
-                            Default avatar
-                        </h4>
-                        <p className="text-[10px] leading-tight text-[#8A6B62]">
-                            This will be used as your avatar if no photo is set.
-                        </p>
-                    </div>
-                    <ChevronRight
-                        size={16}
-                        className="ml-4 flex-shrink-0 text-[#C99A8F]"
-                    />
+                <div className="text-left md:text-right">
+                    <p className="mb-1 text-[10px] font-bold tracking-[0.2em] text-[#C99A8F] uppercase">
+                        Account role
+                    </p>
+                    <p className="font-serif text-lg text-[#4A2525] capitalize">
+                        {user.role}
+                    </p>
                 </div>
             </div>
 
-            {/* Masonry-like Grid for Forms */}
-            <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-2">
-                {/* --- Left Column: Personal Information --- */}
+            <div className="grid grid-cols-1 items-start gap-10 md:grid-cols-2 md:gap-12">
                 <form
                     onSubmit={submitProfile}
-                    className="animate-fade-in-up rounded-2xl border border-[#EADBD8] bg-white p-6 shadow-sm md:p-8"
+                    className="animate-fade-in-up border-b border-[#EADBD8] pb-10 md:border-b-0"
                     style={{ animationDelay: '150ms' }}
                 >
                     <div className="mb-6 flex items-center border-b border-[#EADBD8] pb-4">
@@ -224,10 +201,10 @@ export default function MyProfile() {
                                 onChange={(e) =>
                                     profileForm.setData('name', e.target.value)
                                 }
-                                className={`w-full rounded-md border bg-white px-4 py-2.5 text-[13px] text-[#333] transition-all focus:ring-1 focus:outline-none ${
+                                    className={`w-full border-b bg-transparent px-1 py-2.5 text-[13px] text-[#333] transition-colors focus:outline-none ${
                                     profileForm.errors.name
-                                        ? 'border-red-400 focus:border-red-400 focus:ring-red-200'
-                                        : 'border-[#EADBD8] focus:border-[#B6574B] focus:ring-[#B6574B]'
+                                        ? 'border-red-400 focus:border-red-400'
+                                        : 'border-[#EADBD8] focus:border-[#4A2525]'
                                 }`}
                             />
                             {profileForm.errors.name && (
@@ -248,10 +225,10 @@ export default function MyProfile() {
                                 onChange={(e) =>
                                     profileForm.setData('email', e.target.value)
                                 }
-                                className={`w-full rounded-md border bg-white px-4 py-2.5 text-[13px] text-[#333] transition-all focus:ring-1 focus:outline-none ${
+                                    className={`w-full border-b bg-transparent px-1 py-2.5 text-[13px] text-[#333] transition-colors focus:outline-none ${
                                     profileForm.errors.email
-                                        ? 'border-red-400 focus:border-red-400 focus:ring-red-200'
-                                        : 'border-[#EADBD8] focus:border-[#B6574B] focus:ring-[#B6574B]'
+                                        ? 'border-red-400 focus:border-red-400'
+                                        : 'border-[#EADBD8] focus:border-[#4A2525]'
                                 }`}
                             />
                             {profileForm.errors.email && (
@@ -273,10 +250,10 @@ export default function MyProfile() {
                                     profileForm.setData('phone', e.target.value)
                                 }
                                 placeholder="e.g. 0812 3456 789"
-                                className={`w-full rounded-md border bg-white px-4 py-2.5 text-[13px] text-[#333] transition-all focus:ring-1 focus:outline-none ${
+                                    className={`w-full border-b bg-transparent px-1 py-2.5 text-[13px] text-[#333] transition-colors focus:outline-none ${
                                     profileForm.errors.phone
-                                        ? 'border-red-400 focus:border-red-400 focus:ring-red-200'
-                                        : 'border-[#EADBD8] focus:border-[#B6574B] focus:ring-[#B6574B]'
+                                        ? 'border-red-400 focus:border-red-400'
+                                        : 'border-[#EADBD8] focus:border-[#4A2525]'
                                 }`}
                             />
                             {profileForm.errors.phone && (
@@ -301,10 +278,10 @@ export default function MyProfile() {
                                 onChange={(e) =>
                                     selectAvatar(e.target.files?.[0] ?? null)
                                 }
-                                className={`w-full rounded-md border bg-white px-4 py-2.5 text-[13px] text-[#333] transition-all focus:ring-1 focus:outline-none ${
+                                    className={`w-full border-b bg-transparent px-1 py-2.5 text-[13px] text-[#333] transition-colors file:mr-4 file:border-0 file:bg-[#F1E6E2] file:px-3 file:py-1.5 file:text-[11px] file:font-bold file:text-[#4A2525] focus:outline-none ${
                                     profileForm.errors.avatar_url
-                                        ? 'border-red-400 focus:border-red-400 focus:ring-red-200'
-                                        : 'border-[#EADBD8] focus:border-[#B6574B] focus:ring-[#B6574B]'
+                                        ? 'border-red-400 focus:border-red-400'
+                                        : 'border-[#EADBD8] focus:border-[#4A2525]'
                                 }`}
                             />
                             {profileForm.errors.avatar_url && (
@@ -321,7 +298,7 @@ export default function MyProfile() {
                             <button
                                 type="submit"
                                 disabled={profileForm.processing}
-                                className="inline-flex flex-1 items-center justify-center gap-2 rounded-md bg-[#4A2525] px-6 py-2.5 text-[12px] font-bold tracking-wider text-white transition-all hover:bg-[#5F1717] hover:shadow-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                                className="inline-flex flex-1 items-center justify-center gap-2 rounded-md bg-[#4A2525] px-6 py-2.5 text-[12px] font-bold tracking-wider text-white transition-colors hover:bg-[#5F1717] disabled:cursor-not-allowed disabled:opacity-60"
                             >
                                 {profileForm.processing && (
                                     <Loader2
@@ -334,7 +311,7 @@ export default function MyProfile() {
                             <button
                                 type="button"
                                 onClick={() => profileForm.reset()}
-                                className="rounded-md border border-[#EADBD8] bg-white px-6 py-2.5 text-[12px] font-bold tracking-wider text-[#4A4A4A] transition-colors hover:bg-[#FAF9F6]"
+                                className="rounded-md border border-[#EADBD8] bg-transparent px-6 py-2.5 text-[12px] font-bold tracking-wider text-[#4A4A4A] transition-colors hover:bg-white"
                             >
                                 Cancel
                             </button>
@@ -342,12 +319,11 @@ export default function MyProfile() {
                     </div>
                 </form>
 
-                {/* --- Right Column: Security & Address --- */}
-                <div className="space-y-6">
+                <div className="space-y-10">
                     {/* Change Password */}
                     <form
                         onSubmit={submitPassword}
-                        className="animate-fade-in-up rounded-2xl border border-[#EADBD8] bg-white p-6 shadow-sm md:p-8"
+                        className="animate-fade-in-up border-b border-[#EADBD8] pb-10"
                         style={{ animationDelay: '200ms' }}
                     >
                         <div className="mb-6 flex items-center border-b border-[#EADBD8] pb-4">
@@ -429,10 +405,10 @@ export default function MyProfile() {
 
                     {/* Default Address */}
                     <div
-                        className="animate-fade-in-up rounded-2xl border border-[#EADBD8] bg-white p-6 shadow-sm"
+                        className="animate-fade-in-up"
                         style={{ animationDelay: '250ms' }}
                     >
-                        <div className="mb-4 flex items-center justify-between">
+                        <div className="mb-4 flex items-center justify-between border-b border-[#EADBD8] pb-4">
                             <div className="flex items-center">
                                 <MapPin
                                     size={18}
@@ -449,7 +425,7 @@ export default function MyProfile() {
                                     <p className="font-semibold text-[#333]">
                                         {defaultAddress.recipient_name}
                                     </p>
-                                    <span className="rounded-md bg-[#F8EDED] px-3 py-1 text-[10px] font-bold text-[#4A2525]">
+                                    <span className="text-[10px] font-bold text-[#4A2525]">
                                         {defaultAddress.label ?? 'Default'}
                                     </span>
                                 </div>
@@ -470,7 +446,7 @@ export default function MyProfile() {
                                         .join(', ')}
                                 </p>
                                 {defaultAddress.note && (
-                                    <p className="rounded-md bg-[#FAF9F6] px-3 py-2 text-[#8A6B62]">
+                                    <p className="border-l border-[#EADBD8] pl-3 text-[#8A6B62]">
                                         {defaultAddress.note}
                                     </p>
                                 )}
@@ -528,10 +504,10 @@ function PasswordField({
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     autoComplete={autoComplete}
-                    className={`w-full rounded-md border bg-white px-4 py-2.5 pr-10 text-[13px] text-[#333] transition-all focus:ring-1 focus:outline-none ${
+                    className={`w-full border-b bg-transparent px-1 py-2.5 pr-10 text-[13px] text-[#333] transition-colors focus:outline-none ${
                         error
-                            ? 'border-red-400 focus:border-red-400 focus:ring-red-200'
-                            : 'border-[#EADBD8] focus:border-[#B6574B] focus:ring-[#B6574B]'
+                            ? 'border-red-400 focus:border-red-400'
+                            : 'border-[#EADBD8] focus:border-[#4A2525]'
                     }`}
                 />
                 <button
