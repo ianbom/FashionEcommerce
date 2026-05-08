@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\AdminActivityLog;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Schema;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -28,13 +29,42 @@ class LogAdminActivity
                 'module' => $this->module($request),
                 'reference_type' => $request->route()?->getName(),
                 'reference_id' => $this->referenceId($request),
-                'new_values' => $request->except(['password', 'password_confirmation', '_token']),
+                'new_values' => $this->safeNewValues($request),
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
             ]);
         }
 
         return $response;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function safeNewValues(Request $request): array
+    {
+        return $this->sanitizeForJson($request->except(['password', 'password_confirmation', '_token']));
+    }
+
+    /**
+     * @param  mixed  $value
+     * @return mixed
+     */
+    private function sanitizeForJson($value)
+    {
+        if ($value instanceof UploadedFile) {
+            return [
+                'name' => $value->getClientOriginalName(),
+                'size' => $value->getSize(),
+                'mime' => $value->getMimeType(),
+            ];
+        }
+
+        if (is_array($value)) {
+            return array_map(fn ($item) => $this->sanitizeForJson($item), $value);
+        }
+
+        return $value;
     }
 
     private function module(Request $request): string

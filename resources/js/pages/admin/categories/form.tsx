@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { slugify } from '@/lib/slug';
 import { PageHeader } from '@/pages/admin/catalog/shared';
 
 type Category = {
@@ -29,20 +30,13 @@ type Props = {
     category: Category | null;
 };
 
-function slugify(value: string) {
-    return value
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
-}
-
 export default function CategoryForm({ mode, category }: Props) {
     const isEdit = mode === 'edit' && category !== null;
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [preview, setPreview] = useState<string | null>(
         category?.image_url ?? null,
     );
+    const [slugManuallyEdited, setSlugManuallyEdited] = useState(isEdit);
 
     const { data, setData, post, processing, errors } = useForm({
         _method: isEdit ? 'PUT' : 'POST',
@@ -79,6 +73,11 @@ export default function CategoryForm({ mode, category }: Props) {
         post(url, { forceFormData: true });
     };
 
+    const generateSlug = () => {
+        setData('slug', slugify(data.name));
+        setSlugManuallyEdited(false);
+    };
+
     return (
         <>
             <Head title={isEdit ? 'Edit Category' : 'Create Category'} />
@@ -106,30 +105,44 @@ export default function CategoryForm({ mode, category }: Props) {
                                         id="name"
                                         value={data.name}
                                         onChange={(event) => {
-                                            setData('name', event.target.value);
+                                            const name = event.target.value;
 
-                                            if (!data.slug) {
-                                                setData(
-                                                    'slug',
-                                                    slugify(event.target.value),
-                                                );
-                                            }
+                                            setData({
+                                                ...data,
+                                                name,
+                                                slug: slugManuallyEdited
+                                                    ? data.slug
+                                                    : slugify(name),
+                                            });
                                         }}
+                                        placeholder="Contoh: Dress Muslim"
                                     />
                                     <InputError message={errors.name} />
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="slug">Slug</Label>
-                                    <Input
-                                        id="slug"
-                                        value={data.slug}
-                                        onChange={(event) =>
-                                            setData(
-                                                'slug',
-                                                slugify(event.target.value),
-                                            )
-                                        }
-                                    />
+                                    <div className="flex gap-2">
+                                        <Input
+                                            id="slug"
+                                            value={data.slug}
+                                            onChange={(event) => {
+                                                setSlugManuallyEdited(true);
+                                                setData(
+                                                    'slug',
+                                                    slugify(event.target.value),
+                                                );
+                                            }}
+                                            placeholder="dress-muslim"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={generateSlug}
+                                            disabled={!data.name.trim()}
+                                        >
+                                            Generate
+                                        </Button>
+                                    </div>
                                     <InputError message={errors.slug} />
                                 </div>
                             </div>

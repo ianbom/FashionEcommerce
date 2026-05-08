@@ -8,7 +8,6 @@ import {
     Info,
     GripVertical,
     AlertTriangle,
-    Check,
     Layers,
     Tag,
     DollarSign,
@@ -20,7 +19,6 @@ import {
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import type { FormEvent, MouseEvent } from 'react';
-import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -329,12 +327,7 @@ export default function ProductForm({ mode, product, options }: Props) {
     };
 
     const saveVariantDraft = () => {
-        const draft = {
-            ...variantDraft,
-            image_url: variantDraft.image
-                ? (variantDraftPreview ?? '')
-                : variantDraft.image_url,
-        };
+        const draft = { ...variantDraft };
 
         if (editingVariantIndex === null) {
             setData('variants', [...data.variants, draft]);

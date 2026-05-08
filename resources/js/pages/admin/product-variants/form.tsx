@@ -140,6 +140,7 @@ export default function ProductVariantForm({
                                     <Input
                                         id="sku"
                                         value={data.sku}
+                                        placeholder="e.g. GMS-001-BLK-M"
                                         onChange={(event) =>
                                             setData('sku', event.target.value)
                                         }
@@ -153,6 +154,7 @@ export default function ProductVariantForm({
                                     <Input
                                         id="color_name"
                                         value={data.color_name}
+                                        placeholder="e.g. Black, Ivory, Sage"
                                         onChange={(event) =>
                                             setData(
                                                 'color_name',
@@ -178,6 +180,7 @@ export default function ProductVariantForm({
                                         />
                                         <Input
                                             value={data.color_hex || '#000000'}
+                                            placeholder="#000000"
                                             readOnly
                                             className="font-mono text-xs"
                                         />
@@ -189,6 +192,7 @@ export default function ProductVariantForm({
                                     <Input
                                         id="size"
                                         value={data.size}
+                                        placeholder="e.g. S, M, L, XL"
                                         onChange={(event) =>
                                             setData('size', event.target.value)
                                         }
@@ -203,6 +207,7 @@ export default function ProductVariantForm({
                                         type="number"
                                         min="0"
                                         value={data.additional_price}
+                                        placeholder="0"
                                         onChange={(event) =>
                                             setData(
                                                 'additional_price',
@@ -218,6 +223,7 @@ export default function ProductVariantForm({
                                         type="number"
                                         min="0"
                                         value={data.stock}
+                                        placeholder="0"
                                         onChange={(event) =>
                                             setData(
                                                 'stock',
@@ -236,6 +242,7 @@ export default function ProductVariantForm({
                                         type="number"
                                         min="0"
                                         value={data.reserved_stock}
+                                        placeholder="0"
                                         onChange={(event) =>
                                             setData(
                                                 'reserved_stock',

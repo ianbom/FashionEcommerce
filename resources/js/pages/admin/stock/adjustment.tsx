@@ -16,6 +16,7 @@ import { PageHeader } from '@/pages/admin/catalog/shared';
 
 type Variant = {
     id: number;
+    product_id: number | null;
     product: string | null;
     sku: string;
     stock: number;
@@ -51,9 +52,30 @@ export default function StockAdjustment({ variant }: Props) {
                 <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
                     <Card>
                         <CardHeader>
-                            <CardTitle>{variant.sku}</CardTitle>
+                            <CardTitle>
+                                <Link
+                                    href={
+                                        variant.product_id
+                                            ? `/admin/products/${variant.product_id}`
+                                            : '#'
+                                    }
+                                    className="rounded-md transition-colors hover:text-[#7F2020] focus-visible:ring-2 focus-visible:ring-[#7F2020]/30 focus-visible:outline-none"
+                                    aria-disabled={!variant.product_id}
+                                >
+                                    {variant.sku}
+                                </Link>
+                            </CardTitle>
                             <CardDescription>
-                                {variant.product ?? '-'}
+                                {variant.product_id ? (
+                                    <Link
+                                        href={`/admin/products/${variant.product_id}`}
+                                        className="underline-offset-4 hover:text-[#7F2020] hover:underline"
+                                    >
+                                        {variant.product ?? '-'}
+                                    </Link>
+                                ) : (
+                                    (variant.product ?? '-')
+                                )}
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="grid gap-3 text-sm">

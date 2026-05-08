@@ -1,47 +1,19 @@
 import { Head, Link, router } from '@inertiajs/react';
 import {
-    Archive,
     Ban,
     ChevronLeft,
     ChevronRight,
-    Download,
-    Eye,
-    FileText,
-    MoreVertical,
     Package,
-    Pencil,
-    Plus,
     RotateCcw,
     Search,
-    ShoppingBag,
     Sparkles,
-    Star,
-    Trash2,
     TrendingDown,
-    Upload,
-    X,
     SlidersHorizontal,
     History,
     CheckCircle2,
 } from 'lucide-react';
 import { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
-import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -54,6 +26,7 @@ import { PerPageSelect } from '../pagination';
 
 interface VariantStock {
     id: number;
+    product_id: number | null;
     product: string | null;
     sku: string;
     color_name: string | null;
@@ -413,14 +386,22 @@ export default function StockIndex({
                                             className="transition-colors hover:bg-zinc-50/70"
                                         >
                                             <td className="px-4 py-3.5">
-                                                <div className="flex flex-col">
+                                                <Link
+                                                    href={
+                                                        v.product_id
+                                                            ? `/admin/products/${v.product_id}`
+                                                            : '#'
+                                                    }
+                                                    className="flex flex-col rounded-md transition-colors hover:text-[#7F2020] focus-visible:ring-2 focus-visible:ring-[#7F2020]/30 focus-visible:outline-none"
+                                                    aria-disabled={!v.product_id}
+                                                >
                                                     <span className="font-semibold text-zinc-900">
                                                         {v.sku}
                                                     </span>
                                                     <span className="text-xs text-zinc-400">
                                                         {v.product ?? '-'}
                                                     </span>
-                                                </div>
+                                                </Link>
                                             </td>
 
                                             <td className="px-4 py-3.5">

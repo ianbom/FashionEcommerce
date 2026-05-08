@@ -2,9 +2,9 @@
 
 namespace App\Services\Stock;
 
-use App\Services\Admin\ResolvesAdminPagination;
 use App\Models\ProductVariant;
 use App\Models\StockLog;
+use App\Services\Admin\ResolvesAdminPagination;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -68,6 +68,7 @@ class StockService
 
         return [
             'id' => $variant->id,
+            'product_id' => $variant->product_id,
             'product' => $variant->product?->name,
             'sku' => $variant->sku,
             'stock' => $variant->stock,
@@ -125,6 +126,7 @@ class StockService
     {
         return [
             'id' => $variant->id,
+            'product_id' => $variant->product_id,
             'product' => $variant->product?->name,
             'sku' => $variant->sku,
             'color_name' => $variant->color_name,
@@ -140,6 +142,7 @@ class StockService
     {
         return [
             'id' => $log->id,
+            'product_id' => $log->variant?->product_id,
             'product' => $log->variant?->product?->name,
             'variant' => $log->variant?->sku,
             'type' => $log->type,

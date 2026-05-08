@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { slugify } from '@/lib/slug';
 import { PageHeader } from '@/pages/admin/catalog/shared';
 
 type Collection = {
@@ -30,14 +31,6 @@ type Props = {
     mode: 'create' | 'edit';
     collection: Collection | null;
 };
-
-function slugify(value: string) {
-    return value
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
-}
 
 function ImageUploadField({
     label,
@@ -132,6 +125,7 @@ export default function CollectionForm({ mode, collection }: Props) {
 
     const [desktopPreview, setDesktopPreview] = useState<string | null>(null);
     const [mobilePreview, setMobilePreview] = useState<string | null>(null);
+    const [slugManuallyEdited, setSlugManuallyEdited] = useState(isEdit);
 
     const { data, setData, post, processing, errors } = useForm({
         _method: isEdit ? 'PUT' : 'POST',
@@ -150,6 +144,11 @@ export default function CollectionForm({ mode, collection }: Props) {
             ? `/admin/collections/${collection.id}`
             : '/admin/collections';
         post(url, { forceFormData: true });
+    };
+
+    const generateSlug = () => {
+        setData('slug', slugify(data.name));
+        setSlugManuallyEdited(false);
     };
 
     return (
@@ -179,30 +178,44 @@ export default function CollectionForm({ mode, collection }: Props) {
                                         id="name"
                                         value={data.name}
                                         onChange={(event) => {
-                                            setData('name', event.target.value);
+                                            const name = event.target.value;
 
-                                            if (!data.slug) {
-                                                setData(
-                                                    'slug',
-                                                    slugify(event.target.value),
-                                                );
-                                            }
+                                            setData({
+                                                ...data,
+                                                name,
+                                                slug: slugManuallyEdited
+                                                    ? data.slug
+                                                    : slugify(name),
+                                            });
                                         }}
+                                        placeholder="Contoh: Eid Signature Series"
                                     />
                                     <InputError message={errors.name} />
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="slug">Slug</Label>
-                                    <Input
-                                        id="slug"
-                                        value={data.slug}
-                                        onChange={(event) =>
-                                            setData(
-                                                'slug',
-                                                slugify(event.target.value),
-                                            )
-                                        }
-                                    />
+                                    <div className="flex gap-2">
+                                        <Input
+                                            id="slug"
+                                            value={data.slug}
+                                            onChange={(event) => {
+                                                setSlugManuallyEdited(true);
+                                                setData(
+                                                    'slug',
+                                                    slugify(event.target.value),
+                                                );
+                                            }}
+                                            placeholder="eid-signature-series"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={generateSlug}
+                                            disabled={!data.name.trim()}
+                                        >
+                                            Generate
+                                        </Button>
+                                    </div>
                                     <InputError message={errors.slug} />
                                 </div>
                             </div>

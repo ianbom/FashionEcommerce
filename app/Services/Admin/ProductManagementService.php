@@ -2,6 +2,7 @@
 
 namespace App\Services\Admin;
 
+use App\Http\Requests\Admin\ProductRequest;
 use App\Models\Category;
 use App\Models\Collection;
 use App\Models\Product;
@@ -69,7 +70,7 @@ class ProductManagementService
         ];
     }
 
-    public function create(Request $request): Product
+    public function create(ProductRequest $request): Product
     {
         $validated = $request->validated();
         $this->assertVariantSkusAreUnique($validated['variants'] ?? []);
@@ -83,7 +84,7 @@ class ProductManagementService
         });
     }
 
-    public function update(Product $product, Request $request): void
+    public function update(Product $product, ProductRequest $request): void
     {
         $validated = $request->validated();
         $this->assertVariantSkusAreUnique($validated['variants'] ?? [], $product);

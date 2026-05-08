@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import {
     ArrowDownRight,
     ArrowUpRight,
@@ -12,14 +12,6 @@ import {
     Ban,
 } from 'lucide-react';
 import { useState } from 'react';
-import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -33,6 +25,7 @@ import { PerPageSelect } from '../pagination';
 
 interface StockLog {
     id: number;
+    product_id: number | null;
     product: string | null;
     variant: string | null;
     type: string;
@@ -265,14 +258,22 @@ export default function StockLogs({ logs, filters }: Props) {
                                             className="transition-colors hover:bg-zinc-50/70"
                                         >
                                             <td className="px-4 py-3.5">
-                                                <div className="flex flex-col">
+                                                <Link
+                                                    href={
+                                                        log.product_id
+                                                            ? `/admin/products/${log.product_id}`
+                                                            : '#'
+                                                    }
+                                                    className="flex flex-col rounded-md transition-colors hover:text-[#7F2020] focus-visible:ring-2 focus-visible:ring-[#7F2020]/30 focus-visible:outline-none"
+                                                    aria-disabled={!log.product_id}
+                                                >
                                                     <span className="font-semibold text-zinc-900">
                                                         {log.variant ?? '-'}
                                                     </span>
                                                     <span className="text-xs text-zinc-400">
                                                         {log.product ?? '-'}
                                                     </span>
-                                                </div>
+                                                </Link>
                                             </td>
 
                                             <td className="px-4 py-3.5">
