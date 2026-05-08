@@ -16,7 +16,6 @@ import {
     MessageCircle,
     PackagePlus,
     Printer,
-    ShieldCheck,
     StickyNote,
     Truck,
     User,
@@ -51,6 +50,8 @@ const formatDate = (dateStr: string | null | undefined) => {
 
 type OrderItem = {
     id: number;
+    product_id: number | null;
+    product_variant_id: number | null;
     product_name: string;
     product_sku: string | null;
     variant_sku: string | null;
@@ -108,6 +109,7 @@ type Props = {
 type PendingStatusChange = {
     status: string;
     label: string;
+    description: string;
 } | null;
 
 type BadgeVariant = 'green' | 'blue' | 'gray' | 'red' | 'yellow' | 'outline';
@@ -120,6 +122,24 @@ const badgeColors: Record<BadgeVariant, string> = {
     yellow: 'border-amber-200 bg-amber-50 text-amber-700',
     outline: 'border-zinc-200 bg-white text-zinc-700',
 };
+
+const orderStatusActions = [
+    {
+        status: 'processing',
+        label: 'Processing',
+        description: 'Order sudah dibayar dan mulai diproses tim operasional.',
+    },
+    {
+        status: 'ready_to_ship',
+        label: 'Ready to ship',
+        description: 'Barang sudah siap diserahkan ke kurir atau dibuat shipment.',
+    },
+    {
+        status: 'completed',
+        label: 'Completed',
+        description: 'Order selesai setelah barang diterima customer.',
+    },
+] as const;
 
 function Card({
     children,
@@ -369,9 +389,16 @@ export default function OrderShow({ order }: Props) {
         status.replace(/_/g, ' ').toUpperCase();
 
     const requestStatusChange = (newStatus: string) => {
+        const action = orderStatusActions.find(
+            (item) => item.status === newStatus,
+        );
+
         setPendingStatusChange({
             status: newStatus,
-            label: formatStatusLabel(newStatus),
+            label: action?.label ?? formatStatusLabel(newStatus),
+            description:
+                action?.description ??
+                'Perubahan status order akan tersimpan di riwayat operasional.',
         });
     };
 
@@ -457,27 +484,34 @@ export default function OrderShow({ order }: Props) {
                             <ActionLink href={`mailto:${order.customer_email}`}>
                                 <MessageCircle size={14} /> Contact customer
                             </ActionLink>
-                            <ActionButton
-                                onClick={() =>
-                                    requestStatusChange('processing')
-                                }
+                            <label className="sr-only" htmlFor="order-status-action">
+                                Change order status
+                            </label>
+                            <select
+                                id="order-status-action"
+                                value=""
+                                onChange={(event) => {
+                                    if (event.target.value) {
+                                        requestStatusChange(event.target.value);
+                                    }
+                                }}
+                                className="h-9 rounded-lg border border-zinc-200 bg-white px-3 text-sm font-medium text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50 focus:ring-2 focus:ring-zinc-900/20 focus:outline-none"
                             >
-                                <Clock size={14} /> Processing
-                            </ActionButton>
-                            <ActionButton
-                                onClick={() =>
-                                    requestStatusChange('ready_to_ship')
-                                }
-                            >
-                                <PackagePlus size={14} /> Ready to ship
-                            </ActionButton>
-                            <ActionButton
-                                onClick={() =>
-                                    requestStatusChange('completed')
-                                }
-                            >
-                                <CheckCircle2 size={14} /> Completed
-                            </ActionButton>
+                                <option value="" disabled>
+                                    Change status
+                                </option>
+                                {orderStatusActions.map((action) => (
+                                    <option
+                                        key={action.status}
+                                        value={action.status}
+                                        disabled={
+                                            order.order_status === action.status
+                                        }
+                                    >
+                                        {action.label}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                     </header>
 
@@ -839,8 +873,22 @@ export default function OrderShow({ order }: Props) {
                                                             '—'}
                                                     </td>
                                                     <td className="px-4 py-4 font-mono text-xs break-all text-zinc-600">
-                                                        {item.variant_sku ??
-                                                            '—'}
+                                                        {item.product_id ? (
+                                                            <Link
+                                                                href={`/admin/products/${item.product_id}`}
+                                                                className="inline-flex items-center gap-1 rounded-md text-zinc-700 underline-offset-4 transition hover:text-zinc-950 hover:underline"
+                                                            >
+                                                                {item.variant_sku ??
+                                                                    'View product'}
+                                                                <ExternalLink
+                                                                    size={12}
+                                                                    className="shrink-0"
+                                                                />
+                                                            </Link>
+                                                        ) : (
+                                                            (item.variant_sku ??
+                                                                '—')
+                                                        )}
                                                     </td>
                                                     <td className="px-4 py-4 break-words text-zinc-600">
                                                         {item.color_name ?? '—'}
@@ -1387,7 +1435,7 @@ export default function OrderShow({ order }: Props) {
                 <DialogContent className="border-zinc-200 bg-white text-zinc-900 sm:max-w-md">
                     <DialogHeader>
                         <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-amber-50 text-amber-700">
-                            <ShieldCheck size={22} />
+                            <CheckCircle2 size={22} />
                         </div>
                         <DialogTitle>Konfirmasi perubahan status</DialogTitle>
                         <DialogDescription className="text-zinc-500">

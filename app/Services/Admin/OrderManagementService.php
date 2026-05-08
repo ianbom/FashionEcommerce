@@ -159,6 +159,8 @@ class OrderManagementService
             'no_return_refund_agreed_at' => $order->no_return_refund_agreed_at?->toDateTimeString(),
             'items' => $order->items->map(fn ($item): array => [
                 'id' => $item->id,
+                'product_id' => $item->product_id,
+                'product_variant_id' => $item->product_variant_id,
                 'product_name' => $item->product_name,
                 'product_sku' => $item->product_sku,
                 'variant_sku' => $item->variant_sku,
