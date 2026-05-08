@@ -17,6 +17,16 @@ export default function ResetPassword({ token, email }: Props) {
         <>
             <Head title="Reset password" />
 
+            <div className="mb-6 rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm leading-6 text-muted-foreground">
+                <p className="font-medium text-foreground">
+                    Create a new password for this account.
+                </p>
+                <p className="mt-1">
+                    Use a password you have not used before. After reset is
+                    complete, sign in with your new password.
+                </p>
+            </div>
+
             <Form
                 {...update.form()}
                 transform={(data) => ({ ...data, token, email })}
@@ -39,6 +49,10 @@ export default function ResetPassword({ token, email }: Props) {
                                 message={errors.email}
                                 className="mt-2"
                             />
+                            <p className="text-xs leading-5 text-muted-foreground">
+                                This email comes from your reset link and cannot
+                                be changed here.
+                            </p>
                         </div>
 
                         <div className="grid gap-2">
@@ -52,6 +66,10 @@ export default function ResetPassword({ token, email }: Props) {
                                 placeholder="Password"
                             />
                             <InputError message={errors.password} />
+                            <p className="text-xs leading-5 text-muted-foreground">
+                                Use at least 8 characters with a mix of letters,
+                                numbers, or symbols.
+                            </p>
                         </div>
 
                         <div className="grid gap-2">
@@ -78,7 +96,9 @@ export default function ResetPassword({ token, email }: Props) {
                             data-test="reset-password-button"
                         >
                             {processing && <Spinner />}
-                            Reset password
+                            {processing
+                                ? 'Resetting password...'
+                                : 'Reset password'}
                         </Button>
                     </div>
                 )}
@@ -89,5 +109,6 @@ export default function ResetPassword({ token, email }: Props) {
 
 ResetPassword.layout = {
     title: 'Reset password',
-    description: 'Please enter your new password below',
+    description:
+        'Enter and confirm your new password to regain access to your account.',
 };

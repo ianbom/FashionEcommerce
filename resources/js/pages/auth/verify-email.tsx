@@ -12,18 +12,46 @@ export default function VerifyEmail({ status }: { status?: string }) {
             <Head title="Email verification" />
 
             {status === 'verification-link-sent' && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    A new verification link has been sent to the email address
-                    you provided during registration.
+                <div className="mb-5 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm leading-6 font-medium text-green-700">
+                    Verification email sent. Please check your inbox and click
+                    the link to activate your account.
                 </div>
             )}
 
-            <Form {...send.form()} className="space-y-6 text-center">
+            <div className="mb-6 space-y-4 text-sm leading-6 text-muted-foreground">
+                <p>
+                    We sent a verification link to the email address used during
+                    registration. Your account will be ready after you open that
+                    link.
+                </p>
+                <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-left">
+                    <p className="font-medium text-foreground">
+                        Did not receive the email?
+                    </p>
+                    <ul className="mt-2 list-disc space-y-1 pl-4">
+                        <li>Check spam, promotions, or junk folder.</li>
+                        <li>
+                            Wait a few minutes before requesting a new link.
+                        </li>
+                        <li>
+                            Use the button below to resend verification email.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <Form {...send.form()} className="space-y-5 text-center">
                 {({ processing }) => (
                     <>
-                        <Button disabled={processing} variant="secondary">
+                        <Button
+                            disabled={processing}
+                            variant="secondary"
+                            className="w-full"
+                        >
                             {processing && <Spinner />}
-                            Resend verification email
+                            {processing
+                                ? 'Sending verification email...'
+                                : 'Resend verification email'}
                         </Button>
 
                         <TextLink
@@ -42,5 +70,5 @@ export default function VerifyEmail({ status }: { status?: string }) {
 VerifyEmail.layout = {
     title: 'Verify email',
     description:
-        'Please verify your email address by clicking on the link we just emailed to you.',
+        'Check your inbox and click the verification link to activate your account.',
 };

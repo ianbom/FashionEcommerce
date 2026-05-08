@@ -41,7 +41,7 @@ return new class extends Migration
         }
 
         $driver = DB::getDriverName();
-        if (in_array($driver, ['mysql', 'mariadb', 'pgsql', 'sqlite'], true)) {
+        if (in_array($driver, ['mysql', 'mariadb', 'pgsql'], true)) {
             DB::statement('ALTER TABLE product_variants ADD CONSTRAINT product_variants_stock_non_negative CHECK (stock >= 0)');
             DB::statement('ALTER TABLE product_variants ADD CONSTRAINT product_variants_reserved_stock_non_negative CHECK (reserved_stock >= 0)');
             DB::statement('ALTER TABLE product_variants ADD CONSTRAINT product_variants_reserved_stock_lte_stock CHECK (reserved_stock <= stock)');
