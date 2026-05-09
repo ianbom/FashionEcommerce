@@ -61,4 +61,10 @@ return [
         'session_ttl_minutes' => env('CHECKOUT_SESSION_TTL_MINUTES', 30),
     ],
 
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI'),
+    ],
+
 ];
