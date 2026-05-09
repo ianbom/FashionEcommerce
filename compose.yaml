@@ -1,0 +1,195 @@
+name: fashion-ecommerce
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_ENV: ${APP_ENV:-local}
+    image: fashion-ecommerce-app:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-fashion_ecommerce}
+      DB_USERNAME: ${MYSQL_USER:-fashion}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-secret}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${DOCKER_REDIS_PASSWORD:-redis_secret}
+      REDIS_PORT: 6379
+      CACHE_STORE: redis
+      SESSION_DRIVER: redis
+      QUEUE_CONNECTION: redis
+      RUN_FRESH_SEED: ${RUN_FRESH_SEED:-true}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./:/var/www/html
+      - vendor:/var/www/html/vendor
+      - node_modules:/var/www/html/node_modules
+      - public_build:/var/www/html/public/build
+      - storage:/var/www/html/storage
+    networks:
+      - app
+
+  web:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8080}:80"
+    depends_on:
+      - app
+    volumes:
+      - ./:/var/www/html:ro
+      - public_build:/var/www/html/public/build:ro
+      - storage:/var/www/html/storage:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - app
+
+  queue:
+    image: fashion-ecommerce-app:latest
+    pull_policy: never
+    restart: unless-stopped
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    env_file:
+      - .env
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_DATABASE: ${DB_DATABASE:-fashion_ecommerce}
+      DB_USERNAME: ${MYSQL_USER:-fashion}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-secret}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${DOCKER_REDIS_PASSWORD:-redis_secret}
+      CACHE_STORE: redis
+      SESSION_DRIVER: redis
+      QUEUE_CONNECTION: redis
+      RUN_FRESH_SEED: ${RUN_FRESH_SEED:-false}
+    depends_on:
+      app:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./:/var/www/html
+      - vendor:/var/www/html/vendor
+      - node_modules:/var/www/html/node_modules
+      - public_build:/var/www/html/public/build
+      - storage:/var/www/html/storage
+    networks:
+      - app
+
+  scheduler:
+    image: fashion-ecommerce-app:latest
+    pull_policy: never
+    restart: unless-stopped
+    command: php artisan schedule:work
+    env_file:
+      - .env
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_DATABASE: ${DB_DATABASE:-fashion_ecommerce}
+      DB_USERNAME: ${MYSQL_USER:-fashion}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-secret}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${DOCKER_REDIS_PASSWORD:-redis_secret}
+      CACHE_STORE: redis
+      SESSION_DRIVER: redis
+      QUEUE_CONNECTION: redis
+      RUN_FRESH_SEED: ${RUN_FRESH_SEED:-false}
+    depends_on:
+      app:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./:/var/www/html
+      - vendor:/var/www/html/vendor
+      - node_modules:/var/www/html/node_modules
+      - public_build:/var/www/html/public/build
+      - storage:/var/www/html/storage
+    networks:
+      - app
+
+  vite:
+    image: node:24-alpine
+    working_dir: /var/www/html
+    command: sh -c "npm ci && npm run dev -- --host 0.0.0.0"
+    profiles:
+      - dev
+    ports:
+      - "${VITE_PORT:-5173}:5173"
+    environment:
+      VITE_APP_NAME: ${APP_NAME:-Fashion ECommerce}
+    volumes:
+      - ./:/var/www/html
+      - node_modules:/var/www/html/node_modules
+    networks:
+      - app
+
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    ports:
+      - "${FORWARD_DB_PORT:-3306}:3306"
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-fashion_ecommerce}
+      MYSQL_USER: ${MYSQL_USER:-fashion}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-secret}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootsecret}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-rootsecret}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - app
+
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass "${DOCKER_REDIS_PASSWORD:-redis_secret}"
+    environment:
+      REDIS_PASSWORD: ${DOCKER_REDIS_PASSWORD:-redis_secret}
+    ports:
+      - "${FORWARD_REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$${REDIS_PASSWORD:-redis_secret}\" ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - app
+
+networks:
+  app:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  redis_data:
+  vendor:
+  node_modules:
+  public_build:
+  storage:
