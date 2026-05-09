@@ -186,18 +186,18 @@ export default function Footer() {
                             </li>
                             <li>
                                 <Link
-                                    href="/list"
+                                    href="/shipping-policy"
                                     className="inline-block transition-transform hover:translate-x-1 hover:text-white"
                                 >
-                                    Store Locator
+                                    Shipping policy
                                 </Link>
                             </li>
                             <li>
                                 <Link
-                                    href="/"
+                                    href="/no-return-policy"
                                     className="inline-block transition-transform hover:translate-x-1 hover:text-white"
                                 >
-                                    Careers
+                                    No Return Policy
                                 </Link>
                             </li>
                             <li>

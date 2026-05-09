@@ -19,6 +19,17 @@ class UserSeeder extends Seeder
                 'password' => 'admin123',
                 'role' => 'admin',
                 'is_active' => true,
+                'email_verified_at' => now(),
+            ],
+        );
+        User::query()->updateOrCreate(
+            ['email' => 'i.alehansyah@gmail.com'],
+            [
+                'name' => 'Ian A',
+                'password' => 'ianbom123',
+                'role' => 'customer',
+                'is_active' => true,
+                'email_verified_at' => now(),
             ],
         );
     }

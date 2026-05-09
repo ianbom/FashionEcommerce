@@ -340,26 +340,40 @@ export default function MyCart({
                                     </h2>
 
                                     <div className="mb-6 space-y-4 text-[13px] text-[#4A4A4A]">
-                                        <div className="flex items-center justify-between">
-                                            <span>
-                                                Items ({summary.item_count})
-                                            </span>
-                                            <span className="font-semibold text-[#333333]">
-                                                {formatPrice(summary.subtotal)}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <span>Shipping estimate</span>
-                                            <span className="font-semibold text-[#333333]">
-                                                {formatPrice(summary.shipping)}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center justify-between text-[#C05D5D]">
-                                            <span>Discount</span>
-                                            <span className="font-semibold">
-                                                -{' '}
-                                                {formatPrice(summary.discount)}
-                                            </span>
+                                        <div>
+                                            <span>Items ({summary.item_count})</span>
+                                            <div className="mt-3 space-y-3 text-[11px] text-[#8A6B62]">
+                                                {cartItems.map((item) => (
+                                                    <div
+                                                        key={`summary-item-${item.id}`}
+                                                        className="flex items-start justify-between gap-4"
+                                                    >
+                                                        <div>
+                                                            <p className='font-bold'>{item.title}</p>
+                                                            {(item.color ||
+                                                                item.size) && (
+                                                                <p className="mt-1 text-[10px] text-[#A1857B]">
+                                                                    {[
+                                                                        item.color,
+                                                                        item.size,
+                                                                    ]
+                                                                        .filter(
+                                                                            Boolean,
+                                                                        )
+                                                                        .join(
+                                                                            ' / ',
+                                                                        )}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                        <span className="font-semibold text-[#333333]">
+                                                            {formatPrice(
+                                                                item.subtotal,
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
 
@@ -372,11 +386,6 @@ export default function MyCart({
                                                 {formatPrice(summary.total)}
                                             </span>
                                         </div>
-                                    </div>
-
-                                    <div className="mb-6 rounded-lg border border-[#EADBD8] bg-[#FAF9F6] px-4 py-3 text-[12px] text-[#8A6B62]">
-                                        Voucher discount can be applied on
-                                        checkout after selecting shipping.
                                     </div>
 
                                     <div className="space-y-4">
@@ -531,14 +540,6 @@ export default function MyCart({
                                     <p className="mb-4 text-[11px] font-medium text-[#8A6B62] md:text-xs">
                                         {formatPrice(product.price)}
                                     </p>
-                                    <span className="flex w-full items-center justify-center rounded-md border border-[#EADBD8] bg-[#FAF9F6] py-2.5 text-[10px] font-bold tracking-wider text-[#4A4A4A] transition-all group-hover:shadow-md hover:border-[#4A2525] hover:bg-[#4A2525] hover:text-white md:py-3 md:text-[11px]">
-                                        <ShoppingBag
-                                            size={14}
-                                            className="mr-2"
-                                            strokeWidth={2}
-                                        />
-                                        View Product
-                                    </span>
                                 </Link>
                             ))}
                         </div>

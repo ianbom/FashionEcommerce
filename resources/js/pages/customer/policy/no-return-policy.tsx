@@ -1,115 +1,341 @@
 import { Head, Link } from '@inertiajs/react';
-import { AlertTriangle, ChevronRight } from 'lucide-react';
-import React from 'react';
 import ShopLayout from '@/layouts/shop-layout';
+import { useState } from 'react';
+import {
+    AlertTriangle,
+    Ban,
+    Box,
+    CheckCircle2,
+    ChevronDown,
+    Clock,
+    FileText,
+    Mail,
+    MessageCircle,
+    PackageCheck,
+    RefreshCw,
+    ShieldCheck,
+    Truck,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+
+const sidebarItems = [
+    { id: 'final-sales', icon: Ban, label: '1. All Sales Are Final' },
+    {
+        id: 'defective-items',
+        icon: AlertTriangle,
+        label: '2. Damaged or Defective Items',
+    },
+    {
+        id: 'incorrect-items',
+        icon: PackageCheck,
+        label: '3. Incorrect Items Received',
+    },
+    { id: 'cancellations', icon: RefreshCw, label: '4. Cancellations' },
+];
+
+const sections = [
+    {
+        id: 'final-sales',
+        title: 'All Sales Are Final',
+        content:
+            'To maintain the highest standards of hygiene and quality for all our customers, we operate a strict No Returns, No Exchanges policy. All sales made on our website are final. Please review your order carefully before checking out.',
+    },
+    {
+        id: 'defective-items',
+        title: 'Damaged or Defective Items',
+        content:
+            'While we quality-check every item before shipping, if you receive a product that is damaged during transit or contains a manufacturing defect, contact our customer service team within 48 hours with your order number and clear photographic evidence.',
+    },
+    {
+        id: 'incorrect-items',
+        title: 'Incorrect Items Received',
+        content:
+            'In the rare event that you receive an item different from what you ordered, please contact us within 48 hours of delivery. We will arrange for the correct item to be shipped and provide return instructions for the incorrect item.',
+    },
+    {
+        id: 'cancellations',
+        title: 'Cancellations',
+        content:
+            'Orders cannot be cancelled once they have been processed and dispatched. If you need to cancel an order, contact us immediately after placing it. If the order has not entered fulfillment, we may be able to accommodate your request, but this is not guaranteed.',
+    },
+];
+
+function FeatureBox({
+    icon: Icon,
+    title,
+}: {
+    icon: LucideIcon;
+    title: string;
+}) {
+    return (
+        <div className="flex items-center gap-3 border-b border-[#eadfd4] py-4 transition duration-300 hover:border-[#cdb5a4]">
+            <Icon
+                size={22}
+                strokeWidth={1.4}
+                className="shrink-0 text-[#8b5e4c]"
+            />
+            <span className="text-sm leading-snug font-medium text-[#53362d] sm:text-base">
+                {title}
+            </span>
+        </div>
+    );
+}
+
+function AccordionItem({
+    item,
+    index,
+    isLast,
+}: {
+    item: (typeof sections)[number];
+    index: number;
+    isLast: boolean;
+}) {
+    const [isOpen, setIsOpen] = useState(true);
+
+    return (
+        <section
+            id={item.id}
+            className={`${isLast ? '' : 'border-b border-[#eadfd4]'} scroll-mt-28 py-6`}
+        >
+            <button
+                type="button"
+                aria-expanded={isOpen}
+                aria-controls={`${item.id}-content`}
+                className="group flex w-full items-start justify-between gap-5 text-left"
+                onClick={() => setIsOpen(!isOpen)}
+            >
+                <span className="flex gap-4">
+                    <span className="w-8 shrink-0 pt-0.5 text-sm font-semibold text-[#bc9e90]">
+                        {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <span>
+                        <span className="block text-base font-semibold text-[#53362d] sm:text-lg">
+                            {item.title}
+                        </span>
+                        <div
+                            id={`${item.id}-content`}
+                            className={`grid transition-all duration-300 ease-out ${isOpen ? 'mt-2 grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}
+                        >
+                            <div className="overflow-hidden">
+                                <p className="max-w-3xl text-sm leading-7 text-[#846b60] sm:text-base">
+                                    {item.content}
+                                </p>
+                            </div>
+                        </div>
+                    </span>
+                </span>
+                <ChevronDown
+                    size={20}
+                    className={`mt-1 shrink-0 text-[#bc9e90] transition duration-300 ${isOpen ? 'rotate-180' : ''} group-hover:text-[#8b5e4c]`}
+                />
+            </button>
+        </section>
+    );
+}
 
 export default function NoReturnPolicy() {
+    const scrollToSection = (id: string) => {
+        document
+            .getElementById(id)
+            ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
     return (
         <ShopLayout>
-            <Head title="Return & Exchange Policy - Shayda" />
+            <Head title="Return & Exchange Policy" />
 
-            {/* Hero Section */}
-            <div className="relative flex w-full flex-col items-center justify-center overflow-hidden bg-[#FAF9F6] py-20 text-center md:py-28">
-                <div className="absolute inset-0 z-0">
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#EADBD8]/50 to-[#FAF9F6]"></div>
-                </div>
-                <div className="animate-fade-in-up relative z-10 px-4">
-                    <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-[#EADBD8] bg-white shadow-sm">
-                        <AlertTriangle size={28} className="text-[#4A2525]" />
+            <div className="relative w-full overflow-hidden border-b border-[#eadfd4] bg-[#fcfbf9] pt-8 pb-14 sm:pt-10 lg:pb-20">
+                <div className="pointer-events-none absolute top-0 right-0 h-full w-1/3 bg-[#f6eee7]"></div>
+
+                <div className="relative mx-auto max-w-7xl px-4 md:px-6 lg:px-8">
+                    <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)]">
+                        <div className="max-w-2xl">
+                            <div className="mb-8 flex items-center text-sm font-medium text-[#846b60]">
+                                <Link
+                                    href="/"
+                                    className="transition-colors hover:text-[#8b5e4c]"
+                                >
+                                    Home
+                                </Link>
+                                <span className="mx-2 text-[#bc9e90]">/</span>
+                                <span className="text-[#53362d]">
+                                    Return & Exchange Policy
+                                </span>
+                            </div>
+                            <p className="mb-4 inline-flex border-l border-[#8b5e4c] pl-3 text-xs font-semibold tracking-[0.22em] text-[#8b5e4c] uppercase">
+                                Customer Return Policy
+                            </p>
+                            <h1 className="mb-5 max-w-xl font-serif text-4xl leading-tight text-[#53362d] md:text-5xl lg:text-6xl">
+                                Return & Exchange Policy
+                            </h1>
+                            <p className="max-w-xl text-base leading-8 text-[#846b60] sm:text-lg">
+                                Please read carefully before making a purchase
+                                to understand our return guidelines.
+                            </p>
+                            <div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-[#846b60]">
+                                <span className="border-b border-[#dcc8b8] pb-1">
+                                    Last updated: May 15, 2024
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => scrollToSection('contact')}
+                                    className="border-b border-[#53362d] pb-1 font-medium text-[#53362d] transition hover:text-[#8b5e4c] active:scale-[0.98]"
+                                >
+                                    Contact support team
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="relative hidden min-h-72 md:block lg:min-h-96">
+                            <div className="absolute inset-0 flex items-center justify-end">
+                                <img
+                                    src="/images/privacy-hero.png"
+                                    alt=""
+                                    className="h-full max-h-[26rem] w-auto object-contain"
+                                    onError={(e) => {
+                                        e.currentTarget.style.display = 'none';
+                                    }}
+                                />
+                            </div>
+                        </div>
                     </div>
-                    <h1 className="mb-4 font-serif text-3xl text-[#4A2525] md:text-5xl">
-                        Return & Exchange Policy
-                    </h1>
-                    <p className="mx-auto max-w-[500px] text-[13px] text-[#8A6B62] md:text-[14px]">
-                        Please read carefully before making a purchase to
-                        understand our return guidelines.
-                    </p>
-                    <p className="mt-6 text-[11px] text-[#C99A8F]">
-                        Last Updated: May 15, 2024
-                    </p>
                 </div>
             </div>
 
-            {/* Content Section */}
-            <main className="relative z-20 mx-auto max-w-[800px] px-4 py-12 md:px-8 md:py-20">
-                <div
-                    className="animate-fade-in-up rounded-3xl border border-[#EADBD8] bg-white p-8 shadow-sm md:p-12"
-                    style={{ animationDelay: '150ms' }}
-                >
-                    <div className="prose prose-sm md:prose-base prose-stone max-w-none">
-                        <h2 className="mb-4 font-serif text-xl text-[#4A2525] md:text-2xl">
-                            1. All Sales Are Final
-                        </h2>
-                        <p className="mb-8 text-[13px] leading-relaxed text-[#4A4A4A] md:text-[14px]">
-                            To maintain the highest standards of hygiene and
-                            quality for all our customers, we operate a strict
-                            "No Returns, No Exchanges" policy. All sales made on
-                            our website are final. Please review your order
-                            carefully before checking out.
-                        </p>
-
-                        <h2 className="mb-4 font-serif text-xl text-[#4A2525] md:text-2xl">
-                            2. Damaged or Defective Items
-                        </h2>
-                        <p className="mb-4 text-[13px] leading-relaxed text-[#4A4A4A] md:text-[14px]">
-                            While we quality-check every item before shipping,
-                            if you receive a product that is damaged during
-                            transit or contains a manufacturing defect, we will
-                            evaluate the issue and make it right.
-                        </p>
-                        <p className="mb-8 text-[13px] leading-relaxed text-[#4A4A4A] md:text-[14px]">
-                            <strong>To claim a defect:</strong> You must contact
-                            our customer service team within 48 hours of
-                            receiving your order. Please provide your order
-                            number and clear photographic evidence of the
-                            defect. We will offer a replacement of the same item
-                            if deemed a valid defect.
-                        </p>
-
-                        <h2 className="mb-4 font-serif text-xl text-[#4A2525] md:text-2xl">
-                            3. Incorrect Items Received
-                        </h2>
-                        <p className="mb-8 text-[13px] leading-relaxed text-[#4A4A4A] md:text-[14px]">
-                            In the rare event that you receive an item different
-                            from what you ordered, please contact us within 48
-                            hours of delivery. We will arrange for the correct
-                            item to be shipped out and provide instructions for
-                            the return of the incorrect item at our expense.
-                        </p>
-
-                        <h2 className="mb-4 font-serif text-xl text-[#4A2525] md:text-2xl">
-                            4. Cancellations
-                        </h2>
-                        <p className="mb-8 text-[13px] leading-relaxed text-[#4A4A4A] md:text-[14px]">
-                            Orders cannot be cancelled once they have been
-                            processed and dispatched. If you need to cancel an
-                            order, please contact us immediately after placing
-                            it. If the order has not yet entered the fulfillment
-                            process, we may be able to accommodate your request,
-                            but this is not guaranteed.
-                        </p>
+            <div className="mx-auto max-w-7xl px-4 py-10 md:px-6 lg:px-8 lg:py-16">
+                <div className="grid gap-8 lg:grid-cols-[18rem_minmax(0,1fr)] lg:gap-12">
+                    <div className="hidden lg:block">
+                        <div className="sticky top-24 border-l border-[#eadfd4] pl-5">
+                            <div className="mb-5 flex items-center gap-3 text-base text-[#53362d]">
+                                <FileText
+                                    size={20}
+                                    strokeWidth={1.5}
+                                    className="text-[#8b5e4c]"
+                                />
+                                <h2 className="font-serif">On This Page</h2>
+                            </div>
+                            <ul className="space-y-1.5">
+                                {sidebarItems.map((item) => (
+                                    <li key={item.id}>
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                scrollToSection(item.id)
+                                            }
+                                            className="flex w-full items-center gap-3 py-2.5 text-left text-sm font-medium text-[#846b60] transition duration-300 hover:translate-x-1 hover:text-[#53362d] active:scale-[0.98]"
+                                        >
+                                            <item.icon
+                                                size={18}
+                                                strokeWidth={1.5}
+                                                className="shrink-0 text-[#bc9e90]"
+                                            />
+                                            {item.label}
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
                     </div>
 
-                    <div className="mt-12 flex items-center justify-between border-t border-[#EADBD8] pt-8">
-                        <p className="text-[12px] text-[#8A6B62]">
-                            Have questions?{' '}
-                            <a
-                                href="mailto:support@shayda.com"
-                                className="font-semibold text-[#4A2525] hover:underline"
-                            >
-                                Contact Support
-                            </a>
-                        </p>
-                        <Link
-                            href="/"
-                            className="inline-flex items-center text-[12px] font-bold text-[#4A2525] transition-colors hover:text-[#B6574B]"
+                    <div className="min-w-0">
+                        <div className="mb-10 border-b border-[#eadfd4] pb-8">
+                            <div className="flex flex-col items-start gap-4 sm:flex-row sm:gap-5">
+                                <AlertTriangle
+                                    size={28}
+                                    strokeWidth={1.5}
+                                    className="mt-1 shrink-0 text-[#8b5e4c]"
+                                />
+                                <div>
+                                    <h3 className="mb-2 text-xl font-semibold text-[#53362d]">
+                                        Please Review Before Checkout
+                                    </h3>
+                                    <p className="max-w-3xl leading-7 text-[#846b60]">
+                                        Return and exchange requests are limited
+                                        to specific cases so product hygiene,
+                                        quality, and fulfillment accuracy remain
+                                        protected.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mb-10 grid grid-cols-1 gap-x-8 sm:grid-cols-2 xl:grid-cols-4">
+                            <FeatureBox icon={Ban} title="Final Sales" />
+                            <FeatureBox
+                                icon={ShieldCheck}
+                                title="Defect Review"
+                            />
+                            <FeatureBox
+                                icon={Truck}
+                                title="Incorrect Item Support"
+                            />
+                            <FeatureBox
+                                icon={Clock}
+                                title="48-Hour Claim Window"
+                            />
+                        </div>
+
+                        <div className="mb-10 border-y border-[#eadfd4]">
+                            {sections.map((section, index) => (
+                                <AccordionItem
+                                    key={section.id}
+                                    item={section}
+                                    index={index}
+                                    isLast={index === sections.length - 1}
+                                />
+                            ))}
+                        </div>
+
+                        <div
+                            id="contact"
+                            className="grid scroll-mt-28 gap-5 border-t border-[#eadfd4] pt-8 md:grid-cols-3"
                         >
-                            Back to Home{' '}
-                            <ChevronRight size={14} className="ml-1" />
-                        </Link>
+                            <div className="flex items-center gap-4">
+                                <div className="shrink-0 text-[#8b5e4c]">
+                                    <Mail size={22} strokeWidth={1.5} />
+                                </div>
+                                <div>
+                                    <div className="mb-0.5 text-sm font-medium text-[#53362d]">
+                                        Email
+                                    </div>
+                                    <div className="text-sm text-[#846b60]">
+                                        support@aureasyari.com
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-4 border-t border-[#eadfd4] pt-5 md:border-t-0 md:border-l md:pt-0 md:pl-5">
+                                <div className="shrink-0 text-[#8b5e4c]">
+                                    <MessageCircle
+                                        size={22}
+                                        strokeWidth={1.5}
+                                    />
+                                </div>
+                                <div>
+                                    <div className="mb-0.5 text-sm font-medium text-[#53362d]">
+                                        WhatsApp
+                                    </div>
+                                    <div className="text-sm text-[#846b60]">
+                                        +62 812-0000-0000
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-4 border-t border-[#eadfd4] pt-5 md:border-t-0 md:border-l md:pt-0 md:pl-5">
+                                <div className="shrink-0 text-[#8b5e4c]">
+                                    <Clock size={22} strokeWidth={1.5} />
+                                </div>
+                                <div>
+                                    <div className="mb-0.5 text-sm font-medium text-[#53362d]">
+                                        Business hours
+                                    </div>
+                                    <div className="text-sm text-[#846b60]">
+                                        Monday - Saturday, 09:00 - 17:00
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </main>
+            </div>
         </ShopLayout>
     );
 }

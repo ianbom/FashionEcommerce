@@ -16,7 +16,7 @@ import {
     store as addWishlistItem,
 } from '@/actions/App/Http/Controllers/Customer/WishlistController';
 import ShopLayout from '@/layouts/shop-layout';
-import { checkout, detail, list } from '@/routes';
+import { cart, detail, list } from '@/routes';
 
 type Variant = {
     id: number;
@@ -215,14 +215,6 @@ function DetailProductContent({
         product.available_stock > 0 &&
         (selectedVariant?.available_stock ?? product.available_stock) > 0;
     const productDescription = product.description || product.short_description;
-    const checkoutHref = checkout.url({
-        query: {
-            product: product.slug,
-            variant: selectedVariant?.id,
-            quantity,
-        },
-    });
-
     const decreaseQuantity = () =>
         setQuantity((current) => Math.max(1, current - 1));
     const increaseQuantity = () =>
@@ -236,6 +228,16 @@ function DetailProductContent({
 
         cartForm.submit(addProductVariantToCartRoute(selectedVariant.id), {
             preserveScroll: true,
+        });
+    };
+    const buyItNow = () => {
+        if (!selectedVariant || !isAvailable || cartForm.processing) {
+            return;
+        }
+
+        cartForm.submit(addProductVariantToCartRoute(selectedVariant.id), {
+            preserveScroll: true,
+            onSuccess: () => router.visit(cart.url()),
         });
     };
     const toggleWishlist = () => {
@@ -633,16 +635,26 @@ function DetailProductContent({
                                         </p>
                                     )}
                                 </form>
-                                <Link
-                                    href={checkoutHref}
+                                <button
+                                    type="button"
+                                    onClick={buyItNow}
+                                    disabled={
+                                        !isAvailable ||
+                                        !selectedVariant ||
+                                        cartForm.processing
+                                    }
                                     className={`flex min-h-12 min-w-0 items-center justify-center rounded-full bg-primary px-3 py-3.5 text-center text-[10px] font-bold tracking-widest text-primary-foreground uppercase transition-all active:scale-[0.99] sm:text-[11px] ${
-                                        isAvailable
+                                        isAvailable &&
+                                        selectedVariant &&
+                                        !cartForm.processing
                                             ? 'hover:bg-primary/90 hover:shadow-md hover:shadow-primary/20'
-                                            : 'pointer-events-none opacity-50'
+                                            : 'cursor-not-allowed opacity-50'
                                     }`}
                                 >
-                                    Buy It Now
-                                </Link>
+                                    {cartForm.processing
+                                        ? 'Adding...'
+                                        : 'Buy It Now'}
+                                </button>
                             </div>
                         </div>
 
