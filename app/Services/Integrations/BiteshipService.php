@@ -42,9 +42,14 @@ class BiteshipService
             ->all();
     }
 
-    public function shippingRates(string $destinationPostalCode, array $items): array
+    public function shippingRates(array $destination, array $items): array
     {
         $originPostalCode = $this->settings->get('store_postal_code');
+        $originLatitude = $this->coordinate($this->settings->get('store_latitude'));
+        $originLongitude = $this->coordinate($this->settings->get('store_longitude'));
+        $destinationPostalCode = $destination['postal_code'] ?? null;
+        $destinationLatitude = $this->coordinate($destination['latitude'] ?? null);
+        $destinationLongitude = $this->coordinate($destination['longitude'] ?? null);
 
         if (! filled($originPostalCode)) {
             throw ValidationException::withMessages(['shipping' => 'Store postal code belum dikonfigurasi.']);
@@ -54,11 +59,23 @@ class BiteshipService
             throw ValidationException::withMessages(['shipping' => 'Postal code tujuan belum dikonfigurasi.']);
         }
 
+        if ($originLatitude === null || $originLongitude === null) {
+            throw ValidationException::withMessages(['shipping' => 'Koordinat toko belum dikonfigurasi.']);
+        }
+
+        if ($destinationLatitude === null || $destinationLongitude === null) {
+            throw ValidationException::withMessages(['shipping' => 'Koordinat tujuan belum dikonfigurasi.']);
+        }
+
         $couriers = $this->settings->get('shipping_couriers', 'jne,jnt,sicepat,anteraja');
         $response = $this->client()
             ->post('/v1/rates/couriers', [
                 'origin_postal_code' => $originPostalCode,
+                'origin_latitude' => $originLatitude,
+                'origin_longitude' => $originLongitude,
                 'destination_postal_code' => $destinationPostalCode,
+                'destination_latitude' => $destinationLatitude,
+                'destination_longitude' => $destinationLongitude,
                 'couriers' => $couriers,
                 'items' => $items,
             ]);
@@ -141,5 +158,10 @@ class BiteshipService
             ->retry(2, 500, throw: false)
             ->acceptJson()
             ->withToken($apiKey);
+    }
+
+    private function coordinate(mixed $value): ?float
+    {
+        return is_numeric($value) ? (float) $value : null;
     }
 }

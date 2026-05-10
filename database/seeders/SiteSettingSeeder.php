@@ -21,9 +21,9 @@ class SiteSettingSeeder extends Seeder
             ['key' => 'instagram_url',          'value' => 'https://instagram.com/itsarsyari.id',        'type' => 'string'],
             ['key' => 'tiktok_url',             'value' => 'https://tiktok.com/@itsarsyari.id',          'type' => 'string'],
             ['key' => 'footer_text',            'value' => "© 2026 Auréa Syar'i. Seluruh hak cipta dilindungi.", 'type' => 'text'],
-            
-            ['key' => 'store_latitude',       'value' => "60111",                                    'type' => 'string'],
-            ['key' => 'store_longitude',       'value' => "60111",                                    'type' => 'string'],
+
+            ['key' => 'store_latitude',       'value' => '-7.2871053',                                    'type' => 'string'],
+            ['key' => 'store_longitude',       'value' => '112.8026283',                                    'type' => 'string'],
 
             // ─── Contact & Location ──────────────────────────────────────────────
             ['key' => 'contact_phone',          'value' => '+62 812-3456-7890',                         'type' => 'string'],
@@ -39,10 +39,10 @@ class SiteSettingSeeder extends Seeder
             ['key' => 'shipper_name',           'value' => 'Auréa Syar\'i Warehouse',                  'type' => 'string'],
             ['key' => 'shipper_phone',          'value' => '+62 812-3456-7890',                         'type' => 'string'],
             ['key' => 'shipping_couriers',      'value' => 'jne,jnt,sicepat,anteraja',                  'type' => 'string'],
-            ['key' => 'store_postal_code',       'value' => "60111",                                    'type' => 'string'],
+            ['key' => 'store_postal_code',       'value' => '60111',                                    'type' => 'string'],
 
             // ─── Payment ─────────────────────────────────────────────────────────
-            ['key' => 'payment_expiry_duration','value' => '1440',                                      'type' => 'integer'],
+            ['key' => 'payment_expiry_duration', 'value' => '1440',                                      'type' => 'integer'],
             ['key' => 'payment_service_fee',    'value' => '0',                                         'type' => 'integer'],
 
         ];

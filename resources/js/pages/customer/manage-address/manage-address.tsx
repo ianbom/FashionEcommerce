@@ -158,7 +158,7 @@ const validCoordinates = (latitude: number, longitude: number): boolean =>
     longitude >= -180 &&
     longitude <= 180;
 
-const DEFAULT_MAP_CENTER: [number, number] = [-6.2, 106.816666];
+const DEFAULT_MAP_CENTER: [number, number] = [-7.257472, 112.752088];
 
 type ReactLeafletModules = {
     MapContainer: typeof MapContainer;

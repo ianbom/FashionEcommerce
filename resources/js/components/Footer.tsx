@@ -18,12 +18,15 @@ export default function Footer() {
             <div className="mx-auto mb-16 max-w-[1500px] px-6 md:px-10">
                 <div className="grid grid-cols-1 items-center gap-12 border-b border-white/10 pb-12 lg:grid-cols-2">
                     <div className="flex flex-col">
-                        <div className="mb-4 flex items-center">
+                        <div className="mb-4 flex items-center gap-4">
                             <img
                                 src="/logo-shay/logo-tab.png"
                                 alt="Shayda"
                                 className="h-16 w-auto object-contain md:h-20"
                             />
+                            <span className="text-xl font-bold tracking-[0.3em] text-accent md:text-2xl">
+                                Shayda
+                            </span>
                         </div>
                         <p className="max-w-md text-xs leading-relaxed text-white/60 md:text-sm">
                             Menghadirkan modest fashion dengan elegansi dan

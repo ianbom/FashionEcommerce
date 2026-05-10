@@ -26,6 +26,7 @@ export type CheckoutItem = {
     image: string | null;
     price: number;
     quantity: number;
+    weight: number;
     subtotal: number;
     is_available: boolean;
 };
@@ -41,6 +42,8 @@ export type CheckoutAddress = {
     subdistrict: string | null;
     postal_code: string;
     biteship_area_id: string | null;
+    latitude: string | null;
+    longitude: string | null;
     full_address: string;
     note: string | null;
     is_default: boolean;
@@ -71,13 +74,21 @@ export type CheckoutSummary = {
     total: number;
 };
 
+export type CheckoutStoreLocation = {
+    latitude: string | null;
+    longitude: string | null;
+};
+
 type CheckoutContextValue = {
     addresses: CheckoutAddress[];
     appliedVoucher: Voucher;
     applyVoucher: (code: string) => Promise<void>;
     cartItems: CheckoutItem[];
     errors: Record<string, string>;
-    loadShippingRates: (addressId: number) => Promise<void>;
+    loadShippingRates: (
+        addressId: number,
+        options?: { preserveSelectedRate?: boolean },
+    ) => Promise<void>;
     placeOrder: (notes: string, agreed: boolean) => Promise<string | null>;
     placingOrder: boolean;
     removeVoucher: () => Promise<void>;
@@ -87,6 +98,7 @@ type CheckoutContextValue = {
     selectedShippingRate: ShippingRate | null;
     shippingRates: ShippingRate[];
     shippingRatesLoading: boolean;
+    storeLocation: CheckoutStoreLocation;
     summary: CheckoutSummary;
 };
 
@@ -149,6 +161,7 @@ export function CheckoutProvider({
     children,
     defaultAddressId,
     selectedShippingRate,
+    storeLocation,
     summary,
 }: {
     addresses: CheckoutAddress[];
@@ -157,14 +170,13 @@ export function CheckoutProvider({
     children: ReactNode;
     defaultAddressId: number | null;
     selectedShippingRate: ShippingRate | null;
+    storeLocation: CheckoutStoreLocation;
     summary: CheckoutSummary;
 }) {
     const [currentAddressId, setCurrentAddressId] = useState<number | null>(
         defaultAddressId,
     );
-    const [rates, setRates] = useState<ShippingRate[]>(
-        selectedShippingRate ? [selectedShippingRate] : [],
-    );
+    const [rates, setRates] = useState<ShippingRate[]>([]);
     const [currentRate, setCurrentRate] = useState<ShippingRate | null>(
         selectedShippingRate,
     );
@@ -176,10 +188,7 @@ export function CheckoutProvider({
     const [placingOrder, setPlacingOrder] = useState(false);
     const [idempotencyKey] = useState(checkoutIdempotencyKey);
 
-    const loadShippingRates = useCallback(async (addressId: number) => {
-        setErrors({});
-        setCurrentAddressId(addressId);
-        setCurrentRate(null);
+    const resetShippingSummary = useCallback(() => {
         setCurrentSummary((current) => ({
             ...current,
             shipping: 0,
@@ -188,20 +197,65 @@ export function CheckoutProvider({
                 current.subtotal + current.service_fee - current.discount,
             ),
         }));
-        setShippingRatesLoading(true);
-
-        try {
-            const payload = await jsonRequest(shippingRates.url(), 'POST', {
-                customer_address_id: addressId,
-            });
-            setRates(payload.rates ?? []);
-        } catch (error) {
-            setRates([]);
-            setErrors(error as Record<string, string>);
-        } finally {
-            setShippingRatesLoading(false);
-        }
     }, []);
+
+    const loadShippingRates = useCallback(
+        async (
+            addressId: number,
+            options: { preserveSelectedRate?: boolean } = {},
+        ) => {
+            const preserveSelectedRate = options.preserveSelectedRate ?? false;
+
+            setErrors({});
+            setCurrentAddressId(addressId);
+
+            if (!preserveSelectedRate) {
+                setCurrentRate(null);
+                resetShippingSummary();
+            }
+
+            setShippingRatesLoading(true);
+
+            try {
+                const payload = await jsonRequest(shippingRates.url(), 'POST', {
+                    customer_address_id: addressId,
+                });
+                const nextRates = payload.rates ?? [];
+
+                setRates(nextRates);
+
+                if (preserveSelectedRate) {
+                    setCurrentRate((currentRate) => {
+                        if (!currentRate) {
+                            return null;
+                        }
+
+                        const stillAvailable = nextRates.some(
+                            (rate: ShippingRate) => rate.id === currentRate.id,
+                        );
+
+                        if (stillAvailable) {
+                            return currentRate;
+                        }
+
+                        resetShippingSummary();
+
+                        return null;
+                    });
+                }
+            } catch (error) {
+                setRates([]);
+                setErrors(error as Record<string, string>);
+
+                if (!preserveSelectedRate) {
+                    setCurrentRate(null);
+                }
+            } finally {
+                setShippingRatesLoading(false);
+            }
+        },
+        [resetShippingSummary],
+    );
 
     const selectAddress = useCallback(
         async (addressId: number) => {
@@ -317,6 +371,7 @@ export function CheckoutProvider({
             selectedShippingRate: currentRate,
             shippingRates: rates,
             shippingRatesLoading,
+            storeLocation,
             summary: currentSummary,
         }),
         [
@@ -336,6 +391,7 @@ export function CheckoutProvider({
             selectAddress,
             selectShippingRate,
             shippingRatesLoading,
+            storeLocation,
         ],
     );
 

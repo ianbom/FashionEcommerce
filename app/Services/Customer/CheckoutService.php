@@ -2,6 +2,8 @@
 
 namespace App\Services\Customer;
 
+use App\Actions\Stock\ReleaseStockReservationAction;
+use App\Actions\Vouchers\ReleaseVoucherReservationAction;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\CustomerAddress;
@@ -10,11 +12,10 @@ use App\Models\Payment;
 use App\Models\ProductVariant;
 use App\Models\User;
 use App\Models\Voucher;
-use App\Actions\Stock\ReleaseStockReservationAction;
-use App\Actions\Vouchers\ReleaseVoucherReservationAction;
 use App\Services\Integrations\BiteshipService;
 use App\Services\Integrations\MidtransService;
 use App\Services\Settings\SiteSettingService;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -46,6 +47,10 @@ class CheckoutService
             'cartItems' => $items->values()->all(),
             'addresses' => $addresses,
             'defaultAddressId' => collect($addresses)->firstWhere('is_default', true)['id'] ?? ($addresses[0]['id'] ?? null),
+            'storeLocation' => [
+                'latitude' => $this->settings->get('store_latitude'),
+                'longitude' => $this->settings->get('store_longitude'),
+            ],
             'appliedVoucher' => $voucher ? $this->voucherPayload($voucher, $discount) : null,
             'selectedShippingRate' => $rate,
             'summary' => $this->summary($items, (float) ($rate['price'] ?? 0), $discount),
@@ -59,12 +64,20 @@ class CheckoutService
             throw ValidationException::withMessages(['customer_address_id' => 'Alamat belum memiliki postal code.']);
         }
 
+        if (! $this->hasCoordinates($address)) {
+            throw ValidationException::withMessages(['customer_address_id' => 'Alamat belum memiliki koordinat. Lengkapi alamat dari buku alamat.']);
+        }
+
         $items = $this->cartItems($user);
         if ($items->isEmpty()) {
             throw ValidationException::withMessages(['cart' => 'Keranjang kosong.']);
         }
 
-        $rates = $this->biteship->shippingRates($address->postal_code, $this->biteshipItems($items));
+        $rates = $this->biteship->shippingRates([
+            'postal_code' => $address->postal_code,
+            'latitude' => $address->latitude,
+            'longitude' => $address->longitude,
+        ], $this->biteshipItems($items));
         session([
             'checkout.shipping_rates' => $rates,
             'checkout.customer_address_id' => $address->id,
@@ -388,6 +401,8 @@ class CheckoutService
                 'subdistrict' => $address->subdistrict,
                 'postal_code' => $address->postal_code,
                 'biteship_area_id' => $address->biteship_area_id,
+                'latitude' => $address->latitude,
+                'longitude' => $address->longitude,
                 'full_address' => $address->full_address,
                 'note' => $address->note,
                 'is_default' => $address->is_default,
@@ -418,7 +433,7 @@ class CheckoutService
             throw ValidationException::withMessages(['shipping_rate_id' => 'Pilih ulang ongkir.']);
         }
 
-        if (now()->greaterThan(\Carbon\CarbonImmutable::parse($expiresAt))) {
+        if (now()->greaterThan(CarbonImmutable::parse($expiresAt))) {
             throw ValidationException::withMessages(['shipping_rate_id' => 'Ongkir sudah kedaluwarsa. Pilih ulang ongkir.']);
         }
 
@@ -447,7 +462,11 @@ class CheckoutService
         }
 
         try {
-            $freshRate = collect($this->biteship->shippingRates($address->postal_code, $this->biteshipItems($this->cartItems($user))))
+            $freshRate = collect($this->biteship->shippingRates([
+                'postal_code' => $address->postal_code,
+                'latitude' => $address->latitude,
+                'longitude' => $address->longitude,
+            ], $this->biteshipItems($this->cartItems($user))))
                 ->firstWhere('id', $rateId);
         } catch (ValidationException $exception) {
             throw ValidationException::withMessages(['shipping_rate_id' => 'Gagal memvalidasi ongkir. Pilih ulang ongkir.']);
@@ -471,6 +490,11 @@ class CheckoutService
         return (int) round((float) ($sessionRate['price'] ?? 0)) === (int) round((float) ($freshRate['price'] ?? 0));
     }
 
+    private function hasCoordinates(CustomerAddress $address): bool
+    {
+        return is_numeric($address->latitude) && is_numeric($address->longitude);
+    }
+
     private function minorUnits(string|float|int $amount): int
     {
         return (int) round(((float) $amount) * 100);
@@ -485,7 +509,7 @@ class CheckoutService
     {
         $expiresAt = session('checkout.session_expires_at') ?: session('checkout.rates_expires_at');
 
-        if (is_string($expiresAt) && now()->greaterThan(\Carbon\CarbonImmutable::parse($expiresAt))) {
+        if (is_string($expiresAt) && now()->greaterThan(CarbonImmutable::parse($expiresAt))) {
             $this->forgetCheckoutSession();
         }
     }
