@@ -46,6 +46,18 @@ export default function AdminSettingsIndex({
     sections,
     values,
 }: Props) {
+    const coordinateInputProps = (field: SettingField) => {
+        if (field.key === 'store_latitude') {
+            return { max: 90, min: -90, step: 'any' };
+        }
+
+        if (field.key === 'store_longitude') {
+            return { max: 180, min: -180, step: 'any' };
+        }
+
+        return {};
+    };
+
     const current = sections[activeSection];
     const initialData = current.fields.reduce<Record<string, string>>(
         (carry, field) => {
@@ -202,6 +214,9 @@ export default function AdminSettingsIndex({
                                                 <Input
                                                     id={field.key}
                                                     type={field.input ?? 'text'}
+                                                    {...coordinateInputProps(
+                                                        field,
+                                                    )}
                                                     value={
                                                         data[field.key] ?? ''
                                                     }

@@ -18,28 +18,13 @@ export default function Footer() {
             <div className="mx-auto mb-16 max-w-[1500px] px-6 md:px-10">
                 <div className="grid grid-cols-1 items-center gap-12 border-b border-white/10 pb-12 lg:grid-cols-2">
                     <div className="flex flex-col">
-                        <div className="mb-4 flex items-center space-x-3">
-                            <svg
-                                width="32"
-                                height="32"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="text-accent"
-                            >
-                                <path
-                                    d="M7 4V12C7 14.7614 9.23858 17 12 17C14.7614 17 17 14.7614 17 12V4"
-                                    stroke="currentColor"
-                                    strokeWidth="1.5"
-                                />
-                                <circle
-                                    cx="12"
-                                    cy="12"
-                                    r="2"
-                                    fill="currentColor"
-                                />
-                            </svg>
-                            <span className="text-xl font-bold tracking-[0.3em] text-accent">
+                        <div className="mb-4 flex items-center gap-4">
+                            <img
+                                src="/logo-shay/logo-tab.png"
+                                alt="Shayda"
+                                className="h-16 w-auto object-contain md:h-20"
+                            />
+                            <span className="text-xl font-bold tracking-[0.3em] text-accent md:text-2xl">
                                 Shayda
                             </span>
                         </div>

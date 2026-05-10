@@ -16,11 +16,15 @@ export default function Navbar({ cartCount = 0, collections = [] }: NavbarProps)
     const cartBadge = cartCount > 99 ? '99+' : String(cartCount);
 
     return (
-        <nav className="sticky top-0 z-50 flex items-center justify-between bg-[#FAF9F6]/90 px-4 py-4 backdrop-blur-md transition-all duration-300 md:px-10">
+        <nav className="sticky top-0 z-50 flex h-16 items-center justify-between bg-[#FAF9F6]/90 px-4 backdrop-blur-md transition-all duration-300 md:h-15 md:px-10">
             {/* Mobile View */}
             <div className="flex w-full items-center justify-between md:hidden">
-                <Link href="/" className="font-serif text-2xl text-[#4A2525]">
-                    Shayda 
+                <Link href="/" className="flex h-10 items-center overflow-visible">
+                    <img
+                        src="/logo-shay/shayda-logo-text-hitam.png"
+                        alt="Shayda"
+                        className="h-14 w-auto scale-125 object-contain"
+                    />
                 </Link>
                 <div className="flex items-center space-x-4 text-[#4A2525]">
                     <Heart
@@ -28,20 +32,6 @@ export default function Navbar({ cartCount = 0, collections = [] }: NavbarProps)
                         size={22}
                         className="cursor-pointer"
                     />
-                    <div className="relative">
-                        <Link href="/my-cart" aria-label="Buka keranjang">
-                            <ShoppingBag
-                                strokeWidth={1.5}
-                                size={22}
-                                className="cursor-pointer"
-                            />
-                        </Link>
-                        {cartCount > 0 && (
-                            <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#7F2020] px-1 text-[9px] font-bold text-white">
-                                {cartBadge}
-                            </span>
-                        )}
-                    </div>
                 </div>
             </div>
 
@@ -49,11 +39,13 @@ export default function Navbar({ cartCount = 0, collections = [] }: NavbarProps)
             <div className="hidden w-full items-center justify-between md:flex">
                 <Link
                     href="/"
-                    className="flex transform cursor-pointer flex-col items-center justify-center transition-transform duration-300 hover:scale-105"
+                    className="flex h-12 transform cursor-pointer items-center justify-center overflow-visible transition-transform duration-300 hover:scale-105 lg:h-14"
                 >
-                    <span className="font-serif text-xl text-[#4A2525]">
-                       Shayda
-                    </span>
+                    <img
+                        src="/logo-shay/shayda-logo-text-hitam.png"
+                        alt="Shayda"
+                        className="h-16 w-auto scale-125 object-contain lg:h-20"
+                    />
                 </Link>
 
                 <div className="flex items-center space-x-10 text-[11px] font-semibold tracking-widest text-[#8A6B62]">

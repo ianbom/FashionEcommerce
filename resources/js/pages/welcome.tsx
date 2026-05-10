@@ -1,7 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
-import { Heart, Clock, Star, RotateCcw } from 'lucide-react';
+import { Clock, Heart, RotateCcw, Star } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
+import type { PointerEvent, ReactNode } from 'react';
 import ShopLayout from '@/layouts/shop-layout';
 import { detail, list } from '@/routes';
 
@@ -30,14 +30,6 @@ type BannerCard = {
     button_text: string | null;
     button_url: string | null;
 } | null;
-
-type JournalPost = {
-    id: number;
-    title: string;
-    slug: string;
-    type: string;
-    date: string | null;
-};
 
 type CategoryCard = {
     name: string;
@@ -98,8 +90,8 @@ export default function Home({
             </FadeInOnScroll>
 
             {/* Feature Strip */}
-            <div className="bg-[#fcfbf9] w-full py-3.5 px-4 md:px-10 flex flex-col md:flex-row items-center justify-between text-[10px] md:text-xs text-[#53362d] font-medium border-b border-[#e6d5c8]">
-                <div className="flex gap-4 md:gap-10 items-center justify-center w-full md:w-auto mb-2 md:mb-0">
+            <div className="flex w-full flex-col items-center justify-between border-b border-[#e6d5c8] bg-[#fcfbf9] px-4 py-3.5 text-[10px] font-medium text-[#53362d] md:flex-row md:px-10 md:text-xs">
+                <div className="mb-2 flex w-full items-center justify-center gap-4 md:mb-0 md:w-auto md:gap-10">
                     <div className="flex items-center gap-2">
                         <Clock size={16} strokeWidth={1.5} />
                         <span>Dikirim dalam 24 Jam</span>
@@ -114,7 +106,9 @@ export default function Home({
                     </div>
                 </div>
                 <div className="hidden md:block">
-                    <Link href="#" className="hover:underline">Butuh Bantuan? Chat dengan kami</Link>
+                    <Link href="#" className="hover:underline">
+                        Butuh Bantuan? Chat dengan kami
+                    </Link>
                 </div>
             </div>
 
@@ -122,25 +116,30 @@ export default function Home({
             <section className="mx-auto max-w-[1500px] px-4 py-12 md:px-10 md:py-16">
                 <FadeInOnScroll>
                     <div className="mb-8 text-center md:mb-12">
-                        <h2 className="text-2xl md:text-3xl font-serif uppercase tracking-wider text-[#53362d]">
+                        <h2 className="font-serif text-2xl tracking-wider text-[#53362d] uppercase md:text-3xl">
                             Kategori
                         </h2>
                     </div>
                 </FadeInOnScroll>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
+                <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-3">
                     {categories?.map((category, index) => (
                         <FadeInOnScroll key={index} delay={index * 100}>
-                            <Link 
-                                href={list.url({ category: category.slug })}
-                                className="group relative aspect-[4/3] w-full overflow-hidden flex items-center justify-center bg-gray-100"
+                            <Link
+                                href={`/list?category=${encodeURIComponent(category.slug)}`}
+                                className="group relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden bg-gray-100"
                             >
                                 <img
-                                    src={category.image_url ?? fallbackImages[index % fallbackImages.length]}
+                                    src={
+                                        category.image_url ??
+                                        fallbackImages[
+                                            index % fallbackImages.length
+                                        ]
+                                    }
                                     alt={category.name}
                                     className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                                 />
                                 <div className="absolute inset-0 bg-black/20 transition-colors duration-500 group-hover:bg-black/40" />
-                                <span className="relative z-10 text-white font-serif text-lg md:text-xl tracking-wide drop-shadow-md">
+                                <span className="relative z-10 font-serif text-lg tracking-wide text-white drop-shadow-md md:text-xl">
                                     {category.name}
                                 </span>
                             </Link>
@@ -158,11 +157,13 @@ export default function Home({
                 <div className="flex flex-col items-center gap-6 md:gap-8 lg:flex-row">
                     <FadeInOnScroll className="w-full lg:w-[45%]">
                         <div className="group relative aspect-[4/3] w-full overflow-hidden rounded-sm">
-                        <img
-                            src={productImage(hajjSeries[0], 8)}
-                            alt={hajjSeries[0]?.name ?? 'Lifestyle Seri Haji'}
-                            className="h-full w-full object-cover transition-transform duration-[1.5s] group-hover:scale-105"
-                        />
+                            <img
+                                src={productImage(hajjSeries[0], 8)}
+                                alt={
+                                    hajjSeries[0]?.name ?? 'Lifestyle Seri Haji'
+                                }
+                                className="h-full w-full object-cover transition-transform duration-[1.5s] group-hover:scale-105"
+                            />
                         </div>
                     </FadeInOnScroll>
 
@@ -316,53 +317,135 @@ export default function Home({
 }
 
 function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
-    const images = heroBanners && heroBanners.length > 0 
-        ? heroBanners.map((banner) => bannerImage(banner, '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp'))
-        : [
-            '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp',
-            '/img/abdul-raheem-kannath-aNWfK46QWto-unsplash.webp',
-            '/img/ainur-iman-qcNmigFPTQM-unsplash.webp',
-        ];
-    
+    const images =
+        heroBanners && heroBanners.length > 0
+            ? heroBanners.map((banner) =>
+                  bannerImage(
+                      banner,
+                      '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp',
+                  ),
+              )
+            : [
+                  '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp',
+                  '/img/abdul-raheem-kannath-aNWfK46QWto-unsplash.webp',
+                  '/img/ainur-iman-qcNmigFPTQM-unsplash.webp',
+              ];
+
+    const sliderRef = useRef<HTMLDivElement>(null);
+    const isDraggingRef = useRef(false);
+    const dragStartXRef = useRef(0);
+    const dragScrollLeftRef = useRef(0);
     const [currentIndex, setCurrentIndex] = useState(0);
+
+    const goToSlide = (index: number) => {
+        const slider = sliderRef.current;
+
+        if (!slider) {
+            return;
+        }
+
+        slider.scrollTo({
+            behavior: 'smooth',
+            left: slider.clientWidth * index,
+        });
+        setCurrentIndex(index);
+    };
+
+    const updateCurrentSlide = () => {
+        const slider = sliderRef.current;
+
+        if (!slider) {
+            return;
+        }
+
+        setCurrentIndex(Math.round(slider.scrollLeft / slider.clientWidth));
+    };
+
+    const startDrag = (event: PointerEvent<HTMLDivElement>) => {
+        const slider = sliderRef.current;
+
+        if (!slider) {
+            return;
+        }
+
+        isDraggingRef.current = true;
+        dragStartXRef.current = event.clientX;
+        dragScrollLeftRef.current = slider.scrollLeft;
+        slider.setPointerCapture(event.pointerId);
+    };
+
+    const moveDrag = (event: PointerEvent<HTMLDivElement>) => {
+        const slider = sliderRef.current;
+
+        if (!slider || !isDraggingRef.current) {
+            return;
+        }
+
+        event.preventDefault();
+        slider.scrollLeft =
+            dragScrollLeftRef.current - (event.clientX - dragStartXRef.current);
+    };
+
+    const endDrag = (event: PointerEvent<HTMLDivElement>) => {
+        const slider = sliderRef.current;
+
+        if (!slider || !isDraggingRef.current) {
+            return;
+        }
+
+        isDraggingRef.current = false;
+        slider.releasePointerCapture(event.pointerId);
+        updateCurrentSlide();
+    };
 
     useEffect(() => {
         const timer = setInterval(() => {
-            setCurrentIndex((prev) => (prev + 1) % images.length);
+            const nextIndex = (currentIndex + 1) % images.length;
+            goToSlide(nextIndex);
         }, 5000);
+
         return () => clearInterval(timer);
-    }, [images.length]);
+    }, [currentIndex, images.length]);
 
     return (
         <section className="relative h-[60vh] w-full overflow-hidden md:h-[85vh]">
-            {images.map((img, index) => (
-                <div
-                    key={index}
-                    className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                        index === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
-                    }`}
-                >
-                    <img
-                        src={img}
-                        alt="Hero Banner"
-                        className="h-full w-full object-cover"
-                    />
-                    {/* Subtle dark overlay for text readability */}
-                    <div className="absolute inset-0 bg-black/10" />
-                </div>
-            ))}
-   
+            <div
+                ref={sliderRef}
+                onScroll={updateCurrentSlide}
+                onPointerDown={startDrag}
+                onPointerMove={moveDrag}
+                onPointerUp={endDrag}
+                onPointerCancel={endDrag}
+                onPointerLeave={endDrag}
+                className="hide-scrollbar flex h-full cursor-grab snap-x snap-mandatory overflow-x-auto scroll-smooth select-none active:cursor-grabbing"
+            >
+                {images.map((img, index) => (
+                    <div
+                        key={index}
+                        className="relative h-full min-w-full snap-start"
+                    >
+                        <img
+                            src={img}
+                            alt={`Hero Banner ${index + 1}`}
+                            draggable={false}
+                            className="h-full w-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/10" />
+                    </div>
+                ))}
+            </div>
 
             {/* Pagination Indicators */}
-            <div className="absolute bottom-8 left-0 right-0 z-20 flex justify-center gap-3">
+            <div className="absolute right-0 bottom-8 left-0 z-20 flex justify-center gap-3">
                 {images.map((_, index) => (
-                    <button
+                    <span
                         key={index}
-                        onClick={() => setCurrentIndex(index)}
                         className={`h-0.5 transition-all duration-300 ${
-                            index === currentIndex ? 'w-10 bg-white' : 'w-6 bg-white/50 hover:bg-white/80'
+                            index === currentIndex
+                                ? 'w-10 bg-white'
+                                : 'w-6 bg-white/50'
                         }`}
-                        aria-label={`Go to slide ${index + 1}`}
+                        aria-hidden="true"
                     />
                 ))}
             </div>
@@ -408,7 +491,9 @@ function FadeInOnScroll({
         <div
             ref={ref}
             className={`${className} transition-all duration-700 ease-out motion-reduce:translate-y-0 motion-reduce:opacity-100 ${
-                visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
+                visible
+                    ? 'translate-y-0 opacity-100'
+                    : 'translate-y-6 opacity-0'
             }`}
             style={{ transitionDelay: `${delay}ms` }}
         >
@@ -460,53 +545,56 @@ function ProductTile({
                 href={detail.url({ query: { product: product.slug } })}
                 className={`group flex cursor-pointer flex-col ${centered ? 'text-center' : ''}`}
             >
-            <div className="relative mb-3 aspect-[3/4] overflow-hidden rounded-sm">
-                {product.label && (
-                    <span
-                        className={`absolute top-2 left-2 z-10 px-2 py-1 text-[8px] font-bold tracking-widest uppercase ${
-                            product.label.includes('%')
-                                ? 'bg-destructive text-destructive-foreground'
-                                : 'bg-background/90 text-secondary-foreground'
-                        }`}
-                    >
-                        {product.label}
-                    </span>
-                )}
-                <img
-                    src={productImage(product, index)}
-                    alt={product.name}
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    loading="lazy"
-                    decoding="async"
-                />
-                <div className="absolute inset-0 flex items-center justify-center bg-black/10 opacity-0 transition-opacity group-hover:opacity-100">
-                    <Heart className="text-white drop-shadow-md" size={20} />
+                <div className="relative mb-3 aspect-[3/4] overflow-hidden rounded-sm">
+                    {product.label && (
+                        <span
+                            className={`absolute top-2 left-2 z-10 px-2 py-1 text-[8px] font-bold tracking-widest uppercase ${
+                                product.label.includes('%')
+                                    ? 'bg-destructive text-destructive-foreground'
+                                    : 'bg-background/90 text-secondary-foreground'
+                            }`}
+                        >
+                            {product.label}
+                        </span>
+                    )}
+                    <img
+                        src={productImage(product, index)}
+                        alt={product.name}
+                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        loading="lazy"
+                        decoding="async"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/10 opacity-0 transition-opacity group-hover:opacity-100">
+                        <Heart
+                            className="text-white drop-shadow-md"
+                            size={20}
+                        />
+                    </div>
                 </div>
-            </div>
-            <div className={centered ? 'px-1 text-center' : 'px-1'}>
-                <h3 className="mb-1 truncate text-[10px] font-semibold md:text-xs">
-                    {product.name}
-                </h3>
-                <div className="mb-2 flex flex-wrap items-center gap-1.5 text-[10px] text-muted-foreground md:mb-3 md:text-xs">
-                    <span>
-                        {formatPrice(product.sale_price ?? product.price)}
-                    </span>
-                    {product.sale_price !== null && (
-                        <span className="line-through">
-                            {formatPrice(product.price)}
+                <div className={centered ? 'px-1 text-center' : 'px-1'}>
+                    <h3 className="mb-1 truncate text-[10px] font-semibold md:text-xs">
+                        {product.name}
+                    </h3>
+                    <div className="mb-2 flex flex-wrap items-center gap-1.5 text-[10px] text-muted-foreground md:mb-3 md:text-xs">
+                        <span>
+                            {formatPrice(product.sale_price ?? product.price)}
+                        </span>
+                        {product.sale_price !== null && (
+                            <span className="line-through">
+                                {formatPrice(product.price)}
+                            </span>
+                        )}
+                    </div>
+                    {button ? (
+                        <span className="block w-full rounded-sm bg-primary py-2 text-center text-[9px] font-bold tracking-widest text-primary-foreground uppercase transition-colors hover:bg-primary/90 md:text-[10px]">
+                            Buy
+                        </span>
+                    ) : (
+                        <span className="border-b border-foreground pb-0.5 text-[9px] font-bold tracking-wider uppercase transition-colors hover:border-primary hover:text-primary md:text-[10px]">
+                            Buy
                         </span>
                     )}
                 </div>
-                {button ? (
-                    <span className="block w-full rounded-sm bg-primary py-2 text-center text-[9px] font-bold tracking-widest text-primary-foreground uppercase transition-colors hover:bg-primary/90 md:text-[10px]">
-                        Buy
-                    </span>
-                ) : (
-                    <span className="border-b border-foreground pb-0.5 text-[9px] font-bold tracking-wider uppercase transition-colors hover:border-primary hover:text-primary md:text-[10px]">
-                        Buy
-                    </span>
-                )}
-            </div>
             </Link>
         </FadeInOnScroll>
     );

@@ -82,13 +82,14 @@ export default function ShopLayout({ children }: ShopLayoutProps) {
                                                 : ''
                                         }
                                     />
-                                    {'count' in item && item.count > 0 && (
-                                        <span className="absolute -top-2 -right-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#8b5e4c] px-1 text-[9px] leading-none font-semibold text-white">
-                                            {item.count > 99
-                                                ? '99+'
-                                                : item.count}
-                                        </span>
-                                    )}
+                                    {'count' in item &&
+                                        Number(item.count ?? 0) > 0 && (
+                                            <span className="absolute -top-2 -right-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#8b5e4c] px-1 text-[9px] leading-none font-semibold text-white">
+                                                {Number(item.count ?? 0) > 99
+                                                    ? '99+'
+                                                    : item.count}
+                                            </span>
+                                        )}
                                 </div>
                                 <span className="text-[10px] font-medium">
                                     {item.label}

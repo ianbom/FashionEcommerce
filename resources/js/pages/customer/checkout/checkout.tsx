@@ -1,10 +1,12 @@
 import { Head, Link } from '@inertiajs/react';
 import { Box, Check, Lock, ShieldCheck, Ticket, Truck } from 'lucide-react';
+import type { Icon, LatLngBoundsExpression, Map as LeafletMap } from 'leaflet';
 import { useEffect, useState } from 'react';
 import { CheckoutProvider, useCheckout } from '@/contexts/checkout-context';
 import type {
     CheckoutAddress,
     CheckoutItem,
+    CheckoutStoreLocation,
     CheckoutSummary,
     ShippingRate,
     Voucher,
@@ -17,8 +19,20 @@ type Props = {
     cartItems: CheckoutItem[];
     defaultAddressId: number | null;
     selectedShippingRate: ShippingRate | null;
+    storeLocation: CheckoutStoreLocation;
     summary: CheckoutSummary;
 };
+
+type ReactLeafletModules = {
+    MapContainer: typeof import('react-leaflet').MapContainer;
+    Marker: typeof import('react-leaflet').Marker;
+    Polyline: typeof import('react-leaflet').Polyline;
+    Popup: typeof import('react-leaflet').Popup;
+    TileLayer: typeof import('react-leaflet').TileLayer;
+    useMap: typeof import('react-leaflet').useMap;
+};
+
+type Coordinates = [number, number];
 
 const formatPrice = (price: number) =>
     new Intl.NumberFormat('id-ID', {
@@ -29,6 +43,77 @@ const formatPrice = (price: number) =>
     })
         .format(price)
         .replace('Rp', 'Rp ');
+
+const formatWeight = (grams: number) => {
+    if (grams >= 1000) {
+        return `${new Intl.NumberFormat('id-ID', {
+            maximumFractionDigits: 2,
+            minimumFractionDigits: 0,
+        }).format(grams / 1000)} kg`;
+    }
+
+    return `${new Intl.NumberFormat('id-ID', {
+        maximumFractionDigits: 0,
+    }).format(grams)} gram`;
+};
+
+const formatDistance = (meters: number) =>
+    meters >= 1000
+        ? `${new Intl.NumberFormat('id-ID', {
+              maximumFractionDigits: 2,
+              minimumFractionDigits: 0,
+          }).format(meters / 1000)} km`
+        : `${new Intl.NumberFormat('id-ID', {
+              maximumFractionDigits: 0,
+          }).format(meters)} m`;
+
+const validCoordinates = (latitude: number, longitude: number): boolean =>
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude) &&
+    latitude >= -90 &&
+    latitude <= 90 &&
+    longitude >= -180 &&
+    longitude <= 180;
+
+const coordinatesFrom = (
+    location: Pick<CheckoutAddress | CheckoutStoreLocation, 'latitude' | 'longitude'>,
+): Coordinates | null => {
+    const latitude = Number(location.latitude);
+    const longitude = Number(location.longitude);
+
+    return validCoordinates(latitude, longitude) ? [latitude, longitude] : null;
+};
+
+const distanceMeters = (from: Coordinates, to: Coordinates) => {
+    const earthRadiusMeters = 6371000;
+    const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+    const latitudeDelta = toRadians(to[0] - from[0]);
+    const longitudeDelta = toRadians(to[1] - from[1]);
+    const fromLatitude = toRadians(from[0]);
+    const toLatitude = toRadians(to[0]);
+    const haversine =
+        Math.sin(latitudeDelta / 2) ** 2 +
+        Math.cos(fromLatitude) *
+            Math.cos(toLatitude) *
+            Math.sin(longitudeDelta / 2) ** 2;
+
+    return Math.round(
+        earthRadiusMeters * 2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine)),
+    );
+};
+
+const googleMapsDirectionsUrl = (from: Coordinates, to: Coordinates) => {
+    const origin = `${from[0]},${from[1]}`;
+    const destination = `${to[0]},${to[1]}`;
+    const params = new URLSearchParams({
+        api: '1',
+        origin,
+        destination,
+        travelmode: 'driving',
+    });
+
+    return `https://www.google.com/maps/dir/?${params.toString()}`;
+};
 
 export default function Checkout(props: Props) {
     return (
@@ -55,15 +140,32 @@ function CheckoutScreen() {
         selectedShippingRate,
         shippingRates,
         shippingRatesLoading,
+        storeLocation,
         summary,
     } = useCheckout();
     const [voucherCode, setVoucherCode] = useState(appliedVoucher?.code ?? '');
     const [notes, setNotes] = useState('');
     const [agreed, setAgreed] = useState(false);
+    const totalWeight = cartItems.reduce(
+        (total, item) => total + item.weight,
+        0,
+    );
+    const selectedAddress =
+        addresses.find((address) => address.id === selectedAddressId) ?? null;
+    const storeCoordinates = coordinatesFrom(storeLocation);
+    const destinationCoordinates = selectedAddress
+        ? coordinatesFrom(selectedAddress)
+        : null;
+    const routeDistance =
+        storeCoordinates && destinationCoordinates
+            ? distanceMeters(storeCoordinates, destinationCoordinates)
+            : null;
 
     useEffect(() => {
         if (selectedAddressId && shippingRates.length === 0) {
-            void loadShippingRates(selectedAddressId);
+            void loadShippingRates(selectedAddressId, {
+                preserveSelectedRate: true,
+            });
         }
     }, [loadShippingRates, selectedAddressId, shippingRates.length]);
 
@@ -189,10 +291,12 @@ function CheckoutScreen() {
                                             <p className="mt-2 text-[12px] leading-relaxed text-[#4A4A4A]">
                                                 {address.full_address}
                                             </p>
-                                            {!address.postal_code && (
+                                            {(!address.postal_code ||
+                                                !address.latitude ||
+                                                !address.longitude) && (
                                                 <p className="mt-2 text-[11px] font-semibold text-[#B24B4B]">
-                                                    Lengkapi kode pos di
-                                                    buku alamat.
+                                                    Lengkapi kode pos dan
+                                                    koordinat di buku alamat.
                                                 </p>
                                             )}
                                         </button>
@@ -227,8 +331,8 @@ function CheckoutScreen() {
                                     </div>
                                 ) : shippingRates.length === 0 ? (
                                     <div className="rounded-xl border border-dashed border-[#EADBD8] p-6 text-[12px] text-[#8A6B62]">
-                                        Pilih alamat dengan postal code untuk
-                                        melihat harga ongkir.
+                                        Pilih alamat dengan kode pos dan
+                                        koordinat untuk melihat harga ongkir.
                                     </div>
                                 ) : (
                                     <div className="grid gap-3 md:grid-cols-2">
@@ -387,6 +491,9 @@ function CheckoutScreen() {
                                                     .filter(Boolean)
                                                     .join(' / ') || '-'}
                                             </p>
+                                            <p className="mt-1 text-[10px] font-medium text-[#8A6B62]">
+                                                Berat: {formatWeight(item.weight)}
+                                            </p>
                                             {!item.is_available && (
                                                 <p className="mt-1 text-[10px] font-bold text-[#B24B4B]">
                                                     Stok berubah. Update cart.
@@ -399,13 +506,19 @@ function CheckoutScreen() {
                                     </div>
                                 ))}
                             </div>
-                            <SummaryRow
-                                label="Subtotal"
-                                value={summary.subtotal}
-                            />
-                            <SummaryRow
-                                label="Ongkir"
-                                value={summary.shipping}
+                             <SummaryRow
+                                 label="Subtotal"
+                                 value={summary.subtotal}
+                             />
+                            <div className="mb-3 flex items-center justify-between text-[12px] text-[#4A4A4A]">
+                                <span>Total Berat</span>
+                                <span className="font-semibold">
+                                    {formatWeight(totalWeight)}
+                                </span>
+                            </div>
+                             <SummaryRow
+                                 label="Ongkir"
+                                 value={summary.shipping}
                             />
                             <SummaryRow
                                 label="Biaya Layanan"
@@ -443,6 +556,14 @@ function CheckoutScreen() {
                                         : 'Bayar dengan Midtrans'}
                                 </button>
                                 <div className="mt-8 space-y-4 border-t border-[#EADBD8]/60 pt-6">
+                                    <CheckoutRouteMap
+                                        destinationAddress={selectedAddress}
+                                        destinationCoordinates={
+                                            destinationCoordinates
+                                        }
+                                        distance={routeDistance}
+                                        storeCoordinates={storeCoordinates}
+                                    />
                                     <div className="flex items-start space-x-3 text-[11px] text-[#8A6B62]">
                                         <ShieldCheck size={16} className="mt-0.5 flex-shrink-0 text-[#C99A8F]" strokeWidth={1.5} />
                                         <p>Pembayaran aman didukung Midtrans</p>
@@ -459,6 +580,185 @@ function CheckoutScreen() {
             </main>
         </ShopLayout>
     );
+}
+
+function CheckoutRouteMap({
+    destinationAddress,
+    destinationCoordinates,
+    distance,
+    storeCoordinates,
+}: {
+    destinationAddress: CheckoutAddress | null;
+    destinationCoordinates: Coordinates | null;
+    distance: number | null;
+    storeCoordinates: Coordinates | null;
+}) {
+    const [leafletModules, setLeafletModules] =
+        useState<ReactLeafletModules | null>(null);
+    const [markerIcon, setMarkerIcon] = useState<Icon | null>(null);
+    const canShowRoute = Boolean(
+        storeCoordinates && destinationCoordinates && distance !== null,
+    );
+    const googleMapsUrl =
+        storeCoordinates && destinationCoordinates
+            ? googleMapsDirectionsUrl(storeCoordinates, destinationCoordinates)
+            : null;
+
+    useEffect(() => {
+        let isMounted = true;
+
+        Promise.all([
+            import('leaflet'),
+            import('leaflet/dist/leaflet.css'),
+            import('react-leaflet'),
+        ]).then(([leaflet, , reactLeaflet]) => {
+            if (!isMounted) {
+                return;
+            }
+
+            setMarkerIcon(
+                leaflet.icon({
+                    iconUrl:
+                        'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                    iconRetinaUrl:
+                        'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+                    shadowUrl:
+                        'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                    shadowSize: [41, 41],
+                }),
+            );
+            setLeafletModules({
+                MapContainer: reactLeaflet.MapContainer,
+                Marker: reactLeaflet.Marker,
+                Polyline: reactLeaflet.Polyline,
+                Popup: reactLeaflet.Popup,
+                TileLayer: reactLeaflet.TileLayer,
+                useMap: reactLeaflet.useMap,
+            });
+        });
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
+    return (
+        <div className="rounded-xl border border-[#EADBD8] bg-[#FAF9F6] p-3">
+            <div className="mb-3 flex items-start justify-between gap-3">
+                <div>
+                    <p className="text-[12px] font-bold text-[#333]">
+                        Rute Pengiriman
+                    </p>
+                </div>
+                {distance !== null && (
+                    <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold text-[#4A2525] ring-1 ring-[#EADBD8]">
+                        {formatDistance(distance)}
+                    </span>
+                )}
+            </div>
+
+            {canShowRoute && leafletModules && markerIcon ? (
+                <RouteMap
+                    destinationAddress={destinationAddress}
+                    destinationCoordinates={destinationCoordinates as Coordinates}
+                    markerIcon={markerIcon}
+                    modules={leafletModules}
+                    storeCoordinates={storeCoordinates as Coordinates}
+                />
+            ) : (
+                <div className="flex h-[220px] items-center justify-center rounded-lg border border-dashed border-[#EADBD8] bg-white text-center text-[11px] font-medium text-[#8A6B62]">
+                    {!storeCoordinates
+                        ? 'Koordinat toko belum dikonfigurasi.'
+                        : !destinationCoordinates
+                          ? 'Pilih alamat dengan koordinat untuk melihat rute.'
+                          : 'Memuat peta...'}
+                </div>
+            )}
+
+            {canShowRoute && (
+                <div className="mt-3 space-y-3">
+                    {googleMapsUrl && (
+                        <a
+                            href={googleMapsUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex w-full items-center justify-center rounded-md bg-[#4A2525] px-3 py-2 text-[11px] font-bold text-white transition-colors hover:bg-[#5F1717]"
+                        >
+                            Buka rute di Google Maps
+                        </a>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+}
+
+function RouteMap({
+    destinationAddress,
+    destinationCoordinates,
+    markerIcon,
+    modules,
+    storeCoordinates,
+}: {
+    destinationAddress: CheckoutAddress | null;
+    destinationCoordinates: Coordinates;
+    markerIcon: Icon;
+    modules: ReactLeafletModules;
+    storeCoordinates: Coordinates;
+}) {
+    const { MapContainer, Marker, Polyline, Popup, TileLayer } = modules;
+    const bounds: LatLngBoundsExpression = [
+        storeCoordinates,
+        destinationCoordinates,
+    ];
+
+    return (
+        <div className="overflow-hidden rounded-lg border border-[#EADBD8] bg-white">
+            <MapContainer
+                bounds={bounds}
+                className="h-[220px] w-full"
+                scrollWheelZoom={false}
+            >
+                <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <RouteMapUpdater bounds={bounds} modules={modules} />
+                <Polyline
+                    pathOptions={{ color: '#4A2525', weight: 4 }}
+                    positions={[storeCoordinates, destinationCoordinates]}
+                />
+                <Marker icon={markerIcon} position={storeCoordinates}>
+                    <Popup>Lokasi toko</Popup>
+                </Marker>
+                <Marker icon={markerIcon} position={destinationCoordinates}>
+                    <Popup>
+                        {destinationAddress?.label ?? 'Alamat pengiriman'}
+                    </Popup>
+                </Marker>
+            </MapContainer>
+        </div>
+    );
+}
+
+function RouteMapUpdater({
+    bounds,
+    modules,
+}: {
+    bounds: LatLngBoundsExpression;
+    modules: ReactLeafletModules;
+}) {
+    const map = modules.useMap() as LeafletMap;
+
+    useEffect(() => {
+        map.invalidateSize();
+        map.fitBounds(bounds, { padding: [28, 28], maxZoom: 15 });
+    }, [bounds, map]);
+
+    return null;
 }
 
 function SummaryRow({

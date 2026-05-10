@@ -21,8 +21,6 @@ class SettingManagementService
                 ['key' => 'instagram_url', 'label' => 'Instagram URL', 'type' => 'string', 'input' => 'url'],
                 ['key' => 'tiktok_url', 'label' => 'TikTok URL', 'type' => 'string', 'input' => 'url'],
                 ['key' => 'footer_text', 'label' => 'Footer Text', 'type' => 'string', 'input' => 'textarea'],
-                ['key' => 'store_latitude', 'label' => 'Store Latitude', 'type' => 'string'],
-                ['key' => 'store_longitude', 'label' => 'Store Longitude', 'type' => 'string'],
             ],
         ],
         'payment' => [
@@ -42,6 +40,8 @@ class SettingManagementService
                 ['key' => 'origin_city', 'label' => 'Origin City', 'type' => 'string'],
                 ['key' => 'origin_district', 'label' => 'Origin District', 'type' => 'string'],
                 ['key' => 'store_postal_code', 'label' => 'Store Postal Code', 'type' => 'string'],
+                ['key' => 'store_latitude', 'label' => 'Store Latitude', 'type' => 'string', 'input' => 'number'],
+                ['key' => 'store_longitude', 'label' => 'Store Longitude', 'type' => 'string', 'input' => 'number'],
                 ['key' => 'shipper_name', 'label' => 'Shipper Name', 'type' => 'string'],
                 ['key' => 'shipper_phone', 'label' => 'Shipper Phone', 'type' => 'string'],
                 ['key' => 'shipping_couriers', 'label' => 'Shipping Couriers', 'type' => 'string'],
