@@ -518,14 +518,14 @@ export default function DetailOrder({ order }: Props) {
 
     return (
         <ProfileLayout
-            title={`Order ${order.order_number}`}
-            pageTitle="Order Detail"
-            subtitle="View your order information, shipment progress, and payment summary."
+            title={`Pesanan ${order.order_number}`}
+            pageTitle="Detail Pesanan"
+            subtitle="Lihat informasi pesanan, progres pengiriman, dan ringkasan pembayaran."
             activePath="list-order"
             breadcrumbs={[
-                { label: 'Home', href: '/' },
-                { label: 'My Account', href: '/my-profile' },
-                { label: 'My Orders', href: orderIndex.url() },
+                { label: 'Beranda', href: '/' },
+                { label: 'Akun Saya', href: '/my-profile' },
+                { label: 'Pesanan Saya', href: orderIndex.url() },
                 { label: order.order_number },
             ]}
         >
@@ -538,7 +538,7 @@ export default function DetailOrder({ order }: Props) {
                             <div className="flex flex-wrap items-start justify-between gap-3">
                                 <div>
                                     <p className="text-[10px] font-semibold tracking-widest text-[#9a8575] uppercase">
-                                        Order Number
+                                        Nomor Pesanan
                                     </p>
                                     <h2 className="mt-1 font-serif text-2xl leading-tight text-[#2d2119] sm:text-3xl">
                                         {order.order_number}
@@ -562,13 +562,13 @@ export default function DetailOrder({ order }: Props) {
                                 </div>
                             </div>
                             <div className="mt-5 grid grid-cols-2 gap-4 border-t border-[#f0ebe4] pt-5 sm:grid-cols-3">
-                                <MetaChip label="Payment Method">
+                                <MetaChip label="Metode Pembayaran">
                                     {paymentMethod}
                                 </MetaChip>
-                                <MetaChip label="Est. Arrival">
+                                <MetaChip label="Estimasi Tiba">
                                     {order.shipment?.estimated_delivery ?? '-'}
                                 </MetaChip>
-                                <MetaChip label="Tracking No.">
+                                <MetaChip label="No. Resi">
                                     {order.shipment?.waybill_id ?? '-'}
                                 </MetaChip>
                             </div>
@@ -578,7 +578,7 @@ export default function DetailOrder({ order }: Props) {
                                 href={trackingUrl}
                                 external
                                 icon={Truck}
-                                label="Track Order"
+                                label="Lacak Pesanan"
                             />
                             <ActionButton
                                 href={canCancelOrder ? undefined : '/list'}
@@ -592,28 +592,28 @@ export default function DetailOrder({ order }: Props) {
                                 tone={canCancelOrder ? 'danger' : 'default'}
                                 label={
                                     isCancelling
-                                        ? 'Cancelling...'
+                                        ? 'Membatalkan...'
                                         : canCancelOrder
-                                          ? 'Cancel Order'
-                                          : 'Buy Again'
+                                           ? 'Batalkan Pesanan'
+                                           : 'Beli Lagi'
                                 }
                             />
                             <ActionButton
                                 href={paymentReceiptUrl}
                                 external
                                 icon={ReceiptText}
-                                label={canPay ? 'Pay Now' : 'Payment Receipt'}
+                                label={canPay ? 'Bayar Sekarang' : 'Bukti Pembayaran'}
                             />
                             <ActionButton
                                 href="/notifications"
                                 icon={Headphones}
-                                label="Support"
+                                label="Dukungan"
                             />
                         </div>
                     </div>
 
                     {/* Order Progress */}
-                    <SectionCard title="Order Progress">
+                    <SectionCard title="Progres Pesanan">
                         <div className="hide-scrollbar overflow-x-auto pb-1">
                             <div className="relative grid min-w-[520px] grid-cols-6">
                                 <div className="absolute top-[21px] right-[8%] left-[8%] h-px bg-gradient-to-r from-[#d8ae8f] to-[#e5ddd6]" />
@@ -647,7 +647,7 @@ export default function DetailOrder({ order }: Props) {
                     </SectionCard>
 
                     {/* Ordered Items */}
-                    <SectionCard title="Ordered Items" noPad={true}>
+                    <SectionCard title="Barang Dipesan" noPad={true}>
                         {/* Desktop table */}
                         <div className="hidden sm:block">
                             <div className="hide-scrollbar overflow-x-auto">
@@ -655,16 +655,16 @@ export default function DetailOrder({ order }: Props) {
                                     <thead>
                                         <tr className="border-b border-[#f0ebe4] bg-[#faf6f2] text-[11px] tracking-wide text-[#9a8575] uppercase">
                                             <th className="px-5 py-3 font-semibold sm:px-6">
-                                                Item
+                                                Barang
                                             </th>
                                             <th className="px-4 py-3 font-semibold">
-                                                Details
+                                                Detail
                                             </th>
                                             <th className="px-4 py-3 font-semibold">
-                                                Unit Price
+                                                Harga Satuan
                                             </th>
                                             <th className="px-4 py-3 text-center font-semibold">
-                                                Qty
+                                                 Jumlah
                                             </th>
                                             <th className="px-5 py-3 text-right font-semibold sm:px-6">
                                                 Subtotal
@@ -729,21 +729,21 @@ export default function DetailOrder({ order }: Props) {
                                                     <td className="px-4 py-4">
                                                         <div className="space-y-1 text-[12px] text-[#6d5c50]">
                                                             <p>
-                                                                Color:{' '}
+                                                                 Warna:{' '}
                                                                 <span className="font-semibold text-[#3d3027]">
                                                                     {item.color_name ??
                                                                         '-'}
                                                                 </span>
                                                             </p>
                                                             <p>
-                                                                Size:{' '}
+                                                                 Ukuran:{' '}
                                                                 <span className="font-semibold text-[#3d3027]">
                                                                     {item.size ??
                                                                         '-'}
                                                                 </span>
                                                             </p>
                                                             <p>
-                                                                Weight:{' '}
+                                                                 Berat:{' '}
                                                                 <span className="font-semibold text-[#3d3027]">
                                                                     {item.weight
                                                                         ? `${item.weight} gr`
@@ -811,7 +811,7 @@ export default function DetailOrder({ order }: Props) {
                                             <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-[#9a8575]">
                                                 {item.color_name && (
                                                     <span>
-                                                        Color:{' '}
+                                                         Warna:{' '}
                                                         <strong className="text-[#4a392c]">
                                                             {item.color_name}
                                                         </strong>
@@ -819,7 +819,7 @@ export default function DetailOrder({ order }: Props) {
                                                 )}
                                                 {item.size && (
                                                     <span>
-                                                        Size:{' '}
+                                                         Ukuran:{' '}
                                                         <strong className="text-[#4a392c]">
                                                             {item.size}
                                                         </strong>
@@ -827,7 +827,7 @@ export default function DetailOrder({ order }: Props) {
                                                 )}
                                                 {item.weight && (
                                                     <span>
-                                                        Weight:{' '}
+                                                         Berat:{' '}
                                                         <strong className="text-[#4a392c]">
                                                             {item.weight} gr
                                                         </strong>
@@ -842,7 +842,7 @@ export default function DetailOrder({ order }: Props) {
                                             </p>
                                             <div className="mt-2.5 flex items-center justify-between">
                                                 <span className="text-xs text-[#9a8575]">
-                                                    Qty:{' '}
+                                                     Jumlah:{' '}
                                                     <strong className="text-[#4a392c]">
                                                         {item.quantity}
                                                     </strong>
@@ -860,11 +860,11 @@ export default function DetailOrder({ order }: Props) {
 
                     {/* Shipping + Payment Info */}
                     <div className="grid gap-5 md:grid-cols-2">
-                        <SectionCard title="Shipping Info">
+                        <SectionCard title="Info Pengiriman">
                             <div className="divide-y divide-[#f5ede6]">
                                 <InfoLine
                                     icon={UserRound}
-                                    label="Recipient"
+                                    label="Penerima"
                                     value={
                                         address?.recipient_name ??
                                         order.customer_name
@@ -872,7 +872,7 @@ export default function DetailOrder({ order }: Props) {
                                 />
                                 <InfoLine
                                     icon={Headphones}
-                                    label="Phone"
+                                    label="Telepon"
                                     value={
                                         address?.recipient_phone ??
                                         order.customer_phone
@@ -880,7 +880,7 @@ export default function DetailOrder({ order }: Props) {
                                 />
                                 <InfoLine
                                     icon={MapPin}
-                                    label="Address"
+                                    label="Alamat"
                                     value={
                                         address
                                             ? `${address.full_address}, ${address.district}, ${address.city}, ${address.province} ${address.postal_code}`
@@ -889,36 +889,36 @@ export default function DetailOrder({ order }: Props) {
                                 />
                                 <InfoLine
                                     icon={Truck}
-                                    label="Courier"
+                                    label="Kurir"
                                     value={courier || '-'}
                                 />
                                 <InfoLine
                                     icon={ReceiptText}
-                                    label="Tracking No."
+                                    label="No. Resi"
                                     value={order.shipment?.waybill_id ?? '-'}
                                 />
                                 <InfoLine
                                     icon={FileText}
-                                    label="Delivery Note"
+                                    label="Catatan Pengiriman"
                                     value={address?.note ?? '-'}
                                 />
                             </div>
                         </SectionCard>
-                        <SectionCard title="Payment Info">
+                        <SectionCard title="Info Pembayaran">
                             <div className="divide-y divide-[#f5ede6]">
                                 <InfoLine
                                     icon={CreditCard}
-                                    label="Method"
+                                    label="Metode"
                                     value={paymentMethod}
                                 />
                                 <InfoLine
                                     icon={ReceiptText}
-                                    label="Transaction"
+                                    label="Transaksi"
                                     value={transactionId}
                                 />
                                 <InfoLine
                                     icon={ClipboardList}
-                                    label="Payment Date"
+                                    label="Tanggal Pembayaran"
                                     value={formatDateTime(
                                         order.paid_at ??
                                             order.payment?.paid_at ??
@@ -948,19 +948,19 @@ export default function DetailOrder({ order }: Props) {
                 {/* Right sidebar */}
                 <aside className="space-y-5 xl:sticky xl:top-6 xl:self-start">
                     {/* Order Summary */}
-                    <SectionCard title="Order Summary">
+                    <SectionCard title="Ringkasan Pesanan">
                         <div className="space-y-2.5">
                             <SummaryRow
                                 label="Subtotal"
                                 value={formatPrice(order.subtotal)}
                             />
                             <SummaryRow
-                                label="Shipping Cost"
+                                label="Biaya Pengiriman"
                                 value={formatPrice(order.shipping_cost)}
                             />
                             {order.discount_amount > 0 && (
                                 <SummaryRow
-                                    label="Discount"
+                                    label="Diskon"
                                     value={`− ${formatPrice(order.discount_amount)}`}
                                     danger
                                 />
@@ -972,13 +972,13 @@ export default function DetailOrder({ order }: Props) {
                                 />
                             )}
                             <SummaryRow
-                                label="Service Fee"
+                                label="Biaya Layanan"
                                 value={formatPrice(order.service_fee)}
                             />
                         </div>
                         <div className="mt-5 rounded-xl bg-[#faf6f1] px-4 py-4">
                             <p className="text-[10px] font-semibold tracking-widest text-[#9a8575] uppercase">
-                                Total Payment
+                                Total Pembayaran
                             </p>
                             <p className="mt-1 font-serif text-2xl leading-none font-medium text-[#221914] sm:text-3xl">
                                 {formatPrice(order.grand_total)}
@@ -987,9 +987,9 @@ export default function DetailOrder({ order }: Props) {
                     </SectionCard>
 
                     {/* Order Notes */}
-                    <SectionCard title="Order Notes">
+                    <SectionCard title="Catatan Pesanan">
                         <p className="border-l-2 border-[#e5d7ca] pl-3 text-sm leading-relaxed text-[#716155] italic">
-                            {order.notes ?? 'No notes for this order.'}
+                            {order.notes ?? 'Tidak ada catatan untuk pesanan ini.'}
                         </p>
                     </SectionCard>
                 </aside>
@@ -1005,7 +1005,7 @@ export default function DetailOrder({ order }: Props) {
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-semibold tracking-[0.2em] text-red-500 uppercase">
-                                        Cancel Order
+                                        Batalkan Pesanan
                                     </p>
                                     <h2 className="mt-1 font-serif text-xl leading-tight text-[#2d2119]">
                                         Batalkan order ini?
@@ -1023,7 +1023,7 @@ export default function DetailOrder({ order }: Props) {
                             </p>
                             <div className="rounded-2xl border border-[#f0ebe4] bg-[#faf6f1] px-4 py-3">
                                 <p className="text-[10px] font-semibold tracking-widest text-[#9a8575] uppercase">
-                                    Order Number
+                                    Nomor Pesanan
                                 </p>
                                 <p className="mt-1 font-mono text-sm font-semibold text-[#3d3027]">
                                     {order.order_number}

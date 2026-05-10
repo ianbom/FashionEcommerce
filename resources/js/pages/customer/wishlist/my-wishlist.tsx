@@ -50,29 +50,29 @@ const formatPrice = (value: number) =>
 export default function MyWishlist({ wishlistItems, summary }: Props) {
     return (
         <ProfileLayout
-            title="My Wishlist"
-            pageTitle="My Wishlist"
-            subtitle="Keep your favorite pieces close before they sell out."
+            title="Wishlist Saya"
+            pageTitle="Wishlist Saya"
+            subtitle="Simpan item favoritmu sebelum kehabisan."
             activePath="wishlist"
             breadcrumbs={[
-                { label: 'Home', href: '/' },
-                { label: 'My Account', href: '/my-profile' },
-                { label: 'My Wishlist' },
+                { label: 'Beranda', href: '/' },
+                { label: 'Akun Saya', href: '/my-profile' },
+                { label: 'Wishlist Saya' },
             ]}
         >
             <div className="min-w-0">
                 <div className="mb-6 flex items-end justify-between border-b border-[#EADBD8] pb-4">
                     <div>
                         <p className="mb-1 text-[10px] font-semibold tracking-[0.24em] text-[#8A6B62] uppercase">
-                            Saved Items
+                            Item Tersimpan
                         </p>
                         <h2 className="text-[17px] font-medium tracking-wide text-[#332b26]">
-                            Wishlist Collection
+                            Koleksi Wishlist
                         </h2>
                     </div>
 
                     <div className="text-right text-[11px] font-semibold tracking-[0.18em] text-[#8A6B62] uppercase">
-                        {summary.item_count} saved products
+                        {summary.item_count} produk tersimpan
                     </div>
                 </div>
 
@@ -99,7 +99,7 @@ export default function MyWishlist({ wishlistItems, summary }: Props) {
                             href={list.url()}
                             className="mt-5 rounded-full bg-[#4A2525] px-5 py-2 text-[11px] font-semibold tracking-wider text-white uppercase transition hover:bg-[#B6574B]"
                         >
-                            Browse Products
+                            Lihat Produk
                         </Link>
                     </div>
                 )}
@@ -193,7 +193,7 @@ function WishlistTile({ item, index }: { item: WishlistItem; index: number }) {
                     )}
                     <button
                         type="button"
-                        aria-label="Remove from wishlist"
+                        aria-label="Hapus dari wishlist"
                         onClick={removeItem}
                         className="absolute right-2 bottom-2 text-white/90 drop-shadow-md transition-all duration-300 hover:scale-110 hover:text-white"
                     >

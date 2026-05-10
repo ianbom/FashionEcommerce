@@ -1,19 +1,9 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Download, Search } from 'lucide-react';
+import { BarChart3, Download, Search } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardHeader,
-    CardTitle,
-    CardDescription,
-} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import {
-    formatPrice,
-    PageHeader,
-    TableShell,
-} from '@/pages/admin/catalog/shared';
+import { formatPrice } from '@/pages/admin/catalog/shared';
 
 type Metric = { label: string; value: number; format: 'currency' | 'number' };
 type ReportTable = {
@@ -48,6 +38,10 @@ function metricValue(metric: Metric) {
         : new Intl.NumberFormat('id-ID').format(metric.value);
 }
 
+function titleCase(value: string) {
+    return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
 export default function ReportIndex({
     type,
     tabs,
@@ -69,36 +63,51 @@ export default function ReportIndex({
     return (
         <>
             <Head title={`${type} Report`} />
-            <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">
-                <PageHeader
-                    eyebrow="Reports"
-                    title={`${type[0].toUpperCase()}${type.slice(1)} Report`}
-                    description="Analisis performa toko berdasarkan data order, product snapshot, customer, shipment, dan voucher."
-                    action={
-                        <Button asChild>
-                            <a href={`/admin/reports/${type}/export?${query}`}>
-                                <Download /> Export CSV
-                            </a>
-                        </Button>
-                    }
-                />
+            <div className="flex flex-1 flex-col gap-8 bg-white p-4 text-zinc-900 md:p-6">
+                <header className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
+                    <div>
+                        <p className="mb-2 flex items-center gap-2 text-xs font-bold tracking-widest text-[#7F2020]/50 uppercase">
+                            <BarChart3 className="size-4" strokeWidth={1.7} />
+                            Reports
+                        </p>
+                        <h1 className="font-serif text-4xl leading-tight text-zinc-900">
+                            {titleCase(type)} Report
+                        </h1>
+                        <p className="mt-1 max-w-2xl text-sm leading-6 text-zinc-400">
+                            Ringkasan data toko untuk order, produk, customer,
+                            shipment, dan voucher.
+                        </p>
+                    </div>
 
-                <div className="flex flex-wrap gap-2">
+                    <Button
+                        asChild
+                        className="h-9 rounded-lg bg-[#7F2020] px-4 text-white shadow-none hover:bg-[#5F1717] active:scale-[0.98]"
+                    >
+                        <a href={`/admin/reports/${type}/export?${query}`}>
+                            <Download className="size-4" /> Export CSV
+                        </a>
+                    </Button>
+                </header>
+
+                <nav className="flex flex-wrap gap-2 border-b border-zinc-200 pb-3">
                     {tabs.map((tab) => (
-                        <Button
+                        <Link
                             key={tab}
-                            asChild
-                            variant={tab === type ? 'secondary' : 'outline'}
-                            size="sm"
+                            href={`/admin/reports/${tab}`}
+                            className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                                tab === type
+                                    ? 'border-[#7F2020] bg-[#7F2020] text-white'
+                                    : 'border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900'
+                            }`}
                         >
-                            <Link href={`/admin/reports/${tab}`}>{tab}</Link>
-                        </Button>
+                            {titleCase(tab)}
+                        </Link>
                     ))}
-                </div>
+                </nav>
 
                 <form
                     onSubmit={submit}
-                    className="grid gap-3 rounded-lg border bg-card p-4 md:grid-cols-3 xl:grid-cols-6"
+                    className="grid gap-3 rounded-2xl border border-zinc-200 p-4 md:grid-cols-3 xl:grid-cols-6"
                 >
                     <Input
                         type="date"
@@ -106,6 +115,7 @@ export default function ReportIndex({
                         onChange={(event) =>
                             setData('date_from', event.target.value)
                         }
+                        className="h-9 rounded-lg border-zinc-200 bg-white text-sm shadow-none"
                     />
                     <Input
                         type="date"
@@ -113,13 +123,14 @@ export default function ReportIndex({
                         onChange={(event) =>
                             setData('date_to', event.target.value)
                         }
+                        className="h-9 rounded-lg border-zinc-200 bg-white text-sm shadow-none"
                     />
                     <select
                         value={data.payment_status}
                         onChange={(event) =>
                             setData('payment_status', event.target.value)
                         }
-                        className="rounded-md border border-input bg-transparent px-3 py-2 text-sm"
+                        className="h-9 rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-700 transition-colors outline-none focus:border-[#7F2020]"
                     >
                         <option value="">All payment</option>
                         {options.paymentStatuses.map((status) => (
@@ -133,7 +144,7 @@ export default function ReportIndex({
                         onChange={(event) =>
                             setData('order_status', event.target.value)
                         }
-                        className="rounded-md border border-input bg-transparent px-3 py-2 text-sm"
+                        className="h-9 rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-700 transition-colors outline-none focus:border-[#7F2020]"
                     >
                         <option value="">All order</option>
                         {options.orderStatuses.map((status) => (
@@ -147,7 +158,7 @@ export default function ReportIndex({
                         onChange={(event) =>
                             setData('category_id', event.target.value)
                         }
-                        className="rounded-md border border-input bg-transparent px-3 py-2 text-sm"
+                        className="h-9 rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-700 transition-colors outline-none focus:border-[#7F2020]"
                     >
                         <option value="">All categories</option>
                         {options.categories.map((category) => (
@@ -159,52 +170,67 @@ export default function ReportIndex({
                     <Button
                         type="submit"
                         disabled={processing}
-                        variant="outline"
+                        className="h-9 rounded-lg border-zinc-200 bg-white text-zinc-600 shadow-none hover:bg-zinc-50"
                     >
-                        <Search /> Apply
+                        <Search className="size-4" /> Apply
                     </Button>
                 </form>
 
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+                <section className="grid overflow-hidden rounded-2xl border border-zinc-200 bg-white sm:grid-cols-2 xl:grid-cols-5">
                     {report.metrics.map((metric) => (
-                        <Card key={metric.label}>
-                            <CardHeader className="pb-4">
-                                <CardDescription>
-                                    {metric.label}
-                                </CardDescription>
-                                <CardTitle>{metricValue(metric)}</CardTitle>
-                            </CardHeader>
-                        </Card>
+                        <div
+                            key={metric.label}
+                            className="border-r border-b border-zinc-200 px-5 py-5 last:border-r-0"
+                        >
+                            <p className="text-sm font-semibold text-zinc-500">
+                                {metric.label}
+                            </p>
+                            <p className="mt-2 text-2xl font-bold tracking-tight text-zinc-900">
+                                {metricValue(metric)}
+                            </p>
+                        </div>
                     ))}
-                </div>
+                </section>
 
                 {report.tables.map((table) => (
-                    <TableShell
+                    <section
                         key={table.title}
-                        title={table.title}
-                        description={`${table.rows.length} rows`}
+                        className="rounded-2xl border border-zinc-200 p-5"
                     >
+                        <div className="mb-5 flex items-end justify-between gap-4">
+                            <div>
+                                <h2 className="text-lg font-semibold tracking-tight text-zinc-900">
+                                    {table.title}
+                                </h2>
+                                <p className="mt-1 text-sm text-zinc-400">
+                                    {table.rows.length} rows
+                                </p>
+                            </div>
+                        </div>
                         <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="border-b text-left text-muted-foreground">
+                            <table className="w-full min-w-[760px] border-y border-zinc-200 text-sm">
+                                <thead className="border-b border-zinc-200 bg-zinc-50/70 text-xs tracking-wider text-zinc-500 uppercase">
+                                    <tr className="text-left">
                                         {table.columns.map((column) => (
                                             <th
                                                 key={column}
-                                                className="pr-4 pb-3 font-medium"
+                                                className="py-4 pr-4 font-semibold first:pl-4"
                                             >
                                                 {column.replaceAll('_', ' ')}
                                             </th>
                                         ))}
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y">
+                                <tbody className="divide-y divide-zinc-200">
                                     {table.rows.map((row, index) => (
-                                        <tr key={index}>
+                                        <tr
+                                            key={index}
+                                            className="transition-colors hover:bg-zinc-50/70"
+                                        >
                                             {table.columns.map((column) => (
                                                 <td
                                                     key={column}
-                                                    className="py-3 pr-4"
+                                                    className="py-4 pr-4 text-zinc-600 first:pl-4"
                                                 >
                                                     {formatCell(
                                                         column,
@@ -214,10 +240,20 @@ export default function ReportIndex({
                                             ))}
                                         </tr>
                                     ))}
+                                    {table.rows.length === 0 && (
+                                        <tr>
+                                            <td
+                                                colSpan={table.columns.length}
+                                                className="px-4 py-8 text-center text-sm text-zinc-400"
+                                            >
+                                                No report data found.
+                                            </td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>
-                    </TableShell>
+                    </section>
                 ))}
             </div>
         </>

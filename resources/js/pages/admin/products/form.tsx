@@ -1329,7 +1329,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                 </SectionCard>
 
                                 {/* 7. SEO Metadata */}
-                                <SectionCard
+                                {/* <SectionCard
                                     title="SEO Metadata"
                                     description="Optimize your product for search engines"
                                     icon={
@@ -1403,7 +1403,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                             </FieldGroup>
                                         </div>
 
-                                        {/* SERP Preview */}
+                                      
                                         <div>
                                             <p className="mb-2 text-[11px] font-medium tracking-wider text-zinc-400 uppercase">
                                                 Search Preview
@@ -1440,7 +1440,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                             </div>
                                         </div>
                                     </div>
-                                </SectionCard>
+                                </SectionCard> */}
 
                                 {/* Form Actions (bottom) */}
                                 <div className="flex items-center justify-between pt-2 pb-8">

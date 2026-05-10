@@ -14,36 +14,36 @@ const SIDEBAR_NAV = [
     {
         id: 'my-profile',
         href: '/my-profile',
-        label: 'Profile Settings',
-        mobileLabel: 'Profile',
+        label: 'Pengaturan Profil',
+        mobileLabel: 'Profil',
         icon: User,
     },
     {
         id: 'list-order',
         href: '/my-order',
-        label: 'My Orders',
-        mobileLabel: 'Orders',
+        label: 'Pesanan Saya',
+        mobileLabel: 'Pesanan',
         icon: ShoppingBag,
     },
     {
         id: 'address',
         href: '/address',
-        label: 'Address Book',
-        mobileLabel: 'Address',
+        label: 'Buku Alamat',
+        mobileLabel: 'Alamat',
         icon: MapPin,
     },
     {
         id: 'wishlist',
         href: '/wishlist',
-        label: 'My Wishlist',
+        label: 'Wishlist Saya',
         mobileLabel: 'Wishlist',
         icon: Heart,
     },
     {
         id: 'notifications',
         href: '/notifications',
-        label: 'Notifications',
-        mobileLabel: 'Alerts',
+        label: 'Notifikasi',
+        mobileLabel: 'Notifikasi',
         icon: Bell,
     },
 ];
@@ -80,7 +80,7 @@ export default function ProfileLayout({
                 <div className="absolute inset-0 z-0">
                     <img
                         src="/img/ike-ellyana-2F70bGqQVa4-unsplash.webp"
-                        alt="Hero Background"
+                        alt="Latar hero"
                         className="h-full w-full object-cover opacity-20"
                     />
                     <div className="absolute inset-0 bg-gradient-to-r from-[#FAF9F6] via-[#FAF9F6]/90 to-transparent"></div>
@@ -143,7 +143,7 @@ export default function ProfileLayout({
                         {/* Desktop Sidebar Nav */}
                         <div className="mb-6 hidden border-l border-[#EADBD8] pl-5 lg:block">
                             <p className="mb-5 text-[10px] font-bold tracking-[0.24em] text-[#C99A8F] uppercase">
-                                My Account
+                                Akun Saya
                             </p>
                             {SIDEBAR_NAV.map((item) => {
                                 const Icon = item.icon;
@@ -175,7 +175,7 @@ export default function ProfileLayout({
                             >
                                 <span className="absolute top-1/2 -left-5 h-5 w-px -translate-y-1/2 bg-transparent transition-colors group-hover:bg-red-300" />
                                 <LogOut size={16} strokeWidth={1.8} />
-                                <span>Logout</span>
+                                <span>Keluar</span>
                             </Link>
                         </div>
                     </div>

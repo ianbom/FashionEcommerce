@@ -49,6 +49,9 @@ class AdminDashboardService
                 'failed',
                 'cancelled',
             ], $start, $end),
+            'paymentSummary' => $this->paymentSummary($start, $end),
+            'shippingSummary' => $this->shippingSummary($start, $end),
+            'attentionOrders' => $this->attentionOrders(),
             'recentOrders' => $this->recentOrders(),
             'lowStockVariants' => $this->lowStockVariants(),
             'latestPaymentLogs' => $this->latestPaymentLogs(),
@@ -91,10 +94,11 @@ class AdminDashboardService
 
         return [
             ['label' => 'Revenue Today', 'value' => $this->paidRevenue($todayStart, $todayEnd), 'format' => 'currency'],
-            ['label' => 'Revenue Month', 'value' => $this->paidRevenue($monthStart, $monthEnd), 'format' => 'currency'],
             ['label' => 'Orders Today', 'value' => $this->orderCount($todayStart, $todayEnd), 'format' => 'number'],
-            ['label' => 'Pending Payment', 'value' => $this->orderStatusCount('pending_payment', $start, $end), 'format' => 'number'],
-            ['label' => 'Paid Orders', 'value' => $this->paymentStatusCount('paid', $start, $end), 'format' => 'number'],
+            ['label' => 'Pending Shipment', 'value' => $this->pendingShipmentCount(), 'format' => 'number'],
+            ['label' => 'Low Stock Products', 'value' => $this->variantStockCount(1, 5), 'format' => 'number'],
+            ['label' => 'Revenue Month', 'value' => $this->paidRevenue($monthStart, $monthEnd), 'format' => 'currency'],
+            ['label' => 'Pending Payment', 'value' => $this->paymentStatusCount('pending', $start, $end), 'format' => 'number'],
             ['label' => 'Processing', 'value' => $this->orderStatusCount('processing', $start, $end), 'format' => 'number'],
             ['label' => 'Shipped', 'value' => $this->orderStatusCount('shipped', $start, $end), 'format' => 'number'],
             ['label' => 'Completed', 'value' => $this->orderStatusCount('completed', $start, $end), 'format' => 'number'],
@@ -185,6 +189,18 @@ class AdminDashboardService
         return $query->count();
     }
 
+    private function pendingShipmentCount(): int
+    {
+        if (! Schema::hasTable('orders')) {
+            return 0;
+        }
+
+        return DB::table('orders')
+            ->where('payment_status', 'paid')
+            ->whereIn('shipping_status', ['pending', 'not_created', 'ready_to_ship', 'need_shipment', 'waiting_for_shipment'])
+            ->count();
+    }
+
     /**
      * @return array<int, array{date: string, revenue: float, orders: int}>
      */
@@ -245,10 +261,114 @@ class AdminDashboardService
         }
 
         return DB::table('orders')
-            ->select(['id', 'order_number', 'customer_name', 'grand_total', 'payment_status', 'order_status', 'shipping_status', 'created_at'])
+            ->select(['id', 'user_id', 'order_number', 'customer_name', 'grand_total', 'payment_status', 'order_status', 'shipping_status', 'created_at'])
             ->latest('created_at')
             ->limit(10)
             ->get();
+    }
+
+    private function attentionOrders(): Collection
+    {
+        if (! Schema::hasTable('orders')) {
+            return collect();
+        }
+
+        return DB::table('orders')
+            ->select(['id', 'user_id', 'order_number', 'customer_name', 'payment_status', 'order_status', 'shipping_status', 'created_at'])
+            ->where(function ($query): void {
+                $query
+                    ->whereIn('payment_status', ['pending', 'pending_payment', 'failed', 'expired'])
+                    ->orWhereIn('order_status', ['return_requested', 'refund_requested'])
+                    ->orWhereIn('shipping_status', ['pending', 'not_created', 'ready_to_ship', 'need_shipment', 'waiting_for_shipment', 'problem', 'delivery_issue', 'failed']);
+            })
+            ->orderByRaw("case
+                when shipping_status in ('problem', 'delivery_issue', 'failed') then 0
+                when order_status in ('return_requested', 'refund_requested') then 1
+                when payment_status in ('failed', 'expired') then 2
+                when payment_status in ('pending', 'pending_payment') then 3
+                else 4
+            end")
+            ->latest('created_at')
+            ->limit(4)
+            ->get()
+            ->map(fn (object $order): array => [
+                'id' => (int) $order->id,
+                'user_id' => $order->user_id ? (int) $order->user_id : null,
+                'order_number' => (string) $order->order_number,
+                'customer_name' => (string) $order->customer_name,
+                'payment_status' => (string) $order->payment_status,
+                'order_status' => (string) $order->order_status,
+                'shipping_status' => (string) $order->shipping_status,
+                'action' => $this->attentionAction((string) $order->payment_status, (string) $order->order_status, (string) $order->shipping_status),
+            ]);
+    }
+
+    /**
+     * @return array<int, array{label: string, value: int}>
+     */
+    private function paymentSummary(CarbonImmutable $start, CarbonImmutable $end): array
+    {
+        if (! Schema::hasTable('orders')) {
+            return $this->emptySummary(['Paid Today', 'Pending Payment', 'Failed Payment', 'Expired Payment']);
+        }
+
+        return [
+            ['label' => 'Paid Today', 'value' => $this->paymentStatusCount('paid', CarbonImmutable::now()->startOfDay(), CarbonImmutable::now()->endOfDay())],
+            ['label' => 'Pending Payment', 'value' => $this->paymentStatusCount('pending', $start, $end)],
+            ['label' => 'Failed Payment', 'value' => $this->paymentStatusCount('failed', $start, $end)],
+            ['label' => 'Expired Payment', 'value' => $this->paymentStatusCount('expired', $start, $end)],
+        ];
+    }
+
+    /**
+     * @return array<int, array{label: string, value: int}>
+     */
+    private function shippingSummary(CarbonImmutable $start, CarbonImmutable $end): array
+    {
+        if (! Schema::hasTable('orders')) {
+            return $this->emptySummary(['Need Shipment', 'In Delivery', 'Delivered Today', 'Shipping Issue']);
+        }
+
+        return [
+            ['label' => 'Need Shipment', 'value' => $this->pendingShipmentCount()],
+            ['label' => 'In Delivery', 'value' => $this->shippingStatusCount(['shipped', 'in_transit', 'allocated', 'picked'], $start, $end)],
+            ['label' => 'Delivered Today', 'value' => $this->shippingStatusCount(['delivered'], CarbonImmutable::now()->startOfDay(), CarbonImmutable::now()->endOfDay())],
+            ['label' => 'Shipping Issue', 'value' => $this->shippingStatusCount(['problem', 'delivery_issue', 'failed'], $start, $end)],
+        ];
+    }
+
+    /**
+     * @param  array<int, string>  $statuses
+     */
+    private function shippingStatusCount(array $statuses, CarbonImmutable $start, CarbonImmutable $end): int
+    {
+        return $this->ordersInRange($start, $end)->whereIn('shipping_status', $statuses)->count();
+    }
+
+    /**
+     * @param  array<int, string>  $labels
+     * @return array<int, array{label: string, value: int}>
+     */
+    private function emptySummary(array $labels): array
+    {
+        return collect($labels)->map(fn (string $label): array => ['label' => $label, 'value' => 0])->all();
+    }
+
+    private function attentionAction(string $paymentStatus, string $orderStatus, string $shippingStatus): string
+    {
+        if (in_array($shippingStatus, ['problem', 'delivery_issue', 'failed'], true)) {
+            return 'Check Shipping';
+        }
+
+        if (in_array($orderStatus, ['return_requested', 'refund_requested'], true)) {
+            return 'Review Return';
+        }
+
+        if (in_array($paymentStatus, ['pending', 'pending_payment', 'failed', 'expired'], true)) {
+            return 'View Order';
+        }
+
+        return 'Process Shipment';
     }
 
     private function lowStockVariants(): Collection
@@ -261,6 +381,7 @@ class AdminDashboardService
             ->leftJoin('products', 'products.id', '=', 'product_variants.product_id')
             ->select([
                 'product_variants.id',
+                'product_variants.product_id',
                 'product_variants.sku',
                 'product_variants.color_name',
                 'product_variants.size',

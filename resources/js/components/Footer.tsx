@@ -44,24 +44,24 @@ export default function Footer() {
                             </span>
                         </div>
                         <p className="max-w-md text-xs leading-relaxed text-white/60 md:text-sm">
-                            Elevating modest fashion with elegance and grace.
-                            Discover your true identity with our exclusive
-                            collections.
+                            Menghadirkan modest fashion dengan elegansi dan
+                            kelembutan. Temukan identitas terbaikmu lewat
+                            koleksi eksklusif kami.
                         </p>
                     </div>
 
                     <div className="flex flex-col lg:items-end">
                         <h3 className="mb-4 text-xs font-bold tracking-[0.2em] text-white/95 uppercase">
-                            Subscribe to our Newsletter
+                            Berlangganan Newsletter
                         </h3>
                         <div className="group flex w-full max-w-md border-b border-white/30 pb-2 transition-colors focus-within:border-white">
                             <input
                                 type="email"
-                                placeholder="Enter your email address"
+                                placeholder="Masukkan alamat email"
                                 className="flex-1 bg-transparent text-xs tracking-wider text-white placeholder-white/40 outline-none md:text-sm"
                             />
                             <button className="flex items-center gap-2 text-xs font-bold tracking-widest text-white/60 uppercase transition-colors group-focus-within:text-white hover:text-white">
-                                Subscribe <ArrowRight size={14} />
+                                Berlangganan <ArrowRight size={14} />
                             </button>
                         </div>
                     </div>
@@ -74,7 +74,7 @@ export default function Footer() {
                     {/* Contact Us */}
                     <div>
                         <h3 className="mb-6 text-xs font-bold tracking-[0.2em] text-white/95 uppercase">
-                            Contact Us
+                            Hubungi Kami
                         </h3>
                         <ul className="space-y-4 text-white/60">
                             <li className="group flex cursor-pointer items-start gap-3 transition-colors hover:text-white">
@@ -108,7 +108,7 @@ export default function Footer() {
                     {/* Customer Care */}
                     <div>
                         <h3 className="mb-6 text-xs font-bold tracking-[0.2em] text-white/95 uppercase">
-                            Customer Care
+                            Layanan Pelanggan
                         </h3>
                         <ul className="space-y-4 text-white/60">
                             <li>
@@ -116,7 +116,7 @@ export default function Footer() {
                                     href="/list"
                                     className="inline-block transition-transform hover:translate-x-1 hover:text-white"
                                 >
-                                    How to Buy
+                                    Cara Membeli
                                 </Link>
                             </li>
                             <li>
@@ -124,7 +124,7 @@ export default function Footer() {
                                     href="/checkout"
                                     className="inline-block transition-transform hover:translate-x-1 hover:text-white"
                                 >
-                                    Payment Information
+                                    Informasi Pembayaran
                                 </Link>
                             </li>
                             <li>
@@ -132,7 +132,7 @@ export default function Footer() {
                                     href="/shipping-policy"
                                     className="inline-block transition-transform hover:translate-x-1 hover:text-white"
                                 >
-                                    Shipping Information
+                                    Informasi Pengiriman
                                 </Link>
                             </li>
                             <li>
@@ -140,7 +140,7 @@ export default function Footer() {
                                     href="/no-return-policy"
                                     className="inline-block transition-transform hover:translate-x-1 hover:text-white"
                                 >
-                                    Return & Exchange
+                                    Retur & Penukaran
                                 </Link>
                             </li>
                             <li>
@@ -148,7 +148,7 @@ export default function Footer() {
                                     href="/my-order"
                                     className="inline-block transition-transform hover:translate-x-1 hover:text-white"
                                 >
-                                    Track Order
+                                    Lacak Pesanan
                                 </Link>
                             </li>
                             <li>
@@ -156,7 +156,7 @@ export default function Footer() {
                                     href="/notifications"
                                     className="inline-block transition-transform hover:translate-x-1 hover:text-white"
                                 >
-                                    FAQs
+                                    Pertanyaan Umum
                                 </Link>
                             </li>
                         </ul>
@@ -165,7 +165,7 @@ export default function Footer() {
                     {/* Explore */}
                     <div>
                         <h3 className="mb-6 text-xs font-bold tracking-[0.2em] text-white/95 uppercase">
-                            Explore
+                            Jelajahi
                         </h3>
                         <ul className="space-y-4 text-white/60">
                             <li>
@@ -173,7 +173,7 @@ export default function Footer() {
                                     href="/"
                                     className="inline-block transition-transform hover:translate-x-1 hover:text-white"
                                 >
-                                    Our Story
+                                    Cerita Kami
                                 </Link>
                             </li>
                             <li>
@@ -181,7 +181,7 @@ export default function Footer() {
                                     href="/"
                                     className="inline-block transition-transform hover:translate-x-1 hover:text-white"
                                 >
-                                    Our Journal
+                                    Jurnal Kami
                                 </Link>
                             </li>
                             <li>
@@ -189,7 +189,7 @@ export default function Footer() {
                                     href="/shipping-policy"
                                     className="inline-block transition-transform hover:translate-x-1 hover:text-white"
                                 >
-                                    Shipping policy
+                                    Kebijakan Pengiriman
                                 </Link>
                             </li>
                             <li>
@@ -197,7 +197,7 @@ export default function Footer() {
                                     href="/no-return-policy"
                                     className="inline-block transition-transform hover:translate-x-1 hover:text-white"
                                 >
-                                    No Return Policy
+                                    Kebijakan Tanpa Retur
                                 </Link>
                             </li>
                             <li>
@@ -205,7 +205,7 @@ export default function Footer() {
                                     href="/terms-conditions"
                                     className="inline-block transition-transform hover:translate-x-1 hover:text-white"
                                 >
-                                    Terms & Conditions
+                                    Syarat & Ketentuan
                                 </Link>
                             </li>
                             <li>
@@ -213,7 +213,7 @@ export default function Footer() {
                                     href="/privacy-policy"
                                     className="inline-block transition-transform hover:translate-x-1 hover:text-white"
                                 >
-                                    Privacy Policy
+                                    Kebijakan Privasi
                                 </Link>
                             </li>
                         </ul>
@@ -223,7 +223,7 @@ export default function Footer() {
                     <div className="flex flex-col justify-between">
                         <div>
                             <h3 className="mb-6 text-xs font-bold tracking-[0.2em] text-white/95 uppercase">
-                                Secure Payment
+                                Pembayaran Aman
                             </h3>
                             <div className="grid grid-cols-4 gap-2 opacity-70 transition-opacity hover:opacity-100">
                                 {[

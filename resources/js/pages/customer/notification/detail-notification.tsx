@@ -334,19 +334,19 @@ export default function DetailNotification({ notification }: Props) {
                             size={16}
                             className="mr-2 transition-transform group-hover:-translate-x-1"
                         />
-                        Back to Notifications
+                        Kembali ke Notifikasi
                     </Link>
-                    <span>Notification Detail</span>
+                    <span>Detail Notifikasi</span>
                 </div>
             }
-            pageTitle="Notification Detail"
-            subtitle="Review full detail for this notification update."
+            pageTitle="Detail Notifikasi"
+            subtitle="Tinjau detail lengkap pembaruan notifikasi ini."
             activePath="notifications"
             breadcrumbs={[
-                { label: 'Home', href: '/' },
-                { label: 'My Account', href: '/my-profile' },
-                { label: 'Notifications', href: '/notifications' },
-                { label: 'Notification Detail' },
+                { label: 'Beranda', href: '/' },
+                { label: 'Akun Saya', href: '/my-profile' },
+                { label: 'Notifikasi', href: '/notifications' },
+                { label: 'Detail Notifikasi' },
             ]}
         >
             <Head title={notification.title} />
@@ -386,7 +386,7 @@ export default function DetailNotification({ notification }: Props) {
                                 <span
                                     className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${config.badge}`}
                                 >
-                                    <Star size={12} fill="currentColor" /> Important
+                                    <Star size={12} fill="currentColor" /> Penting
                                 </span>
                             )}
                         </div>
@@ -394,7 +394,7 @@ export default function DetailNotification({ notification }: Props) {
 
                     <div className="rounded-2xl border border-[#EADBD8] bg-white p-6 shadow-sm">
                         <h3 className="mb-3 font-serif text-xl text-[#4A2525]">
-                            Message Details
+                            Detail Pesan
                         </h3>
                         <p className="mb-6 text-sm leading-relaxed text-[#5C564D]">
                             {notification.message}
@@ -404,32 +404,32 @@ export default function DetailNotification({ notification }: Props) {
                             <div className="grid grid-cols-1 gap-x-8 gap-y-6 border-t border-[#EADBD8] pt-6 md:grid-cols-2">
                                 <DetailRow
                                     icon={ShoppingBag}
-                                    label="Order Number"
+                                    label="Nomor Pesanan"
                                     value={order?.order_number ? `#${order.order_number}` : '-'}
                                 />
                                 <DetailRow
                                     icon={Truck}
-                                    label="Shipping Status"
+                                    label="Status Pengiriman"
                                     value={labelValue(shipment?.shipping_status ?? order?.shipping_status ?? null)}
                                 />
                                 <DetailRow
                                     icon={Package}
-                                    label="Courier Service"
+                                    label="Layanan Kurir"
                                     value={`${shipment?.courier_company ?? '-'} ${shipment?.courier_service_name ? `- ${shipment.courier_service_name}` : ''}`}
                                 />
                                 <DetailRow
                                     icon={Calendar}
-                                    label="Estimated Delivery"
+                                    label="Estimasi Pengiriman"
                                     value={formatDate(shipment?.estimated_delivery ?? null)}
                                 />
                                 <DetailRow
                                     icon={Tag}
-                                    label="Tracking Number"
+                                    label="Nomor Resi"
                                     value={shipment?.waybill_id ?? shipment?.biteship_tracking_id ?? '-'}
                                 />
                                 <DetailRow
                                     icon={Info}
-                                    label="Latest Update"
+                                    label="Pembaruan Terbaru"
                                     value={shippingLatest?.description ?? shippingLatest?.status ?? '-'}
                                 />
                             </div>
@@ -439,12 +439,12 @@ export default function DetailNotification({ notification }: Props) {
                             <div className="grid grid-cols-1 gap-x-8 gap-y-6 border-t border-[#EADBD8] pt-6 md:grid-cols-2">
                                 <DetailRow
                                     icon={ShoppingBag}
-                                    label="Order Number"
+                                    label="Nomor Pesanan"
                                     value={order?.order_number ? `#${order.order_number}` : '-'}
                                 />
                                 <DetailRow
                                     icon={Check}
-                                    label="Payment Status"
+                                    label="Status Pembayaran"
                                     value={labelValue(payment?.transaction_status ?? order?.payment_status ?? null)}
                                 />
                                 <DetailRow
@@ -454,28 +454,28 @@ export default function DetailNotification({ notification }: Props) {
                                 />
                                 <DetailRow
                                     icon={Gift}
-                                    label="Payment Method"
+                                    label="Metode Pembayaran"
                                     value={labelValue(payment?.payment_method ?? null)}
                                 />
                                 <DetailRow
                                     icon={Tag}
-                                    label="Payment Amount"
+                                    label="Jumlah Pembayaran"
                                     value={formatPrice(payment?.gross_amount ?? order?.grand_total ?? 0)}
                                     valueClassName="text-violet-700"
                                 />
                                 <DetailRow
                                     icon={Calendar}
-                                    label={payment?.paid_at ? 'Paid At' : 'Expires At'}
+                                    label={payment?.paid_at ? 'Dibayar Pada' : 'Kedaluwarsa Pada'}
                                     value={formatDateTime(payment?.paid_at ?? payment?.expired_at ?? null)}
                                 />
                                 <DetailRow
                                     icon={Info}
-                                    label="Transaction ID"
+                                    label="ID Transaksi"
                                     value={payment?.midtrans_transaction_id ?? payment?.midtrans_order_id ?? '-'}
                                 />
                                 <DetailRow
                                     icon={Bell}
-                                    label="Fraud Status"
+                                    label="Status Fraud"
                                     value={labelValue(payment?.fraud_status ?? null)}
                                 />
                             </div>
@@ -486,34 +486,34 @@ export default function DetailNotification({ notification }: Props) {
                                 <div className="grid grid-cols-1 gap-x-8 gap-y-6 border-t border-[#EADBD8] pt-6 md:grid-cols-2">
                                     <DetailRow
                                         icon={Bell}
-                                        label="Notification Type"
+                                        label="Tipe Notifikasi"
                                         value={notification.type_label}
                                     />
                                     <DetailRow
                                         icon={Clock}
-                                        label="Created At"
+                                        label="Dibuat Pada"
                                         value={formatDateTime(notification.created_at)}
                                     />
                                     <DetailRow
                                         icon={Info}
-                                        label="Reference Type"
+                                        label="Tipe Referensi"
                                         value={notification.reference_type ?? '-'}
                                     />
                                     <DetailRow
                                         icon={Tag}
-                                        label="Reference ID"
+                                        label="ID Referensi"
                                         value={notification.reference_id ?? '-'}
                                     />
                                     {order && (
                                         <>
                                             <DetailRow
                                                 icon={ShoppingBag}
-                                                label="Order Number"
+                                                label="Nomor Pesanan"
                                                 value={`#${order.order_number}`}
                                             />
                                             <DetailRow
                                                 icon={Package}
-                                                label="Order Status"
+                                                label="Status Pesanan"
                                                 value={labelValue(order.order_status)}
                                             />
                                         </>
@@ -526,7 +526,7 @@ export default function DetailNotification({ notification }: Props) {
                         <div className="rounded-2xl border border-[#EADBD8] bg-white p-6 shadow-sm">
                             <div className="mb-5 flex items-center justify-between gap-4">
                                 <h3 className="font-serif text-xl text-[#4A2525]">
-                                    Order Summary
+                                    Ringkasan Pesanan
                                 </h3>
                                 <span className="rounded-full bg-[#F8EDED] px-3 py-1 text-xs font-semibold text-[#6B5C4B]">
                                     {order.items_count} item
@@ -541,19 +541,19 @@ export default function DetailNotification({ notification }: Props) {
                                     </p>
                                 </div>
                                 <div className="rounded-xl border border-[#EFEAE3] bg-[#FCFBF9] p-4">
-                                    <p className="text-xs text-[#8A6B62]">Shipping</p>
+                                    <p className="text-xs text-[#8A6B62]">Pengiriman</p>
                                     <p className="mt-1 text-sm font-semibold text-[#4A2525]">
                                         {formatPrice(order.shipping_cost)}
                                     </p>
                                 </div>
                                 <div className="rounded-xl border border-[#EFEAE3] bg-[#FCFBF9] p-4">
-                                    <p className="text-xs text-[#8A6B62]">Service Fee</p>
+                                    <p className="text-xs text-[#8A6B62]">Biaya Layanan</p>
                                     <p className="mt-1 text-sm font-semibold text-[#4A2525]">
                                         {formatPrice(order.service_fee)}
                                     </p>
                                 </div>
                                 <div className="rounded-xl border border-[#EFEAE3] bg-[#FCFBF9] p-4">
-                                    <p className="text-xs text-[#8A6B62]">Grand Total</p>
+                                    <p className="text-xs text-[#8A6B62]">Total Akhir</p>
                                     <p className="mt-1 text-sm font-semibold text-[#4A2525]">
                                         {formatPrice(order.grand_total)}
                                     </p>
@@ -578,8 +578,8 @@ export default function DetailNotification({ notification }: Props) {
                                             <p className="mt-1 text-xs text-[#8A6B62]">
                                                 {[
                                                     item.color_name,
-                                                    item.size ? `Size ${item.size}` : null,
-                                                    `Qty ${item.quantity}`,
+                                                    item.size ? `Ukuran ${item.size}` : null,
+                                                    `Jumlah ${item.quantity}`,
                                                 ]
                                                     .filter(Boolean)
                                                     .join(' • ')}
@@ -595,7 +595,7 @@ export default function DetailNotification({ notification }: Props) {
                             {order.address && (
                                 <div className="mt-6 rounded-xl border border-[#EFEAE3] bg-[#FCFBF9] p-4">
                                     <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[#4A2525]">
-                                        <MapPin size={16} /> Shipping Address
+                                        <MapPin size={16} /> Alamat Pengiriman
                                     </div>
                                     <p className="text-sm text-[#5C564D]">
                                         {order.address.recipient_name} ({order.address.recipient_phone})
@@ -614,7 +614,7 @@ export default function DetailNotification({ notification }: Props) {
                             href={notification.actions.back_url}
                             className="flex items-center gap-2 rounded-lg border border-[#EADBD8] bg-white px-4 py-2.5 text-sm font-medium text-[#5C564D] shadow-sm transition-colors hover:bg-[#FAF8F5]"
                         >
-                            <ArrowLeft size={16} /> Back to Notifications
+                            <ArrowLeft size={16} /> Kembali ke Notifikasi
                         </Link>
 
                         {!notification.is_read && (
@@ -623,7 +623,7 @@ export default function DetailNotification({ notification }: Props) {
                                 onClick={markAsRead}
                                 className="flex items-center gap-2 rounded-lg border border-[#EADBD8] bg-white px-4 py-2.5 text-sm font-medium text-[#5C564D] shadow-sm transition-colors hover:bg-[#FAF8F5]"
                             >
-                                <Check size={16} /> Mark as Read
+                                <Check size={16} /> Tandai Dibaca
                             </button>
                         )}
 
@@ -652,30 +652,30 @@ export default function DetailNotification({ notification }: Props) {
                 <div className="flex w-full shrink-0 flex-col gap-6 lg:w-[320px] xl:w-[360px]">
                     <div className="rounded-2xl border border-[#EADBD8] bg-white p-6 shadow-sm">
                         <h3 className="mb-5 font-serif text-lg text-[#4A2525]">
-                            Related Information
+                            Informasi Terkait
                         </h3>
 
                         {notification.detail_type === 'shipping' ? (
                             <div className="mb-6 space-y-4">
                                 <SidebarRow
                                     icon={Truck}
-                                    label="Courier"
+                                    label="Kurir"
                                     value={shipment?.courier_company ?? '-'}
                                 />
                                 <SidebarRow
                                     icon={Tag}
-                                    label="Tracking Number"
+                                    label="Nomor Resi"
                                     value={shipment?.waybill_id ?? shipment?.biteship_tracking_id ?? '-'}
                                 />
                                 <SidebarRow
                                     icon={Info}
-                                    label="Shipping Progress"
+                                    label="Progres Pengiriman"
                                     value={labelValue(shipment?.shipping_status ?? null)}
                                     valueClassName="text-sky-700"
                                 />
                                 <SidebarRow
                                     icon={Calendar}
-                                    label="Estimated Delivery"
+                                    label="Estimasi Pengiriman"
                                     value={formatDate(shipment?.estimated_delivery ?? null)}
                                 />
                             </div>
@@ -688,12 +688,12 @@ export default function DetailNotification({ notification }: Props) {
                                 />
                                 <SidebarRow
                                     icon={Gift}
-                                    label="Method"
+                                    label="Metode"
                                     value={labelValue(payment?.payment_method ?? null)}
                                 />
                                 <SidebarRow
                                     icon={Tag}
-                                    label="Amount"
+                                    label="Jumlah"
                                     value={formatPrice(payment?.gross_amount ?? order?.grand_total ?? 0)}
                                     valueClassName="text-violet-700"
                                 />
@@ -707,22 +707,22 @@ export default function DetailNotification({ notification }: Props) {
                             <div className="mb-6 space-y-4">
                                 <SidebarRow
                                     icon={Bell}
-                                    label="Category"
+                                    label="Kategori"
                                     value={notification.type_label}
                                 />
                                 <SidebarRow
                                     icon={Clock}
-                                    label="Created"
+                                    label="Dibuat"
                                     value={formatDateTime(notification.created_at)}
                                 />
                                 <SidebarRow
                                     icon={Info}
-                                    label="Reference"
+                                    label="Referensi"
                                     value={notification.reference_type ?? '-'}
                                 />
                                 <SidebarRow
                                     icon={Package}
-                                    label="Order"
+                                    label="Pesanan"
                                     value={order?.order_number ?? '-'}
                                 />
                             </div>
@@ -742,7 +742,7 @@ export default function DetailNotification({ notification }: Props) {
 
                     <div className="rounded-2xl border border-[#EADBD8] bg-white p-6 shadow-sm">
                         <h3 className="mb-6 font-serif text-lg text-[#4A2525]">
-                            Activity Timeline
+                            Linimasa Aktivitas
                         </h3>
                         <div className="relative ml-2 space-y-7 border-l border-[#EADBD8]">
                             {notification.timeline.length === 0 ? (

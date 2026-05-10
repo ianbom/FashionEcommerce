@@ -458,7 +458,7 @@ export default function OrderShow({ order }: Props) {
 
     return (
         <>
-            <Head title={`Order Detail - ${order.order_number}`} />
+            <Head title={`Detail Pesanan - ${order.order_number}`} />
 
             <main className="min-h-screen bg-zinc-50/50 px-4 py-5 text-zinc-900 sm:px-6 lg:px-8">
                 <div className="mx-auto flex max-w-7xl flex-col gap-5">

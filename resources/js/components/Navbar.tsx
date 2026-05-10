@@ -29,7 +29,7 @@ export default function Navbar({ cartCount = 0, collections = [] }: NavbarProps)
                         className="cursor-pointer"
                     />
                     <div className="relative">
-                        <Link href="/my-cart" aria-label="Open cart">
+                        <Link href="/my-cart" aria-label="Buka keranjang">
                             <ShoppingBag
                                 strokeWidth={1.5}
                                 size={22}
@@ -61,7 +61,7 @@ export default function Navbar({ cartCount = 0, collections = [] }: NavbarProps)
                         href="/list"
                         className="border-b border-transparent pb-1 transition-colors hover:border-[#4A2525] hover:text-[#4A2525]"
                     >
-                        SHOP ALL
+                    BELANJA SEMUA
                     </Link>
                     {collections.map((collection) => (
                         <Link
@@ -75,7 +75,7 @@ export default function Navbar({ cartCount = 0, collections = [] }: NavbarProps)
                 </div>
 
                 <div className="flex items-center space-x-6 text-[#4A2525]">
-                    <Link href="/my-profile" aria-label="Open profile">
+                    <Link href="/my-profile" aria-label="Buka profil">
                         <User
                             strokeWidth={1.5}
                             size={20}
@@ -83,7 +83,7 @@ export default function Navbar({ cartCount = 0, collections = [] }: NavbarProps)
                         />
                     </Link>
                     <div className="relative">
-                        <Link href="/my-cart" aria-label="Open cart">
+                        <Link href="/my-cart" aria-label="Buka keranjang">
                             <ShoppingBag
                                 strokeWidth={1.5}
                                 size={20}

@@ -114,7 +114,7 @@ export default function CreateProduct() {
 
     return (
         <>
-            <Head title="Create Product" />
+            <Head title="Buat Produk" />
 
             <div className="mx-auto flex min-h-screen w-full max-w-[1600px] flex-col gap-6 p-4 md:p-6 lg:p-8">
                 {/* Header */}
@@ -125,18 +125,18 @@ export default function CreateProduct() {
                                 href="/admin/dashboard"
                                 className="transition-colors hover:text-zinc-900"
                             >
-                                Dashboard
+                                Dasbor
                             </Link>
                             <span>/</span>
                             <Link
                                 href="/admin/products"
                                 className="transition-colors hover:text-zinc-900"
                             >
-                                Products
+                                Produk
                             </Link>
                             <span>/</span>
                             <span className="text-zinc-900">
-                                Create Product
+                                Buat Produk
                             </span>
                         </div>
                         <h1 className="font-serif text-3xl leading-tight text-zinc-900 md:text-4xl">
