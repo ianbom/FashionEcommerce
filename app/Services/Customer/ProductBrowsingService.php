@@ -26,8 +26,9 @@ class ProductBrowsingService
 
         return [
             'canRegister' => Features::enabled(Features::registration()),
-            'heroBanner' => $this->bannerCard($banners->first()),
+            'heroBanners' => $banners->map(fn ($banner) => $this->bannerCard($banner))->toArray(),
             'promoBanner' => $this->bannerCard($banners->skip(1)->first()),
+            'categories' => Category::query()->where('is_active', true)->orderBy('name')->get(['name', 'slug', 'image_url']),
             'hajjSeries' => $this->productsForSection('hajj', 3),
             'wePresent' => $this->productsForSection('sale', 5),
             'recentAdditions' => $this->productsForSection('new', 6),

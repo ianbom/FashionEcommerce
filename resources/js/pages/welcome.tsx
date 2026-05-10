@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { Heart } from 'lucide-react';
+import { Heart, Clock, Star, RotateCcw } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import ShopLayout from '@/layouts/shop-layout';
@@ -39,14 +39,20 @@ type JournalPost = {
     date: string | null;
 };
 
+type CategoryCard = {
+    name: string;
+    slug: string;
+    image_url: string | null;
+};
+
 type Props = {
-    heroBanner: BannerCard;
+    heroBanners: BannerCard[];
     promoBanner: BannerCard;
+    categories: CategoryCard[];
     hajjSeries: ProductCard[];
     wePresent: ProductCard[];
     recentAdditions: ProductCard[];
     mostLoved: ProductCard[];
-    journalPosts: JournalPost[];
 };
 
 const fallbackImages = [
@@ -75,8 +81,9 @@ const bannerImage = (banner: BannerCard, fallback: string) =>
     banner?.image_desktop_url ?? fallback;
 
 export default function Home({
-    heroBanner,
+    heroBanners,
     promoBanner,
+    categories,
     hajjSeries,
     wePresent,
     recentAdditions,
@@ -87,39 +94,60 @@ export default function Home({
             <Head title="Home - Aurea Syari" />
 
             <FadeInOnScroll>
-                <section className="group relative h-[60vh] w-full overflow-hidden md:h-[85vh]">
-                <img
-                    src={bannerImage(
-                        heroBanner,
-                        '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp',
-                    )}
-                    alt={heroBanner?.title ?? 'Aurea Syari'}
-                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-black/20" />
+                <HeroSlider heroBanners={heroBanners} />
+            </FadeInOnScroll>
 
-                <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center text-primary-foreground">
-                    <h1 className="mb-2 text-4xl leading-none font-bold tracking-tight drop-shadow-lg sm:text-5xl md:mb-4 md:text-7xl lg:text-[100px]">
-                        {heroBanner?.title ?? (
-                            <>
-                                NOW <br /> LAUNCHING
-                            </>
-                        )}
-                    </h1>
-                    <div className="animate-fade-in-up mt-2 md:mt-4">
-                        <h2 className="mb-1 font-serif text-3xl tracking-wide text-muted italic sm:text-4xl md:mb-2 md:text-6xl">
-                            {heroBanner?.subtitle ?? 'Moov'}
-                        </h2>
-                        <Link
-                            href={heroBanner?.button_url ?? list.url()}
-                            className="text-[8px] font-medium tracking-[0.2em] uppercase drop-shadow-md transition hover:text-white/80 sm:text-[10px] md:text-xs"
-                        >
-                            {heroBanner?.button_text ?? 'sport & athleisure'}
-                        </Link>
+            {/* Feature Strip */}
+            <div className="bg-[#fcfbf9] w-full py-3.5 px-4 md:px-10 flex flex-col md:flex-row items-center justify-between text-[10px] md:text-xs text-[#53362d] font-medium border-b border-[#e6d5c8]">
+                <div className="flex gap-4 md:gap-10 items-center justify-center w-full md:w-auto mb-2 md:mb-0">
+                    <div className="flex items-center gap-2">
+                        <Clock size={16} strokeWidth={1.5} />
+                        <span>Dikirim dalam 24 Jam</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Star size={16} strokeWidth={1.5} />
+                        <span>Brand Publik Figur, Harga Menghibur</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <RotateCcw size={16} strokeWidth={1.5} />
+                        <span>Produk Original *</span>
                     </div>
                 </div>
-                </section>
-            </FadeInOnScroll>
+                <div className="hidden md:block">
+                    <Link href="#" className="hover:underline">Need Help? Chat with us</Link>
+                </div>
+            </div>
+
+            {/* Category Section */}
+            <section className="mx-auto max-w-[1500px] px-4 py-12 md:px-10 md:py-16">
+                <FadeInOnScroll>
+                    <div className="mb-8 text-center md:mb-12">
+                        <h2 className="text-2xl md:text-3xl font-serif uppercase tracking-wider text-[#53362d]">
+                            Category
+                        </h2>
+                    </div>
+                </FadeInOnScroll>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
+                    {categories?.map((category, index) => (
+                        <FadeInOnScroll key={index} delay={index * 100}>
+                            <Link 
+                                href={list.url({ category: category.slug })}
+                                className="group relative aspect-[4/3] w-full overflow-hidden flex items-center justify-center bg-gray-100"
+                            >
+                                <img
+                                    src={category.image_url ?? fallbackImages[index % fallbackImages.length]}
+                                    alt={category.name}
+                                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                />
+                                <div className="absolute inset-0 bg-black/20 transition-colors duration-500 group-hover:bg-black/40" />
+                                <span className="relative z-10 text-white font-serif text-lg md:text-xl tracking-wide drop-shadow-md">
+                                    {category.name}
+                                </span>
+                            </Link>
+                        </FadeInOnScroll>
+                    ))}
+                </div>
+            </section>
 
             <section className="mx-auto max-w-[1500px] px-4 py-12 md:px-10 md:py-20">
                 <SectionTitle
@@ -284,6 +312,61 @@ export default function Home({
                 }}
             />
         </ShopLayout>
+    );
+}
+
+function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
+    const images = heroBanners && heroBanners.length > 0 
+        ? heroBanners.map((banner) => bannerImage(banner, '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp'))
+        : [
+            '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp',
+            '/img/abdul-raheem-kannath-aNWfK46QWto-unsplash.webp',
+            '/img/ainur-iman-qcNmigFPTQM-unsplash.webp',
+        ];
+    
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentIndex((prev) => (prev + 1) % images.length);
+        }, 5000);
+        return () => clearInterval(timer);
+    }, [images.length]);
+
+    return (
+        <section className="relative h-[60vh] w-full overflow-hidden md:h-[85vh]">
+            {images.map((img, index) => (
+                <div
+                    key={index}
+                    className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                        index === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                    }`}
+                >
+                    <img
+                        src={img}
+                        alt="Hero Banner"
+                        className="h-full w-full object-cover"
+                    />
+                    {/* Subtle dark overlay for text readability */}
+                    <div className="absolute inset-0 bg-black/10" />
+                </div>
+            ))}
+   
+
+            {/* Pagination Indicators */}
+            <div className="absolute bottom-8 left-0 right-0 z-20 flex justify-center gap-3">
+                {images.map((_, index) => (
+                    <button
+                        key={index}
+                        onClick={() => setCurrentIndex(index)}
+                        className={`h-0.5 transition-all duration-300 ${
+                            index === currentIndex ? 'w-10 bg-white' : 'w-6 bg-white/50 hover:bg-white/80'
+                        }`}
+                        aria-label={`Go to slide ${index + 1}`}
+                    />
+                ))}
+            </div>
+        </section>
     );
 }
 
