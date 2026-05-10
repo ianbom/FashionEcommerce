@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { Home, LayoutGrid, User } from 'lucide-react';
+import { Home, LayoutGrid, ShoppingBag, User } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import Footer from '@/components/Footer';
@@ -33,6 +33,13 @@ export default function ShopLayout({ children }: ShopLayoutProps) {
             label: 'Shop',
             href: '/list',
             active: url.startsWith('/list'),
+        },
+        {
+            icon: ShoppingBag,
+            label: 'Cart',
+            href: '/my-cart',
+            active: url.startsWith('/my-cart'),
+            count: cartCount,
         },
         {
             icon: User,
@@ -75,6 +82,13 @@ export default function ShopLayout({ children }: ShopLayoutProps) {
                                                 : ''
                                         }
                                     />
+                                    {'count' in item && item.count > 0 && (
+                                        <span className="absolute -top-2 -right-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#8b5e4c] px-1 text-[9px] leading-none font-semibold text-white">
+                                            {item.count > 99
+                                                ? '99+'
+                                                : item.count}
+                                        </span>
+                                    )}
                                 </div>
                                 <span className="text-[10px] font-medium">
                                     {item.label}

@@ -151,6 +151,22 @@ export default function ListProduct({ products, filters, options }: Props) {
     const [form, setForm] = useState<FilterState>(initialFilters);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
 
+    useEffect(() => {
+        if (form.search === (filters.search ?? '')) {
+            return;
+        }
+
+        const timeout = window.setTimeout(() => {
+            router.get(list.url(), cleanQuery(form), {
+                preserveScroll: true,
+                preserveState: true,
+                replace: true,
+            });
+        }, 400);
+
+        return () => window.clearTimeout(timeout);
+    }, [filters.search, form]);
+
     const visit = (nextFilters: FilterState) => {
         setForm(nextFilters);
         router.get(list.url(), cleanQuery(nextFilters), {
@@ -221,7 +237,7 @@ export default function ListProduct({ products, filters, options }: Props) {
                             onClick={() => setIsFilterOpen(false)}
                             className="rounded-full border border-border px-4 py-2 text-[10px] font-semibold tracking-wider uppercase"
                         >
-                             Tutup
+                            Tutup
                         </button>
                     </div>
                     <div className="mx-auto mb-5 h-1 w-12 rounded-full bg-border lg:hidden" />
@@ -554,7 +570,7 @@ export default function ListProduct({ products, filters, options }: Props) {
                         >
                             <span>
                                 <span className="block text-[11px] font-semibold tracking-[0.24em] text-foreground uppercase transition-colors group-hover:text-primary">
-                                     Filter & Urutkan
+                                    Filter & Urutkan
                                 </span>
                                 <span className="mt-1 block text-[10px] tracking-wide text-muted-foreground">
                                     {activeSummary > 0
@@ -585,7 +601,7 @@ export default function ListProduct({ products, filters, options }: Props) {
                                     {loading && (
                                         <div className="mt-10 flex justify-center">
                                             <span className="rounded-full border border-border px-5 py-2 text-[11px] font-semibold tracking-wider text-secondary-foreground uppercase">
-                                                 Memuat produk...
+                                                Memuat produk...
                                             </span>
                                         </div>
                                     )}
@@ -595,18 +611,18 @@ export default function ListProduct({ products, filters, options }: Props) {
                     ) : (
                         <div className="flex min-h-[420px] flex-col items-center justify-center rounded-md px-6 text-center">
                             <p className="text-sm font-semibold text-foreground">
-                                 Produk tidak ditemukan
+                                Produk tidak ditemukan
                             </p>
                             <p className="mt-2 max-w-sm text-[12px] leading-6 text-secondary-foreground">
-                                 Coba kata kunci lain, pilih filter berbeda,
-                                 atau atur ulang tampilan koleksi.
+                                Coba kata kunci lain, pilih filter berbeda, atau
+                                atur ulang tampilan koleksi.
                             </p>
                             <button
                                 type="button"
                                 onClick={resetFilters}
                                 className="mt-5 rounded-full bg-primary px-5 py-2 text-[11px] font-semibold tracking-wider text-primary-foreground transition hover:bg-primary/90"
                             >
-                                 Atur Ulang Filter
+                                Atur Ulang Filter
                             </button>
                         </div>
                     )}

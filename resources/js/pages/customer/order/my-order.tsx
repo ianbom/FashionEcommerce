@@ -1,15 +1,14 @@
 import { Link, router } from '@inertiajs/react';
 import {
     Check,
-    ChevronDown,
     ChevronLeft,
     ChevronRight,
     Package,
     Search,
     Truck,
 } from 'lucide-react';
-import type { FormEvent, ReactNode } from 'react';
-import { useMemo, useState } from 'react';
+import type { FormEvent } from 'react';
+import { useState } from 'react';
 import {
     index as orderIndex,
     show as orderShow,
@@ -63,23 +62,11 @@ type Order = {
 
 type Filters = {
     search: string;
-    order_status: string;
-    payment_status: string;
-    sort: string;
-    direction: string;
-    per_page: number;
 };
 
 type Props = {
     orders: Paginated<Order>;
     filters: Filters;
-    options: {
-        orderStatuses: string[];
-        paymentStatuses: string[];
-        sorts: string[];
-        directions: string[];
-        perPages: number[];
-    };
 };
 
 const FALLBACK_IMAGE = '/img/hasan-almasi-_X2UAmIcpko-unsplash.webp';
@@ -161,26 +148,10 @@ const canBuyAgain = (status: string) => {
     return status === 'delivered' || status === 'completed';
 };
 
-export default function ListOrder({ orders, filters, options }: Props) {
+export default function ListOrder({ orders, filters }: Props) {
     const [form, setForm] = useState<Filters>({
         search: filters.search ?? '',
-        order_status: filters.order_status ?? '',
-        payment_status: filters.payment_status ?? '',
-        sort: filters.sort ?? 'created_at',
-        direction: filters.direction ?? 'desc',
-        per_page: Number(filters.per_page ?? 10),
     });
-
-    const tabs = useMemo(
-        () => [
-            { id: '', label: 'Semua Pesanan' },
-            ...options.orderStatuses.map((status) => ({
-                id: status,
-                label: labelStatus(status),
-            })),
-        ],
-        [options.orderStatuses],
-    );
 
     const visit = (next: Filters) => {
         router.get(orderIndex.url(), cleanQuery(next), {
@@ -193,12 +164,6 @@ export default function ListOrder({ orders, filters, options }: Props) {
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         visit(form);
-    };
-
-    const updateFilter = (next: Partial<Filters>) => {
-        const nextForm = { ...form, ...next };
-        setForm(nextForm);
-        visit(nextForm);
     };
 
     return (
@@ -215,7 +180,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
         >
             <form
                 onSubmit={submit}
-                className="mb-6 grid gap-3 lg:grid-cols-[1fr_190px_170px_150px_110px_auto]"
+                className="mb-6 grid gap-3 lg:grid-cols-[1fr_auto]"
             >
                 <div className="relative">
                     <Search
@@ -235,53 +200,6 @@ export default function ListOrder({ orders, filters, options }: Props) {
                         className="w-full border-b border-[#EADBD8] bg-transparent py-3 pr-4 pl-11 text-[13px] text-[#333] transition-colors focus:border-[#4A2525] focus:outline-none"
                     />
                 </div>
-                <Select
-                    value={form.payment_status}
-                    onChange={(value) =>
-                        updateFilter({ payment_status: value })
-                    }
-                >
-                    <option value="">Semua pembayaran</option>
-                    {options.paymentStatuses.map((status) => (
-                        <option key={status} value={status}>
-                            {labelStatus(status)}
-                        </option>
-                    ))}
-                </Select>
-                <Select
-                    value={form.sort}
-                    onChange={(value) => updateFilter({ sort: value })}
-                >
-                    {options.sorts.map((sort) => (
-                        <option key={sort} value={sort}>
-                            Urut: {labelStatus(sort)}
-                        </option>
-                    ))}
-                </Select>
-                <Select
-                    value={form.direction}
-                    onChange={(value) => updateFilter({ direction: value })}
-                >
-                    {options.directions.map((direction) => (
-                        <option key={direction} value={direction}>
-                            {direction === 'desc'
-                                ? 'Terbaru / Tinggi'
-                                : 'Terlama / Rendah'}
-                        </option>
-                    ))}
-                </Select>
-                <Select
-                    value={String(form.per_page)}
-                    onChange={(value) =>
-                        updateFilter({ per_page: Number(value) })
-                    }
-                >
-                    {options.perPages.map((perPage) => (
-                        <option key={perPage} value={perPage}>
-                            {perPage}/halaman
-                        </option>
-                    ))}
-                </Select>
                 <button
                     type="submit"
                     className="border-b border-[#4A2525] bg-transparent px-5 py-3 text-[12px] font-bold text-[#4A2525] transition-colors hover:border-[#B6574B] hover:text-[#B6574B]"
@@ -289,28 +207,6 @@ export default function ListOrder({ orders, filters, options }: Props) {
                     Cari
                 </button>
             </form>
-
-            <div className="hide-scrollbar mb-6 flex overflow-x-auto border-b border-[#EADBD8]">
-                <div className="flex space-x-6 px-1">
-                    {tabs.map((tab) => (
-                        <button
-                            key={tab.id || 'all'}
-                            type="button"
-                            onClick={() =>
-                                updateFilter({ order_status: tab.id })
-                            }
-                            className={`relative pb-3 text-[13px] font-medium whitespace-nowrap transition-all ${form.order_status === tab.id ? 'text-[#4A2525]' : 'text-[#8A6B62] hover:text-[#4A4A4A]'}`}
-                        >
-                            {form.order_status === tab.id && (
-                                <div className="absolute right-0 bottom-0 left-0 h-px bg-[#4A2525]" />
-                            )}
-                            <span className="px-1">
-                                {tab.label}
-                            </span>
-                        </button>
-                    ))}
-                </div>
-            </div>
 
             {orders.data.length === 0 ? (
                 <div className="flex flex-col items-center justify-center border-y border-[#EADBD8] px-6 py-20 text-center">
@@ -357,7 +253,9 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                     <p className="mb-1 text-[10px] text-[#8A6B62]">
                                         Pembayaran
                                     </p>
-                                    <span className={`inline-block text-[10px] font-bold ${getStatusTextStyle(order.payment_status)}`}>
+                                    <span
+                                        className={`inline-block text-[10px] font-bold ${getStatusTextStyle(order.payment_status)}`}
+                                    >
                                         {labelStatus(order.payment_status)}
                                     </span>
                                 </div>
@@ -381,7 +279,9 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                     <p className="mb-1 hidden text-[10px] text-[#8A6B62] md:block">
                                         Status Pesanan
                                     </p>
-                                    <span className={`inline-block text-[11px] font-bold ${getStatusTextStyle(order.order_status)}`}>
+                                    <span
+                                        className={`inline-block text-[11px] font-bold ${getStatusTextStyle(order.order_status)}`}
+                                    >
                                         {labelStatus(order.order_status)}
                                     </span>
                                 </div>
@@ -554,32 +454,6 @@ export default function ListOrder({ orders, filters, options }: Props) {
                 </div>
             )}
         </ProfileLayout>
-    );
-}
-
-function Select({
-    value,
-    onChange,
-    children,
-}: {
-    value: string;
-    onChange: (value: string) => void;
-    children: ReactNode;
-}) {
-    return (
-        <div className="relative">
-            <select
-                value={value}
-                onChange={(event) => onChange(event.target.value)}
-                className="w-full appearance-none border-b border-[#EADBD8] bg-transparent px-1 py-3 pr-8 text-[13px] text-[#333] transition-colors focus:border-[#4A2525] focus:outline-none"
-            >
-                {children}
-            </select>
-            <ChevronDown
-                size={16}
-                className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-[#C99A8F]"
-            />
-        </div>
     );
 }
 
