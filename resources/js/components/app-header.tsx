@@ -40,7 +40,7 @@ type Props = {
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Dasbor',
         href: dashboard(),
         icon: LayoutGrid,
     },

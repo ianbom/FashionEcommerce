@@ -300,7 +300,7 @@ function DetailProductContent({
                             href={list.url()}
                             className="transition hover:text-primary"
                         >
-                            Products
+                            Produk
                         </Link>
                         <ChevronRight size={13} />
                         {product.category && (
@@ -370,7 +370,7 @@ function DetailProductContent({
                     >
                         <div className="mb-5 flex flex-wrap gap-2">
                             <span className="rounded-sm border border-border bg-secondary px-2 py-1 text-[10px] font-semibold tracking-wider text-secondary-foreground uppercase">
-                                {isAvailable ? 'In Stock' : 'Out of Stock'}
+                                {isAvailable ? 'Tersedia' : 'Habis'}
                             </span>
                             {product.badge && (
                                 <span className="rounded-sm bg-primary px-2 py-1 text-[10px] font-semibold tracking-wider text-primary-foreground uppercase">
@@ -406,8 +406,8 @@ function DetailProductContent({
                                     className="cursor-pointer text-gray-400 transition-colors hover:scale-110 hover:text-primary active:scale-95 disabled:cursor-default disabled:text-primary"
                                     aria-label={
                                         isWishlisted
-                                            ? 'Remove product from wishlist'
-                                            : 'Add product to wishlist'
+                                            ? 'Hapus produk dari wishlist'
+                                            : 'Tambah produk ke wishlist'
                                     }
                                 >
                                     <Heart
@@ -430,11 +430,11 @@ function DetailProductContent({
                                 </div>
                                 <div>
                                     <p className="mb-0.5 text-[11px] font-semibold tracking-wide text-foreground">
-                                        Complete your order with secure checkout
+                                        Lengkapi pesanan dengan checkout aman
                                     </p>
                                     <p className="text-[10px] tracking-wide text-muted-foreground">
-                                        Select variant and quantity before
-                                        buying
+                                        Pilih varian dan jumlah sebelum
+                                        membeli
                                     </p>
                                 </div>
                             </div>
@@ -447,7 +447,7 @@ function DetailProductContent({
                         {colors.length > 0 && (
                             <div className="mb-6">
                                 <h3 className="mb-3 text-[11px] font-semibold tracking-wide text-foreground">
-                                    Color
+                                    Warna
                                 </h3>
                                 <div className="flex flex-wrap gap-4">
                                     {colors.map((variant) => {
@@ -514,7 +514,7 @@ function DetailProductContent({
                                                 >
                                                     {variant.color_name ??
                                                         variant.color_hex ??
-                                                        'Color'}
+                                                        'Warna'}
                                                 </span>
                                             </button>
                                         );
@@ -527,7 +527,7 @@ function DetailProductContent({
                             <div className="mb-6">
                                 <div className="mb-4 flex items-center justify-between">
                                     <h3 className="text-[11px] font-semibold tracking-wide text-foreground">
-                                        Size
+                                        Ukuran
                                     </h3>
                                     <button
                                         type="button"
@@ -535,7 +535,7 @@ function DetailProductContent({
                                         className="group flex items-center text-accent transition-colors hover:text-primary"
                                     >
                                         <span className="text-[10px] font-medium tracking-wide">
-                                            Size Guide
+                                            Panduan Ukuran
                                         </span>
                                         <ChevronRight
                                             size={14}
@@ -623,8 +623,8 @@ function DetailProductContent({
                                         }`}
                                     >
                                         {cartForm.processing
-                                            ? 'Adding...'
-                                            : 'Add to Cart'}
+                                            ? 'Menambahkan...'
+                                            : 'Tambah ke Keranjang'}
                                     </button>
                                     {(cartForm.errors.quantity ||
                                         cartForm.errors.product_variant_id) && (
@@ -652,8 +652,8 @@ function DetailProductContent({
                                     }`}
                                 >
                                     {cartForm.processing
-                                        ? 'Adding...'
-                                        : 'Buy It Now'}
+                                        ? 'Menambahkan...'
+                                        : 'Beli Sekarang'}
                                 </button>
                             </div>
                         </div>

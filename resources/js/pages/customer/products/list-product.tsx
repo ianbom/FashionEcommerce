@@ -97,17 +97,17 @@ const defaultFilters: FilterState = {
 };
 
 const typeOptions = [
-    { value: 'all', label: 'All Products' },
-    { value: 'featured', label: 'Featured Products' },
-    { value: 'new_arrival', label: 'New Arrival' },
-    { value: 'best_seller', label: 'Best Seller' },
-    { value: 'discount', label: 'Discount' },
+    { value: 'all', label: 'Semua Produk' },
+    { value: 'featured', label: 'Produk Unggulan' },
+    { value: 'new_arrival', label: 'Koleksi Baru' },
+    { value: 'best_seller', label: 'Terlaris' },
+    { value: 'discount', label: 'Diskon' },
 ];
 
 const availabilityOptions = [
-    { value: 'all', label: 'All' },
-    { value: 'in_stock', label: 'In Stock' },
-    { value: 'out_of_stock', label: 'Out of Stock' },
+    { value: 'all', label: 'Semua' },
+    { value: 'in_stock', label: 'Tersedia' },
+    { value: 'out_of_stock', label: 'Habis' },
 ];
 
 const fallbackImages = [
@@ -189,13 +189,13 @@ export default function ListProduct({ products, filters, options }: Props) {
 
     return (
         <ShopLayout>
-            <Head title="Products - Aurea Syari" />
+            <Head title="Produk - Aurea Syari" />
 
             <main className="mx-auto flex max-w-[1500px] flex-col px-4 py-6 md:px-10 md:py-10 lg:flex-row">
                 {isFilterOpen && (
                     <button
                         type="button"
-                        aria-label="Close filters"
+                        aria-label="Tutup filter"
                         onClick={() => setIsFilterOpen(false)}
                         className="fixed inset-0 z-40 bg-black/35 backdrop-blur-[2px] lg:hidden"
                     />
@@ -210,7 +210,7 @@ export default function ListProduct({ products, filters, options }: Props) {
                     <div className="mb-5 flex items-center justify-between lg:hidden">
                         <div>
                             <p className="text-[12px] font-semibold tracking-[0.22em] text-foreground uppercase">
-                                Filter & Sort
+                                Filter & Urutkan
                             </p>
                             <p className="mt-1 text-[11px] text-secondary-foreground">
                                 Search, filter, lalu urutkan produk.
@@ -221,7 +221,7 @@ export default function ListProduct({ products, filters, options }: Props) {
                             onClick={() => setIsFilterOpen(false)}
                             className="rounded-full border border-border px-4 py-2 text-[10px] font-semibold tracking-wider uppercase"
                         >
-                            Close
+                             Tutup
                         </button>
                     </div>
                     <div className="mx-auto mb-5 h-1 w-12 rounded-full bg-border lg:hidden" />
@@ -242,7 +242,7 @@ export default function ListProduct({ products, filters, options }: Props) {
                                     search: event.target.value,
                                 }))
                             }
-                            placeholder="Search products"
+                            placeholder="Cari produk"
                             className="w-full border-0 border-b border-border bg-transparent py-3 pr-4 pl-7 text-[11px] tracking-wide transition-all placeholder:text-muted-foreground/70 focus:border-foreground focus:ring-0 focus:outline-none"
                         />
                     </form>
@@ -251,7 +251,7 @@ export default function ListProduct({ products, filters, options }: Props) {
                         <div className="mb-4 flex items-end justify-between border-b border-foreground pb-3">
                             <div>
                                 <p className="text-[11px] font-semibold tracking-[0.24em] text-foreground uppercase">
-                                    Sort & Order
+                                    Urutkan
                                 </p>
                                 <p className="mt-1 text-[10px] tracking-wide text-muted-foreground">
                                     Atur urutan katalog.
@@ -262,7 +262,7 @@ export default function ListProduct({ products, filters, options }: Props) {
                         <div className="grid grid-cols-2 gap-3 text-[11px]">
                             <label className="grid gap-1.5">
                                 <span className="font-semibold tracking-wider text-foreground uppercase">
-                                    Sort
+                                    Urut
                                 </span>
                                 <select
                                     value={form.sort}
@@ -283,7 +283,7 @@ export default function ListProduct({ products, filters, options }: Props) {
                             </label>
                             <label className="grid gap-1.5">
                                 <span className="font-semibold tracking-wider text-foreground uppercase">
-                                    Order
+                                    Arah
                                 </span>
                                 <select
                                     value={form.order}
@@ -303,12 +303,12 @@ export default function ListProduct({ products, filters, options }: Props) {
                         <div className="mb-4 flex items-end justify-between border-b border-foreground pb-3">
                             <div>
                                 <p className="text-[11px] font-semibold tracking-[0.24em] text-foreground uppercase">
-                                    Refine
+                                    Saring
                                 </p>
                                 <p className="mt-1 text-[10px] tracking-wide text-muted-foreground">
                                     {activeSummary > 0
-                                        ? `${activeSummary} filter active`
-                                        : 'Choose product details'}
+                                        ? `${activeSummary} filter aktif`
+                                        : 'Pilih detail produk'}
                                 </p>
                             </div>
                             {activeSummary > 0 && (
@@ -317,16 +317,16 @@ export default function ListProduct({ products, filters, options }: Props) {
                                     onClick={resetFilters}
                                     className="text-[10px] font-semibold tracking-wider text-primary uppercase underline-offset-4 transition hover:text-primary/75 hover:underline"
                                 >
-                                    Reset
+                                    Atur Ulang
                                 </button>
                             )}
                         </div>
 
                         <div className="divide-y divide-border/70">
-                            <FilterSection title="Categories" defaultOpen>
+                            <FilterSection title="Kategori" defaultOpen>
                                 <div className="space-y-3.5 text-[11px] tracking-wide">
                                     <FilterRadio
-                                        label="All Categories"
+                                        label="Semua Kategori"
                                         active={form.category === ''}
                                         onClick={() =>
                                             setFilter('category', '')
@@ -337,7 +337,7 @@ export default function ListProduct({ products, filters, options }: Props) {
                                             key={category.id ?? category.slug}
                                             label={
                                                 category.name ??
-                                                'Untitled category'
+                                                'Kategori tanpa nama'
                                             }
                                             active={
                                                 form.category === category.slug
@@ -353,10 +353,10 @@ export default function ListProduct({ products, filters, options }: Props) {
                                 </div>
                             </FilterSection>
 
-                            <FilterSection title="Collections">
+                            <FilterSection title="Koleksi">
                                 <div className="space-y-3.5 text-[11px] tracking-wide">
                                     <FilterRadio
-                                        label="All Collections"
+                                        label="Semua Koleksi"
                                         active={form.collection === ''}
                                         onClick={() =>
                                             setFilter('collection', '')
@@ -369,7 +369,7 @@ export default function ListProduct({ products, filters, options }: Props) {
                                             }
                                             label={
                                                 collection.name ??
-                                                'Untitled collection'
+                                                'Koleksi tanpa nama'
                                             }
                                             active={
                                                 form.collection ===
@@ -386,7 +386,7 @@ export default function ListProduct({ products, filters, options }: Props) {
                                 </div>
                             </FilterSection>
 
-                            <FilterSection title="Product Type">
+                            <FilterSection title="Tipe Produk">
                                 <div className="space-y-3.5 text-[11px] tracking-wide">
                                     {typeOptions.map((type) => (
                                         <FilterRadio
@@ -401,7 +401,7 @@ export default function ListProduct({ products, filters, options }: Props) {
                                 </div>
                             </FilterSection>
 
-                            <FilterSection title="Availability">
+                            <FilterSection title="Ketersediaan">
                                 <div className="space-y-3.5 text-[11px] tracking-wide">
                                     {availabilityOptions.map((availability) => (
                                         <FilterRadio
@@ -422,10 +422,10 @@ export default function ListProduct({ products, filters, options }: Props) {
                                 </div>
                             </FilterSection>
 
-                            <FilterSection title="Price">
+                            <FilterSection title="Harga">
                                 <div className="space-y-3.5 text-[11px] tracking-wide">
                                     <FilterRadio
-                                        label="All Prices"
+                                        label="Semua Harga"
                                         active={form.price === 'all'}
                                         onClick={() =>
                                             setFilter('price', 'all')
@@ -444,7 +444,7 @@ export default function ListProduct({ products, filters, options }: Props) {
                                 </div>
                             </FilterSection>
 
-                            <FilterSection title="Color" defaultOpen>
+                            <FilterSection title="Warna" defaultOpen>
                                 <div className="flex flex-wrap gap-3">
                                     <button
                                         type="button"
@@ -454,7 +454,7 @@ export default function ListProduct({ products, filters, options }: Props) {
                                                 ? 'border-primary ring-4 ring-primary/15'
                                                 : 'border-gray-300 hover:border-foreground'
                                         }`}
-                                        aria-label="All colors"
+                                        aria-label="Semua warna"
                                     />
                                     {options.colors.map((color) => (
                                         <button
@@ -488,7 +488,7 @@ export default function ListProduct({ products, filters, options }: Props) {
                                 </div>
                             </FilterSection>
 
-                            <FilterSection title="Size" defaultOpen>
+                            <FilterSection title="Ukuran" defaultOpen>
                                 <div className="flex flex-wrap gap-2 text-[10px] font-semibold text-muted-foreground">
                                     <button
                                         type="button"
@@ -499,7 +499,7 @@ export default function ListProduct({ products, filters, options }: Props) {
                                                 : 'border-input bg-transparent hover:border-foreground hover:text-foreground'
                                         }`}
                                     >
-                                        All
+                                        Semua
                                     </button>
                                     {options.sizes.map((size) => (
                                         <button
@@ -527,14 +527,14 @@ export default function ListProduct({ products, filters, options }: Props) {
                             onClick={resetFilters}
                             className="rounded-full border border-border py-3 text-[11px] font-semibold tracking-wider uppercase"
                         >
-                            Reset
+                            Atur Ulang
                         </button>
                         <button
                             type="button"
                             onClick={() => setIsFilterOpen(false)}
                             className="rounded-full bg-primary py-3 text-[11px] font-semibold tracking-wider text-primary-foreground uppercase"
                         >
-                            View Products
+                            Lihat Produk
                         </button>
                     </div>
                 </aside>
@@ -543,7 +543,7 @@ export default function ListProduct({ products, filters, options }: Props) {
                     <div className="mb-6 flex flex-col gap-4 border-b border-border/60 pb-4 sm:flex-row sm:items-end sm:justify-between">
                         <div>
                             <h1 className="text-[17px] font-medium tracking-wide">
-                                All Products
+                                Semua Produk
                             </h1>
                         </div>
 
@@ -554,12 +554,12 @@ export default function ListProduct({ products, filters, options }: Props) {
                         >
                             <span>
                                 <span className="block text-[11px] font-semibold tracking-[0.24em] text-foreground uppercase transition-colors group-hover:text-primary">
-                                    Filter & Sort
+                                     Filter & Urutkan
                                 </span>
                                 <span className="mt-1 block text-[10px] tracking-wide text-muted-foreground">
                                     {activeSummary > 0
-                                        ? `${activeSummary} filter active`
-                                        : 'Choose product details'}
+                                        ? `${activeSummary} filter aktif`
+                                        : 'Pilih detail produk'}
                                 </span>
                             </span>
                             <ChevronDown
@@ -585,7 +585,7 @@ export default function ListProduct({ products, filters, options }: Props) {
                                     {loading && (
                                         <div className="mt-10 flex justify-center">
                                             <span className="rounded-full border border-border px-5 py-2 text-[11px] font-semibold tracking-wider text-secondary-foreground uppercase">
-                                                Loading products...
+                                                 Memuat produk...
                                             </span>
                                         </div>
                                     )}
@@ -595,18 +595,18 @@ export default function ListProduct({ products, filters, options }: Props) {
                     ) : (
                         <div className="flex min-h-[420px] flex-col items-center justify-center rounded-md px-6 text-center">
                             <p className="text-sm font-semibold text-foreground">
-                                No products found
+                                 Produk tidak ditemukan
                             </p>
                             <p className="mt-2 max-w-sm text-[12px] leading-6 text-secondary-foreground">
-                                Try another keyword, choose a different filter,
-                                or reset the collection view.
+                                 Coba kata kunci lain, pilih filter berbeda,
+                                 atau atur ulang tampilan koleksi.
                             </p>
                             <button
                                 type="button"
                                 onClick={resetFilters}
                                 className="mt-5 rounded-full bg-primary px-5 py-2 text-[11px] font-semibold tracking-wider text-primary-foreground transition hover:bg-primary/90"
                             >
-                                Reset Filters
+                                 Atur Ulang Filter
                             </button>
                         </div>
                     )}
@@ -726,8 +726,8 @@ function ProductTile({
                         type="button"
                         aria-label={
                             isWishlisted
-                                ? 'Remove product from wishlist'
-                                : 'Add product to wishlist'
+                                ? 'Hapus produk dari wishlist'
+                                : 'Tambah produk ke wishlist'
                         }
                         onClick={toggleWishlist}
                         disabled={isWishlistProcessing}
@@ -770,7 +770,7 @@ function ProductTile({
                 </div>
 
                 <span className="mt-auto w-full rounded-full border border-input py-2 text-center text-[11px] font-semibold tracking-wider text-secondary-foreground shadow-sm transition-all duration-300 hover:border-primary hover:bg-primary hover:text-primary-foreground hover:shadow-md active:scale-95">
-                    {product.available_stock > 0 ? 'Buy' : 'Sold Out'}
+                    {product.available_stock > 0 ? 'Beli' : 'Habis'}
                 </span>
             </Link>
         </FadeInOnScroll>

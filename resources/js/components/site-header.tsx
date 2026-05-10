@@ -10,7 +10,7 @@ export function SiteHeader() {
                     orientation="vertical"
                     className="mx-2 hidden h-4 md:block"
                 />
-                <h1 className="text-base font-medium">Admin Dashboard</h1>
+                <h1 className="text-base font-medium">Dasbor Admin</h1>
             </div>
         </header>
     );

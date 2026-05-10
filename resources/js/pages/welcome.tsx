@@ -91,7 +91,7 @@ export default function Home({
 }: Props) {
     return (
         <ShopLayout>
-            <Head title="Home - Aurea Syari" />
+            <Head title="Beranda - Aurea Syari" />
 
             <FadeInOnScroll>
                 <HeroSlider heroBanners={heroBanners} />
@@ -114,7 +114,7 @@ export default function Home({
                     </div>
                 </div>
                 <div className="hidden md:block">
-                    <Link href="#" className="hover:underline">Need Help? Chat with us</Link>
+                    <Link href="#" className="hover:underline">Butuh Bantuan? Chat dengan kami</Link>
                 </div>
             </div>
 
@@ -123,7 +123,7 @@ export default function Home({
                 <FadeInOnScroll>
                     <div className="mb-8 text-center md:mb-12">
                         <h2 className="text-2xl md:text-3xl font-serif uppercase tracking-wider text-[#53362d]">
-                            Category
+                            Kategori
                         </h2>
                     </div>
                 </FadeInOnScroll>
@@ -151,8 +151,8 @@ export default function Home({
 
             <section className="mx-auto max-w-[1500px] px-4 py-12 md:px-10 md:py-20">
                 <SectionTitle
-                    title="Itsar Hajj Series 2026"
-                    subtitle="Now Served Warmly, Wrapped With Love"
+                    title="Seri Haji Itsar 2026"
+                    subtitle="Kini Hadir Hangat, Terbungkus Cinta"
                 />
 
                 <div className="flex flex-col items-center gap-6 md:gap-8 lg:flex-row">
@@ -160,7 +160,7 @@ export default function Home({
                         <div className="group relative aspect-[4/3] w-full overflow-hidden rounded-sm">
                         <img
                             src={productImage(hajjSeries[0], 8)}
-                            alt={hajjSeries[0]?.name ?? 'Hajj Series Lifestyle'}
+                            alt={hajjSeries[0]?.name ?? 'Lifestyle Seri Haji'}
                             className="h-full w-full object-cover transition-transform duration-[1.5s] group-hover:scale-105"
                         />
                         </div>
@@ -183,8 +183,8 @@ export default function Home({
 
             <section className="mx-auto max-w-[1500px] px-4 py-12 md:px-10 md:py-16">
                 <SectionTitle
-                    title="We Present to You..."
-                    subtitle="More Love. A Special Addition, Exclusively For You"
+                    title="Kami Hadirkan Untukmu..."
+                    subtitle="Lebih Banyak Cinta. Tambahan Spesial, Eksklusif Untukmu"
                 />
 
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 lg:grid-cols-5">
@@ -202,8 +202,8 @@ export default function Home({
             <section className="bg-white px-4 py-12 md:px-10 md:py-16">
                 <div className="mx-auto max-w-[1500px]">
                     <SectionTitle
-                        title="Recent Addition"
-                        subtitle="Your Beloved Essentials, Now in Colors"
+                        title="Koleksi Terbaru"
+                        subtitle="Essential Favoritmu, Kini Hadir dalam Beragam Warna"
                     />
 
                     <div className="relative">

@@ -17,59 +17,59 @@ import {
 import type { LucideIcon } from 'lucide-react';
 
 const sidebarItems = [
-    { id: 'agreement', icon: Scale, label: '1. Agreement to Terms' },
+    { id: 'agreement', icon: Scale, label: '1. Persetujuan Ketentuan' },
     {
         id: 'intellectual-property',
         icon: FileText,
-        label: '2. Intellectual Property Rights',
+        label: '2. Hak Kekayaan Intelektual',
     },
     {
         id: 'user-representations',
         icon: UserCheck,
-        label: '3. User Representations',
+        label: '3. Pernyataan Pengguna',
     },
     {
         id: 'products-pricing',
         icon: ShoppingBag,
-        label: '4. Products and Pricing',
+        label: '4. Produk dan Harga',
     },
     {
         id: 'modifications',
         icon: Calendar,
-        label: '5. Modifications and Interruptions',
+        label: '5. Perubahan dan Gangguan',
     },
 ];
 
 const sections = [
     {
         id: 'agreement',
-        title: 'Agreement to Terms',
+        title: 'Persetujuan Ketentuan',
         content:
-            "These Terms and Conditions constitute a legally binding agreement between you and Auréa Syar'i concerning your access to and use of our website and related services.",
+            "Syarat dan Ketentuan ini menjadi perjanjian yang mengikat secara hukum antara kamu dan Auréa Syar'i terkait akses dan penggunaan situs web serta layanan terkait kami.",
     },
     {
         id: 'intellectual-property',
-        title: 'Intellectual Property Rights',
+        title: 'Hak Kekayaan Intelektual',
         content:
-            'Unless otherwise indicated, the site and its content, source code, databases, functionality, website designs, text, photographs, graphics, trademarks, and logos are owned or controlled by us or licensed to us.',
+            'Kecuali dinyatakan lain, situs beserta konten, kode sumber, basis data, fungsi, desain situs, teks, foto, grafis, merek dagang, dan logo dimiliki atau dikendalikan oleh kami atau dilisensikan kepada kami.',
     },
     {
         id: 'user-representations',
-        title: 'User Representations',
+        title: 'Pernyataan Pengguna',
         content:
-            'By using the site, you represent that information you submit is true, accurate, current, and complete, and that you have the legal capacity to comply with these Terms and Conditions.',
+            'Dengan menggunakan situs ini, kamu menyatakan bahwa informasi yang dikirim benar, akurat, terbaru, dan lengkap, serta kamu memiliki kapasitas hukum untuk mematuhi Syarat dan Ketentuan ini.',
     },
     {
         id: 'products-pricing',
-        title: 'Products and Pricing',
+        title: 'Produk dan Harga',
         content:
-            'We make every effort to display product colors, features, specifications, and details accurately. Product information and pricing may change without notice.',
+            'Kami berupaya menampilkan warna, fitur, spesifikasi, dan detail produk secara akurat. Informasi produk dan harga dapat berubah tanpa pemberitahuan.',
     },
     {
         id: 'modifications',
-        title: 'Modifications and Interruptions',
+        title: 'Perubahan dan Gangguan',
         content:
-            'We reserve the right to change, modify, or remove site contents at any time or for any reason at our sole discretion without notice.',
+            'Kami berhak mengubah, menyesuaikan, atau menghapus konten situs kapan saja dan untuk alasan apa pun atas kebijakan kami tanpa pemberitahuan.',
     },
 ];
 
@@ -154,7 +154,7 @@ export default function TermCondition() {
 
     return (
         <ShopLayout>
-            <Head title="Terms & Conditions" />
+            <Head title="Syarat & Ketentuan" />
             <div className="relative w-full overflow-hidden border-b border-[#eadfd4] bg-[#fcfbf9] pt-8 pb-14 sm:pt-10 lg:pb-20">
                 <div className="pointer-events-none absolute top-0 right-0 h-full w-1/3 bg-[#f6eee7]"></div>
                 <div className="relative mx-auto max-w-7xl px-4 md:px-6 lg:px-8">
@@ -165,33 +165,33 @@ export default function TermCondition() {
                                     href="/"
                                     className="transition-colors hover:text-[#8b5e4c]"
                                 >
-                                    Home
+                                    Beranda
                                 </Link>
                                 <span className="mx-2 text-[#bc9e90]">/</span>
                                 <span className="text-[#53362d]">
-                                    Terms & Conditions
+                                    Syarat & Ketentuan
                                 </span>
                             </div>
                             <p className="mb-4 inline-flex border-l border-[#8b5e4c] pl-3 text-xs font-semibold tracking-[0.22em] text-[#8b5e4c] uppercase">
-                                Customer Terms Policy
+                                Kebijakan Ketentuan Pelanggan
                             </p>
                             <h1 className="mb-5 max-w-xl font-serif text-4xl leading-tight text-[#53362d] md:text-5xl lg:text-6xl">
-                                Terms & Conditions
+                                Syarat & Ketentuan
                             </h1>
                             <p className="max-w-xl text-base leading-8 text-[#846b60] sm:text-lg">
-                                Please read these terms and conditions carefully
-                                before using our website.
+                                Baca syarat dan ketentuan ini dengan saksama
+                                sebelum menggunakan situs web kami.
                             </p>
                             <div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-[#846b60]">
                                 <span className="border-b border-[#dcc8b8] pb-1">
-                                    Last updated: May 15, 2024
+                                    Terakhir diperbarui: 15 Mei 2024
                                 </span>
                                 <button
                                     type="button"
                                     onClick={() => scrollToSection('contact')}
                                     className="border-b border-[#53362d] pb-1 font-medium text-[#53362d] transition hover:text-[#8b5e4c] active:scale-[0.98]"
                                 >
-                                    Contact support team
+                                    Hubungi tim dukungan
                                 </button>
                             </div>
                         </div>
@@ -220,7 +220,7 @@ export default function TermCondition() {
                                     strokeWidth={1.5}
                                     className="text-[#8b5e4c]"
                                 />
-                                <h2 className="font-serif">On This Page</h2>
+                                <h2 className="font-serif">Di Halaman Ini</h2>
                             </div>
                             <ul className="space-y-1.5">
                                 {sidebarItems.map((item) => (
@@ -254,29 +254,29 @@ export default function TermCondition() {
                                 />
                                 <div>
                                     <h3 className="mb-2 text-xl font-semibold text-[#53362d]">
-                                        Terms For Safe Shopping
+                                        Ketentuan Belanja Aman
                                     </h3>
                                     <p className="max-w-3xl leading-7 text-[#846b60]">
-                                        These terms define site usage, account
-                                        responsibilities, product information
-                                        rules, and service changes.
+                                        Ketentuan ini menjelaskan penggunaan situs,
+                                        tanggung jawab akun, aturan informasi
+                                        produk, dan perubahan layanan.
                                     </p>
                                 </div>
                             </div>
                         </div>
                         <div className="mb-10 grid grid-cols-1 gap-x-8 sm:grid-cols-2 xl:grid-cols-4">
-                            <FeatureBox icon={Scale} title="Binding Terms" />
+                            <FeatureBox icon={Scale} title="Ketentuan Mengikat" />
                             <FeatureBox
                                 icon={ShieldCheck}
-                                title="Protected Content"
+                                title="Konten Terlindungi"
                             />
                             <FeatureBox
                                 icon={UserCheck}
-                                title="User Responsibility"
+                                title="Tanggung Jawab Pengguna"
                             />
                             <FeatureBox
                                 icon={Box}
-                                title="Product Information"
+                                title="Informasi Produk"
                             />
                         </div>
                         <div className="mb-10 border-y border-[#eadfd4]">
@@ -328,10 +328,10 @@ export default function TermCondition() {
                                 </div>
                                 <div>
                                     <div className="mb-0.5 text-sm font-medium text-[#53362d]">
-                                        Business hours
+                                        Jam operasional
                                     </div>
                                     <div className="text-sm text-[#846b60]">
-                                        Monday - Saturday, 09:00 - 17:00
+                                        Senin - Sabtu, 09:00 - 17:00
                                     </div>
                                 </div>
                             </div>

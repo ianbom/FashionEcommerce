@@ -26,120 +26,120 @@ import {
 import type { LucideIcon } from 'lucide-react';
 
 const sidebarItems = [
-    { id: 'introduction', icon: CheckCircle2, label: '1. Introduction' },
-    { id: 'info-collect', icon: User, label: '2. Information We Collect' },
-    { id: 'use-info', icon: Box, label: '3. How We Use Your Information' },
-    { id: 'payment', icon: CreditCard, label: '4. Payment Information' },
-    { id: 'shipping', icon: Truck, label: '5. Shipping & Delivery Data' },
+    { id: 'introduction', icon: CheckCircle2, label: '1. Pendahuluan' },
+    { id: 'info-collect', icon: User, label: '2. Informasi yang Kami Kumpulkan' },
+    { id: 'use-info', icon: Box, label: '3. Cara Kami Menggunakan Informasi' },
+    { id: 'payment', icon: CreditCard, label: '4. Informasi Pembayaran' },
+    { id: 'shipping', icon: Truck, label: '5. Data Pengiriman & Pengantaran' },
     {
         id: 'cookies',
         icon: Cookie,
-        label: '6. Cookies & Tracking Technologies',
+        label: '6. Cookie & Teknologi Pelacakan',
     },
-    { id: 'protect', icon: ShieldCheck, label: '7. How We Protect Your Data' },
+    { id: 'protect', icon: ShieldCheck, label: '7. Cara Kami Melindungi Data' },
     {
         id: 'sharing',
         icon: Share2,
-        label: '8. Data Sharing With Third Parties',
+        label: '8. Berbagi Data dengan Pihak Ketiga',
     },
-    { id: 'account', icon: User, label: '9. User Account & Profile Data' },
-    { id: 'marketing', icon: Megaphone, label: '10. Marketing Communications' },
-    { id: 'retention', icon: Calendar, label: '11. Data Retention' },
-    { id: 'rights', icon: Shield, label: '12. User Rights' },
-    { id: 'children', icon: Baby, label: "13. Children's Privacy" },
-    { id: 'changes', icon: RefreshCw, label: '14. Changes to This Policy' },
-    { id: 'contact', icon: Mail, label: '15. Contact Information' },
+    { id: 'account', icon: User, label: '9. Data Akun & Profil Pengguna' },
+    { id: 'marketing', icon: Megaphone, label: '10. Komunikasi Pemasaran' },
+    { id: 'retention', icon: Calendar, label: '11. Retensi Data' },
+    { id: 'rights', icon: Shield, label: '12. Hak Pengguna' },
+    { id: 'children', icon: Baby, label: '13. Privasi Anak' },
+    { id: 'changes', icon: RefreshCw, label: '14. Perubahan Kebijakan Ini' },
+    { id: 'contact', icon: Mail, label: '15. Informasi Kontak' },
 ];
 
 const sections = [
     {
         id: 'introduction',
-        title: 'Introduction',
+        title: 'Pendahuluan',
         content:
-            "This Privacy Policy explains how Auréa Syar'i collects, uses, discloses, and protects your personal information when you use our website.",
+            "Kebijakan Privasi ini menjelaskan cara Auréa Syar'i mengumpulkan, menggunakan, mengungkapkan, dan melindungi informasi pribadimu saat menggunakan situs web kami.",
     },
     {
         id: 'info-collect',
-        title: 'Information We Collect',
+        title: 'Informasi yang Kami Kumpulkan',
         content:
-            'We collect personal information you provide directly, such as your name, email address, phone number, shipping address, and order details.',
+            'Kami mengumpulkan informasi pribadi yang kamu berikan langsung, seperti nama, alamat email, nomor telepon, alamat pengiriman, dan detail pesanan.',
     },
     {
         id: 'use-info',
-        title: 'How We Use Your Information',
+        title: 'Cara Kami Menggunakan Informasi',
         content:
-            'We use your information to process orders, deliver products, improve our services, communicate with you, and personalize your experience.',
+            'Kami menggunakan informasimu untuk memproses pesanan, mengirim produk, meningkatkan layanan, berkomunikasi denganmu, dan mempersonalisasi pengalamanmu.',
     },
     {
         id: 'payment',
-        title: 'Payment Information',
-        content: 'Secure payment is processed through Midtrans.',
+        title: 'Informasi Pembayaran',
+        content: 'Pembayaran aman diproses melalui Midtrans.',
     },
     {
         id: 'shipping',
-        title: 'Shipping & Delivery Data',
+        title: 'Data Pengiriman & Pengantaran',
         content:
-            'Shipping options and delivery estimates may be calculated using Biteship.',
+            'Opsi pengiriman dan estimasi pengantaran dapat dihitung menggunakan Biteship.',
     },
     {
         id: 'cookies',
-        title: 'Cookies & Tracking Technologies',
+        title: 'Cookie & Teknologi Pelacakan',
         content:
-            'We use cookies and similar technologies to enhance your browsing experience, analyze site traffic, and support our marketing efforts.',
+            'Kami menggunakan cookie dan teknologi serupa untuk meningkatkan pengalaman jelajah, menganalisis trafik situs, dan mendukung upaya pemasaran kami.',
     },
     {
         id: 'protect',
-        title: 'How We Protect Your Data',
+        title: 'Cara Kami Melindungi Data',
         content:
-            'We implement industry-standard security measures to protect your personal information from unauthorized access or disclosure.',
+            'Kami menerapkan langkah keamanan berstandar industri untuk melindungi informasi pribadimu dari akses atau pengungkapan tanpa izin.',
     },
     {
         id: 'sharing',
-        title: 'Data Sharing With Third Parties',
+        title: 'Berbagi Data dengan Pihak Ketiga',
         content:
-            'We do not sell your personal information. We may share data with trusted service providers who help us operate our business.',
+            'Kami tidak menjual informasi pribadimu. Kami dapat membagikan data kepada penyedia layanan tepercaya yang membantu operasional bisnis kami.',
     },
     {
         id: 'account',
-        title: 'User Account & Profile Data',
+        title: 'Data Akun & Profil Pengguna',
         content:
-            'Your account information helps us provide a personalized shopping experience and save your preferences for future orders.',
+            'Informasi akunmu membantu kami menyediakan pengalaman belanja yang personal dan menyimpan preferensi untuk pesanan berikutnya.',
     },
     {
         id: 'marketing',
-        title: 'Marketing Communications',
+        title: 'Komunikasi Pemasaran',
         content:
-            'You may unsubscribe from marketing communications at any time.',
+            'Kamu dapat berhenti berlangganan komunikasi pemasaran kapan saja.',
     },
     {
         id: 'retention',
-        title: 'Data Retention',
+        title: 'Retensi Data',
         content:
-            'We retain your information only for as long as necessary to fulfill the purposes outlined in this policy or as required by law.',
+            'Kami menyimpan informasimu hanya selama diperlukan untuk memenuhi tujuan dalam kebijakan ini atau sesuai kewajiban hukum.',
     },
     {
         id: 'rights',
-        title: 'User Rights',
+        title: 'Hak Pengguna',
         content:
-            'You have the right to access, update, correct, or delete your personal information. Contact us for assistance.',
+            'Kamu berhak mengakses, memperbarui, memperbaiki, atau menghapus informasi pribadimu. Hubungi kami untuk bantuan.',
     },
     {
         id: 'children',
-        title: "Children's Privacy",
+        title: 'Privasi Anak',
         content:
-            'Our website is not intended for children under 13. We do not knowingly collect personal information from children.',
+            'Situs web kami tidak ditujukan untuk anak di bawah 13 tahun. Kami tidak secara sadar mengumpulkan informasi pribadi dari anak-anak.',
     },
     {
         id: 'changes',
-        title: 'Changes to This Policy',
+        title: 'Perubahan Kebijakan Ini',
         content:
-            'We may update this Privacy Policy from time to time. Changes will be posted on this page with the updated date.',
+            'Kami dapat memperbarui Kebijakan Privasi ini dari waktu ke waktu. Perubahan akan ditampilkan di halaman ini beserta tanggal pembaruan.',
     },
     {
         id: 'contact',
-        title: 'Contact Information',
+        title: 'Informasi Kontak',
         content:
-            'If you have any questions about this Privacy Policy, please contact us using the details below.',
+            'Jika ada pertanyaan tentang Kebijakan Privasi ini, hubungi kami melalui detail di bawah.',
     },
 ];
 
@@ -225,7 +225,7 @@ export default function PrivacyPolicy() {
 
     return (
         <ShopLayout>
-            <Head title="Privacy Policy" />
+            <Head title="Kebijakan Privasi" />
 
             {/* Hero Section */}
             <div className="relative w-full overflow-hidden border-b border-[#eadfd4] bg-[#fcfbf9] pt-8 pb-14 sm:pt-10 lg:pb-20">
@@ -239,34 +239,34 @@ export default function PrivacyPolicy() {
                                     href="/"
                                     className="transition-colors hover:text-[#8b5e4c]"
                                 >
-                                    Home
+                                    Beranda
                                 </Link>
                                 <span className="mx-2 text-[#bc9e90]">/</span>
                                 <span className="text-[#53362d]">
-                                    Privacy Policy
+                                    Kebijakan Privasi
                                 </span>
                             </div>
                             <p className="mb-4 inline-flex border-l border-[#8b5e4c] pl-3 text-xs font-semibold tracking-[0.22em] text-[#8b5e4c] uppercase">
-                                Customer Data Policy
+                                Kebijakan Data Pelanggan
                             </p>
                             <h1 className="mb-5 max-w-xl font-serif text-4xl leading-tight text-[#53362d] md:text-5xl lg:text-6xl">
-                                Privacy Policy
+                                Kebijakan Privasi
                             </h1>
                             <p className="max-w-xl text-base leading-8 text-[#846b60] sm:text-lg">
-                                Learn how we collect, use, protect, and manage
-                                your personal information while you shop at
+                                Pelajari cara kami mengumpulkan, menggunakan,
+                                melindungi, dan mengelola informasi pribadimu saat berbelanja di
                                 Auréa Syar'i.
                             </p>
                             <div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-[#846b60]">
                                 <span className="border-b border-[#dcc8b8] pb-1">
-                                    Last updated: April 28, 2026
+                                    Terakhir diperbarui: 28 April 2026
                                 </span>
                                 <button
                                     type="button"
                                     onClick={() => scrollToSection('contact')}
                                     className="border-b border-[#53362d] pb-1 font-medium text-[#53362d] transition hover:text-[#8b5e4c] active:scale-[0.98]"
                                 >
-                                    Contact privacy team
+                                    Hubungi tim privasi
                                 </button>
                             </div>
                         </div>
@@ -300,7 +300,7 @@ export default function PrivacyPolicy() {
                                     strokeWidth={1.5}
                                     className="text-[#8b5e4c]"
                                 />
-                                <h2 className="font-serif">On This Page</h2>
+                                <h2 className="font-serif">Di Halaman Ini</h2>
                             </div>
                             <ul className="space-y-1.5">
                                 {sidebarItems.map((item) => {
@@ -338,14 +338,14 @@ export default function PrivacyPolicy() {
                                 />
                                 <div>
                                     <h3 className="mb-2 text-xl font-semibold text-[#53362d]">
-                                        Your Privacy Matters
+                                        Privasimu Penting
                                     </h3>
                                     <p className="max-w-3xl leading-7 text-[#846b60]">
-                                        We only collect the information needed
-                                        to process your orders, deliver your
-                                        purchases, improve your shopping
-                                        experience, and provide customer
-                                        support.
+                                        Kami hanya mengumpulkan informasi yang
+                                        diperlukan untuk memproses pesanan,
+                                        mengirim pembelian, meningkatkan
+                                        pengalaman belanja, dan menyediakan
+                                        dukungan pelanggan.
                                     </p>
                                 </div>
                             </div>
@@ -353,16 +353,16 @@ export default function PrivacyPolicy() {
 
                         {/* Feature Grid */}
                         <div className="mb-10 grid grid-cols-1 gap-x-8 sm:grid-cols-2 xl:grid-cols-4">
-                            <FeatureBox icon={Lock} title="Secure Payment" />
+                            <FeatureBox icon={Lock} title="Pembayaran Aman" />
                             <FeatureBox
                                 icon={ShieldCheck}
-                                title="Protected Personal Data"
+                                title="Data Pribadi Terlindungi"
                             />
                             <FeatureBox
                                 icon={Truck}
-                                title="Trusted Delivery Partners"
+                                title="Mitra Pengiriman Tepercaya"
                             />
-                            <FeatureBox icon={Ban} title="No Data Selling" />
+                            <FeatureBox icon={Ban} title="Tidak Menjual Data" />
                         </div>
 
                         {/* Accordion List */}
@@ -414,10 +414,10 @@ export default function PrivacyPolicy() {
                                 </div>
                                 <div>
                                     <div className="mb-0.5 text-sm font-medium text-[#53362d]">
-                                        Business hours
+                                        Jam operasional
                                     </div>
                                     <div className="text-sm text-[#846b60]">
-                                        Monday - Saturday, 09:00 - 17:00
+                                        Senin - Sabtu, 09:00 - 17:00
                                     </div>
                                 </div>
                             </div>

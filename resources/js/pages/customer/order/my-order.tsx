@@ -95,6 +95,26 @@ const formatPrice = (price: number) => {
 };
 
 const labelStatus = (status: string) => {
+    const labels: Record<string, string> = {
+        pending: 'Menunggu',
+        pending_payment: 'Menunggu Pembayaran',
+        paid: 'Dibayar',
+        processing: 'Diproses',
+        ready_to_ship: 'Siap Dikirim',
+        shipped: 'Dikirim',
+        delivered: 'Terkirim',
+        completed: 'Selesai',
+        cancelled: 'Dibatalkan',
+        expired: 'Kedaluwarsa',
+        failed: 'Gagal',
+        created_at: 'Tanggal Dibuat',
+        grand_total: 'Total',
+    };
+
+    if (labels[status]) {
+        return labels[status];
+    }
+
     return status
         .split('_')
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -153,7 +173,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
 
     const tabs = useMemo(
         () => [
-            { id: '', label: 'All Orders' },
+            { id: '', label: 'Semua Pesanan' },
             ...options.orderStatuses.map((status) => ({
                 id: status,
                 label: labelStatus(status),
@@ -183,14 +203,14 @@ export default function ListOrder({ orders, filters, options }: Props) {
 
     return (
         <ProfileLayout
-            title="My Orders"
-            pageTitle="My Orders"
-            subtitle="Track and manage your recent purchases."
+            title="Pesanan Saya"
+            pageTitle="Pesanan Saya"
+            subtitle="Lacak dan kelola pembelian terbarumu."
             activePath="list-order"
             breadcrumbs={[
-                { label: 'Home', href: '/' },
-                { label: 'My Account', href: '/my-profile' },
-                { label: 'My Orders' },
+                { label: 'Beranda', href: '/' },
+                { label: 'Akun Saya', href: '/my-profile' },
+                { label: 'Pesanan Saya' },
             ]}
         >
             <form
@@ -211,7 +231,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                 search: event.target.value,
                             }))
                         }
-                        placeholder="Search by order number or product name"
+                        placeholder="Cari nomor pesanan atau nama produk"
                         className="w-full border-b border-[#EADBD8] bg-transparent py-3 pr-4 pl-11 text-[13px] text-[#333] transition-colors focus:border-[#4A2525] focus:outline-none"
                     />
                 </div>
@@ -221,7 +241,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                         updateFilter({ payment_status: value })
                     }
                 >
-                    <option value="">All payments</option>
+                    <option value="">Semua pembayaran</option>
                     {options.paymentStatuses.map((status) => (
                         <option key={status} value={status}>
                             {labelStatus(status)}
@@ -234,7 +254,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                 >
                     {options.sorts.map((sort) => (
                         <option key={sort} value={sort}>
-                            Sort: {labelStatus(sort)}
+                            Urut: {labelStatus(sort)}
                         </option>
                     ))}
                 </Select>
@@ -245,8 +265,8 @@ export default function ListOrder({ orders, filters, options }: Props) {
                     {options.directions.map((direction) => (
                         <option key={direction} value={direction}>
                             {direction === 'desc'
-                                ? 'Newest / High'
-                                : 'Oldest / Low'}
+                                ? 'Terbaru / Tinggi'
+                                : 'Terlama / Rendah'}
                         </option>
                     ))}
                 </Select>
@@ -258,7 +278,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                 >
                     {options.perPages.map((perPage) => (
                         <option key={perPage} value={perPage}>
-                            {perPage}/page
+                            {perPage}/halaman
                         </option>
                     ))}
                 </Select>
@@ -266,7 +286,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                     type="submit"
                     className="border-b border-[#4A2525] bg-transparent px-5 py-3 text-[12px] font-bold text-[#4A2525] transition-colors hover:border-[#B6574B] hover:text-[#B6574B]"
                 >
-                    Search
+                    Cari
                 </button>
             </form>
 
@@ -298,22 +318,21 @@ export default function ListOrder({ orders, filters, options }: Props) {
                         <div className="absolute inset-0 bg-[#F8EDED] opacity-50 blur-2xl" />
                         <img
                             src={FALLBACK_IMAGE}
-                            alt="Empty orders"
+                            alt="Pesanan kosong"
                             className="relative z-10 h-full w-full object-cover"
                         />
                     </div>
                     <h2 className="mb-2 font-serif text-2xl text-[#4A2525]">
-                        No orders found
+                        Pesanan tidak ditemukan
                     </h2>
                     <p className="mb-8 max-w-[280px] text-[13px] text-[#8A6B62]">
-                        Try a different filter or start exploring our
-                        collection.
+                        Coba filter lain atau mulai jelajahi koleksi kami.
                     </p>
                     <Link
                         href="/list"
                         className="border-b border-[#4A2525] px-1 py-2 text-[12px] font-bold tracking-wider text-[#4A2525] transition-colors hover:border-[#B6574B] hover:text-[#B6574B]"
                     >
-                        Shop Now
+                        Belanja Sekarang
                     </Link>
                 </div>
             ) : (
@@ -327,7 +346,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                             <div className="grid grid-cols-2 gap-4 px-1 md:grid-cols-4">
                                 <div className="col-span-2 md:col-span-1">
                                     <p className="mb-1 font-serif text-[13px] text-[#333333]">
-                                        Order #{order.order_number}
+                                        Pesanan #{order.order_number}
                                     </p>
                                     <p className="text-[11px] text-[#8A6B62]">
                                         {order.created_date ?? '-'} •{' '}
@@ -336,7 +355,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                 </div>
                                 <div className="hidden md:block">
                                     <p className="mb-1 text-[10px] text-[#8A6B62]">
-                                        Payment
+                                        Pembayaran
                                     </p>
                                     <span className={`inline-block text-[10px] font-bold ${getStatusTextStyle(order.payment_status)}`}>
                                         {labelStatus(order.payment_status)}
@@ -360,7 +379,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                 </div>
                                 <div className="flex flex-col items-end justify-center text-right md:items-end md:text-right">
                                     <p className="mb-1 hidden text-[10px] text-[#8A6B62] md:block">
-                                        Order Status
+                                        Status Pesanan
                                     </p>
                                     <span className={`inline-block text-[11px] font-bold ${getStatusTextStyle(order.order_status)}`}>
                                         {labelStatus(order.order_status)}
@@ -394,7 +413,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                                     {item.size ?? '-'}
                                                 </p>
                                                 <p className="text-[11px] text-[#8A6B62]">
-                                                    Qty: {item.qty}
+                                                    Jml: {item.qty}
                                                 </p>
                                             </div>
                                         </div>
@@ -405,7 +424,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                                 +{order.extra_items}
                                             </span>
                                             <span className="text-[10px]">
-                                                more
+                                                lagi
                                             </span>
                                         </div>
                                     )}
@@ -434,7 +453,7 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                             }
                                             className="flex-1 rounded-lg bg-[#4A2525] py-2.5 text-center text-[12px] font-bold text-white transition-colors hover:bg-[#5F1717] lg:w-full"
                                         >
-                                            Pay Now
+                                            Bayar Sekarang
                                         </a>
                                     )}
                                     {order.order_status === 'shipped' && (
@@ -442,21 +461,21 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                             href={orderShow.url(order.id)}
                                             className="flex-1 rounded-lg bg-[#4A2525] py-2.5 text-center text-[12px] font-bold text-white transition-colors hover:bg-[#5F1717] lg:w-full"
                                         >
-                                            Track Order
+                                            Lacak Pesanan
                                         </Link>
                                     )}
                                     <Link
                                         href={orderShow.url(order.id)}
                                         className="flex-1 rounded-lg border border-[#EADBD8] bg-white py-2.5 text-center text-[12px] font-bold text-[#4A2525] transition-colors hover:border-[#C4BDB1] hover:bg-[#FAF9F6] lg:w-full"
                                     >
-                                        View Details
+                                        Lihat Detail
                                     </Link>
                                     {canBuyAgain(order.order_status) && (
                                         <Link
                                             href="/list"
                                             className="flex-1 rounded-lg bg-[#4A2525] py-2.5 text-center text-[12px] font-bold text-white transition-colors hover:bg-[#5F1717] lg:w-full"
                                         >
-                                            Buy Again
+                                            Beli Lagi
                                         </Link>
                                     )}
                                 </div>
@@ -469,22 +488,22 @@ export default function ListOrder({ orders, filters, options }: Props) {
                                         <div className="absolute top-4 left-[5%] -z-10 h-[2px] w-[60%] bg-[#B6574B]" />
                                         {[
                                             {
-                                                label: 'Order Confirmed',
+                                                label: 'Pesanan Dikonfirmasi',
                                                 icon: Check,
                                                 active: true,
                                             },
                                             {
-                                                label: 'Packed',
+                                                label: 'Dikemas',
                                                 icon: Package,
                                                 active: true,
                                             },
                                             {
-                                                label: 'Shipped',
+                                                label: 'Dikirim',
                                                 icon: Truck,
                                                 active: true,
                                             },
                                             {
-                                                label: 'Delivered',
+                                                label: 'Terkirim',
                                                 icon: Check,
                                                 active: false,
                                             },
@@ -520,8 +539,8 @@ export default function ListOrder({ orders, filters, options }: Props) {
 
                     <div className="flex flex-col items-center justify-between gap-4 pt-8 pb-4 text-[12px] text-[#8A6B62] md:flex-row">
                         <span>
-                            Showing {orders.from ?? 0}-{orders.to ?? 0} of{' '}
-                            {orders.total} orders
+                            Menampilkan {orders.from ?? 0}-{orders.to ?? 0} dari{' '}
+                            {orders.total} pesanan
                         </span>
                         <div className="flex flex-wrap justify-center gap-1">
                             {orders.links.map((link) => (

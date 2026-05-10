@@ -104,7 +104,7 @@ export default function Security({
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="password">New password</Label>
+                                <Label htmlFor="password">Kata sandi baru</Label>
 
                                 <PasswordInput
                                     id="password"
@@ -112,7 +112,7 @@ export default function Security({
                                     name="password"
                                     className="mt-1 block w-full"
                                     autoComplete="new-password"
-                                    placeholder="New password"
+                                    placeholder="Kata sandi baru"
                                 />
 
                                 <InputError message={errors.password} />
@@ -120,7 +120,7 @@ export default function Security({
 
                             <div className="grid gap-2">
                                 <Label htmlFor="password_confirmation">
-                                    Confirm password
+                                    Konfirmasi kata sandi
                                 </Label>
 
                                 <PasswordInput
@@ -128,7 +128,7 @@ export default function Security({
                                     name="password_confirmation"
                                     className="mt-1 block w-full"
                                     autoComplete="new-password"
-                                    placeholder="Confirm password"
+                                    placeholder="Konfirmasi kata sandi"
                                 />
 
                                 <InputError
@@ -141,7 +141,7 @@ export default function Security({
                                     disabled={processing}
                                     data-test="update-password-button"
                                 >
-                                    Save password
+                                    Simpan kata sandi
                                 </Button>
                             </div>
                         </>

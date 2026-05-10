@@ -19,44 +19,44 @@ import {
 import type { LucideIcon } from 'lucide-react';
 
 const sidebarItems = [
-    { id: 'final-sales', icon: Ban, label: '1. All Sales Are Final' },
+    { id: 'final-sales', icon: Ban, label: '1. Semua Penjualan Final' },
     {
         id: 'defective-items',
         icon: AlertTriangle,
-        label: '2. Damaged or Defective Items',
+        label: '2. Barang Rusak atau Cacat',
     },
     {
         id: 'incorrect-items',
         icon: PackageCheck,
-        label: '3. Incorrect Items Received',
+        label: '3. Barang yang Diterima Salah',
     },
-    { id: 'cancellations', icon: RefreshCw, label: '4. Cancellations' },
+    { id: 'cancellations', icon: RefreshCw, label: '4. Pembatalan' },
 ];
 
 const sections = [
     {
         id: 'final-sales',
-        title: 'All Sales Are Final',
+        title: 'Semua Penjualan Final',
         content:
-            'To maintain the highest standards of hygiene and quality for all our customers, we operate a strict No Returns, No Exchanges policy. All sales made on our website are final. Please review your order carefully before checking out.',
+            'Untuk menjaga standar kebersihan dan kualitas tertinggi bagi semua pelanggan, kami menerapkan kebijakan tanpa retur dan tanpa penukaran. Semua penjualan di situs web kami bersifat final. Periksa pesanan dengan cermat sebelum checkout.',
     },
     {
         id: 'defective-items',
-        title: 'Damaged or Defective Items',
+        title: 'Barang Rusak atau Cacat',
         content:
-            'While we quality-check every item before shipping, if you receive a product that is damaged during transit or contains a manufacturing defect, contact our customer service team within 48 hours with your order number and clear photographic evidence.',
+            'Meski setiap barang diperiksa kualitasnya sebelum dikirim, jika kamu menerima produk yang rusak saat pengiriman atau memiliki cacat produksi, hubungi tim layanan pelanggan kami dalam 48 jam dengan nomor pesanan dan bukti foto yang jelas.',
     },
     {
         id: 'incorrect-items',
-        title: 'Incorrect Items Received',
+        title: 'Barang yang Diterima Salah',
         content:
-            'In the rare event that you receive an item different from what you ordered, please contact us within 48 hours of delivery. We will arrange for the correct item to be shipped and provide return instructions for the incorrect item.',
+            'Jika kamu menerima barang yang berbeda dari pesanan, hubungi kami dalam 48 jam setelah barang diterima. Kami akan mengatur pengiriman barang yang benar dan memberi instruksi pengembalian untuk barang yang salah.',
     },
     {
         id: 'cancellations',
-        title: 'Cancellations',
+        title: 'Pembatalan',
         content:
-            'Orders cannot be cancelled once they have been processed and dispatched. If you need to cancel an order, contact us immediately after placing it. If the order has not entered fulfillment, we may be able to accommodate your request, but this is not guaranteed.',
+            'Pesanan tidak dapat dibatalkan setelah diproses dan dikirim. Jika perlu membatalkan pesanan, hubungi kami segera setelah membuat pesanan. Jika pesanan belum masuk tahap pemenuhan, kami mungkin dapat membantu permintaanmu, tetapi hal ini tidak dijamin.',
     },
 ];
 
@@ -142,7 +142,7 @@ export default function NoReturnPolicy() {
 
     return (
         <ShopLayout>
-            <Head title="Return & Exchange Policy" />
+            <Head title="Kebijakan Retur & Penukaran" />
 
             <div className="relative w-full overflow-hidden border-b border-[#eadfd4] bg-[#fcfbf9] pt-8 pb-14 sm:pt-10 lg:pb-20">
                 <div className="pointer-events-none absolute top-0 right-0 h-full w-1/3 bg-[#f6eee7]"></div>
@@ -155,33 +155,33 @@ export default function NoReturnPolicy() {
                                     href="/"
                                     className="transition-colors hover:text-[#8b5e4c]"
                                 >
-                                    Home
+                                    Beranda
                                 </Link>
                                 <span className="mx-2 text-[#bc9e90]">/</span>
                                 <span className="text-[#53362d]">
-                                    Return & Exchange Policy
+                                    Kebijakan Retur & Penukaran
                                 </span>
                             </div>
                             <p className="mb-4 inline-flex border-l border-[#8b5e4c] pl-3 text-xs font-semibold tracking-[0.22em] text-[#8b5e4c] uppercase">
-                                Customer Return Policy
+                                Kebijakan Retur Pelanggan
                             </p>
                             <h1 className="mb-5 max-w-xl font-serif text-4xl leading-tight text-[#53362d] md:text-5xl lg:text-6xl">
-                                Return & Exchange Policy
+                                Kebijakan Retur & Penukaran
                             </h1>
                             <p className="max-w-xl text-base leading-8 text-[#846b60] sm:text-lg">
-                                Please read carefully before making a purchase
-                                to understand our return guidelines.
+                                Baca dengan saksama sebelum membeli untuk
+                                memahami panduan retur kami.
                             </p>
                             <div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-[#846b60]">
                                 <span className="border-b border-[#dcc8b8] pb-1">
-                                    Last updated: May 15, 2024
+                                    Terakhir diperbarui: 15 Mei 2024
                                 </span>
                                 <button
                                     type="button"
                                     onClick={() => scrollToSection('contact')}
                                     className="border-b border-[#53362d] pb-1 font-medium text-[#53362d] transition hover:text-[#8b5e4c] active:scale-[0.98]"
                                 >
-                                    Contact support team
+                                    Hubungi tim dukungan
                                 </button>
                             </div>
                         </div>
@@ -212,7 +212,7 @@ export default function NoReturnPolicy() {
                                     strokeWidth={1.5}
                                     className="text-[#8b5e4c]"
                                 />
-                                <h2 className="font-serif">On This Page</h2>
+                                <h2 className="font-serif">Di Halaman Ini</h2>
                             </div>
                             <ul className="space-y-1.5">
                                 {sidebarItems.map((item) => (
@@ -247,31 +247,31 @@ export default function NoReturnPolicy() {
                                 />
                                 <div>
                                     <h3 className="mb-2 text-xl font-semibold text-[#53362d]">
-                                        Please Review Before Checkout
+                                        Periksa Sebelum Checkout
                                     </h3>
                                     <p className="max-w-3xl leading-7 text-[#846b60]">
-                                        Return and exchange requests are limited
-                                        to specific cases so product hygiene,
-                                        quality, and fulfillment accuracy remain
-                                        protected.
+                                        Permintaan retur dan penukaran dibatasi
+                                        untuk kasus tertentu agar kebersihan,
+                                        kualitas, dan akurasi pemenuhan produk
+                                        tetap terlindungi.
                                     </p>
                                 </div>
                             </div>
                         </div>
 
                         <div className="mb-10 grid grid-cols-1 gap-x-8 sm:grid-cols-2 xl:grid-cols-4">
-                            <FeatureBox icon={Ban} title="Final Sales" />
+                            <FeatureBox icon={Ban} title="Penjualan Final" />
                             <FeatureBox
                                 icon={ShieldCheck}
-                                title="Defect Review"
+                                title="Tinjauan Cacat"
                             />
                             <FeatureBox
                                 icon={Truck}
-                                title="Incorrect Item Support"
+                                title="Bantuan Barang Salah"
                             />
                             <FeatureBox
                                 icon={Clock}
-                                title="48-Hour Claim Window"
+                                title="Batas Klaim 48 Jam"
                             />
                         </div>
 
@@ -325,10 +325,10 @@ export default function NoReturnPolicy() {
                                 </div>
                                 <div>
                                     <div className="mb-0.5 text-sm font-medium text-[#53362d]">
-                                        Business hours
+                                        Jam operasional
                                     </div>
                                     <div className="text-sm text-[#846b60]">
-                                        Monday - Saturday, 09:00 - 17:00
+                                        Senin - Sabtu, 09:00 - 17:00
                                     </div>
                                 </div>
                             </div>

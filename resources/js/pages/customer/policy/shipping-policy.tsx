@@ -18,36 +18,36 @@ import {
 import type { LucideIcon } from 'lucide-react';
 
 const sidebarItems = [
-    { id: 'processing', icon: Clock, label: '1. Order Processing Time' },
-    { id: 'rates', icon: Truck, label: '2. Shipping Rates & Estimates' },
-    { id: 'international', icon: Plane, label: '3. International Shipping' },
-    { id: 'tracking', icon: PackageCheck, label: '4. Order Status' },
+    { id: 'processing', icon: Clock, label: '1. Waktu Pemrosesan Pesanan' },
+    { id: 'rates', icon: Truck, label: '2. Tarif & Estimasi Pengiriman' },
+    { id: 'international', icon: Plane, label: '3. Pengiriman Internasional' },
+    { id: 'tracking', icon: PackageCheck, label: '4. Status Pesanan' },
 ];
 
 const sections = [
     {
         id: 'processing',
-        title: 'Order Processing Time',
+        title: 'Waktu Pemrosesan Pesanan',
         content:
-            'All orders are processed within 1 to 3 business days, excluding weekends and holidays, after receiving your order confirmation email. Processing times may be longer during peak seasons or promotional periods.',
+            'Semua pesanan diproses dalam 1 sampai 3 hari kerja, tidak termasuk akhir pekan dan hari libur, setelah email konfirmasi pesanan diterima. Waktu pemrosesan dapat lebih lama saat musim ramai atau periode promosi.',
     },
     {
         id: 'rates',
-        title: 'Shipping Rates & Estimates',
+        title: 'Tarif & Estimasi Pengiriman',
         content:
-            'Shipping charges are calculated and displayed at checkout. Available delivery options may include standard shipping, express shipping, and same day delivery for select metropolitan areas when ordered before 12:00 PM.',
+            'Biaya pengiriman dihitung dan ditampilkan saat checkout. Opsi pengiriman dapat mencakup pengiriman standar, pengiriman ekspres, dan pengiriman di hari yang sama untuk area metropolitan tertentu jika dipesan sebelum pukul 12:00.',
     },
     {
         id: 'international',
-        title: 'International Shipping',
+        title: 'Pengiriman Internasional',
         content:
-            'We currently ship internationally to select countries. Your order may be subject to import duties and taxes, including VAT, once it reaches your destination country. These charges are the customer responsibility.',
+            'Saat ini kami mengirim secara internasional ke negara tertentu. Pesanan kamu dapat dikenai bea masuk dan pajak, termasuk PPN, saat tiba di negara tujuan. Biaya tersebut menjadi tanggung jawab pelanggan.',
     },
     {
         id: 'tracking',
-        title: 'How do I check the status of my order?',
+        title: 'Bagaimana cara cek status pesanan?',
         content:
-            'When your order has shipped, you will receive an email notification with a tracking number. Please allow 48 hours for tracking information to become available.',
+            'Saat pesanan dikirim, kamu akan menerima notifikasi email berisi nomor pelacakan. Mohon tunggu hingga 48 jam sampai informasi pelacakan tersedia.',
     },
 ];
 
@@ -132,7 +132,7 @@ export default function ShippingPolicy() {
 
     return (
         <ShopLayout>
-            <Head title="Shipping Policy" />
+            <Head title="Kebijakan Pengiriman" />
             <div className="relative w-full overflow-hidden border-b border-[#eadfd4] bg-[#fcfbf9] pt-8 pb-14 sm:pt-10 lg:pb-20">
                 <div className="pointer-events-none absolute top-0 right-0 h-full w-1/3 bg-[#f6eee7]"></div>
                 <div className="relative mx-auto max-w-7xl px-4 md:px-6 lg:px-8">
@@ -143,33 +143,33 @@ export default function ShippingPolicy() {
                                     href="/"
                                     className="transition-colors hover:text-[#8b5e4c]"
                                 >
-                                    Home
+                                    Beranda
                                 </Link>
                                 <span className="mx-2 text-[#bc9e90]">/</span>
                                 <span className="text-[#53362d]">
-                                    Shipping Policy
+                                    Kebijakan Pengiriman
                                 </span>
                             </div>
                             <p className="mb-4 inline-flex border-l border-[#8b5e4c] pl-3 text-xs font-semibold tracking-[0.22em] text-[#8b5e4c] uppercase">
-                                Customer Shipping Policy
+                                Kebijakan Pengiriman Pelanggan
                             </p>
                             <h1 className="mb-5 max-w-xl font-serif text-4xl leading-tight text-[#53362d] md:text-5xl lg:text-6xl">
-                                Shipping Policy
+                                Kebijakan Pengiriman
                             </h1>
                             <p className="max-w-xl text-base leading-8 text-[#846b60] sm:text-lg">
-                                Information regarding processing times, delivery
-                                options, and shipping rates.
+                                Informasi tentang waktu pemrosesan, opsi
+                                pengiriman, dan tarif pengiriman.
                             </p>
                             <div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-[#846b60]">
                                 <span className="border-b border-[#dcc8b8] pb-1">
-                                    Last updated: May 15, 2024
+                                    Terakhir diperbarui: 15 Mei 2024
                                 </span>
                                 <button
                                     type="button"
                                     onClick={() => scrollToSection('contact')}
                                     className="border-b border-[#53362d] pb-1 font-medium text-[#53362d] transition hover:text-[#8b5e4c] active:scale-[0.98]"
                                 >
-                                    Contact support team
+                                    Hubungi tim dukungan
                                 </button>
                             </div>
                         </div>
@@ -198,7 +198,7 @@ export default function ShippingPolicy() {
                                     strokeWidth={1.5}
                                     className="text-[#8b5e4c]"
                                 />
-                                <h2 className="font-serif">On This Page</h2>
+                                <h2 className="font-serif">Di Halaman Ini</h2>
                             </div>
                             <ul className="space-y-1.5">
                                 {sidebarItems.map((item) => (
@@ -232,29 +232,29 @@ export default function ShippingPolicy() {
                                 />
                                 <div>
                                     <h3 className="mb-2 text-xl font-semibold text-[#53362d]">
-                                        Shipping Made Clear
+                                        Pengiriman Lebih Jelas
                                     </h3>
                                     <p className="max-w-3xl leading-7 text-[#846b60]">
-                                        Shipping cost, delivery estimates, and
-                                        tracking details are handled during
-                                        checkout and after order fulfillment.
+                                        Biaya pengiriman, estimasi pengiriman,
+                                        dan detail pelacakan ditangani saat
+                                        checkout dan setelah pesanan dipenuhi.
                                     </p>
                                 </div>
                             </div>
                         </div>
                         <div className="mb-10 grid grid-cols-1 gap-x-8 sm:grid-cols-2 xl:grid-cols-4">
-                            <FeatureBox icon={Box} title="1-3 Day Processing" />
+                            <FeatureBox icon={Box} title="Pemrosesan 1-3 Hari" />
                             <FeatureBox
                                 icon={Truck}
-                                title="Checkout Shipping Rates"
+                                title="Tarif Pengiriman Checkout"
                             />
                             <FeatureBox
                                 icon={MapPin}
-                                title="Selected Delivery Areas"
+                                title="Area Pengiriman Terpilih"
                             />
                             <FeatureBox
                                 icon={ShieldCheck}
-                                title="Tracking Updates"
+                                title="Pembaruan Pelacakan"
                             />
                         </div>
                         <div className="mb-10 border-y border-[#eadfd4]">
@@ -306,10 +306,10 @@ export default function ShippingPolicy() {
                                 </div>
                                 <div>
                                     <div className="mb-0.5 text-sm font-medium text-[#53362d]">
-                                        Business hours
+                                        Jam operasional
                                     </div>
                                     <div className="text-sm text-[#846b60]">
-                                        Monday - Saturday, 09:00 - 17:00
+                                        Senin - Sabtu, 09:00 - 17:00
                                     </div>
                                 </div>
                             </div>

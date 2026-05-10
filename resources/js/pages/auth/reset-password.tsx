@@ -15,15 +15,15 @@ type Props = {
 export default function ResetPassword({ token, email }: Props) {
     return (
         <>
-            <Head title="Reset password" />
+            <Head title="Reset kata sandi" />
 
             <div className="mb-6 rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm leading-6 text-muted-foreground">
                 <p className="font-medium text-foreground">
-                    Create a new password for this account.
+                    Buat kata sandi baru untuk akun ini.
                 </p>
                 <p className="mt-1">
-                    Use a password you have not used before. After reset is
-                    complete, sign in with your new password.
+                    Gunakan kata sandi yang belum pernah dipakai. Setelah reset
+                    selesai, masuk dengan kata sandi baru.
                 </p>
             </div>
 
@@ -50,38 +50,38 @@ export default function ResetPassword({ token, email }: Props) {
                                 className="mt-2"
                             />
                             <p className="text-xs leading-5 text-muted-foreground">
-                                This email comes from your reset link and cannot
-                                be changed here.
+                                Email ini berasal dari tautan reset dan tidak
+                                bisa diubah di sini.
                             </p>
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="password">Password</Label>
+                            <Label htmlFor="password">Kata sandi</Label>
                             <PasswordInput
                                 id="password"
                                 name="password"
                                 autoComplete="new-password"
                                 className="mt-1 block w-full"
                                 autoFocus
-                                placeholder="Password"
+                                placeholder="Kata sandi"
                             />
                             <InputError message={errors.password} />
                             <p className="text-xs leading-5 text-muted-foreground">
-                                Use at least 8 characters with a mix of letters,
-                                numbers, or symbols.
+                                Gunakan minimal 8 karakter dengan kombinasi
+                                huruf, angka, atau simbol.
                             </p>
                         </div>
 
                         <div className="grid gap-2">
                             <Label htmlFor="password_confirmation">
-                                Confirm password
+                                Konfirmasi kata sandi
                             </Label>
                             <PasswordInput
                                 id="password_confirmation"
                                 name="password_confirmation"
                                 autoComplete="new-password"
                                 className="mt-1 block w-full"
-                                placeholder="Confirm password"
+                                placeholder="Konfirmasi kata sandi"
                             />
                             <InputError
                                 message={errors.password_confirmation}
@@ -97,8 +97,8 @@ export default function ResetPassword({ token, email }: Props) {
                         >
                             {processing && <Spinner />}
                             {processing
-                                ? 'Resetting password...'
-                                : 'Reset password'}
+                                ? 'Mereset kata sandi...'
+                                : 'Reset kata sandi'}
                         </Button>
                     </div>
                 )}
@@ -108,7 +108,7 @@ export default function ResetPassword({ token, email }: Props) {
 }
 
 ResetPassword.layout = {
-    title: 'Reset password',
+    title: 'Reset kata sandi',
     description:
-        'Enter and confirm your new password to regain access to your account.',
+        'Masukkan dan konfirmasi kata sandi baru untuk mengakses kembali akunmu.',
 };

@@ -85,14 +85,14 @@ function CheckoutScreen() {
                         href="/"
                         className="transition-colors hover:text-black"
                     >
-                        Home
+                        Beranda
                     </Link>
                     <span>/</span>
                     <Link
                         href="/my-cart"
                         className="transition-colors hover:text-black"
                     >
-                        Cart
+                        Keranjang
                     </Link>
                     <span>/</span>
                     <span className="text-[#333333]">Checkout</span>
@@ -109,7 +109,7 @@ function CheckoutScreen() {
                         </p>
                     </div>
                     <div className="flex max-w-[380px] items-center">
-                        {['Cart', 'Checkout', 'Payment'].map((label, index) => (
+                        {['Keranjang', 'Checkout', 'Pembayaran'].map((label, index) => (
                             <div key={label} className="flex items-center">
                                 <div
                                     className={`flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold ${index < 2 ? 'bg-[#4A2525] text-white' : 'bg-white text-[#C99A8F] ring-1 ring-[#EADBD8]'}`}
@@ -172,11 +172,11 @@ function CheckoutScreen() {
                                         >
                                             <div className="mb-2 flex items-start justify-between gap-3">
                                                 <p className="text-[13px] font-bold text-[#333]">
-                                                    {address.label ?? 'Address'}
+                                                    {address.label ?? 'Alamat'}
                                                 </p>
                                                 {address.is_default && (
                                                     <span className="rounded bg-[#F8EDED] px-2 py-1 text-[10px] font-bold text-[#4A2525]">
-                                                        Default
+                                                        Utama
                                                     </span>
                                                 )}
                                             </div>
@@ -191,8 +191,8 @@ function CheckoutScreen() {
                                             </p>
                                             {!address.postal_code && (
                                                 <p className="mt-2 text-[11px] font-semibold text-[#B24B4B]">
-                                                    Lengkapi postal code di
-                                                    Address Book.
+                                                    Lengkapi kode pos di
+                                                    buku alamat.
                                                 </p>
                                             )}
                                         </button>
@@ -250,7 +250,7 @@ function CheckoutScreen() {
                                                 <p className="mt-1 text-[11px] text-[#8A6B62]">
                                                     {rate.courier_service_name ??
                                                         rate.description ??
-                                                        'Delivery service'}{' '}
+                                                        'Layanan pengiriman'}{' '}
                                                     · {rate.duration ?? '-'}
                                                 </p>
                                                 <p className="mt-3 text-[15px] font-bold text-[#333]">
@@ -289,7 +289,7 @@ function CheckoutScreen() {
                                         }
                                         className="rounded-md bg-[#4A2525] px-5 py-2.5 text-[12px] font-bold text-white"
                                     >
-                                        Apply
+                                        Pakai
                                     </button>
                                     {appliedVoucher && (
                                         <button
@@ -297,7 +297,7 @@ function CheckoutScreen() {
                                             onClick={() => void removeVoucher()}
                                             className="rounded-md border border-[#EADBD8] px-4 py-2.5 text-[12px] font-bold text-[#4A4A4A]"
                                         >
-                                            Remove
+                                            Hapus
                                         </button>
                                     )}
                                 </div>
@@ -337,8 +337,8 @@ function CheckoutScreen() {
                                         className="mt-0.5 h-4 w-4 rounded border-[#EADBD8] text-[#4A2525]"
                                     />
                                     <span>
-                                        Saya menyetujui no return/refund policy,
-                                        Terms & Conditions, dan Privacy Policy.
+                                        Saya menyetujui kebijakan tanpa retur/refund,
+                                        Syarat & Ketentuan, dan Kebijakan Privasi.
                                     </span>
                                 </label>
                                 {errors.no_return_refund_agreed && (
@@ -361,7 +361,7 @@ function CheckoutScreen() {
                         <aside className="w-full flex-shrink-0 lg:w-[380px]">
                             <div className="sticky top-24 lg:top-32">
                                 <h2 className="mb-6 font-serif text-xl text-[#333333] tracking-tight md:text-2xl">
-                                    Order Summary
+                                    Ringkasan Pesanan
                                 </h2>
                                 <div className="mb-6 max-h-[300px] space-y-4 overflow-y-auto pr-2">
                                 {cartItems.map((item) => (
@@ -404,22 +404,22 @@ function CheckoutScreen() {
                                 value={summary.subtotal}
                             />
                             <SummaryRow
-                                label="Shipping"
+                                label="Ongkir"
                                 value={summary.shipping}
                             />
                             <SummaryRow
-                                label="Service Fee"
+                                label="Biaya Layanan"
                                 value={summary.service_fee}
                             />
                             <SummaryRow
-                                label="Discount"
+                                label="Diskon"
                                 value={-summary.discount}
                                 danger
                             />
                             <div className="mt-4 border-t border-[#EADBD8] pt-4">
                                 <div className="flex items-end justify-between">
                                     <span className="text-[13px] font-semibold text-[#333]">
-                                        Total Payment
+                                        Total Pembayaran
                                     </span>
                                     <span className="font-serif text-2xl text-[#333]">
                                         {formatPrice(summary.total)}
@@ -439,17 +439,17 @@ function CheckoutScreen() {
                                 >
                                     <Lock size={16} className="mr-2" />
                                     {placingOrder
-                                        ? 'Creating Payment...'
-                                        : 'Pay with Midtrans'}
+                                        ? 'Membuat Pembayaran...'
+                                        : 'Bayar dengan Midtrans'}
                                 </button>
                                 <div className="mt-8 space-y-4 border-t border-[#EADBD8]/60 pt-6">
                                     <div className="flex items-start space-x-3 text-[11px] text-[#8A6B62]">
                                         <ShieldCheck size={16} className="mt-0.5 flex-shrink-0 text-[#C99A8F]" strokeWidth={1.5} />
-                                        <p>Secure payment powered by Midtrans</p>
+                                        <p>Pembayaran aman didukung Midtrans</p>
                                     </div>
                                     <div className="flex items-start space-x-3 text-[11px] text-[#8A6B62]">
                                         <Box size={16} className="mt-0.5 flex-shrink-0 text-[#C99A8F]" strokeWidth={1.5} />
-                                        <p>Shipping calculated by Biteship</p>
+                                        <p>Ongkir dihitung oleh Biteship</p>
                                     </div>
                                 </div>
                             </div>

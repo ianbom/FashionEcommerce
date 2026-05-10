@@ -142,7 +142,7 @@ export default function MyCart({
 
     return (
         <ShopLayout>
-            <Head title="My Cart - Aurea Syari" />
+            <Head title="Keranjang Saya - Aurea Syari" />
 
             <main className="mx-auto min-h-screen max-w-[1200px] px-4 py-8 md:px-8 md:py-12">
                 <div className="mb-6 flex items-center space-x-2 text-[10px] font-medium tracking-wide text-[#8A6B62] md:mb-8 md:text-xs">
@@ -150,20 +150,20 @@ export default function MyCart({
                         href="/"
                         className="transition-colors hover:text-black"
                     >
-                        Home
+                        Beranda
                     </Link>
                     <span>/</span>
-                    <span className="text-[#333333]">My Cart</span>
+                    <span className="text-[#333333]">Keranjang Saya</span>
                 </div>
 
                 {!isEmpty ? (
                     <>
                         <div className="mb-8 md:mb-10">
                             <h1 className="mb-2 font-serif text-3xl text-[#4A2525] italic md:text-4xl">
-                                My Cart
+                                Keranjang Saya
                             </h1>
                             <p className="text-xs text-[#8A6B62] md:text-sm">
-                                Review your selected items before checkout.
+                                Tinjau item pilihanmu sebelum checkout.
                             </p>
                             {errorMessage && (
                                 <div className="mt-4 rounded-xl border border-[#E7C9C9] bg-[#FFF6F6] px-4 py-3 text-[12px] font-medium text-[#B24B4B]">
@@ -279,7 +279,7 @@ export default function MyCart({
                                                                 </div>
                                                                 {!item.is_available && (
                                                                     <p className="mt-1.5 text-[10px] font-semibold text-[#B24B4B] sm:text-[11px]">
-                                                                        Variant unavailable
+                                                                        Varian tidak tersedia
                                                                     </p>
                                                                 )}
                                                             </div>
@@ -288,7 +288,7 @@ export default function MyCart({
                                                                 onClick={() => removeItem(item)}
                                                                 disabled={itemDisabled}
                                                                 className="flex-shrink-0 -mt-1 -mr-1 rounded-full p-2 text-gray-400 transition-all hover:bg-red-50 hover:text-red-500 disabled:opacity-50 active:scale-90"
-                                                                aria-label="Remove item"
+                                                                aria-label="Hapus item"
                                                             >
                                                                 <Trash2 size={16} strokeWidth={1.5} />
                                                             </button>
@@ -336,12 +336,12 @@ export default function MyCart({
                             <div className="w-full flex-shrink-0 lg:w-[380px]">
                                 <div className="sticky top-24 lg:top-32">
                                     <h2 className="mb-6 font-serif text-xl text-[#333333] tracking-tight md:text-2xl">
-                                        Order Summary
+                                         Ringkasan Pesanan
                                     </h2>
 
                                     <div className="mb-6 space-y-4 text-[13px] text-[#4A4A4A]">
                                         <div>
-                                            <span>Items ({summary.item_count})</span>
+                                            <span>Item ({summary.item_count})</span>
                                             <div className="mt-3 space-y-3 text-[11px] text-[#8A6B62]">
                                                 {cartItems.map((item) => (
                                                     <div
@@ -393,14 +393,14 @@ export default function MyCart({
                                             href={checkoutHref}
                                             className="block w-full rounded-lg bg-[#4A2525] py-4 text-center text-[13px] font-bold tracking-wider text-white transition-all hover:bg-[#5F1717] hover:shadow-lg hover:shadow-[#4A2525]/20 active:scale-[0.98]"
                                         >
-                                            Proceed to Checkout
+                                            Lanjut ke Checkout
                                         </Link>
                                         <div className="text-center">
                                             <Link
                                                 href={list.url()}
                                                 className="inline-block text-[12px] font-medium text-[#8A6B62] underline underline-offset-4 transition-colors hover:text-black"
                                             >
-                                                Continue Shopping
+                                                Lanjut Belanja
                                             </Link>
                                         </div>
                                     </div>
@@ -413,7 +413,7 @@ export default function MyCart({
                                                 strokeWidth={1.5}
                                             />
                                             <p>
-                                                Secure payment powered by
+                                                Pembayaran aman didukung
                                                 Midtrans
                                             </p>
                                         </div>
@@ -424,8 +424,8 @@ export default function MyCart({
                                                 strokeWidth={1.5}
                                             />
                                             <p>
-                                                Shipping calculated using
-                                                Biteship at checkout
+                                                Ongkir dihitung memakai
+                                                Biteship saat checkout
                                             </p>
                                         </div>
                                     </div>
@@ -486,17 +486,17 @@ export default function MyCart({
                             </svg>
                         </div>
                         <h2 className="mb-4 font-serif text-3xl text-[#4A2525] italic md:text-4xl">
-                            Your cart is empty
+                            Keranjangmu kosong
                         </h2>
                         <p className="mb-10 max-w-sm text-center text-sm text-[#8A6B62] md:text-base">
-                            Looks like you haven&apos;t added anything to your
-                            cart yet.
+                            Sepertinya kamu belum menambahkan apa pun ke
+                            keranjang.
                         </p>
                         <Link
                             href={list.url()}
                             className="rounded-lg bg-[#4A2525] px-8 py-4 text-sm font-bold tracking-wider text-white transition-all hover:-translate-y-1 hover:bg-[#5F1717] hover:shadow-xl active:translate-y-0"
                         >
-                            Explore Collection
+                            Jelajahi Koleksi
                         </Link>
                     </div>
                 )}
@@ -504,7 +504,7 @@ export default function MyCart({
                 {!isEmpty && suggestedProducts.length > 0 && (
                     <div className="mt-20 mb-10 md:mt-32 lg:mb-20">
                         <h2 className="relative mb-8 inline-block font-serif text-xl text-[#333333] md:text-2xl">
-                            You May Also Like
+                            Kamu Mungkin Suka
                             <span className="absolute bottom-[-8px] left-0 h-px w-1/2 bg-[#C4BDB1]" />
                         </h2>
                         <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">

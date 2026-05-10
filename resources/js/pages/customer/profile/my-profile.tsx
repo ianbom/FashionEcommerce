@@ -124,14 +124,14 @@ export default function MyProfile() {
 
     return (
         <ProfileLayout
-            title="Profile Settings"
-            pageTitle="Profile Settings"
-            subtitle="Manage your personal information and account preferences."
+            title="Pengaturan Profil"
+            pageTitle="Pengaturan Profil"
+            subtitle="Kelola informasi pribadi dan preferensi akunmu."
             activePath="my-profile"
             breadcrumbs={[
-                { label: 'Home', href: '/' },
-                { label: 'My Account', href: '/my-profile' },
-                { label: 'Profile Settings' },
+                { label: 'Beranda', href: '/' },
+                { label: 'Akun Saya', href: '/my-profile' },
+                { label: 'Pengaturan Profil' },
             ]}
         >
             {/* Profile Header */}
@@ -160,7 +160,7 @@ export default function MyProfile() {
                         </p>
                         {user.member_since && (
                             <p className="mb-3 text-[11px] text-[#8A6B62]">
-                                Member since {user.member_since}
+                                Member sejak {user.member_since}
                             </p>
                         )}
                     </div>
@@ -168,7 +168,7 @@ export default function MyProfile() {
 
                 <div className="text-left md:text-right">
                     <p className="mb-1 text-[10px] font-bold tracking-[0.2em] text-[#C99A8F] uppercase">
-                        Account role
+                        Peran akun
                     </p>
                     <p className="font-serif text-lg text-[#4A2525] capitalize">
                         {user.role}
@@ -185,7 +185,7 @@ export default function MyProfile() {
                     <div className="mb-6 flex items-center border-b border-[#EADBD8] pb-4">
                         <User size={18} className="mr-2 text-[#4A2525]" />
                         <h3 className="font-serif text-lg text-[#4A2525]">
-                            Personal Information
+                            Informasi Pribadi
                         </h3>
                     </div>
 
@@ -193,7 +193,7 @@ export default function MyProfile() {
                         {/* Full Name */}
                         <div>
                             <label className="mb-1.5 block text-[11px] font-semibold text-[#4A4A4A]">
-                                Full Name
+                                Nama Lengkap
                             </label>
                             <input
                                 type="text"
@@ -217,7 +217,7 @@ export default function MyProfile() {
                         {/* Email */}
                         <div>
                             <label className="mb-1.5 block text-[11px] font-semibold text-[#4A4A4A]">
-                                Email Address
+                                Alamat Email
                             </label>
                             <input
                                 type="email"
@@ -241,7 +241,7 @@ export default function MyProfile() {
                         {/* Phone */}
                         <div>
                             <label className="mb-1.5 block text-[11px] font-semibold text-[#4A4A4A]">
-                                Phone Number
+                                Nomor Telepon
                             </label>
                             <input
                                 type="tel"
@@ -249,7 +249,7 @@ export default function MyProfile() {
                                 onChange={(e) =>
                                     profileForm.setData('phone', e.target.value)
                                 }
-                                placeholder="e.g. 0812 3456 789"
+                                placeholder="contoh 0812 3456 789"
                                     className={`w-full border-b bg-transparent px-1 py-2.5 text-[13px] text-[#333] transition-colors focus:outline-none ${
                                     profileForm.errors.phone
                                         ? 'border-red-400 focus:border-red-400'
@@ -266,9 +266,9 @@ export default function MyProfile() {
                         {/* Avatar Upload */}
                         <div>
                             <label className="mb-1.5 block text-[11px] font-semibold text-[#4A4A4A]">
-                                Avatar Image{' '}
+                                Foto Avatar{' '}
                                 <span className="font-normal text-[#8A6B62]">
-                                    (optional)
+                                    (opsional)
                                 </span>
                             </label>
                             <input
@@ -290,7 +290,7 @@ export default function MyProfile() {
                                 </p>
                             )}
                             <p className="mt-1.5 text-[10px] text-[#8A6B62]">
-                                JPG, PNG, or WEBP. Max 2MB.
+                                JPG, PNG, atau WEBP. Maks 2MB.
                             </p>
                         </div>
 
@@ -306,14 +306,14 @@ export default function MyProfile() {
                                         className="animate-spin"
                                     />
                                 )}
-                                Save Changes
+                                Simpan Perubahan
                             </button>
                             <button
                                 type="button"
                                 onClick={() => profileForm.reset()}
                                 className="rounded-md border border-[#EADBD8] bg-transparent px-6 py-2.5 text-[12px] font-bold tracking-wider text-[#4A4A4A] transition-colors hover:bg-white"
                             >
-                                Cancel
+                                Batal
                             </button>
                         </div>
                     </div>
@@ -332,12 +332,12 @@ export default function MyProfile() {
                                 className="mr-2 text-[#4A2525]"
                             />
                             <h3 className="font-serif text-lg text-[#4A2525]">
-                                Change Password
+                                Ubah Kata Sandi
                             </h3>
                         </div>
                         <div className="space-y-4">
                             <PasswordField
-                                label="Current Password"
+                                label="Kata Sandi Saat Ini"
                                 show={showPassword1}
                                 onToggle={() =>
                                     setShowPassword1(!showPassword1)
@@ -353,7 +353,7 @@ export default function MyProfile() {
                                 autoComplete="current-password"
                             />
                             <PasswordField
-                                label="New Password"
+                                label="Kata Sandi Baru"
                                 show={showPassword2}
                                 onToggle={() =>
                                     setShowPassword2(!showPassword2)
@@ -364,11 +364,11 @@ export default function MyProfile() {
                                 }
                                 error={passwordForm.errors.password}
                                 autoComplete="new-password"
-                                hint="Use at least 8 characters with a mix of letters and numbers."
+                                hint="Gunakan minimal 8 karakter dengan kombinasi huruf dan angka."
                                 hintColor="text-[#EF4444]"
                             />
                             <PasswordField
-                                label="Confirm New Password"
+                                label="Konfirmasi Kata Sandi Baru"
                                 show={showPassword3}
                                 onToggle={() =>
                                     setShowPassword3(!showPassword3)
@@ -397,7 +397,7 @@ export default function MyProfile() {
                                             className="animate-spin"
                                         />
                                     )}
-                                    Update Password
+                                    Perbarui Kata Sandi
                                 </button>
                             </div>
                         </div>
@@ -415,7 +415,7 @@ export default function MyProfile() {
                                     className="mr-2 text-[#4A2525]"
                                 />
                                 <h3 className="font-serif text-lg text-[#4A2525]">
-                                    Default Address
+                                    Alamat Utama
                                 </h3>
                             </div>
                         </div>
@@ -426,7 +426,7 @@ export default function MyProfile() {
                                         {defaultAddress.recipient_name}
                                     </p>
                                     <span className="text-[10px] font-bold text-[#4A2525]">
-                                        {defaultAddress.label ?? 'Default'}
+                                        {defaultAddress.label ?? 'Utama'}
                                     </span>
                                 </div>
                                 <p className="text-[#4A4A4A]">
@@ -453,15 +453,15 @@ export default function MyProfile() {
                             </div>
                         ) : (
                             <p className="mb-6 text-[12px] leading-relaxed text-[#8A6B62]">
-                                No default address yet. Add one for faster
-                                checkout.
+                                Belum ada alamat utama. Tambahkan alamat untuk
+                                checkout lebih cepat.
                             </p>
                         )}
                         <Link
                             href="/address"
                             className="block w-full rounded-md border border-[#EADBD8] bg-white px-4 py-2 text-center text-[12px] font-bold tracking-wider text-[#4A2525] transition-colors hover:bg-[#FAF9F6]"
                         >
-                            Manage Addresses
+                            Kelola Alamat
                         </Link>
                     </div>
                 </div>

@@ -40,7 +40,7 @@ import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Dasbor',
         href: dashboard(),
         icon: LayoutGrid,
     },
@@ -48,165 +48,165 @@ const mainNavItems: NavItem[] = [
 
 const adminNavGroups: NavGroup[] = [
     {
-        title: 'Overview',
+        title: 'Ringkasan',
         items: [
             {
-                title: 'Admin Dashboard',
+                title: 'Dasbor Admin',
                 href: '/admin/dashboard',
                 icon: LayoutGrid,
             },
         ],
     },
     {
-        title: 'Catalog',
+        title: 'Katalog',
         items: [
             {
-                title: 'Products',
+                title: 'Produk',
                 href: '/admin/products',
                 icon: Package,
             },
             {
-                title: 'Variants',
+                title: 'Varian',
                 href: '/admin/product-variants',
                 icon: Boxes,
             },
             {
-                title: 'Categories',
+                title: 'Kategori',
                 href: '/admin/categories',
                 icon: Tags,
             },
             {
-                title: 'Collections',
+                title: 'Koleksi',
                 href: '/admin/collections',
                 icon: Layers3,
             },
             {
-                title: 'Stock',
+                title: 'Stok',
                 href: '/admin/stock',
                 icon: BarChart3,
             },
             {
-                title: 'Stock Logs',
+                title: 'Log Stok',
                 href: '/admin/stock/logs',
                 icon: ReceiptText,
             },
         ],
     },
     {
-        title: 'Sales',
+        title: 'Penjualan',
         items: [
             {
-                title: 'Orders',
+                title: 'Pesanan',
                 href: '/admin/orders',
                 icon: ShoppingBag,
             },
             {
-                title: 'Payments',
+                title: 'Pembayaran',
                 href: '/admin/payments',
                 icon: WalletCards,
             },
             {
-                title: 'Payment Logs',
+                title: 'Log Pembayaran',
                 href: '/admin/payment-logs',
                 icon: FileText,
             },
             {
-                title: 'Shipments',
+                title: 'Pengiriman',
                 href: '/admin/shipments',
                 icon: Truck,
             },
             {
-                title: 'Biteship Logs',
+                title: 'Log Biteship',
                 href: '/admin/biteship-webhook-logs',
                 icon: ClipboardList,
             },
         ],
     },
     {
-        title: 'Customers',
+        title: 'Pelanggan',
         items: [
             {
-                title: 'Customers',
+                title: 'Pelanggan',
                 href: '/admin/customers',
                 icon: Users,
             },
             {
-                title: 'Addresses',
+                title: 'Alamat',
                 href: '/admin/customer-addresses',
                 icon: Home,
             },
             {
-                title: 'Notifications',
+                title: 'Notifikasi',
                 href: '/admin/notifications',
                 icon: Bell,
             },
             {
-                title: 'Wishlist Insights',
+                title: 'Insight Wishlist',
                 href: '/admin/wishlists',
                 icon: Heart,
             },
         ],
     },
     {
-        title: 'Marketing & Content',
+        title: 'Pemasaran & Konten',
         items: [
             {
-                title: 'Vouchers',
+                title: 'Voucher',
                 href: '/admin/vouchers',
                 icon: CircleDollarSign,
             },
             {
-                title: 'Banners',
+                title: 'Banner',
                 href: '/admin/banners',
                 icon: Image,
             },
             {
-                title: 'Pages',
+                title: 'Halaman',
                 href: '/admin/pages',
                 icon: FileText,
             },
         ],
     },
     {
-        title: 'System',
+        title: 'Sistem',
         items: [
             {
-                title: 'Sales Report',
+                title: 'Laporan Penjualan',
                 href: '/admin/reports/sales',
                 icon: BarChart3,
             },
             {
-                title: 'Product Report',
+                title: 'Laporan Produk',
                 href: '/admin/reports/products',
                 icon: ClipboardList,
             },
             {
-                title: 'Customer Report',
+                title: 'Laporan Pelanggan',
                 href: '/admin/reports/customers',
                 icon: Users,
             },
             {
-                title: 'Shipment Report',
+                title: 'Laporan Pengiriman',
                 href: '/admin/reports/shipments',
                 icon: Truck,
             },
             {
-                title: 'Voucher Report',
+                title: 'Laporan Voucher',
                 href: '/admin/reports/vouchers',
                 icon: CircleDollarSign,
             },
             {
-                title: 'Audit Logs',
+                title: 'Log Audit',
                 href: '/admin/audit-logs',
                 icon: ShieldCheck,
             },
             {
-                title: 'Settings',
+                title: 'Pengaturan',
                 href: '/admin/settings',
                 icon: Settings,
             },
             {
-                title: 'Admin Users',
+                title: 'Pengguna Admin',
                 href: '/admin/admin-users',
                 icon: UserCog,
             },
@@ -226,7 +226,7 @@ export function AppSidebar() {
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
                             <Link href={homeHref} prefetch>
-                                Admin Dashboard
+                                Dasbor Admin
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

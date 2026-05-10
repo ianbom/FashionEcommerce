@@ -173,7 +173,7 @@ export default function AdminDashboard({
 }: Props) {
     return (
         <>
-            <Head title="Admin Dashboard" />
+            <Head title="Dasbor Admin" />
 
             <main className="min-h-[100dvh] bg-white px-8 py-7 text-zinc-900">
                 <div className="mx-auto flex max-w-7xl flex-col gap-8">
@@ -214,10 +214,10 @@ function DashboardHeader() {
                     Modest Fashion Admin
                 </p>
                 <h1 className="font-serif text-4xl leading-tight text-zinc-900">
-                    Dashboard
+                    Dasbor
                 </h1>
                 <p className="mt-1 max-w-2xl text-sm leading-6 text-zinc-400">
-                    Monitor today&apos;s store activity and important actions.
+                    Pantau aktivitas toko hari ini dan tindakan penting.
                 </p>
             </div>
 
