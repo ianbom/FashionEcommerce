@@ -1,0 +1,47 @@
+<?php
+
+return [
+    'accepted' => ':attribute harus disetujui.',
+    'accepted_if' => ':attribute harus disetujui saat :other bernilai :value.',
+    'confirmed' => 'Konfirmasi :attribute tidak sesuai.',
+    'current_password' => ':attribute tidak sesuai.',
+    'email' => ':attribute harus berupa alamat email yang valid.',
+    'max' => [
+        'file' => ':attribute tidak boleh lebih dari :max kilobita.',
+        'numeric' => ':attribute tidak boleh lebih dari :max.',
+        'string' => ':attribute tidak boleh lebih dari :max karakter.',
+        'array' => ':attribute tidak boleh lebih dari :max item.',
+    ],
+    'min' => [
+        'file' => ':attribute minimal :min kilobita.',
+        'numeric' => ':attribute minimal :min.',
+        'string' => ':attribute minimal :min karakter.',
+        'array' => ':attribute minimal :min item.',
+    ],
+    'required' => ':attribute tidak boleh kosong.',
+    'string' => ':attribute harus berupa teks.',
+    'unique' => ':attribute sudah digunakan.',
+
+    'attributes' => [
+        'name' => 'Nama lengkap',
+        'email' => 'Email',
+        'phone' => 'Nomor telepon',
+        'avatar_url' => 'Foto avatar',
+        'current_password' => 'Kata sandi saat ini',
+        'password' => 'Kata sandi baru',
+        'password_confirmation' => 'Konfirmasi kata sandi',
+        'quantity' => 'Jumlah',
+        'product_variant_id' => 'Varian produk',
+        'recipient_name' => 'Nama penerima',
+        'recipient_phone' => 'Nomor telepon penerima',
+        'full_address' => 'Alamat lengkap',
+        'province' => 'Provinsi',
+        'city' => 'Kota',
+        'district' => 'Kecamatan',
+        'subdistrict' => 'Kelurahan',
+        'postal_code' => 'Kode pos',
+        'biteship_area_id' => 'Area pengiriman',
+        'latitude' => 'Latitude',
+        'longitude' => 'Longitude',
+    ],
+];

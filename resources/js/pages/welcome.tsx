@@ -1,5 +1,5 @@
-import { Head, Link } from '@inertiajs/react';
-import { Clock, Heart, RotateCcw, Star } from 'lucide-react';
+import { Head, Link, router } from '@inertiajs/react';
+import { ChevronLeft, ChevronRight, Clock, Heart, RotateCcw, Star } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { PointerEvent, ReactNode } from 'react';
 import ShopLayout from '@/layouts/shop-layout';
@@ -177,7 +177,7 @@ export default function Home({
                                 href={list.url()}
                                 className="mt-4 hidden shrink-0 items-center gap-4 text-xs font-bold text-[#53362d] md:inline-flex"
                             >
-                                See more
+                                Lihat lebih banyak
                                 <span className="relative block h-px w-10 bg-[#53362d] before:absolute before:top-1/2 before:right-0 before:h-2 before:w-2 before:-translate-y-1/2 before:rotate-45 before:border-t before:border-r before:border-[#53362d]" />
                             </Link>
                         </div>
@@ -292,7 +292,7 @@ export default function Home({
                                     href={promoBanner?.button_url ?? list.url()}
                                     className="inline-flex items-center gap-2 rounded-full bg-white py-1 pr-1 pl-3 text-[clamp(0.55rem,1vw,0.8rem)] font-medium text-[#1f1f1f] transition-colors hover:bg-white/90"
                                 >
-                                    {promoBanner?.button_text ?? 'Learn more'}
+                                    {promoBanner?.button_text ?? 'Pelajari lebih lanjut'}
                                     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#1f1f1f] text-[10px] leading-none text-white md:h-7 md:w-7">
                                         
                                     </span>
@@ -332,9 +332,11 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
 
     const sliderRef = useRef<HTMLDivElement>(null);
     const isDraggingRef = useRef(false);
+    const didDragRef = useRef(false);
     const dragStartXRef = useRef(0);
     const dragScrollLeftRef = useRef(0);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const dragThreshold = 8;
 
     const goToSlide = (index: number) => {
         const slider = sliderRef.current;
@@ -343,11 +345,13 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
             return;
         }
 
+        const safeIndex = (index + images.length) % images.length;
+
         slider.scrollTo({
             behavior: 'smooth',
-            left: slider.clientWidth * index,
+            left: slider.clientWidth * safeIndex,
         });
-        setCurrentIndex(index);
+        setCurrentIndex(safeIndex);
     };
 
     const updateCurrentSlide = () => {
@@ -368,6 +372,7 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
         }
 
         isDraggingRef.current = true;
+        didDragRef.current = false;
         dragStartXRef.current = event.clientX;
         dragScrollLeftRef.current = slider.scrollLeft;
         slider.setPointerCapture(event.pointerId);
@@ -380,9 +385,14 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
             return;
         }
 
+        const deltaX = event.clientX - dragStartXRef.current;
+
+        if (Math.abs(deltaX) > dragThreshold) {
+            didDragRef.current = true;
+        }
+
         event.preventDefault();
-        slider.scrollLeft =
-            dragScrollLeftRef.current - (event.clientX - dragStartXRef.current);
+        slider.scrollLeft = dragScrollLeftRef.current - deltaX;
     };
 
     const endDrag = (event: PointerEvent<HTMLDivElement>) => {
@@ -395,6 +405,16 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
         isDraggingRef.current = false;
         slider.releasePointerCapture(event.pointerId);
         updateCurrentSlide();
+    };
+
+    const handleHeroClick = () => {
+        if (didDragRef.current) {
+            didDragRef.current = false;
+
+            return;
+        }
+
+        router.visit(list.url());
     };
 
     useEffect(() => {
@@ -417,11 +437,14 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
                 onPointerCancel={endDrag}
                 onPointerLeave={endDrag}
                 className="hide-scrollbar flex h-full cursor-grab snap-x snap-mandatory overflow-x-auto scroll-smooth select-none active:cursor-grabbing"
+                style={{ touchAction: 'pan-y' }}
             >
                 {images.map((img, index) => (
-                    <div
+                    <button
                         key={index}
-                        className="relative h-full min-w-full snap-start"
+                        type="button"
+                        onClick={handleHeroClick}
+                        className="relative h-full min-w-full snap-start overflow-hidden text-left"
                     >
                         <img
                             src={img}
@@ -430,21 +453,43 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
                             className="h-full w-full object-cover"
                         />
                         <div className="absolute inset-0 bg-black/10" />
-                    </div>
+                    </button>
                 ))}
             </div>
 
-            {/* Pagination Indicators */}
+            <div className="absolute top-1/2 left-4 z-20 hidden -translate-y-1/2 md:block">
+                <button
+                    type="button"
+                    onClick={() => goToSlide(currentIndex - 1)}
+                    className="flex h-11 w-11 items-center justify-center rounded-full bg-white/80 text-[#53362d] shadow-md transition hover:bg-white"
+                    aria-label="Slide sebelumnya"
+                >
+                    <ChevronLeft size={20} />
+                </button>
+            </div>
+            <div className="absolute top-1/2 right-4 z-20 hidden -translate-y-1/2 md:block">
+                <button
+                    type="button"
+                    onClick={() => goToSlide(currentIndex + 1)}
+                    className="flex h-11 w-11 items-center justify-center rounded-full bg-white/80 text-[#53362d] shadow-md transition hover:bg-white"
+                    aria-label="Slide berikutnya"
+                >
+                    <ChevronRight size={20} />
+                </button>
+            </div>
+
             <div className="absolute right-0 bottom-8 left-0 z-20 flex justify-center gap-3">
                 {images.map((_, index) => (
-                    <span
+                    <button
                         key={index}
+                        type="button"
+                        onClick={() => goToSlide(index)}
                         className={`h-0.5 transition-all duration-300 ${
                             index === currentIndex
                                 ? 'w-10 bg-white'
                                 : 'w-6 bg-white/50'
                         }`}
-                        aria-hidden="true"
+                        aria-label={`Pindah ke slide ${index + 1}`}
                     />
                 ))}
             </div>

@@ -1,10 +1,13 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import {
+    AlertCircle,
+    ChevronLeft,
     ChevronRight,
     Heart,
     MessageCircle,
     Minus,
     Plus,
+    ShieldCheck,
     ShoppingBag,
     X,
 } from 'lucide-react';
@@ -100,21 +103,6 @@ export default function DetailProduct({
     relatedProducts,
     recentProducts,
 }: Props) {
-    return (
-        <DetailProductContent
-            key={product.id}
-            product={product}
-            relatedProducts={relatedProducts}
-            recentProducts={recentProducts}
-        />
-    );
-}
-
-function DetailProductContent({
-    product,
-    relatedProducts,
-    recentProducts,
-}: Props) {
     const variants = useMemo(
         () =>
             [...product.variants].sort((left, right) => {
@@ -174,6 +162,7 @@ function DetailProductContent({
     const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
     const [isWishlisted, setIsWishlisted] = useState(product.is_wishlisted);
     const [isWishlistProcessing, setIsWishlistProcessing] = useState(false);
+    const [stockAlert, setStockAlert] = useState<string | null>(null);
     const cartForm = useForm<{
         quantity: number;
         product_variant_id?: number;
@@ -207,37 +196,101 @@ function DetailProductContent({
         (product.sale_price ?? product.price) +
         (selectedVariant?.additional_price ?? 0);
     const basePrice = product.price + (selectedVariant?.additional_price ?? 0);
-    const maxQuantity = Math.max(
-        1,
-        selectedVariant?.available_stock ?? product.available_stock,
-    );
-    const isAvailable =
-        product.available_stock > 0 &&
-        (selectedVariant?.available_stock ?? product.available_stock) > 0;
+    const availableStock = selectedVariant?.available_stock ?? product.available_stock;
+    const maxQuantity = Math.max(1, availableStock);
+    const isAvailable = product.available_stock > 0 && availableStock > 0;
     const productDescription = product.description || product.short_description;
-    const decreaseQuantity = () =>
+    const normalizeCartError = (message?: string) => {
+        if (!message) {
+            return null;
+        }
+
+        const normalized = message.toLowerCase();
+
+        if (
+            normalized.includes('stok tersedia hanya') ||
+            normalized.includes('stok tidak mencukupi') ||
+            normalized.includes('insufficient stock')
+        ) {
+            return message.startsWith('Stok')
+                ? message
+                : 'Stok tidak mencukupi untuk jumlah yang dipilih.';
+        }
+
+        if (
+            normalized.includes('belum tersedia untuk dibeli') ||
+            normalized.includes('variant')
+        ) {
+            return 'Varian produk ini belum tersedia untuk dibeli.';
+        }
+
+        return message;
+    };
+    const validateCartAction = () => {
+        if (!selectedVariant || !isAvailable) {
+            setStockAlert('Varian produk ini belum tersedia untuk dibeli.');
+
+            return false;
+        }
+
+        if (quantity > availableStock) {
+            setStockAlert(`Stok tersedia hanya ${availableStock} pcs.`);
+
+            return false;
+        }
+
+        setStockAlert(null);
+
+        return true;
+    };
+    const decreaseQuantity = () => {
         setQuantity((current) => Math.max(1, current - 1));
-    const increaseQuantity = () =>
+        setStockAlert(null);
+    };
+    const increaseQuantity = () => {
         setQuantity((current) => Math.min(maxQuantity, current + 1));
+
+        if (quantity >= availableStock) {
+            setStockAlert(`Stok tersedia hanya ${availableStock} pcs.`);
+        } else {
+            setStockAlert(null);
+        }
+    };
     const addProductVariantToCart = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        if (!selectedVariant || !isAvailable || cartForm.processing) {
+        if (cartForm.processing || !validateCartAction() || !selectedVariant) {
             return;
         }
 
         cartForm.submit(addProductVariantToCartRoute(selectedVariant.id), {
             preserveScroll: true,
+            onError: () => {
+                setStockAlert(
+                    normalizeCartError(
+                        cartForm.errors.quantity ||
+                            cartForm.errors.product_variant_id,
+                    ),
+                );
+            },
         });
     };
     const buyItNow = () => {
-        if (!selectedVariant || !isAvailable || cartForm.processing) {
+        if (cartForm.processing || !validateCartAction() || !selectedVariant) {
             return;
         }
 
         cartForm.submit(addProductVariantToCartRoute(selectedVariant.id), {
             preserveScroll: true,
             onSuccess: () => router.visit(cart.url()),
+            onError: () => {
+                setStockAlert(
+                    normalizeCartError(
+                        cartForm.errors.quantity ||
+                            cartForm.errors.product_variant_id,
+                    ),
+                );
+            },
         });
     };
     const toggleWishlist = () => {
@@ -270,6 +323,12 @@ function DetailProductContent({
     useEffect(() => {
         setQuantity((current) => Math.min(current, maxQuantity));
     }, [maxQuantity]);
+
+    useEffect(() => {
+        if (quantity <= availableStock) {
+            setStockAlert(null);
+        }
+    }, [availableStock, quantity]);
 
     useEffect(() => {
         cartForm.setData('quantity', quantity);
@@ -423,7 +482,7 @@ function DetailProductContent({
                             </div>
                         </div>
 
-                        <div className="mb-8 flex cursor-pointer items-center justify-between rounded-md border border-border bg-secondary/70 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
+                        <div className="mb-8 flex items-center justify-between rounded-md border border-border bg-secondary/70 p-4">
                             <div className="flex items-center gap-3">
                                 <div className="rounded-full bg-primary/10 p-2 text-primary">
                                     <ShoppingBag size={18} strokeWidth={1.7} />
@@ -433,12 +492,11 @@ function DetailProductContent({
                                         Lengkapi pesanan dengan checkout aman
                                     </p>
                                     <p className="text-[10px] tracking-wide text-muted-foreground">
-                                        Pilih varian dan jumlah sebelum
-                                        membeli
+                                        Pilih varian dan jumlah sebelum membeli
                                     </p>
                                 </div>
                             </div>
-                            <ChevronRight
+                            <ShieldCheck
                                 size={16}
                                 className="text-muted-foreground"
                             />
@@ -582,7 +640,7 @@ function DetailProductContent({
                         )}
 
                         <div className="mb-10">
-                            <div className="mb-6 flex w-max items-center rounded-md border border-border bg-card shadow-sm">
+                            <div className="mb-2 flex w-max items-center rounded-md border border-border bg-card shadow-sm">
                                 <button
                                     type="button"
                                     onClick={decreaseQuantity}
@@ -596,13 +654,17 @@ function DetailProductContent({
                                 <button
                                     type="button"
                                     onClick={increaseQuantity}
-                                    className="flex h-9 w-10 items-center justify-center rounded-r-md bg-muted text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground"
+                                    disabled={!isAvailable || quantity >= availableStock}
+                                    className="flex h-9 w-10 items-center justify-center rounded-r-md bg-muted text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     <Plus size={14} strokeWidth={2} />
                                 </button>
                             </div>
+                            <p className="mb-6 text-[11px] text-muted-foreground">
+                                Stok tersedia: {Math.max(0, availableStock)} pcs
+                            </p>
 
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2">
                                 <form
                                     onSubmit={addProductVariantToCart}
                                     className="min-w-0"
@@ -614,7 +676,7 @@ function DetailProductContent({
                                             !selectedVariant ||
                                             cartForm.processing
                                         }
-                                        className={`flex h-full min-h-12 w-full items-center justify-center rounded-full border border-input px-3 py-3.5 text-center text-[10px] font-bold tracking-widest text-secondary-foreground uppercase transition-all active:scale-[0.99] sm:text-[11px] ${
+                                        className={`flex min-h-12 w-full items-center justify-center rounded-full border border-input px-3 py-3.5 text-center text-[10px] font-bold tracking-widest text-secondary-foreground uppercase transition-all active:scale-[0.99] sm:text-[11px] ${
                                             isAvailable &&
                                             selectedVariant &&
                                             !cartForm.processing
@@ -626,14 +688,6 @@ function DetailProductContent({
                                             ? 'Menambahkan...'
                                             : 'Tambah ke Keranjang'}
                                     </button>
-                                    {(cartForm.errors.quantity ||
-                                        cartForm.errors.product_variant_id) && (
-                                        <p className="mt-2 text-center text-[11px] font-medium text-destructive">
-                                            {cartForm.errors.quantity ||
-                                                cartForm.errors
-                                                    .product_variant_id}
-                                        </p>
-                                    )}
                                 </form>
                                 <button
                                     type="button"
@@ -643,7 +697,7 @@ function DetailProductContent({
                                         !selectedVariant ||
                                         cartForm.processing
                                     }
-                                    className={`flex min-h-12 min-w-0 items-center justify-center rounded-full bg-primary px-3 py-3.5 text-center text-[10px] font-bold tracking-widest text-primary-foreground uppercase transition-all active:scale-[0.99] sm:text-[11px] ${
+                                    className={`flex min-h-12 w-full min-w-0 items-center justify-center rounded-full bg-primary px-3 py-3.5 text-center text-[10px] font-bold tracking-widest text-primary-foreground uppercase transition-all active:scale-[0.99] sm:text-[11px] ${
                                         isAvailable &&
                                         selectedVariant &&
                                         !cartForm.processing
@@ -656,6 +710,25 @@ function DetailProductContent({
                                         : 'Beli Sekarang'}
                                 </button>
                             </div>
+
+                            {(stockAlert ||
+                                cartForm.errors.quantity ||
+                                cartForm.errors.product_variant_id) && (
+                                <div className="mt-3 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-left text-[11px] font-medium text-red-700">
+                                    <AlertCircle
+                                        size={16}
+                                        className="mt-0.5 shrink-0"
+                                    />
+                                    <span>
+                                        {stockAlert ||
+                                            normalizeCartError(
+                                                cartForm.errors.quantity ||
+                                                    cartForm.errors
+                                                        .product_variant_id,
+                                            )}
+                                    </span>
+                                </div>
+                            )}
                         </div>
 
                         <div className="mb-8 space-y-5 border-t border-border pt-8 text-[11px] leading-[1.9] font-medium tracking-wide text-secondary-foreground">
@@ -669,9 +742,9 @@ function DetailProductContent({
                                     ))
                             ) : (
                                 <p>
-                                    {product.title} is crafted for modest
-                                    everyday styling with refined details and
-                                    comfortable wear.
+                                    {product.title} dirancang untuk menemani gaya
+                                    modest sehari-hari dengan detail yang rapi
+                                    dan nyaman dipakai.
                                 </p>
                             )}
 
@@ -687,7 +760,7 @@ function DetailProductContent({
                                 {product.care_instruction && (
                                     <p>
                                         <span className="font-bold text-foreground">
-                                            Care:
+                                            Perawatan:
                                         </span>{' '}
                                         {product.care_instruction}
                                     </p>
@@ -695,7 +768,7 @@ function DetailProductContent({
                                 {product.weight !== null && (
                                     <p>
                                         <span className="font-bold text-foreground">
-                                            Weight:
+                                            Berat:
                                         </span>{' '}
                                         {product.weight} gram
                                     </p>
@@ -709,17 +782,17 @@ function DetailProductContent({
                                 className="mr-2"
                                 strokeWidth={2}
                             />{' '}
-                            Message Support
+                            Hubungi Dukungan
                         </button>
                     </FadeInOnScroll>
                 </div>
 
                 <ProductRail
-                    title="You Might Also Like"
+                    title="Mungkin Kamu Suka"
                     products={relatedProducts}
                 />
                 <ProductRail
-                    title="Recent Viewed"
+                    title="Baru Dilihat"
                     products={recentProducts}
                     compact
                 />
@@ -740,7 +813,7 @@ function DetailProductContent({
                         <div className="flex items-center justify-between border-b border-border px-4 py-3">
                             <div>
                                 <p className="text-[11px] font-semibold tracking-[0.24em] text-foreground uppercase">
-                                    Size Guide
+                                    Panduan Ukuran
                                 </p>
                                 <p className="mt-1 text-[10px] tracking-wide text-muted-foreground">
                                     Gunakan panduan ukuran sebelum memilih size.
@@ -750,7 +823,7 @@ function DetailProductContent({
                                 type="button"
                                 onClick={() => setIsSizeGuideOpen(false)}
                                 className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground transition hover:border-primary hover:text-primary"
-                                aria-label="Close size guide"
+                                aria-label="Tutup panduan ukuran"
                             >
                                 <X size={16} />
                             </button>

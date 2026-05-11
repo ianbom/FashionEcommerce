@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import {
     ArrowLeft,
     Bell,
@@ -216,7 +216,7 @@ const typeConfig: Record<NotificationDetail['detail_type'], TypeConfig> = {
         badge: 'bg-[#F6EEE7] text-[#8C5A41]',
         iconWrap: 'bg-[#F1E6E2] text-[#8C5A41]',
         panel: 'bg-[#FAF8F5]',
-        ctaLabel: 'View Notification',
+        ctaLabel: 'Lihat Notifikasi',
     },
     order: {
         icon: Package,
@@ -224,7 +224,7 @@ const typeConfig: Record<NotificationDetail['detail_type'], TypeConfig> = {
         badge: 'bg-emerald-50 text-emerald-700',
         iconWrap: 'bg-emerald-100 text-emerald-700',
         panel: 'bg-emerald-50/50',
-        ctaLabel: 'View Order',
+        ctaLabel: 'Lihat Pesanan',
     },
     payment: {
         icon: CreditCard,
@@ -232,7 +232,7 @@ const typeConfig: Record<NotificationDetail['detail_type'], TypeConfig> = {
         badge: 'bg-violet-50 text-violet-700',
         iconWrap: 'bg-violet-100 text-violet-700',
         panel: 'bg-violet-50/60',
-        ctaLabel: 'View Payment',
+        ctaLabel: 'Lihat Pembayaran',
     },
     shipping: {
         icon: Truck,
@@ -240,7 +240,7 @@ const typeConfig: Record<NotificationDetail['detail_type'], TypeConfig> = {
         badge: 'bg-sky-50 text-sky-700',
         iconWrap: 'bg-sky-100 text-sky-700',
         panel: 'bg-sky-50/60',
-        ctaLabel: 'Track Shipment',
+        ctaLabel: 'Lacak Pengiriman',
     },
 };
 
@@ -309,18 +309,6 @@ export default function DetailNotification({ notification }: Props) {
             : notification.detail_type === 'payment'
               ? notification.actions.payment_url || notification.actions.order_url
               : notification.actions.order_url;
-
-    const markAsRead = () => {
-        if (notification.is_read) {
-            return;
-        }
-
-        router.post(
-            `/notifications/${notification.id}/read`,
-            {},
-            { preserveScroll: true, preserveState: true },
-        );
-    };
 
     return (
         <ProfileLayout
@@ -616,25 +604,6 @@ export default function DetailNotification({ notification }: Props) {
                         >
                             <ArrowLeft size={16} /> Kembali ke Notifikasi
                         </Link>
-
-                        {!notification.is_read && (
-                            <button
-                                type="button"
-                                onClick={markAsRead}
-                                className="flex items-center gap-2 rounded-lg border border-[#EADBD8] bg-white px-4 py-2.5 text-sm font-medium text-[#5C564D] shadow-sm transition-colors hover:bg-[#FAF8F5]"
-                            >
-                                <Check size={16} /> Tandai Dibaca
-                            </button>
-                        )}
-
-                        {/* {notification.actions.order_url && (
-                            <Link
-                                href={notification.actions.order_url}
-                                className="flex items-center gap-2 rounded-lg border border-[#EADBD8] bg-white px-4 py-2.5 text-sm font-medium text-[#5C564D] shadow-sm transition-colors hover:bg-[#FAF8F5]"
-                            >
-                                <Package size={16} /> View Order
-                            </Link>
-                        )} */}
 
                         {primaryActionHref && (
                             <a
