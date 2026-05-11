@@ -98,6 +98,6 @@ class BannerManagementService
 
     public function placements(): array
     {
-        return ['homepage', 'collection', 'promo'];
+        return ['homepage', 'collection', 'promo', 'cta'];
     }
 }

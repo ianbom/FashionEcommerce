@@ -210,19 +210,21 @@ export default function ListOrder({ orders, filters }: Props) {
 
             {orders.data.length === 0 ? (
                 <div className="flex flex-col items-center justify-center border-y border-[#EADBD8] px-6 py-20 text-center">
-                    <div className="relative mb-6 h-40 w-32">
-                        <div className="absolute inset-0 bg-[#F8EDED] opacity-50 blur-2xl" />
-                        <img
-                            src={FALLBACK_IMAGE}
-                            alt="Pesanan kosong"
-                            className="relative z-10 h-full w-full object-cover"
-                        />
+                    <div className="relative mb-6 flex h-24 w-24 items-center justify-center">
+                        <div className="absolute inset-0 rounded-full bg-[#F8EDED] opacity-60 blur-xl" />
+                        <div className="relative z-10 flex h-16 w-16 items-center justify-center rounded-full border border-[#EADBD8] bg-[#FAF9F6] shadow-sm">
+                            <Package size={30} className="text-[#C99A8F]" />
+                        </div>
                     </div>
                     <h2 className="mb-2 font-serif text-2xl text-[#4A2525]">
-                        Pesanan tidak ditemukan
+                        {form.search.trim() !== ''
+                            ? 'Pesanan tidak ditemukan'
+                            : 'Belum ada pesanan'}
                     </h2>
-                    <p className="mb-8 max-w-[280px] text-[13px] text-[#8A6B62]">
-                        Coba filter lain atau mulai jelajahi koleksi kami.
+                    <p className="mb-8 max-w-[320px] text-[13px] text-[#8A6B62]">
+                        {form.search.trim() !== ''
+                            ? 'Coba gunakan kata kunci lain atau cek kembali nomor pesananmu.'
+                            : 'Pesanan yang kamu buat akan muncul di sini. Yuk mulai belanja sekarang.'}
                     </p>
                     <Link
                         href="/list"

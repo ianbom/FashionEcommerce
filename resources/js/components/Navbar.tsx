@@ -27,11 +27,13 @@ export default function Navbar({ cartCount = 0, collections = [] }: NavbarProps)
                     />
                 </Link>
                 <div className="flex items-center space-x-4 text-[#4A2525]">
-                    <Heart
-                        strokeWidth={1.5}
-                        size={22}
-                        className="cursor-pointer"
-                    />
+                    <Link href="/wishlist" aria-label="Buka wishlist">
+                        <Heart
+                            strokeWidth={1.5}
+                            size={22}
+                            className="cursor-pointer transition-all hover:text-[#7F2020]"
+                        />
+                    </Link>
                 </div>
             </div>
 

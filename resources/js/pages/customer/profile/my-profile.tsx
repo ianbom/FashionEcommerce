@@ -6,6 +6,7 @@ import {
     Eye,
     EyeOff,
     Loader2,
+    LogOut,
 } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
@@ -42,12 +43,83 @@ type PageProps = {
     user: UserProp;
 };
 
+type ProfileClientErrors = {
+    name?: string;
+    email?: string;
+};
+
+type PasswordClientErrors = {
+    current_password?: string;
+    password?: string;
+    password_confirmation?: string;
+};
+
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const toIndonesianError = (message?: string) => {
+    if (!message) {
+        return undefined;
+    }
+
+    const normalized = message.toLowerCase();
+
+    if (
+        normalized.includes('required') ||
+        normalized.includes('tidak boleh kosong')
+    ) {
+        if (normalized.includes('name')) {
+            return 'Nama lengkap tidak boleh kosong';
+        }
+
+        if (normalized.includes('email')) {
+            return 'Email tidak boleh kosong';
+        }
+
+        if (normalized.includes('current_password')) {
+            return 'Kata sandi saat ini tidak boleh kosong';
+        }
+
+        if (normalized.includes('password_confirmation')) {
+            return 'Konfirmasi kata sandi tidak boleh kosong';
+        }
+
+        if (normalized.includes('password')) {
+            return 'Kata sandi baru tidak boleh kosong';
+        }
+    }
+
+    if (normalized.includes('valid email') || normalized.includes('must be a valid email')) {
+        return 'Format email tidak valid';
+    }
+
+    if (
+        normalized.includes('confirmation does not match') ||
+        normalized.includes('must match') ||
+        normalized.includes('tidak sesuai')
+    ) {
+        return 'Konfirmasi kata sandi tidak sesuai';
+    }
+
+    if (normalized.includes('current password is incorrect')) {
+        return 'Kata sandi saat ini tidak sesuai';
+    }
+
+    if (normalized.includes('at least 8') || normalized.includes('minimum 8')) {
+        return 'Kata sandi minimal 8 karakter';
+    }
+
+    return message;
+};
+
 export default function MyProfile() {
     const { defaultAddress, user } = usePage<PageProps>().props;
     const avatarInputRef = useRef<HTMLInputElement>(null);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+    const [profileClientErrors, setProfileClientErrors] =
+        useState<ProfileClientErrors>({});
+    const [passwordClientErrors, setPasswordClientErrors] =
+        useState<PasswordClientErrors>({});
 
-    // --- Personal Info Form ---
     const profileForm = useForm<{
         name: string;
         email: string;
@@ -60,24 +132,14 @@ export default function MyProfile() {
         avatar_url: null,
     });
 
-    const submitProfile = (e: React.FormEvent) => {
-        e.preventDefault();
-        profileForm.transform((data) => ({
-            ...data,
-            _method: 'patch',
-        }));
-        profileForm.post(ProfileController.update['/my-profile'].url(), {
-            forceFormData: true,
-            preserveScroll: true,
-            onSuccess: () => {
-                selectAvatar(null);
-
-                if (avatarInputRef.current) {
-                    avatarInputRef.current.value = '';
-                }
-            },
-        });
-    };
+    const [showPassword1, setShowPassword1] = useState(false);
+    const [showPassword2, setShowPassword2] = useState(false);
+    const [showPassword3, setShowPassword3] = useState(false);
+    const passwordForm = useForm({
+        current_password: '',
+        password: '',
+        password_confirmation: '',
+    });
 
     const selectAvatar = (file: File | null) => {
         profileForm.setData('avatar_url', file);
@@ -89,23 +151,102 @@ export default function MyProfile() {
         setAvatarPreview(file ? URL.createObjectURL(file) : null);
     };
 
-    // --- Password UI ---
-    const [showPassword1, setShowPassword1] = useState(false);
-    const [showPassword2, setShowPassword2] = useState(false);
-    const [showPassword3, setShowPassword3] = useState(false);
-    const passwordForm = useForm({
-        current_password: '',
-        password: '',
-        password_confirmation: '',
-    });
+    const submitProfile = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        const nextErrors: ProfileClientErrors = {};
+        const trimmedName = profileForm.data.name.trim();
+        const trimmedEmail = profileForm.data.email.trim();
+
+        if (trimmedName === '') {
+            nextErrors.name = 'Nama lengkap tidak boleh kosong';
+        }
+
+        if (trimmedEmail === '') {
+            nextErrors.email = 'Email tidak boleh kosong';
+        } else if (!emailRegex.test(trimmedEmail)) {
+            nextErrors.email = 'Format email tidak valid';
+        }
+
+        if (Object.keys(nextErrors).length > 0) {
+            setProfileClientErrors(nextErrors);
+
+            return;
+        }
+
+        setProfileClientErrors({});
+        profileForm.transform((data) => ({
+            ...data,
+            name: data.name.trim(),
+            email: data.email.trim(),
+            phone: data.phone.trim(),
+            _method: 'patch',
+        }));
+        profileForm.post(ProfileController.update['/my-profile'].url(), {
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                setProfileClientErrors({});
+                selectAvatar(null);
+
+                if (avatarInputRef.current) {
+                    avatarInputRef.current.value = '';
+                }
+            },
+            onError: () => {
+                setProfileClientErrors({});
+            },
+            onFinish: () => {
+                profileForm.transform((data) => data);
+            },
+        });
+    };
 
     const submitPassword = (e: React.FormEvent) => {
         e.preventDefault();
+
+        const nextErrors: PasswordClientErrors = {};
+        const currentPassword = passwordForm.data.current_password.trim();
+        const password = passwordForm.data.password.trim();
+        const passwordConfirmation =
+            passwordForm.data.password_confirmation.trim();
+
+        if (currentPassword === '') {
+            nextErrors.current_password =
+                'Kata sandi saat ini tidak boleh kosong';
+        }
+
+        if (password === '') {
+            nextErrors.password = 'Kata sandi baru tidak boleh kosong';
+        } else if (password.length < 8) {
+            nextErrors.password = 'Kata sandi minimal 8 karakter';
+        }
+
+        if (passwordConfirmation === '') {
+            nextErrors.password_confirmation =
+                'Konfirmasi kata sandi tidak boleh kosong';
+        } else if (passwordConfirmation !== password) {
+            nextErrors.password_confirmation =
+                'Konfirmasi kata sandi tidak sesuai';
+        }
+
+        if (Object.keys(nextErrors).length > 0) {
+            setPasswordClientErrors(nextErrors);
+
+            return;
+        }
+
+        setPasswordClientErrors({});
         passwordForm.put(SecurityController.update.url(), {
             preserveScroll: true,
-            onSuccess: () => passwordForm.reset(),
-            onError: () =>
-                passwordForm.reset('password', 'password_confirmation'),
+            onSuccess: () => {
+                setPasswordClientErrors({});
+                passwordForm.reset();
+            },
+            onError: () => {
+                setPasswordClientErrors({});
+                passwordForm.reset('password', 'password_confirmation');
+            },
         });
     };
 
@@ -134,7 +275,6 @@ export default function MyProfile() {
                 { label: 'Pengaturan Profil' },
             ]}
         >
-            {/* Profile Header */}
             <div className="animate-fade-in-up flex flex-col items-start justify-between border-b border-[#EADBD8] pb-8 md:flex-row md:items-center">
                 <div className="mb-6 flex items-center space-x-6 md:mb-0">
                     <button
@@ -190,55 +330,72 @@ export default function MyProfile() {
                     </div>
 
                     <div className="space-y-4">
-                        {/* Full Name */}
                         <div>
                             <label className="mb-1.5 block text-[11px] font-semibold text-[#4A4A4A]">
                                 Nama Lengkap
                             </label>
                             <input
                                 type="text"
+                                required
                                 value={profileForm.data.name}
-                                onChange={(e) =>
-                                    profileForm.setData('name', e.target.value)
-                                }
-                                    className={`w-full border-b bg-transparent px-1 py-2.5 text-[13px] text-[#333] transition-colors focus:outline-none ${
+                                onChange={(e) => {
+                                    profileForm.setData('name', e.target.value);
+                                    setProfileClientErrors((current) => ({
+                                        ...current,
+                                        name: undefined,
+                                    }));
+                                }}
+                                className={`w-full border-b bg-transparent px-1 py-2.5 text-[13px] text-[#333] transition-colors focus:outline-none ${
+                                    profileClientErrors.name ||
                                     profileForm.errors.name
                                         ? 'border-red-400 focus:border-red-400'
                                         : 'border-[#EADBD8] focus:border-[#4A2525]'
                                 }`}
                             />
-                            {profileForm.errors.name && (
+                            {(profileClientErrors.name ||
+                                profileForm.errors.name) && (
                                 <p className="mt-1 text-[10px] text-red-500">
-                                    {profileForm.errors.name}
+                                    {profileClientErrors.name ||
+                                        toIndonesianError(
+                                            profileForm.errors.name,
+                                        )}
                                 </p>
                             )}
                         </div>
 
-                        {/* Email */}
                         <div>
                             <label className="mb-1.5 block text-[11px] font-semibold text-[#4A4A4A]">
                                 Alamat Email
                             </label>
                             <input
                                 type="email"
+                                required
                                 value={profileForm.data.email}
-                                onChange={(e) =>
-                                    profileForm.setData('email', e.target.value)
-                                }
-                                    className={`w-full border-b bg-transparent px-1 py-2.5 text-[13px] text-[#333] transition-colors focus:outline-none ${
+                                onChange={(e) => {
+                                    profileForm.setData('email', e.target.value);
+                                    setProfileClientErrors((current) => ({
+                                        ...current,
+                                        email: undefined,
+                                    }));
+                                }}
+                                className={`w-full border-b bg-transparent px-1 py-2.5 text-[13px] text-[#333] transition-colors focus:outline-none ${
+                                    profileClientErrors.email ||
                                     profileForm.errors.email
                                         ? 'border-red-400 focus:border-red-400'
                                         : 'border-[#EADBD8] focus:border-[#4A2525]'
                                 }`}
                             />
-                            {profileForm.errors.email && (
+                            {(profileClientErrors.email ||
+                                profileForm.errors.email) && (
                                 <p className="mt-1 text-[10px] text-red-500">
-                                    {profileForm.errors.email}
+                                    {profileClientErrors.email ||
+                                        toIndonesianError(
+                                            profileForm.errors.email,
+                                        )}
                                 </p>
                             )}
                         </div>
 
-                        {/* Phone */}
                         <div>
                             <label className="mb-1.5 block text-[11px] font-semibold text-[#4A4A4A]">
                                 Nomor Telepon
@@ -250,7 +407,7 @@ export default function MyProfile() {
                                     profileForm.setData('phone', e.target.value)
                                 }
                                 placeholder="contoh 0812 3456 789"
-                                    className={`w-full border-b bg-transparent px-1 py-2.5 text-[13px] text-[#333] transition-colors focus:outline-none ${
+                                className={`w-full border-b bg-transparent px-1 py-2.5 text-[13px] text-[#333] transition-colors focus:outline-none ${
                                     profileForm.errors.phone
                                         ? 'border-red-400 focus:border-red-400'
                                         : 'border-[#EADBD8] focus:border-[#4A2525]'
@@ -258,12 +415,11 @@ export default function MyProfile() {
                             />
                             {profileForm.errors.phone && (
                                 <p className="mt-1 text-[10px] text-red-500">
-                                    {profileForm.errors.phone}
+                                    {toIndonesianError(profileForm.errors.phone)}
                                 </p>
                             )}
                         </div>
 
-                        {/* Avatar Upload */}
                         <div>
                             <label className="mb-1.5 block text-[11px] font-semibold text-[#4A4A4A]">
                                 Foto Avatar{' '}
@@ -278,7 +434,7 @@ export default function MyProfile() {
                                 onChange={(e) =>
                                     selectAvatar(e.target.files?.[0] ?? null)
                                 }
-                                    className={`w-full border-b bg-transparent px-1 py-2.5 text-[13px] text-[#333] transition-colors file:mr-4 file:border-0 file:bg-[#F1E6E2] file:px-3 file:py-1.5 file:text-[11px] file:font-bold file:text-[#4A2525] focus:outline-none ${
+                                className={`w-full border-b bg-transparent px-1 py-2.5 text-[13px] text-[#333] transition-colors file:mr-4 file:border-0 file:bg-[#F1E6E2] file:px-3 file:py-1.5 file:text-[11px] file:font-bold file:text-[#4A2525] focus:outline-none ${
                                     profileForm.errors.avatar_url
                                         ? 'border-red-400 focus:border-red-400'
                                         : 'border-[#EADBD8] focus:border-[#4A2525]'
@@ -286,7 +442,9 @@ export default function MyProfile() {
                             />
                             {profileForm.errors.avatar_url && (
                                 <p className="mt-1 text-[10px] text-red-500">
-                                    {profileForm.errors.avatar_url}
+                                    {toIndonesianError(
+                                        profileForm.errors.avatar_url,
+                                    )}
                                 </p>
                             )}
                             <p className="mt-1.5 text-[10px] text-[#8A6B62]">
@@ -310,7 +468,10 @@ export default function MyProfile() {
                             </button>
                             <button
                                 type="button"
-                                onClick={() => profileForm.reset()}
+                                onClick={() => {
+                                    profileForm.reset();
+                                    setProfileClientErrors({});
+                                }}
                                 className="rounded-md border border-[#EADBD8] bg-transparent px-6 py-2.5 text-[12px] font-bold tracking-wider text-[#4A4A4A] transition-colors hover:bg-white"
                             >
                                 Batal
@@ -320,7 +481,6 @@ export default function MyProfile() {
                 </form>
 
                 <div className="space-y-10">
-                    {/* Change Password */}
                     <form
                         onSubmit={submitPassword}
                         className="animate-fade-in-up border-b border-[#EADBD8] pb-10"
@@ -339,30 +499,42 @@ export default function MyProfile() {
                             <PasswordField
                                 label="Kata Sandi Saat Ini"
                                 show={showPassword1}
-                                onToggle={() =>
-                                    setShowPassword1(!showPassword1)
-                                }
+                                onToggle={() => setShowPassword1(!showPassword1)}
                                 value={passwordForm.data.current_password}
-                                onChange={(value) =>
+                                onChange={(value) => {
                                     passwordForm.setData(
                                         'current_password',
                                         value,
+                                    );
+                                    setPasswordClientErrors((current) => ({
+                                        ...current,
+                                        current_password: undefined,
+                                    }));
+                                }}
+                                error={
+                                    passwordClientErrors.current_password ||
+                                    toIndonesianError(
+                                        passwordForm.errors.current_password,
                                     )
                                 }
-                                error={passwordForm.errors.current_password}
                                 autoComplete="current-password"
                             />
                             <PasswordField
                                 label="Kata Sandi Baru"
                                 show={showPassword2}
-                                onToggle={() =>
-                                    setShowPassword2(!showPassword2)
-                                }
+                                onToggle={() => setShowPassword2(!showPassword2)}
                                 value={passwordForm.data.password}
-                                onChange={(value) =>
-                                    passwordForm.setData('password', value)
+                                onChange={(value) => {
+                                    passwordForm.setData('password', value);
+                                    setPasswordClientErrors((current) => ({
+                                        ...current,
+                                        password: undefined,
+                                    }));
+                                }}
+                                error={
+                                    passwordClientErrors.password ||
+                                    toIndonesianError(passwordForm.errors.password)
                                 }
-                                error={passwordForm.errors.password}
                                 autoComplete="new-password"
                                 hint="Gunakan minimal 8 karakter dengan kombinasi huruf dan angka."
                                 hintColor="text-[#EF4444]"
@@ -370,18 +542,23 @@ export default function MyProfile() {
                             <PasswordField
                                 label="Konfirmasi Kata Sandi Baru"
                                 show={showPassword3}
-                                onToggle={() =>
-                                    setShowPassword3(!showPassword3)
-                                }
+                                onToggle={() => setShowPassword3(!showPassword3)}
                                 value={passwordForm.data.password_confirmation}
-                                onChange={(value) =>
+                                onChange={(value) => {
                                     passwordForm.setData(
                                         'password_confirmation',
                                         value,
-                                    )
-                                }
+                                    );
+                                    setPasswordClientErrors((current) => ({
+                                        ...current,
+                                        password_confirmation: undefined,
+                                    }));
+                                }}
                                 error={
-                                    passwordForm.errors.password_confirmation
+                                    passwordClientErrors.password_confirmation ||
+                                    toIndonesianError(
+                                        passwordForm.errors.password_confirmation,
+                                    )
                                 }
                                 autoComplete="new-password"
                             />
@@ -403,7 +580,6 @@ export default function MyProfile() {
                         </div>
                     </form>
 
-                    {/* Default Address */}
                     <div
                         className="animate-fade-in-up"
                         style={{ animationDelay: '250ms' }}
@@ -463,14 +639,21 @@ export default function MyProfile() {
                         >
                             Kelola Alamat
                         </Link>
+
+                        <Link
+                            href="/logout"
+                            method="post"
+                            as="button"
+                            className="mt-4 flex w-full items-center justify-center gap-2 rounded-md border border-red-200 bg-red-50 px-4 py-2.5 text-center text-[12px] font-bold tracking-wider text-red-600 transition-colors hover:bg-red-100 md:hidden"
+                        >
+                            <LogOut size={14} /> Keluar
+                        </Link>
                     </div>
                 </div>
             </div>
         </ProfileLayout>
     );
 }
-
-// --- Sub-components ---
 
 function PasswordField({
     label,
@@ -504,6 +687,7 @@ function PasswordField({
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     autoComplete={autoComplete}
+                    required
                     className={`w-full border-b bg-transparent px-1 py-2.5 pr-10 text-[13px] text-[#333] transition-colors focus:outline-none ${
                         error
                             ? 'border-red-400 focus:border-red-400'

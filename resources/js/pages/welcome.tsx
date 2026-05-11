@@ -1,5 +1,5 @@
-import { Head, Link } from '@inertiajs/react';
-import { Clock, Heart, RotateCcw, Star } from 'lucide-react';
+import { Head, Link, router } from '@inertiajs/react';
+import { ChevronLeft, ChevronRight, Clock, Heart, RotateCcw, Star } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { PointerEvent, ReactNode } from 'react';
 import ShopLayout from '@/layouts/shop-layout';
@@ -40,6 +40,7 @@ type CategoryCard = {
 type Props = {
     heroBanners: BannerCard[];
     promoBanner: BannerCard;
+    collectionBanners: BannerCard[];
     categories: CategoryCard[];
     hajjSeries: ProductCard[];
     wePresent: ProductCard[];
@@ -75,6 +76,7 @@ const bannerImage = (banner: BannerCard, fallback: string) =>
 export default function Home({
     heroBanners,
     promoBanner,
+    collectionBanners,
     categories,
     hajjSeries,
     wePresent,
@@ -148,39 +150,78 @@ export default function Home({
                 </div>
             </section>
 
-            <section className="mx-auto max-w-[1500px] px-4 py-12 md:px-10 md:py-20">
-                <SectionTitle
-                    title="Seri Haji Itsar 2026"
-                    subtitle="Kini Hadir Hangat, Terbungkus Cinta"
-                />
-
-                <div className="flex flex-col items-center gap-6 md:gap-8 lg:flex-row">
-                    <FadeInOnScroll className="w-full lg:w-[45%]">
-                        <div className="group relative aspect-[4/3] w-full overflow-hidden rounded-sm">
+            {/* New Collections Editorial Section */}
+            <FadeInOnScroll>
+                <section className="bg-[#fcfbf9] px-4 py-10 md:px-10 md:py-14">
+                    <div className="mx-auto grid max-w-[1200px] gap-6 md:grid-cols-[36%_20%_1fr] md:grid-rows-[auto_1fr] md:gap-x-7 md:gap-y-0">
+                        <div className="relative h-[420px] overflow-hidden md:row-span-2 md:h-[620px]">
                             <img
-                                src={productImage(hajjSeries[0], 8)}
-                                alt={
-                                    hajjSeries[0]?.name ?? 'Lifestyle Seri Haji'
-                                }
-                                className="h-full w-full object-cover transition-transform duration-[1.5s] group-hover:scale-105"
+                                src={bannerImage(
+                                    collectionBanners?.[0] ?? null,
+                                    '/img/atiyeh-fathi-CvdzGjVX9DA-unsplash.webp',
+                                )}
+                                alt={collectionBanners?.[0]?.title ?? 'New Collections Detail'}
+                                className="h-full w-full object-cover"
+                                loading="lazy"
+                                decoding="async"
                             />
                         </div>
-                    </FadeInOnScroll>
 
-                    <div className="relative w-full lg:w-[55%]">
-                        <div className="hide-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0">
-                            {hajjSeries.map((item, index) => (
-                                <ProductTile
-                                    key={item.id}
-                                    product={item}
-                                    index={index}
-                                    centered
-                                />
-                            ))}
+                        <div className="order-first flex items-start justify-between gap-6 md:order-none md:col-span-2">
+                            <h2 className="font-serif text-[clamp(2.5rem,4.2vw,3.25rem)] leading-[0.88] font-normal tracking-[-0.04em] text-[#53362d] uppercase">
+                                New
+                                <br />
+                                Collections
+                            </h2>
+                            <Link
+                                href={list.url()}
+                                className="mt-4 hidden shrink-0 items-center gap-4 text-xs font-bold text-[#53362d] md:inline-flex"
+                            >
+                                Lihat lebih banyak
+                                <span className="relative block h-px w-10 bg-[#53362d] before:absolute before:top-1/2 before:right-0 before:h-2 before:w-2 before:-translate-y-1/2 before:rotate-45 before:border-t before:border-r before:border-[#53362d]" />
+                            </Link>
                         </div>
+
+                        <div className="md:col-start-3 md:mt-12 md:max-w-[280px]">
+                            <div className="space-y-4 text-sm leading-[1.6] text-[#53362d] md:text-[15px]">
+                                <p>
+                                    A stoical elegance, you might call it.
+                                    Black asymmetric dresses blowing
+                                    voluminously in the artic wind.
+                                </p>
+                                <p>
+                                    Oversized hybrids of hoodie and padded
+                                    outerwear; leather jackets that turn out to
+                                    be made from Balenciaga’s new
+                                    mycelium-derived leather-mimicking
+                                    alternative. Tote bags mated with boots.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="relative h-[330px] overflow-hidden md:col-start-2 md:row-start-2 md:mt-auto md:w-full">
+                            <img
+                                src={bannerImage(
+                                    collectionBanners?.[1] ?? null,
+                                    '/img/mina-rad-2O2cXJemDmo-unsplash.webp',
+                                )}
+                                alt={collectionBanners?.[1]?.title ?? 'New Collections Look'}
+                                className="h-full w-full object-cover"
+                                loading="lazy"
+                                decoding="async"
+                            />
+                        </div>
+
+                        <Link
+                            href={list.url()}
+                            className="inline-flex items-center gap-4 text-xs font-bold text-[#53362d] md:hidden"
+                        >
+                            See more
+                            <span className="relative block h-px w-10 bg-[#53362d] before:absolute before:top-1/2 before:right-0 before:h-2 before:w-2 before:-translate-y-1/2 before:rotate-45 before:border-t before:border-r before:border-[#53362d]" />
+                        </Link>
                     </div>
-                </div>
-            </section>
+                </section>
+            </FadeInOnScroll>
 
             <section className="mx-auto max-w-[1500px] px-4 py-12 md:px-10 md:py-16">
                 <SectionTitle
@@ -197,70 +238,6 @@ export default function Home({
                             button
                         />
                     ))}
-                </div>
-            </section>
-
-            <section className="bg-white px-4 py-12 md:px-10 md:py-16">
-                <div className="mx-auto max-w-[1500px]">
-                    <SectionTitle
-                        title="Koleksi Terbaru"
-                        subtitle="Essential Favoritmu, Kini Hadir dalam Beragam Warna"
-                    />
-
-                    <div className="relative">
-                        <div className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto pb-4 md:grid md:grid-cols-3 md:gap-4 md:pb-0 lg:grid-cols-6">
-                            {recentAdditions.map((item, index) => (
-                                <FadeInOnScroll
-                                    key={item.id}
-                                    className="min-w-[40%] snap-start sm:min-w-[30%] md:min-w-0"
-                                    delay={index * 60}
-                                >
-                                    <Link
-                                        href={detail.url({
-                                            query: { product: item.slug },
-                                        })}
-                                        className="group flex flex-col text-center"
-                                    >
-                                        <div className="relative mb-3 aspect-[3/4] overflow-hidden rounded-sm bg-background">
-                                            <img
-                                                src={productImage(item, index)}
-                                                alt={item.name}
-                                                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                                loading="lazy"
-                                                decoding="async"
-                                            />
-                                        </div>
-                                        <h3 className="truncate px-1 text-[9px] font-semibold md:text-[10px]">
-                                            {item.name}
-                                        </h3>
-                                        <p className="mb-2 text-[9px] text-muted-foreground md:text-[10px]">
-                                            {formatPrice(
-                                                item.sale_price ?? item.price,
-                                            )}
-                                        </p>
-                                        <div className="flex justify-center gap-1.5">
-                                            {item.colors
-                                                .slice(0, 3)
-                                                .map((color) => (
-                                                    <span
-                                                        key={color.hex}
-                                                        className="h-2.5 w-2.5 rounded-full border border-gray-200 md:h-3 md:w-3"
-                                                        style={{
-                                                            backgroundColor:
-                                                                color.hex,
-                                                        }}
-                                                        title={
-                                                            color.name ??
-                                                            color.hex
-                                                        }
-                                                    />
-                                                ))}
-                                        </div>
-                                    </Link>
-                                </FadeInOnScroll>
-                            ))}
-                        </div>
-                    </div>
                 </div>
             </section>
 
@@ -284,22 +261,44 @@ export default function Home({
                     </div>
                 </div>
             </section>
-
+            
+            {/* CTA Section */}
             <FadeInOnScroll>
-                <section className="relative mt-6 mb-12 h-[250px] w-full overflow-hidden md:mt-10 md:mb-20 md:h-[400px]">
-                    <div
-                        className="absolute inset-0 bg-cover bg-center"
-                        style={{
-                            backgroundImage: `url('${bannerImage(promoBanner, '/img/sarah-khan-R7p66Oj8ZOQ-unsplash.webp')}')`,
-                        }}
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/10">
-                        <Link
-                            href={promoBanner?.button_url ?? list.url()}
-                            className="rounded-sm border border-white px-5 py-2 text-[9px] font-bold tracking-widest text-white uppercase backdrop-blur-sm transition-colors hover:bg-white hover:text-black md:px-6 md:text-[10px]"
-                        >
-                            {promoBanner?.button_text ?? 'Discover'}
-                        </Link>
+                <section className="mx-auto mt-6 mb-12 w-full max-w-[1500px] px-4 md:mt-10 md:mb-20 md:px-10">
+                    <div className="relative aspect-[21/7] w-full overflow-hidden rounded-[18px] bg-[#7fc6d8] shadow-sm ring-1 ring-black/5">
+                        <img
+                            src={bannerImage(
+                                promoBanner,
+                                '/img/sarah-khan-R7p66Oj8ZOQ-unsplash.webp',
+                            )}
+                            alt={promoBanner?.title ?? 'Promo Banner'}
+                            className="absolute inset-0 h-full w-full object-cover object-center"
+                            loading="lazy"
+                            decoding="async"
+                        />
+                        <div className="absolute inset-0 bg-black/45" />
+                        <div className="absolute inset-0 flex items-end justify-between gap-6 px-[10%] py-[9%] text-white">
+                            <div className="max-w-[46%]">
+                                <h2 className="font-serif text-[clamp(1.75rem,5vw,5rem)] leading-[0.96] tracking-[-0.04em]">
+                                    {promoBanner?.title ?? 'Full control is in your hands'}
+                                </h2>
+                            </div>
+                            <div className="mb-[1%] max-w-[34%]">
+                                <p className="mb-3 text-[clamp(0.55rem,1.1vw,0.95rem)] leading-snug text-white/90">
+                                    {promoBanner?.subtitle ??
+                                        'A ready-made solution for investing in the cryptocurrency market, built on the best global approaches to capital management.'}
+                                </p>
+                                <Link
+                                    href={promoBanner?.button_url ?? list.url()}
+                                    className="inline-flex items-center gap-2 rounded-full bg-white py-1 pr-1 pl-3 text-[clamp(0.55rem,1vw,0.8rem)] font-medium text-[#1f1f1f] transition-colors hover:bg-white/90"
+                                >
+                                    {promoBanner?.button_text ?? 'Pelajari lebih lanjut'}
+                                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#1f1f1f] text-[10px] leading-none text-white md:h-7 md:w-7">
+                                        
+                                    </span>
+                                </Link>
+                            </div>
+                        </div>
                     </div>
                 </section>
             </FadeInOnScroll>
@@ -333,9 +332,11 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
 
     const sliderRef = useRef<HTMLDivElement>(null);
     const isDraggingRef = useRef(false);
+    const didDragRef = useRef(false);
     const dragStartXRef = useRef(0);
     const dragScrollLeftRef = useRef(0);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const dragThreshold = 8;
 
     const goToSlide = (index: number) => {
         const slider = sliderRef.current;
@@ -344,11 +345,13 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
             return;
         }
 
+        const safeIndex = (index + images.length) % images.length;
+
         slider.scrollTo({
             behavior: 'smooth',
-            left: slider.clientWidth * index,
+            left: slider.clientWidth * safeIndex,
         });
-        setCurrentIndex(index);
+        setCurrentIndex(safeIndex);
     };
 
     const updateCurrentSlide = () => {
@@ -369,6 +372,7 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
         }
 
         isDraggingRef.current = true;
+        didDragRef.current = false;
         dragStartXRef.current = event.clientX;
         dragScrollLeftRef.current = slider.scrollLeft;
         slider.setPointerCapture(event.pointerId);
@@ -381,9 +385,14 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
             return;
         }
 
+        const deltaX = event.clientX - dragStartXRef.current;
+
+        if (Math.abs(deltaX) > dragThreshold) {
+            didDragRef.current = true;
+        }
+
         event.preventDefault();
-        slider.scrollLeft =
-            dragScrollLeftRef.current - (event.clientX - dragStartXRef.current);
+        slider.scrollLeft = dragScrollLeftRef.current - deltaX;
     };
 
     const endDrag = (event: PointerEvent<HTMLDivElement>) => {
@@ -396,6 +405,16 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
         isDraggingRef.current = false;
         slider.releasePointerCapture(event.pointerId);
         updateCurrentSlide();
+    };
+
+    const handleHeroClick = () => {
+        if (didDragRef.current) {
+            didDragRef.current = false;
+
+            return;
+        }
+
+        router.visit(list.url());
     };
 
     useEffect(() => {
@@ -418,11 +437,14 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
                 onPointerCancel={endDrag}
                 onPointerLeave={endDrag}
                 className="hide-scrollbar flex h-full cursor-grab snap-x snap-mandatory overflow-x-auto scroll-smooth select-none active:cursor-grabbing"
+                style={{ touchAction: 'pan-y' }}
             >
                 {images.map((img, index) => (
-                    <div
+                    <button
                         key={index}
-                        className="relative h-full min-w-full snap-start"
+                        type="button"
+                        onClick={handleHeroClick}
+                        className="relative h-full min-w-full snap-start overflow-hidden text-left"
                     >
                         <img
                             src={img}
@@ -431,21 +453,43 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
                             className="h-full w-full object-cover"
                         />
                         <div className="absolute inset-0 bg-black/10" />
-                    </div>
+                    </button>
                 ))}
             </div>
 
-            {/* Pagination Indicators */}
+            <div className="absolute top-1/2 left-4 z-20 hidden -translate-y-1/2 md:block">
+                <button
+                    type="button"
+                    onClick={() => goToSlide(currentIndex - 1)}
+                    className="flex h-11 w-11 items-center justify-center rounded-full bg-white/80 text-[#53362d] shadow-md transition hover:bg-white"
+                    aria-label="Slide sebelumnya"
+                >
+                    <ChevronLeft size={20} />
+                </button>
+            </div>
+            <div className="absolute top-1/2 right-4 z-20 hidden -translate-y-1/2 md:block">
+                <button
+                    type="button"
+                    onClick={() => goToSlide(currentIndex + 1)}
+                    className="flex h-11 w-11 items-center justify-center rounded-full bg-white/80 text-[#53362d] shadow-md transition hover:bg-white"
+                    aria-label="Slide berikutnya"
+                >
+                    <ChevronRight size={20} />
+                </button>
+            </div>
+
             <div className="absolute right-0 bottom-8 left-0 z-20 flex justify-center gap-3">
                 {images.map((_, index) => (
-                    <span
+                    <button
                         key={index}
+                        type="button"
+                        onClick={() => goToSlide(index)}
                         className={`h-0.5 transition-all duration-300 ${
                             index === currentIndex
                                 ? 'w-10 bg-white'
                                 : 'w-6 bg-white/50'
                         }`}
-                        aria-hidden="true"
+                        aria-label={`Pindah ke slide ${index + 1}`}
                     />
                 ))}
             </div>

@@ -54,7 +54,11 @@ Route::inertia('/terms-conditions', 'customer/policy/term-condition')->name('pol
 Route::inertia('/admin/order-detail', 'admin/orders/order-detail')->name('detail-order-admin');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
+    Route::get('dashboard', function () {
+        return auth()->user()->role === 'admin'
+            ? redirect()->route('admin.dashboard')
+            : redirect()->route('my-profile');
+    })->name('dashboard');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {

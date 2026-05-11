@@ -553,7 +553,7 @@ function CheckoutScreen() {
                                     <Lock size={16} className="mr-2" />
                                     {placingOrder
                                         ? 'Membuat Pembayaran...'
-                                        : 'Bayar dengan Midtrans'}
+                                        : 'Bayar Sekarang'}
                                 </button>
                                 <div className="mt-8 space-y-4 border-t border-[#EADBD8]/60 pt-6">
                                     <CheckoutRouteMap

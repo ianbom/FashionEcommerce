@@ -24,10 +24,29 @@ class ProductBrowsingService
             ->orderByDesc('created_at')
             ->get();
 
+        $ctaBanner = Banner::query()
+            ->where('is_active', true)
+            ->where('placement', 'cta')
+            ->where(fn ($query) => $query->whereNull('starts_at')->orWhere('starts_at', '<=', now()))
+            ->where(fn ($query) => $query->whereNull('ends_at')->orWhere('ends_at', '>=', now()))
+            ->orderBy('sort_order')
+            ->orderByDesc('created_at')
+            ->first();
+
+        $collectionBanners = Banner::query()
+            ->where('is_active', true)
+            ->where('placement', 'collection')
+            ->where(fn ($query) => $query->whereNull('starts_at')->orWhere('starts_at', '<=', now()))
+            ->where(fn ($query) => $query->whereNull('ends_at')->orWhere('ends_at', '>=', now()))
+            ->orderBy('sort_order')
+            ->orderByDesc('created_at')
+            ->get();
+
         return [
             'canRegister' => Features::enabled(Features::registration()),
             'heroBanners' => $banners->map(fn ($banner) => $this->bannerCard($banner))->toArray(),
-            'promoBanner' => $this->bannerCard($banners->skip(1)->first()),
+            'promoBanner' => $this->bannerCard($ctaBanner ?? $banners->skip(1)->first()),
+            'collectionBanners' => $collectionBanners->map(fn ($banner) => $this->bannerCard($banner))->toArray(),
             'categories' => Category::query()->where('is_active', true)->orderBy('name')->get(['name', 'slug', 'image_url']),
             'hajjSeries' => $this->productsForSection('hajj', 3),
             'wePresent' => $this->productsForSection('sale', 5),

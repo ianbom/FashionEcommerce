@@ -90,30 +90,16 @@ export default function ListNotification({ notifications }: Props) {
         );
     };
 
-    const markAsRead = (id: number) => {
-        const target = items.find((notification) => notification.id === id);
-
-        if (!target || target.isRead) {
-            return;
-        }
-
-        router.post(
-            `/notifications/${id}/read`,
-            {},
-            { preserveScroll: true, preserveState: true },
-        );
-    };
-
     return (
         <ProfileLayout
-            title="Notifications"
-            pageTitle="Notifications"
-            subtitle="Stay updated with your orders and exclusive offers."
+            title="Notifikasi"
+            pageTitle="Notifikasi"
+            subtitle="Pantau update pesanan dan informasi penting lainnya di sini."
             activePath="notifications"
             breadcrumbs={[
-                { label: 'Home', href: '/' },
-                { label: 'My Account', href: '/my-profile' },
-                { label: 'Notifications' },
+                { label: 'Beranda', href: '/' },
+                { label: 'Akun Saya', href: '/my-profile' },
+                { label: 'Notifikasi' },
             ]}
         >
             <div
@@ -129,7 +115,7 @@ export default function ListNotification({ notifications }: Props) {
                                 : 'text-[#8A6B62] hover:text-[#4A2525]'
                         }`}
                     >
-                        All
+                        Semua
                     </button>
                     <button
                         onClick={() => setActiveTab('unread')}
@@ -139,7 +125,7 @@ export default function ListNotification({ notifications }: Props) {
                                 : 'text-[#8A6B62] hover:text-[#4A2525]'
                         }`}
                     >
-                        Unread
+                        Belum Dibaca
                         {unreadCount > 0 && (
                             <span className="ml-2 rounded-full bg-[#EF4444] px-1.5 py-0.5 text-[10px] font-bold text-white">
                                 {unreadCount}
@@ -153,7 +139,7 @@ export default function ListNotification({ notifications }: Props) {
                         onClick={markAllAsRead}
                         className="flex items-center text-[12px] font-semibold text-[#4A2525] transition-colors hover:text-[#B6574B]"
                     >
-                        <Check size={14} className="mr-1.5" /> Mark all as read
+                        <Check size={14} className="mr-1.5" /> Tandai semua sudah dibaca
                     </button>
                 )}
             </div>
@@ -171,16 +157,16 @@ export default function ListNotification({ notifications }: Props) {
                         </div>
                     </div>
                     <h2 className="mb-2 font-serif text-xl text-[#4A2525]">
-                        No notifications yet
+                        Belum ada notifikasi
                     </h2>
                     <p className="mb-8 max-w-[280px] text-[13px] text-[#8A6B62]">
                         {activeTab === 'unread'
-                            ? "You've read all your notifications."
-                            : "When you get updates on your orders or exclusive offers, they'll show up here."}
+                            ? 'Semua notifikasi sudah dibaca.'
+                            : 'Saat ada update pesanan atau info penting lainnya, notifikasi akan muncul di sini.'}
                     </p>
                     <Link href="/">
                         <button className="rounded-lg bg-[#4A2525] px-8 py-3 text-[12px] font-bold tracking-wider text-white transition-all hover:bg-[#5F1717] hover:shadow-lg active:scale-[0.98]">
-                            Continue Shopping
+                            Lanjut Belanja
                         </button>
                     </Link>
                 </div>
@@ -198,7 +184,6 @@ export default function ListNotification({ notifications }: Props) {
                                 <Link
                                     key={notification.id}
                                     href={`/notifications/${notification.id}`}
-                                    onClick={() => markAsRead(notification.id)}
                                     className={`group relative flex items-start gap-4 p-5 transition-all duration-300 hover:bg-[#FAF9F6] md:p-6 ${!notification.isRead ? 'bg-[#FAF9F6]/50' : 'bg-white'}`}
                                 >
                                     {/* Unread indicator line */}

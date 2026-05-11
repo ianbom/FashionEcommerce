@@ -26,7 +26,7 @@ class BannerRequest extends FormRequest
             'image_mobile' => ['nullable', 'file', 'image', 'max:2048'],
             'button_text' => ['nullable', 'string', 'max:100'],
             'button_url' => ['nullable', 'string', 'max:255'],
-            'placement' => ['required', Rule::in(['homepage', 'collection', 'promo'])],
+            'placement' => ['required', Rule::in(['homepage', 'collection', 'promo', 'cta'])],
             'sort_order' => ['required', 'integer', 'min:0'],
             'starts_at' => ['nullable', 'date'],
             'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'],
