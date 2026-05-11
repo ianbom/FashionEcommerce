@@ -81,9 +81,9 @@ export default function ProfileLayout({
                     <img
                         src="/img/ike-ellyana-2F70bGqQVa4-unsplash.webp"
                         alt="Latar hero"
-                        className="h-full w-full object-cover opacity-20"
+                        className="h-full w-full object-cover opacity-60"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#FAF9F6] via-[#FAF9F6]/90 to-transparent"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#FAF9F6]/80 via-[#FAF9F6]/50 to-transparent"></div>
                 </div>
 
                 <div className="relative z-10 mx-auto w-full max-w-[1440px] px-6 md:px-12 lg:px-16">

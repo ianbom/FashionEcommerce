@@ -6,9 +6,6 @@ import laravel from 'laravel-vite-plugin';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-    optimizeDeps: {
-        exclude: ['leaflet', 'react-leaflet'],
-    },
     plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
