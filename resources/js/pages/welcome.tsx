@@ -407,14 +407,14 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
         updateCurrentSlide();
     };
 
-    const handleHeroClick = () => {
+    const handleHeroClick = (url?: string | null) => {
         if (didDragRef.current) {
             didDragRef.current = false;
 
             return;
         }
 
-        router.visit(list.url());
+        router.visit(url ?? list.url());
     };
 
     useEffect(() => {
@@ -443,7 +443,7 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
                     <button
                         key={index}
                         type="button"
-                        onClick={handleHeroClick}
+                        onClick={() => handleHeroClick(heroBanners?.[index]?.button_url)}
                         className="relative h-full min-w-full snap-start overflow-hidden text-left"
                     >
                         <img
@@ -457,21 +457,21 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
                 ))}
             </div>
 
-            <div className="absolute top-1/2 left-4 z-20 hidden -translate-y-1/2 md:block">
+            <div className="absolute bottom-8 left-4 z-20 hidden md:block">
                 <button
                     type="button"
                     onClick={() => goToSlide(currentIndex - 1)}
-                    className="flex h-11 w-11 items-center justify-center rounded-full bg-white/80 text-[#53362d] shadow-md transition hover:bg-white"
+                    className="flex h-11 w-11 items-center justify-center rounded-full  text-[#53362d] shadow-sm backdrop-blur-sm transition hover:bg-white/60"
                     aria-label="Slide sebelumnya"
                 >
                     <ChevronLeft size={20} />
                 </button>
             </div>
-            <div className="absolute top-1/2 right-4 z-20 hidden -translate-y-1/2 md:block">
+            <div className="absolute bottom-8 right-4 z-20 hidden md:block">
                 <button
                     type="button"
                     onClick={() => goToSlide(currentIndex + 1)}
-                    className="flex h-11 w-11 items-center justify-center rounded-full bg-white/80 text-[#53362d] shadow-md transition hover:bg-white"
+                    className="flex h-11 w-11 items-center justify-center rounded-full text-[#53362d] shadow-sm backdrop-blur-sm transition hover:bg-white/60"
                     aria-label="Slide berikutnya"
                 >
                     <ChevronRight size={20} />
@@ -608,12 +608,6 @@ function ProductTile({
                         loading="lazy"
                         decoding="async"
                     />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/10 opacity-0 transition-opacity group-hover:opacity-100">
-                        <Heart
-                            className="text-white drop-shadow-md"
-                            size={20}
-                        />
-                    </div>
                 </div>
                 <div className={centered ? 'px-1 text-center' : 'px-1'}>
                     <h3 className="mb-1 truncate text-[10px] font-semibold md:text-xs">

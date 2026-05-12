@@ -413,8 +413,7 @@ export default function MyCart({
                                                 strokeWidth={1.5}
                                             />
                                             <p>
-                                                Pembayaran aman didukung
-                                                Midtrans
+                                                Pembayaran aman dan terjamin
                                             </p>
                                         </div>
                                         <div className="flex items-start space-x-3 text-[11px] text-[#8A6B62]">
@@ -424,8 +423,8 @@ export default function MyCart({
                                                 strokeWidth={1.5}
                                             />
                                             <p>
-                                                Ongkir dihitung memakai
-                                                Biteship saat checkout
+                                                Ongkir dihitung sesuai
+                                                penyedia saat checkout
                                             </p>
                                         </div>
                                     </div>

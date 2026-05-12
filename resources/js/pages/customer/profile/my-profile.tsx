@@ -306,14 +306,6 @@ export default function MyProfile() {
                     </div>
                 </div>
 
-                <div className="text-left md:text-right">
-                    <p className="mb-1 text-[10px] font-bold tracking-[0.2em] text-[#C99A8F] uppercase">
-                        Peran akun
-                    </p>
-                    <p className="font-serif text-lg text-[#4A2525] capitalize">
-                        {user.role}
-                    </p>
-                </div>
             </div>
 
             <div className="grid grid-cols-1 items-start gap-10 md:grid-cols-2 md:gap-12">
