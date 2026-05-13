@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import {
     AlertTriangle,
     ArrowRight,
@@ -10,6 +10,7 @@ import {
     ShoppingBag,
     Truck,
 } from 'lucide-react';
+import { useState } from 'react';
 import {
     Bar,
     BarChart,
@@ -20,6 +21,7 @@ import {
     YAxis,
 } from 'recharts';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 const currencyFormatter = new Intl.NumberFormat('id-ID', {
     currency: 'IDR',
@@ -85,6 +87,11 @@ function summaryHref(label: string) {
 }
 
 type Props = {
+    filters: {
+        date_from: string;
+        date_to: string;
+        range: string;
+    };
     summary: SummaryItem[];
     salesChart: ChartPoint[];
     attentionOrders: AttentionOrder[];
@@ -163,6 +170,7 @@ function badgeTone(value: string | null | undefined): BadgeTone {
 }
 
 export default function AdminDashboard({
+    filters,
     summary,
     salesChart,
     attentionOrders,
@@ -177,7 +185,7 @@ export default function AdminDashboard({
 
             <main className="min-h-[100dvh] bg-white px-8 py-7 text-zinc-900">
                 <div className="mx-auto flex max-w-7xl flex-col gap-8">
-                    <DashboardHeader />
+                    <DashboardHeader filters={filters} />
                     <StatCards stats={dashboardStats(summary)} />
                     <StatusSummary
                         paymentSummary={paymentSummary}
@@ -205,9 +213,23 @@ export default function AdminDashboard({
     );
 }
 
-function DashboardHeader() {
+function DashboardHeader({ filters }: { filters: Props['filters'] }) {
+    const [dateFrom, setDateFrom] = useState(filters.date_from ?? '');
+    const [dateTo, setDateTo] = useState(filters.date_to ?? '');
+
+    const submit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        router.get(
+            '/admin/dashboard',
+            { date_from: dateFrom, date_to: dateTo, range: 'custom' },
+            { preserveState: true, replace: true },
+        );
+    };
+
+    const reset = () => router.get('/admin/dashboard', {}, { preserveState: false });
+
     return (
-        <header className="flex items-end justify-between gap-6">
+        <header className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
                 <p className="mb-2 flex items-center gap-2 text-xs font-bold tracking-widest text-[#7F2020]/50 uppercase">
                     <Shirt className="size-4" strokeWidth={1.7} />
@@ -221,14 +243,44 @@ function DashboardHeader() {
                 </p>
             </div>
 
-            <div className="flex items-center gap-3">
-                <Button
-                    variant="outline"
-                    className="h-9 rounded-lg border-zinc-200 bg-white px-4 text-zinc-600 shadow-none hover:bg-zinc-50 hover:text-zinc-800 active:scale-[0.98]"
-                >
-                    <CalendarDays className="size-4" strokeWidth={1.7} />
-                    Today
-                </Button>
+            <div className="flex flex-wrap items-center gap-3">
+                <form onSubmit={submit} className="flex flex-wrap items-end gap-2">
+                    <label className="grid gap-1 text-[10px] font-semibold tracking-wider text-zinc-400 uppercase">
+                        Tanggal Awal
+                        <Input
+                            type="date"
+                            value={dateFrom}
+                            onChange={(event) => setDateFrom(event.target.value)}
+                            className="h-9 w-[140px] rounded-lg border-zinc-200 bg-white text-xs shadow-none"
+                        />
+                    </label>
+                    <label className="grid gap-1 text-[10px] font-semibold tracking-wider text-zinc-400 uppercase">
+                        Tanggal Akhir
+                        <Input
+                            type="date"
+                            value={dateTo}
+                            min={dateFrom || undefined}
+                            onChange={(event) => setDateTo(event.target.value)}
+                            className="h-9 w-[140px] rounded-lg border-zinc-200 bg-white text-xs shadow-none"
+                        />
+                    </label>
+                    <Button
+                        type="submit"
+                        variant="outline"
+                        className="h-9 rounded-lg border-zinc-200 bg-white px-4 text-zinc-600 shadow-none hover:bg-zinc-50 hover:text-zinc-800 active:scale-[0.98]"
+                    >
+                        <CalendarDays className="size-4" strokeWidth={1.7} />
+                        Filter
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={reset}
+                        className="h-9 rounded-lg px-4 text-zinc-500 shadow-none hover:bg-zinc-50 hover:text-zinc-800 active:scale-[0.98]"
+                    >
+                        Reset
+                    </Button>
+                </form>
                 <Button
                     asChild
                     className="h-9 rounded-lg bg-[#7F2020] px-4 text-white shadow-none hover:bg-[#5F1717] active:scale-[0.98]"

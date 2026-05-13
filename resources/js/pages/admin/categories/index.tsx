@@ -1,39 +1,20 @@
 import { Head, Link, router } from '@inertiajs/react';
 import {
     Archive,
-    Ban,
     ChevronLeft,
     ChevronRight,
-    Download,
     Eye,
-    FileText,
     MoreVertical,
-    Package,
     Pencil,
     Plus,
     RotateCcw,
     Search,
-    ShoppingBag,
     Sparkles,
-    Star,
     Trash2,
-    TrendingDown,
-    Upload,
-    X,
     Tags,
 } from 'lucide-react';
 import { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
-import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -107,19 +88,6 @@ export default function CategoriesIndex({
     stats: totals,
 }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
-    const [selected, setSelected] = useState<number[]>([]);
-
-    const allSelected =
-        categories.data.length > 0 &&
-        selected.length === categories.data.length;
-
-    const toggleAll = () =>
-        setSelected(allSelected ? [] : categories.data.map((c) => c.id));
-
-    const toggleOne = (id: number) =>
-        setSelected((prev) =>
-            prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-        );
 
     const applyFilter = (key: string, value: string) =>
         router.get(
@@ -333,58 +301,11 @@ export default function CategoriesIndex({
                         </div>
                     </form>
 
-                    {/* Bulk Action Bar */}
-                    {selected.length > 0 && (
-                        <div className="flex items-center gap-3 border-b border-[#e8ddd8] bg-[#fdfaf8] px-5 py-2.5">
-                            <span className="text-sm font-semibold text-[#7F2020]">
-                                {selected.length} selected
-                            </span>
-                            <div className="flex gap-2">
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="h-7 gap-1 border-red-100 text-xs text-red-600 hover:bg-red-50"
-                                    onClick={() => {
-                                        if (
-                                            confirm(
-                                                'Delete ' +
-                                                    selected.length +
-                                                    ' categories?',
-                                            )
-                                        ) {
-                                            doAction(
-                                                '/admin/categories/bulk-delete',
-                                                'delete',
-                                            );
-                                        }
-                                    }}
-                                >
-                                    <Trash2 className="h-3 w-3" /> Delete
-                                </Button>
-                            </div>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="ml-auto h-7 w-7 text-zinc-400 hover:text-zinc-600"
-                                onClick={() => setSelected([])}
-                            >
-                                <X className="h-3.5 w-3.5" />
-                            </Button>
-                        </div>
-                    )}
-
                     {/* Table */}
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm">
                             <thead>
                                 <tr className="border-b border-zinc-100 bg-zinc-50/60">
-                                    <th className="w-10 px-4 py-3">
-                                        <Checkbox
-                                            checked={allSelected}
-                                            onCheckedChange={toggleAll}
-                                            className="border-zinc-300 data-[state=checked]:bg-[#7F2020]"
-                                        />
-                                    </th>
                                     <th className="px-4 py-3 text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">
                                         Category
                                     </th>
@@ -403,7 +324,7 @@ export default function CategoriesIndex({
                             <tbody className="divide-y divide-zinc-50">
                                 {categories.data.length === 0 && (
                                     <tr>
-                                        <td colSpan={6}>
+                                        <td colSpan={5}>
                                             <div className="flex flex-col items-center justify-center gap-3 py-20">
                                                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-100">
                                                     <Tags className="h-5 w-5 text-zinc-400" />
@@ -426,7 +347,6 @@ export default function CategoriesIndex({
                                     </tr>
                                 )}
                                 {categories.data.map((c) => {
-                                    const isSelected = selected.includes(c.id);
                                     const sc =
                                         statusConfig[
                                             c.is_active ? 'active' : 'inactive'
@@ -435,27 +355,8 @@ export default function CategoriesIndex({
                                     return (
                                         <tr
                                             key={c.id}
-                                            className={
-                                                'transition-colors hover:bg-zinc-50/70 ' +
-                                                (isSelected
-                                                    ? 'bg-[#fdfaf8]'
-                                                    : '')
-                                            }
+                                            className="transition-colors hover:bg-zinc-50/70"
                                         >
-                                            <td className="px-4 py-3.5">
-                                                <Checkbox
-                                                    checked={isSelected}
-                                                    onCheckedChange={() =>
-                                                        toggleOne(c.id)
-                                                    }
-                                                    className={
-                                                        isSelected
-                                                            ? 'border-[#7F2020] data-[state=checked]:bg-[#7F2020]'
-                                                            : 'border-zinc-300'
-                                                    }
-                                                />
-                                            </td>
-
                                             <td className="px-4 py-3.5">
                                                 <div className="flex items-center gap-3">
                                                     <div className="h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50">

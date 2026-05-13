@@ -263,13 +263,11 @@ export default function ShipmentShow({ shipment, shippingStatuses }: Props) {
                                     </a>
                                 </Button>
                             )}
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => printBiteshipLabel(shipment)}
-                            >
-                                <Printer /> Cetak Resi Biteship
-                            </Button>
+                            {!labelUrl && (
+                                <Button type="button" variant="outline" disabled>
+                                    <Printer /> Cetak Resi Biteship
+                                </Button>
+                            )}
                             <Button
                                 type="button"
                                 onClick={() => router.post(`/admin/shipments/${shipment.id}/refresh-tracking`, {}, { preserveScroll: true })}
@@ -306,8 +304,7 @@ export default function ShipmentShow({ shipment, shippingStatuses }: Props) {
                                 <PackagePlus className="size-5" /> Create Biteship Order
                             </CardTitle>
                             <CardDescription>
-                                Shipment ini belum punya Biteship order ID. Submit
-                                form ini untuk membuat order pickup ke Biteship API.
+                                Jangan melakukan perubahan data pada form dibawah ini, langsung create order untuk melakukan pengiriman.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>

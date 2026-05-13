@@ -1,7 +1,6 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import {
     AlertCircle,
-    ChevronLeft,
     ChevronRight,
     Heart,
     MessageCircle,
@@ -18,6 +17,7 @@ import {
     destroyProduct as removeWishlistProduct,
     store as addWishlistItem,
 } from '@/actions/App/Http/Controllers/Customer/WishlistController';
+import HTMLConvert from '@/components/HTMLConvert';
 import ShopLayout from '@/layouts/shop-layout';
 import { cart, detail, list } from '@/routes';
 
@@ -733,13 +733,7 @@ export default function DetailProduct({
 
                         <div className="mb-8 space-y-5 border-t border-border pt-8 text-[11px] leading-[1.9] font-medium tracking-wide text-secondary-foreground">
                             {productDescription ? (
-                                productDescription
-                                    .split(/\r?\n/)
-                                    .map((paragraph, index) => (
-                                        <p key={`${paragraph}-${index}`}>
-                                            {paragraph}
-                                        </p>
-                                    ))
+                                <HTMLConvert html={productDescription} />
                             ) : (
                                 <p>
                                     {product.title} dirancang untuk menemani gaya
