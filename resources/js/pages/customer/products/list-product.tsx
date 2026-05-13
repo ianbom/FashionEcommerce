@@ -688,6 +688,7 @@ function ProductTile({
 }) {
     const [isWishlisted, setIsWishlisted] = useState(product.is_wishlisted);
     const [isWishlistProcessing, setIsWishlistProcessing] = useState(false);
+    const isOutOfStock = product.available_stock <= 0;
 
     const toggleWishlist = (event: MouseEvent<HTMLButtonElement>) => {
         event.preventDefault();
@@ -718,7 +719,9 @@ function ProductTile({
         <FadeInOnScroll delay={(index % 12) * 60}>
             <Link
                 href={detail.url({ query: { product: product.slug } })}
-                className="group flex h-full cursor-pointer flex-col"
+                className={`group flex h-full cursor-pointer flex-col ${
+                    isOutOfStock ? 'text-muted-foreground' : ''
+                }`}
             >
                 <div className="relative mb-3 aspect-[3/4] overflow-hidden rounded-sm bg-muted">
                     <img
@@ -729,15 +732,26 @@ function ProductTile({
                         alt={product.title}
                         loading="lazy"
                         decoding="async"
-                        className="h-full w-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-[1.03]"
+                        className={`h-full w-full object-cover transition-transform duration-700 ease-in-out ${
+                            isOutOfStock
+                                ? 'grayscale-[45%] group-hover:scale-100'
+                                : 'group-hover:scale-[1.03]'
+                        }`}
                     />
-                    <div className="pointer-events-none absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/5" />
+                    <div
+                        className={`pointer-events-none absolute inset-0 transition-colors duration-500 ${
+                            isOutOfStock
+                                ? 'bg-background/45'
+                                : 'bg-black/0 group-hover:bg-black/5'
+                        }`}
+                    />
 
                     {product.badge && (
                         <div className="absolute top-2 left-2 rounded-sm bg-primary px-2 py-1 text-[8px] font-medium tracking-widest text-primary-foreground uppercase shadow-sm">
                             {product.badge}
                         </div>
                     )}
+
                     <button
                         type="button"
                         aria-label={
@@ -770,11 +784,23 @@ function ProductTile({
                     </div>
                 )}
 
-                <h3 className="mb-1 text-[11px] leading-[1.4] font-semibold text-foreground transition-colors hover:text-primary">
+                <h3
+                    className={`mb-1 text-[11px] leading-[1.4] font-semibold transition-colors ${
+                        isOutOfStock
+                            ? 'text-muted-foreground'
+                            : 'text-foreground hover:text-primary'
+                    }`}
+                >
                     {product.title}
                 </h3>
 
-                <div className="mb-4 flex flex-wrap items-center gap-2 text-[11px] text-secondary-foreground">
+                <div
+                    className={`mb-4 flex flex-wrap items-center gap-2 text-[11px] ${
+                        isOutOfStock
+                            ? 'text-muted-foreground'
+                            : 'text-secondary-foreground'
+                    }`}
+                >
                     <span>
                         {formatPrice(product.sale_price ?? product.price)}
                     </span>
@@ -785,8 +811,14 @@ function ProductTile({
                     )}
                 </div>
 
-                <span className="mt-auto w-full rounded-full border border-input py-2 text-center text-[11px] font-semibold tracking-wider text-secondary-foreground shadow-sm transition-all duration-300 hover:border-primary hover:bg-primary hover:text-primary-foreground hover:shadow-md active:scale-95">
-                    {product.available_stock > 0 ? 'Beli' : 'Habis'}
+                <span
+                    className={`mt-auto w-full rounded-full border py-2 text-center text-[11px] font-semibold tracking-wider shadow-sm transition-all duration-300 ${
+                        isOutOfStock
+                            ? 'border-border bg-muted text-muted-foreground'
+                            : 'border-input text-secondary-foreground hover:border-primary hover:bg-primary hover:text-primary-foreground hover:shadow-md active:scale-95'
+                    }`}
+                >
+                    {isOutOfStock ? 'Stok Habis' : 'Beli'}
                 </span>
             </Link>
         </FadeInOnScroll>

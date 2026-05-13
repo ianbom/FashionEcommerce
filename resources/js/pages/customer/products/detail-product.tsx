@@ -196,7 +196,8 @@ export default function DetailProduct({
         (product.sale_price ?? product.price) +
         (selectedVariant?.additional_price ?? 0);
     const basePrice = product.price + (selectedVariant?.additional_price ?? 0);
-    const availableStock = selectedVariant?.available_stock ?? product.available_stock;
+    const availableStock =
+        selectedVariant?.available_stock ?? product.available_stock;
     const maxQuantity = Math.max(1, availableStock);
     const isAvailable = product.available_stock > 0 && availableStock > 0;
     const productDescription = product.description || product.short_description;
@@ -517,6 +518,14 @@ export default function DetailProduct({
                                         const isSelected =
                                             selectedColor ===
                                             (variant.color_name ?? '');
+                                        const isColorOutOfStock =
+                                            !variants.some(
+                                                (candidate) =>
+                                                    candidate.color_name ===
+                                                        variant.color_name &&
+                                                    candidate.available_stock >
+                                                        0,
+                                            );
 
                                         return (
                                             <button
@@ -551,12 +560,18 @@ export default function DetailProduct({
                                                     className={`mb-2 h-[65px] w-[50px] overflow-hidden rounded-sm border p-0.5 transition-all ${
                                                         isSelected
                                                             ? 'border-primary'
-                                                            : 'border-transparent group-hover:border-border'
+                                                            : isColorOutOfStock
+                                                              ? 'border-dashed border-border'
+                                                              : 'border-transparent group-hover:border-border'
                                                     }`}
                                                 >
                                                     <img
                                                         src={variantImage}
-                                                        className="h-full w-full rounded-sm object-cover"
+                                                        className={`h-full w-full rounded-sm object-cover ${
+                                                            isColorOutOfStock
+                                                                ? 'opacity-55 grayscale-[45%]'
+                                                                : ''
+                                                        }`}
                                                         alt={
                                                             variant.color_name ??
                                                             product.title
@@ -567,13 +582,20 @@ export default function DetailProduct({
                                                     className={`text-[9px] font-medium ${
                                                         isSelected
                                                             ? 'text-primary'
-                                                            : 'text-muted-foreground group-hover:text-primary'
+                                                            : isColorOutOfStock
+                                                              ? 'text-muted-foreground/60'
+                                                              : 'text-muted-foreground group-hover:text-primary'
                                                     }`}
                                                 >
                                                     {variant.color_name ??
                                                         variant.color_hex ??
                                                         'Warna'}
                                                 </span>
+                                                {isColorOutOfStock && (
+                                                    <span className="mt-1 rounded-full border border-border px-1.5 py-0.5 text-[8px] font-semibold tracking-wider text-muted-foreground uppercase">
+                                                        Habis
+                                                    </span>
+                                                )}
                                             </button>
                                         );
                                     })}
@@ -602,39 +624,50 @@ export default function DetailProduct({
                                     </button>
                                 </div>
                                 <div className="flex flex-wrap gap-3">
-                                    {sizes.map((size) => (
-                                        <button
-                                            key={size}
-                                            type="button"
-                                            onClick={() => {
-                                                const nextVariant =
-                                                    variants.find(
-                                                        (variant) =>
-                                                            variant.size ===
-                                                                size &&
-                                                            variant.color_name ===
-                                                                selectedColor,
-                                                    ) ??
-                                                    variants.find(
-                                                        (variant) =>
-                                                            variant.size ===
-                                                            size,
-                                                    ) ??
-                                                    initialVariant;
+                                    {sizes.map((size) => {
+                                        const sizeVariant =
+                                            variants.find(
+                                                (variant) =>
+                                                    variant.size === size &&
+                                                    variant.color_name ===
+                                                        selectedColor,
+                                            ) ??
+                                            variants.find(
+                                                (variant) =>
+                                                    variant.size === size,
+                                            );
+                                        const isSizeOutOfStock =
+                                            (sizeVariant?.available_stock ??
+                                                0) <= 0;
 
-                                                setSelectedVariantId(
-                                                    nextVariant?.id ?? null,
-                                                );
-                                            }}
-                                            className={`rounded-md border px-7 py-2.5 text-[11px] font-semibold tracking-wide transition-all ${
-                                                selectedSize === size
-                                                    ? 'border-primary text-primary shadow-sm hover:bg-secondary'
-                                                    : 'border-border text-muted-foreground hover:border-primary hover:text-primary'
-                                            }`}
-                                        >
-                                            {size}
-                                        </button>
-                                    ))}
+                                        return (
+                                            <button
+                                                key={size}
+                                                type="button"
+                                                onClick={() => {
+                                                    setSelectedVariantId(
+                                                        sizeVariant?.id ??
+                                                            initialVariant?.id ??
+                                                            null,
+                                                    );
+                                                }}
+                                                className={`rounded-md border px-7 py-2.5 text-[11px] font-semibold tracking-wide transition-all ${
+                                                    selectedSize === size
+                                                        ? 'border-primary text-primary shadow-sm hover:bg-secondary'
+                                                        : isSizeOutOfStock
+                                                          ? 'border-dashed border-border bg-muted/30 text-muted-foreground/60 hover:border-primary/60 hover:text-primary'
+                                                          : 'border-border text-muted-foreground hover:border-primary hover:text-primary'
+                                                }`}
+                                            >
+                                                <span>{size}</span>
+                                                {isSizeOutOfStock && (
+                                                    <span className="ml-2 text-[9px] font-semibold tracking-wider uppercase">
+                                                        Habis
+                                                    </span>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}
@@ -654,7 +687,10 @@ export default function DetailProduct({
                                 <button
                                     type="button"
                                     onClick={increaseQuantity}
-                                    disabled={!isAvailable || quantity >= availableStock}
+                                    disabled={
+                                        !isAvailable ||
+                                        quantity >= availableStock
+                                    }
                                     className="flex h-9 w-10 items-center justify-center rounded-r-md bg-muted text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     <Plus size={14} strokeWidth={2} />
@@ -736,9 +772,9 @@ export default function DetailProduct({
                                 <HTMLConvert html={productDescription} />
                             ) : (
                                 <p>
-                                    {product.title} dirancang untuk menemani gaya
-                                    modest sehari-hari dengan detail yang rapi
-                                    dan nyaman dipakai.
+                                    {product.title} dirancang untuk menemani
+                                    gaya modest sehari-hari dengan detail yang
+                                    rapi dan nyaman dipakai.
                                 </p>
                             )}
 
