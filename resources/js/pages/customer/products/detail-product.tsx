@@ -1,6 +1,5 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import {
-    AlertCircle,
     ChevronRight,
     Heart,
     MessageCircle,
@@ -31,6 +30,7 @@ type Variant = {
     stock: number;
     reserved_stock: number;
     available_stock: number;
+    cart_quantity: number;
     image_url: string | null;
 };
 
@@ -198,6 +198,8 @@ export default function DetailProduct({
     const basePrice = product.price + (selectedVariant?.additional_price ?? 0);
     const availableStock =
         selectedVariant?.available_stock ?? product.available_stock;
+    const cartQuantity = selectedVariant?.cart_quantity ?? 0;
+    const addableStock = Math.max(0, availableStock - cartQuantity);
     const maxQuantity = Math.max(1, availableStock);
     const isAvailable = product.available_stock > 0 && availableStock > 0;
     const productDescription = product.description || product.short_description;
@@ -227,14 +229,24 @@ export default function DetailProduct({
 
         return message;
     };
-    const validateCartAction = () => {
+    const validateCartAction = (mode: 'add' | 'buy' = 'add') => {
         if (!selectedVariant || !isAvailable) {
             setStockAlert('Varian produk ini belum tersedia untuk dibeli.');
 
             return false;
         }
 
-        if (quantity > availableStock) {
+        if (mode === 'add' && cartQuantity + quantity > availableStock) {
+            setStockAlert(
+                cartQuantity >= availableStock
+                    ? `Stok di keranjang anda sudah melebihi stok yang tersedia (${availableStock} pcs).`
+                    : `Stok tidak mencukupi. Di keranjang sudah ada ${cartQuantity} pcs, stok tersedia ${availableStock} pcs.`,
+            );
+
+            return false;
+        }
+
+        if (mode === 'buy' && quantity > availableStock) {
             setStockAlert(`Stok tersedia hanya ${availableStock} pcs.`);
 
             return false;
@@ -260,7 +272,11 @@ export default function DetailProduct({
     const addProductVariantToCart = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        if (cartForm.processing || !validateCartAction() || !selectedVariant) {
+        if (
+            cartForm.processing ||
+            !validateCartAction('add') ||
+            !selectedVariant
+        ) {
             return;
         }
 
@@ -277,7 +293,17 @@ export default function DetailProduct({
         });
     };
     const buyItNow = () => {
-        if (cartForm.processing || !validateCartAction() || !selectedVariant) {
+        if (cartForm.processing || !selectedVariant) {
+            return;
+        }
+
+        if (cartQuantity > 0) {
+            router.visit(cart.url());
+
+            return;
+        }
+
+        if (!validateCartAction('buy')) {
             return;
         }
 
@@ -696,7 +722,7 @@ export default function DetailProduct({
                                     <Plus size={14} strokeWidth={2} />
                                 </button>
                             </div>
-                            <p className="mb-6 text-[11px] text-muted-foreground">
+                            <p className="mb-2 text-[11px] text-muted-foreground">
                                 Stok tersedia: {Math.max(0, availableStock)} pcs
                             </p>
 
@@ -750,20 +776,14 @@ export default function DetailProduct({
                             {(stockAlert ||
                                 cartForm.errors.quantity ||
                                 cartForm.errors.product_variant_id) && (
-                                <div className="mt-3 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-left text-[11px] font-medium text-red-700">
-                                    <AlertCircle
-                                        size={16}
-                                        className="mt-0.5 shrink-0"
-                                    />
-                                    <span>
-                                        {stockAlert ||
-                                            normalizeCartError(
-                                                cartForm.errors.quantity ||
-                                                    cartForm.errors
-                                                        .product_variant_id,
-                                            )}
-                                    </span>
-                                </div>
+                                <p className="mt-3 border-l border-[#C05D5D] pl-2 text-left text-[11px] leading-relaxed font-medium text-[#B24B4B]">
+                                    {stockAlert ||
+                                        normalizeCartError(
+                                            cartForm.errors.quantity ||
+                                                cartForm.errors
+                                                    .product_variant_id,
+                                        )}
+                                </p>
                             )}
                         </div>
 

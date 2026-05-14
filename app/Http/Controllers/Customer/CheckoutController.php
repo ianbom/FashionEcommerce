@@ -20,6 +20,18 @@ class CheckoutController extends Controller
     public function show(Request $request, CheckoutService $checkout): Response|RedirectResponse
     {
         $user = $this->user($request);
+        $cartAvailability = $checkout->cartAvailability($user);
+
+        if ($cartAvailability['is_empty']) {
+            return redirect()->route('cart')
+                ->with('warning', 'Keranjang kosong. Tambahkan produk sebelum checkout.');
+        }
+
+        if ($cartAvailability['has_unavailable_items']) {
+            return redirect()->route('cart')
+                ->with('warning', 'Ada produk yang habis atau stoknya tidak mencukupi. Perbarui keranjang sebelum checkout.');
+        }
+
         if (! CustomerAddress::query()->where('user_id', $user->id)->exists()) {
             return redirect()->route('manage-address', ['redirect_to' => route('checkout', absolute: false)])
                 ->with('warning', 'Tambahkan alamat pengiriman terlebih dahulu.');

@@ -57,6 +57,16 @@ class CheckoutService
         ];
     }
 
+    public function cartAvailability(User $user): array
+    {
+        $items = $this->cartItems($user);
+
+        return [
+            'is_empty' => $items->isEmpty(),
+            'has_unavailable_items' => $items->contains(fn (array $item): bool => ! $item['is_available']),
+        ];
+    }
+
     public function shippingRates(User $user, int $addressId): array
     {
         $address = $this->ownedAddress($user, $addressId);

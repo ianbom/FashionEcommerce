@@ -7,6 +7,8 @@ use App\Models\Category;
 use App\Models\Collection;
 use App\Models\Page;
 use App\Models\Product;
+use App\Models\ProductVariant;
+use App\Models\CartItem;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -119,7 +121,7 @@ class ProductBrowsingService
             ->firstOrFail();
 
         return [
-            'product' => $this->productDetail($product),
+            'product' => $this->productDetail($product, $this->cartQuantitiesByVariant($request)),
             'relatedProducts' => $this->relatedProducts($product, 8),
             'recentProducts' => $this->recentProducts($product, 4),
         ];
@@ -243,7 +245,7 @@ class ProductBrowsingService
         ];
     }
 
-    private function productDetail(Product $product): array
+    private function productDetail(Product $product, array $cartQuantitiesByVariant = []): array
     {
         $variants = $product->variants;
         $images = $product->images
@@ -285,10 +287,28 @@ class ProductBrowsingService
                     'stock' => $variant->stock,
                     'reserved_stock' => $variant->reserved_stock,
                     'available_stock' => max(0, $variant->stock - $variant->reserved_stock),
+                    'cart_quantity' => (int) ($cartQuantitiesByVariant[$variant->id] ?? 0),
                     'image_url' => $variant->image_url,
                 ])
                 ->values(),
         ];
+    }
+
+    private function cartQuantitiesByVariant(Request $request): array
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            return [];
+        }
+
+        return CartItem::query()
+            ->whereHas('cart', fn ($query) => $query->where('user_id', $user->id))
+            ->selectRaw('product_variant_id, sum(quantity) as quantity')
+            ->groupBy('product_variant_id')
+            ->pluck('quantity', 'product_variant_id')
+            ->map(fn ($quantity) => (int) $quantity)
+            ->all();
     }
 
     private function validatedFilters(Request $request): array
@@ -436,5 +456,4 @@ class ProductBrowsingService
         return $this->badge($product);
     }
 }
-
 

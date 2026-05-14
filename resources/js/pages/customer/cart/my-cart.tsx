@@ -321,6 +321,12 @@ export default function MyCart({
                                                                         </span>
                                                                     )}
                                                                 </div>
+                                                                <p className="mt-1.5 text-[10px] font-medium tracking-wide text-[#A1857B] uppercase sm:text-[11px]">
+                                                                    Stok:{' '}
+                                                                    {
+                                                                        item.available_stock
+                                                                    }
+                                                                </p>
                                                                 {!item.is_available && (
                                                                     <p className="mt-2 max-w-[300px] border-l border-[#C05D5D] pl-2 text-[10px] leading-relaxed font-semibold text-[#B24B4B] sm:text-[11px]">
                                                                         {stockIssueMessage(
