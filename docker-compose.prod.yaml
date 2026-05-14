@@ -2,11 +2,11 @@ services:
   app:
     build:
       args:
-        APP_ENV: production
+        APP_ENV: local
     environment:
-      APP_ENV: production
-      APP_DEBUG: "false"
-      RUN_FRESH_SEED: "false"
+      APP_ENV: local
+      APP_DEBUG: "true"
+      RUN_FRESH_SEED: "true"
     volumes:
       - storage:/var/www/html/storage
 
@@ -19,17 +19,17 @@ services:
 
   queue:
     environment:
-      APP_ENV: production
-      APP_DEBUG: "false"
-      RUN_FRESH_SEED: "false"
+      APP_ENV: local
+      APP_DEBUG: "true"
+      RUN_FRESH_SEED: "true"
     volumes:
       - storage:/var/www/html/storage
 
   scheduler:
     environment:
-      APP_ENV: production
-      APP_DEBUG: "false"
-      RUN_FRESH_SEED: "false"
+      APP_ENV: local
+      APP_DEBUG: "true"
+      RUN_FRESH_SEED: "true"
     volumes:
       - storage:/var/www/html/storage
 
