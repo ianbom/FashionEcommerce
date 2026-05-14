@@ -132,6 +132,7 @@ export default function PaymentsIndex({
     stats: totals,
 }: Props) {
     const { data, setData, get, processing } = useForm({
+        order_number: filters.order_number ?? '',
         transaction_status: filters.transaction_status ?? '',
         payment_method: filters.payment_method ?? '',
         date_from: filters.date_from ?? '',
@@ -330,6 +331,18 @@ export default function PaymentsIndex({
                         onSubmit={submit}
                         className="flex flex-wrap items-end gap-3 border-b border-zinc-100 bg-zinc-50/40 px-5 py-4"
                     >
+                        <div className="relative min-w-[220px] flex-1">
+                            <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
+                            <Input
+                                value={data.order_number}
+                                onChange={(event) =>
+                                    setData('order_number', event.target.value)
+                                }
+                                placeholder="Cari nomor order..."
+                                className="h-9 rounded-lg border-zinc-200 bg-white pl-9 text-sm shadow-sm"
+                            />
+                        </div>
+
                         <FilterSelect
                             label="Status"
                             value={data.transaction_status || 'all'}
@@ -352,8 +365,7 @@ export default function PaymentsIndex({
                             ))}
                         </FilterSelect>
 
-                        <div className="relative min-w-[220px] flex-1">
-                            <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
+                        <div className="relative min-w-[180px]">
                             <Input
                                 value={data.payment_method}
                                 onChange={(event) =>

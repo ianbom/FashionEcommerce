@@ -239,11 +239,11 @@ function ActionButton({
     tone?: 'default' | 'danger';
 }) {
     const base =
-        'group flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-[12px] font-semibold transition-all duration-150 hover:shadow-sm active:scale-[0.98]';
+        'group flex w-full items-center justify-center gap-1.5 rounded-full border px-3 py-2 text-[11px] font-semibold transition-colors duration-150 active:scale-[0.99]';
     const toneClass =
         tone === 'danger'
-            ? 'border-red-200 bg-red-50 text-red-700 hover:border-red-300 hover:bg-red-100'
-            : 'border-[#e5d7ca] bg-white text-[#4a392c] hover:border-[#c9a983] hover:bg-[#fbf4ed]';
+            ? 'border-red-300 text-red-700 hover:border-red-500 hover:text-red-800'
+            : 'border-[#d9c7b8] text-[#4a392c] hover:border-[#8f684b] hover:text-[#8f684b]';
 
     if (onClick) {
         return (
@@ -316,27 +316,6 @@ function InfoLine({
             <span className="min-w-0 text-sm font-medium break-words text-[#3f3025]">
                 {value || '-'}
             </span>
-        </div>
-    );
-}
-
-function SectionCard({
-    title,
-    children,
-    noPad = false,
-}: {
-    title: string;
-    children: ReactNode;
-    noPad?: boolean;
-}) {
-    return (
-        <div className="overflow-hidden rounded-2xl border border-[#EADBD8] bg-white shadow-sm">
-            <div className="border-b border-[#f0ebe4] px-5 py-4 sm:px-6">
-                <h2 className="font-serif text-lg text-[#2d2119] sm:text-xl">
-                    {title}
-                </h2>
-            </div>
-            <div className={noPad ? '' : 'p-5 sm:p-6'}>{children}</div>
         </div>
     );
 }
@@ -469,10 +448,7 @@ export default function DetailOrder({ order }: Props) {
         .filter(Boolean)
         .join(' ');
     const address = order.address;
-    const paymentMethod =
-        [order.payment?.payment_provider, order.payment?.payment_method]
-            .filter(Boolean)
-            .join(' / ') || '-';
+    const paymentMethod = order.payment?.payment_method ?? '-';
     const transactionId =
         order.payment?.midtrans_transaction_id ??
         order.payment?.midtrans_order_id ??
@@ -529,12 +505,12 @@ export default function DetailOrder({ order }: Props) {
                 { label: order.order_number },
             ]}
         >
-            <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
+            <div className="grid grid-cols-1 gap-10 xl:grid-cols-[minmax(0,1fr)_320px] xl:gap-12">
                 {/* Left column */}
-                <div className="space-y-5">
+                <div className="space-y-10">
                     {/* Order Header */}
-                    <div className="overflow-hidden rounded-2xl border border-[#EADBD8] bg-white shadow-sm">
-                        <div className="p-5 sm:p-6">
+                    <section className="border-b border-[#eadbd8] pb-8">
+                        <div>
                             <div className="flex flex-wrap items-start justify-between gap-3">
                                 <div>
                                     <p className="text-[10px] font-semibold tracking-widest text-[#9a8575] uppercase">
@@ -561,7 +537,7 @@ export default function DetailOrder({ order }: Props) {
                                     </StatusPill>
                                 </div>
                             </div>
-                            <div className="mt-5 grid grid-cols-2 gap-4 border-t border-[#f0ebe4] pt-5 sm:grid-cols-3">
+                            <div className="mt-6 grid grid-cols-2 gap-x-6 gap-y-5 border-t border-[#eadbd8] pt-5 sm:grid-cols-3">
                                 <MetaChip label="Metode Pembayaran">
                                     {paymentMethod}
                                 </MetaChip>
@@ -573,7 +549,7 @@ export default function DetailOrder({ order }: Props) {
                                 </MetaChip>
                             </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-3 border-t border-[#f0ebe4] p-4 sm:grid-cols-4 sm:p-5">
+                        <div className="mt-6 grid grid-cols-2 gap-x-5 gap-y-3 sm:grid-cols-4">
                             <ActionButton
                                 href={trackingUrl}
                                 external
@@ -610,10 +586,11 @@ export default function DetailOrder({ order }: Props) {
                                 label="Dukungan"
                             />
                         </div>
-                    </div>
+                    </section>
 
                     {/* Order Progress */}
-                    <SectionCard title="Progres Pesanan">
+                    <section className="border-b border-[#eadbd8] pb-8">
+                        <h3 className="mb-6 text-sm font-semibold text-[#4a392c]">Progres Pesanan</h3>
                         <div className="hide-scrollbar overflow-x-auto pb-1">
                             <div className="relative grid min-w-[520px] grid-cols-6">
                                 <div className="absolute top-[21px] right-[8%] left-[8%] h-px bg-gradient-to-r from-[#d8ae8f] to-[#e5ddd6]" />
@@ -644,17 +621,18 @@ export default function DetailOrder({ order }: Props) {
                                 })}
                             </div>
                         </div>
-                    </SectionCard>
+                    </section>
 
                     {/* Ordered Items */}
-                    <SectionCard title="Barang Dipesan" noPad={true}>
+                    <section className="border-b border-[#eadbd8] pb-8">
+                        <h3 className="mb-4 text-sm font-semibold text-[#4a392c]">Barang Dipesan</h3>
                         {/* Desktop table */}
                         <div className="hidden sm:block">
                             <div className="hide-scrollbar overflow-x-auto">
                                 <table className="w-full min-w-[580px] border-collapse text-left">
                                     <thead>
-                                        <tr className="border-b border-[#f0ebe4] bg-[#faf6f2] text-[11px] tracking-wide text-[#9a8575] uppercase">
-                                            <th className="px-5 py-3 font-semibold sm:px-6">
+                                        <tr className="border-b border-[#e5ddd6] text-[11px] tracking-wide text-[#9a8575] uppercase">
+                                            <th className="px-0 py-3 font-semibold">
                                                 Barang
                                             </th>
                                             <th className="px-4 py-3 font-semibold">
@@ -666,7 +644,7 @@ export default function DetailOrder({ order }: Props) {
                                             <th className="px-4 py-3 text-center font-semibold">
                                                  Jumlah
                                             </th>
-                                            <th className="px-5 py-3 text-right font-semibold sm:px-6">
+                                            <th className="px-0 py-3 text-right font-semibold">
                                                 Subtotal
                                             </th>
                                         </tr>
@@ -685,15 +663,15 @@ export default function DetailOrder({ order }: Props) {
                                             return (
                                                 <tr
                                                     key={item.id}
-                                                    className="bg-white transition-colors hover:bg-[#fdfaf7]"
+                                                    className="transition-colors hover:bg-[#fdfaf7]"
                                                 >
-                                                    <td className="px-5 py-4 sm:px-6">
+                                                    <td className="px-0 py-4">
                                                         <div className="flex items-center gap-3">
                                                             <Link
                                                                 href={
                                                                     productUrl
                                                                 }
-                                                                className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-[#f4ebe4]"
+                                                                    className="h-16 w-16 shrink-0 overflow-hidden bg-[#f4ebe4]"
                                                             >
                                                                 <img
                                                                     src={
@@ -758,11 +736,11 @@ export default function DetailOrder({ order }: Props) {
                                                         )}
                                                     </td>
                                                     <td className="px-4 py-4 text-center">
-                                                        <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-[#f4ebe4] text-[12px] font-semibold text-[#4a392c]">
-                                                            {item.quantity}
+                                                        <span className="text-[12px] font-semibold text-[#4a392c]">
+                                                            x {item.quantity}
                                                         </span>
                                                     </td>
-                                                    <td className="px-5 py-4 text-right text-[13px] font-semibold text-[#3d3027] sm:px-6">
+                                                    <td className="px-0 py-4 text-right text-[13px] font-semibold text-[#3d3027]">
                                                         {formatPrice(
                                                             item.subtotal,
                                                         )}
@@ -775,7 +753,7 @@ export default function DetailOrder({ order }: Props) {
                             </div>
                         </div>
                         {/* Mobile cards */}
-                        <div className="space-y-3 p-4 sm:hidden">
+                        <div className="divide-y divide-[#f0ebe4] sm:hidden">
                             {order.items.map((item) => {
                                 const productUrl = item.product_slug
                                     ? productShow.url({
@@ -786,11 +764,11 @@ export default function DetailOrder({ order }: Props) {
                                 return (
                                     <div
                                         key={item.id}
-                                        className="flex gap-3 rounded-xl border border-[#f0ebe4] bg-white p-3"
+                                        className="flex gap-3 py-4"
                                     >
                                         <Link
                                             href={productUrl}
-                                            className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-[#f4ebe4]"
+                                            className="h-20 w-20 shrink-0 overflow-hidden bg-[#f4ebe4]"
                                         >
                                             <img
                                                 src={
@@ -856,99 +834,104 @@ export default function DetailOrder({ order }: Props) {
                                 );
                             })}
                         </div>
-                    </SectionCard>
+                    </section>
 
                     {/* Shipping + Payment Info */}
-                    <div className="grid gap-5 md:grid-cols-2">
-                        <SectionCard title="Info Pengiriman">
-                            <div className="divide-y divide-[#f5ede6]">
-                                <InfoLine
-                                    icon={UserRound}
-                                    label="Penerima"
-                                    value={
-                                        address?.recipient_name ??
-                                        order.customer_name
-                                    }
-                                />
-                                <InfoLine
-                                    icon={Headphones}
-                                    label="Telepon"
-                                    value={
-                                        address?.recipient_phone ??
-                                        order.customer_phone
-                                    }
-                                />
-                                <InfoLine
-                                    icon={MapPin}
-                                    label="Alamat"
-                                    value={
-                                        address
-                                            ? `${address.full_address}, ${address.district}, ${address.city}, ${address.province} ${address.postal_code}`
-                                            : '-'
-                                    }
-                                />
-                                <InfoLine
-                                    icon={Truck}
-                                    label="Kurir"
-                                    value={courier || '-'}
-                                />
-                                <InfoLine
-                                    icon={ReceiptText}
-                                    label="No. Resi"
-                                    value={order.shipment?.waybill_id ?? '-'}
-                                />
-                                <InfoLine
-                                    icon={FileText}
-                                    label="Catatan Pengiriman"
-                                    value={address?.note ?? '-'}
-                                />
-                            </div>
-                        </SectionCard>
-                        <SectionCard title="Info Pembayaran">
-                            <div className="divide-y divide-[#f5ede6]">
-                                <InfoLine
-                                    icon={CreditCard}
-                                    label="Metode"
-                                    value={paymentMethod}
-                                />
-                                <InfoLine
-                                    icon={ReceiptText}
-                                    label="Transaksi"
-                                    value={transactionId}
-                                />
-                                <InfoLine
-                                    icon={ClipboardList}
-                                    label="Tanggal Pembayaran"
-                                    value={formatDateTime(
-                                        order.paid_at ??
-                                            order.payment?.paid_at ??
-                                            null,
-                                    )}
-                                />
-                                <div className="flex items-center gap-3 py-2.5">
-                                    <WalletCards
-                                        className="shrink-0 text-[#9b8777]"
-                                        size={15}
-                                        strokeWidth={1.65}
+                    <section className="border-b border-[#eadbd8] pb-8">
+                        <div className="grid gap-8 md:grid-cols-2">
+                            <div>
+                                <h3 className="mb-4 text-sm font-semibold text-[#4a392c]">Info Pengiriman</h3>
+                                <div className="divide-y divide-[#f5ede6]">
+                                    <InfoLine
+                                        icon={UserRound}
+                                        label="Penerima"
+                                        value={
+                                            address?.recipient_name ??
+                                            order.customer_name
+                                        }
                                     />
-                                    <span className="w-28 shrink-0 text-xs text-[#8b7b6e]">
-                                        Status
-                                    </span>
-                                    <StatusPill
-                                        tone={statusTone(order.payment_status)}
-                                    >
-                                        {labelStatus(order.payment_status)}
-                                    </StatusPill>
+                                    <InfoLine
+                                        icon={Headphones}
+                                        label="Telepon"
+                                        value={
+                                            address?.recipient_phone ??
+                                            order.customer_phone
+                                        }
+                                    />
+                                    <InfoLine
+                                        icon={MapPin}
+                                        label="Alamat"
+                                        value={
+                                            address
+                                                ? `${address.full_address}, ${address.district}, ${address.city}, ${address.province} ${address.postal_code}`
+                                                : '-'
+                                        }
+                                    />
+                                    <InfoLine
+                                        icon={Truck}
+                                        label="Kurir"
+                                        value={courier || '-'}
+                                    />
+                                    <InfoLine
+                                        icon={ReceiptText}
+                                        label="No. Resi"
+                                        value={order.shipment?.waybill_id ?? '-'}
+                                    />
+                                    <InfoLine
+                                        icon={FileText}
+                                        label="Catatan Pengiriman"
+                                        value={address?.note ?? '-'}
+                                    />
                                 </div>
                             </div>
-                        </SectionCard>
-                    </div>
+                            <div>
+                                <h3 className="mb-4 text-sm font-semibold text-[#4a392c]">Info Pembayaran</h3>
+                                <div className="divide-y divide-[#f5ede6]">
+                                    <InfoLine
+                                        icon={CreditCard}
+                                        label="Metode"
+                                        value={paymentMethod}
+                                    />
+                                    <InfoLine
+                                        icon={ReceiptText}
+                                        label="Transaksi"
+                                        value={transactionId}
+                                    />
+                                    <InfoLine
+                                        icon={ClipboardList}
+                                        label="Tanggal Pembayaran"
+                                        value={formatDateTime(
+                                            order.paid_at ??
+                                                order.payment?.paid_at ??
+                                                null,
+                                        )}
+                                    />
+                                    <div className="flex items-center gap-3 py-2.5">
+                                        <WalletCards
+                                            className="shrink-0 text-[#9b8777]"
+                                            size={15}
+                                            strokeWidth={1.65}
+                                        />
+                                        <span className="w-28 shrink-0 text-xs text-[#8b7b6e]">
+                                            Status
+                                        </span>
+                                        <StatusPill
+                                            tone={statusTone(order.payment_status)}
+                                        >
+                                            {labelStatus(order.payment_status)}
+                                        </StatusPill>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
                 </div>
 
                 {/* Right sidebar */}
-                <aside className="space-y-5 xl:sticky xl:top-6 xl:self-start">
+                <aside className="space-y-8 xl:sticky xl:top-6 xl:self-start">
                     {/* Order Summary */}
-                    <SectionCard title="Ringkasan Pesanan">
+                    <section className="border-b border-[#eadbd8] pb-6">
+                        <h3 className="mb-4 text-sm font-semibold text-[#4a392c]">Ringkasan Pesanan</h3>
                         <div className="space-y-2.5">
                             <SummaryRow
                                 label="Subtotal"
@@ -976,7 +959,7 @@ export default function DetailOrder({ order }: Props) {
                                 value={formatPrice(order.service_fee)}
                             />
                         </div>
-                        <div className="mt-5 rounded-xl bg-[#faf6f1] px-4 py-4">
+                        <div className="mt-5 border-t border-[#d9c7b8] pt-5">
                             <p className="text-[10px] font-semibold tracking-widest text-[#9a8575] uppercase">
                                 Total Pembayaran
                             </p>
@@ -984,14 +967,15 @@ export default function DetailOrder({ order }: Props) {
                                 {formatPrice(order.grand_total)}
                             </p>
                         </div>
-                    </SectionCard>
+                    </section>
 
                     {/* Order Notes */}
-                    <SectionCard title="Catatan Pesanan">
+                    <section>
+                        <h3 className="mb-3 text-sm font-semibold text-[#4a392c]">Catatan Pesanan</h3>
                         <p className="border-l-2 border-[#e5d7ca] pl-3 text-sm leading-relaxed text-[#716155] italic">
                             {order.notes ?? 'Tidak ada catatan untuk pesanan ini.'}
                         </p>
-                    </SectionCard>
+                    </section>
                 </aside>
             </div>
 

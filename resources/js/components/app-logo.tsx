@@ -5,7 +5,7 @@ export default function AppLogo({ className }: { className?: string }) {
         <img
             src="/logo-shay/shayda-logo-text-hitam.png"
             alt="Shayda"
-            className={cn('h-8 w-auto object-contain brightness-0 invert', className)}
+            className={cn('h-8 w-auto object-contain', className)}
         />
     );
 }

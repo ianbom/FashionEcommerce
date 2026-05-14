@@ -51,8 +51,8 @@ class AdminDashboardService
             ], $start, $end),
             'paymentSummary' => $this->paymentSummary($start, $end),
             'shippingSummary' => $this->shippingSummary($start, $end),
-            'attentionOrders' => $this->attentionOrders(),
-            'recentOrders' => $this->recentOrders(),
+            'attentionOrders' => $this->attentionOrders($start, $end),
+            'recentOrders' => $this->recentOrders($start, $end),
             'lowStockVariants' => $this->lowStockVariants(),
             'latestPaymentLogs' => $this->latestPaymentLogs(),
             'latestShipments' => $this->latestShipments(),
@@ -87,14 +87,12 @@ class AdminDashboardService
      */
     private function summary(CarbonImmutable $start, CarbonImmutable $end): array
     {
-        $todayStart = CarbonImmutable::now()->startOfDay();
-        $todayEnd = CarbonImmutable::now()->endOfDay();
         $monthStart = CarbonImmutable::now()->startOfMonth();
         $monthEnd = CarbonImmutable::now()->endOfMonth();
 
         return [
-            ['label' => 'Revenue Today', 'value' => $this->paidRevenue($todayStart, $todayEnd), 'format' => 'currency'],
-            ['label' => 'Orders Today', 'value' => $this->orderCount($todayStart, $todayEnd), 'format' => 'number'],
+            ['label' => 'Revenue', 'value' => $this->paidRevenue($start, $end), 'format' => 'currency'],
+            ['label' => 'Orders', 'value' => $this->orderCount($start, $end), 'format' => 'number'],
             ['label' => 'Pending Shipment', 'value' => $this->pendingShipmentCount(), 'format' => 'number'],
             ['label' => 'Low Stock Products', 'value' => $this->variantStockCount(1, 5), 'format' => 'number'],
             ['label' => 'Revenue Month', 'value' => $this->paidRevenue($monthStart, $monthEnd), 'format' => 'currency'],
@@ -254,7 +252,7 @@ class AdminDashboardService
             ->all();
     }
 
-    private function recentOrders(): Collection
+    private function recentOrders(CarbonImmutable $start, CarbonImmutable $end): Collection
     {
         if (! Schema::hasTable('orders')) {
             return collect();
@@ -262,12 +260,13 @@ class AdminDashboardService
 
         return DB::table('orders')
             ->select(['id', 'user_id', 'order_number', 'customer_name', 'grand_total', 'payment_status', 'order_status', 'shipping_status', 'created_at'])
+            ->whereBetween('created_at', [$start, $end])
             ->latest('created_at')
             ->limit(10)
             ->get();
     }
 
-    private function attentionOrders(): Collection
+    private function attentionOrders(CarbonImmutable $start, CarbonImmutable $end): Collection
     {
         if (! Schema::hasTable('orders')) {
             return collect();
@@ -275,6 +274,7 @@ class AdminDashboardService
 
         return DB::table('orders')
             ->select(['id', 'user_id', 'order_number', 'customer_name', 'payment_status', 'order_status', 'shipping_status', 'created_at'])
+            ->whereBetween('created_at', [$start, $end])
             ->where(function ($query): void {
                 $query
                     ->whereIn('payment_status', ['pending', 'pending_payment', 'failed', 'expired'])
@@ -313,7 +313,7 @@ class AdminDashboardService
         }
 
         return [
-            ['label' => 'Paid Today', 'value' => $this->paymentStatusCount('paid', CarbonImmutable::now()->startOfDay(), CarbonImmutable::now()->endOfDay())],
+            ['label' => 'Paid', 'value' => $this->paymentStatusCount('paid', $start, $end)],
             ['label' => 'Pending Payment', 'value' => $this->paymentStatusCount('pending', $start, $end)],
             ['label' => 'Failed Payment', 'value' => $this->paymentStatusCount('failed', $start, $end)],
             ['label' => 'Expired Payment', 'value' => $this->paymentStatusCount('expired', $start, $end)],
@@ -332,7 +332,7 @@ class AdminDashboardService
         return [
             ['label' => 'Need Shipment', 'value' => $this->pendingShipmentCount()],
             ['label' => 'In Delivery', 'value' => $this->shippingStatusCount(['shipped', 'in_transit', 'allocated', 'picked'], $start, $end)],
-            ['label' => 'Delivered Today', 'value' => $this->shippingStatusCount(['delivered'], CarbonImmutable::now()->startOfDay(), CarbonImmutable::now()->endOfDay())],
+            ['label' => 'Delivered', 'value' => $this->shippingStatusCount(['delivered'], $start, $end)],
             ['label' => 'Shipping Issue', 'value' => $this->shippingStatusCount(['problem', 'delivery_issue', 'failed'], $start, $end)],
         ];
     }

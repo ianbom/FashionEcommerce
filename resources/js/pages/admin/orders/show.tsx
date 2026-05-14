@@ -510,8 +510,23 @@ export default function OrderShow({ order }: Props) {
                                     >
                                         {action.label}
                                     </option>
-                                ))}
+                                    ))}
                             </select>
+                            {order.shipment ? (
+                                <ActionLink
+                                    href={`/admin/shipments/${order.shipment.id}`}
+                                >
+                                    <PackagePlus size={14} /> Create shipment
+                                </ActionLink>
+                            ) : (
+                                <button
+                                    type="button"
+                                    disabled
+                                    className="group inline-flex h-9 cursor-not-allowed items-center justify-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-400 shadow-sm"
+                                >
+                                    <PackagePlus size={14} /> Create shipment
+                                </button>
+                            )}
                         </div>
                     </header>
 
@@ -606,7 +621,7 @@ export default function OrderShow({ order }: Props) {
                                             </p>
                                             <p className="text-sm break-words whitespace-pre-wrap text-zinc-600">
                                                 {order.notes ||
-                                                    'Customer did not leave a note for this order.'}
+                                                    '-'}
                                             </p>
                                         </div>
                                     </div>

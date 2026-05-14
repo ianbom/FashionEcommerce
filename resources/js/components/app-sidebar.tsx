@@ -217,7 +217,6 @@ const adminNavGroups: NavGroup[] = [
 export function AppSidebar() {
     const { url } = usePage();
     const isAdmin = url.startsWith('/admin');
-    const homeHref = isAdmin ? '/admin/dashboard' : dashboard();
 
     return (
         <Sidebar collapsible="icon" variant="sidebar">
@@ -225,8 +224,11 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={homeHref} prefetch>
-                                Dasbor Admin
+                            <Link href={'/'} prefetch>
+                                <AppLogo className="h-18" />
+                                <span className="truncate font-semibold group-data-[collapsible=icon]:hidden">
+                                    Dashboard Admin
+                                </span>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

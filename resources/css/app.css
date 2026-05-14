@@ -161,3 +161,133 @@
         background: var(--muted-foreground);
     }
 }
+
+@layer components {
+    .tiptap {
+        overflow-wrap: anywhere;
+    }
+
+    .tiptap p.is-editor-empty:first-child::before {
+        color: #a1a1aa;
+        content: attr(data-placeholder);
+        float: left;
+        height: 0;
+        pointer-events: none;
+    }
+
+    .tiptap h2 {
+        font-size: 1.125rem;
+        font-weight: 700;
+        line-height: 1.6;
+        margin: 0.75rem 0 0.35rem;
+    }
+
+    .tiptap h3 {
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1.5;
+        margin: 0.65rem 0 0.3rem;
+    }
+
+    .tiptap p {
+        margin: 0.5rem 0;
+    }
+
+    .tiptap ul,
+    .tiptap ol {
+        margin: 0.5rem 0;
+        padding-left: 1.25rem;
+    }
+
+    .tiptap ul {
+        list-style-type: disc;
+    }
+
+    .tiptap ol {
+        list-style-type: decimal;
+    }
+
+    .tiptap li {
+        margin: 0.25rem 0;
+    }
+
+    .tiptap mark {
+        border-radius: 0.25rem;
+        background: #fef3c7;
+        padding: 0 0.125rem;
+        color: inherit;
+    }
+
+    .tiptap-html {
+        overflow-wrap: anywhere;
+    }
+
+    .tiptap-html h2 {
+        margin: 1rem 0 0.35rem;
+        color: var(--foreground);
+        font-size: 0.95rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        line-height: 1.6;
+    }
+
+    .tiptap-html h3 {
+        margin: 0.85rem 0 0.3rem;
+        color: var(--foreground);
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        line-height: 1.55;
+    }
+
+    .tiptap-html p {
+        margin: 0.65rem 0;
+    }
+
+    .tiptap-html ul,
+    .tiptap-html ol {
+        margin: 0.65rem 0;
+        padding-left: 1.25rem;
+    }
+
+    .tiptap-html ul {
+        list-style-type: disc;
+    }
+
+    .tiptap-html ol {
+        list-style-type: decimal;
+    }
+
+    .tiptap-html li {
+        margin: 0.3rem 0;
+        padding-left: 0.15rem;
+    }
+
+    .tiptap-html strong {
+        color: var(--foreground);
+        font-weight: 700;
+    }
+
+    .tiptap-html em {
+        font-style: italic;
+    }
+
+    .tiptap-html u {
+        text-underline-offset: 0.18em;
+    }
+
+    .tiptap-html mark {
+        border-radius: 0.25rem;
+        background: #fef3c7;
+        padding: 0 0.125rem;
+        color: #3f1f1f;
+    }
+
+    .tiptap-html > :first-child {
+        margin-top: 0;
+    }
+
+    .tiptap-html > :last-child {
+        margin-bottom: 0;
+    }
+}

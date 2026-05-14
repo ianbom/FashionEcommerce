@@ -106,6 +106,9 @@ class ApplyMidtransPaymentStatusAction
             'expired_at' => $paymentStatus === PaymentStatus::Expired ? now() : $order->expired_at,
             'cancelled_at' => $paymentStatus !== PaymentStatus::Expired ? now() : $order->cancelled_at,
         ]);
+        $payment->update([
+            'expired_at' => $paymentStatus === PaymentStatus::Expired ? ($payment->expired_at ?? now()) : $payment->expired_at,
+        ]);
         $this->notifications->forOrder($order, 'Payment updated', "Payment untuk order {$order->order_number} berstatus {$paymentStatus->value}.", 'payment');
     }
 

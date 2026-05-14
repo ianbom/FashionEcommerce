@@ -5,6 +5,7 @@ import {
     Box,
     CheckCircle2,
     Copy,
+    Eye,
     Image as ImageIcon,
     Info,
     Layers,
@@ -30,6 +31,8 @@ import {
     formatPrice,
     PageHeader,
 } from '@/pages/admin/catalog/shared';
+import HTMLConvert from '@/components/HTMLConvert';
+import { detail } from '@/routes';
 
 type ProductImage = {
     id: number;
@@ -181,6 +184,15 @@ export default function ProductShow({ product }: Props) {
                                     href={`/admin/products/${product.id}/edit`}
                                 >
                                     <Pencil className="size-3.5" /> Edit
+                                </Link>
+                            </Button>
+                            <Button asChild variant="outline" size="sm">
+                                <Link
+                                    href={detail.url({
+                                        query: { product: product.slug },
+                                    })}
+                                >
+                                    <Eye className="size-3.5" /> Lihat Product
                                 </Link>
                             </Button>
                             {product.status !== 'published' && (
@@ -399,10 +411,6 @@ export default function ProductShow({ product }: Props) {
                                     }
                                 />
                                 <InfoRow
-                                    label="Material"
-                                    value={product.material || '-'}
-                                />
-                                <InfoRow
                                     label="Weight"
                                     value={
                                         product.weight
@@ -449,10 +457,8 @@ export default function ProductShow({ product }: Props) {
                                         <p>{product.short_description}</p>
                                     )}
                                     {product.description && (
-                                        <div
-                                            dangerouslySetInnerHTML={{
-                                                __html: product.description,
-                                            }}
+                                        <HTMLConvert
+                                            html={product.description}
                                             className="prose prose-sm max-w-none"
                                         />
                                     )}
@@ -460,32 +466,24 @@ export default function ProductShow({ product }: Props) {
                             </Card>
                         )}
 
-                        {(product.care_instruction ||
-                            product.meta_title ||
-                            product.meta_description) && (
+                        {(product.material || product.care_instruction) && (
                             <Card>
                                 <CardHeader className="pb-3">
                                     <CardTitle className="text-base">
-                                        Care & SEO
+                                        Care & Materials
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="grid gap-3 text-sm">
+                                    {product.material && (
+                                        <InfoRow
+                                            label="Material"
+                                            value={product.material}
+                                        />
+                                    )}
                                     {product.care_instruction && (
                                         <InfoRow
                                             label="Care Instruction"
                                             value={product.care_instruction}
-                                        />
-                                    )}
-                                    {product.meta_title && (
-                                        <InfoRow
-                                            label="Meta Title"
-                                            value={product.meta_title}
-                                        />
-                                    )}
-                                    {product.meta_description && (
-                                        <InfoRow
-                                            label="Meta Description"
-                                            value={product.meta_description}
                                         />
                                     )}
                                 </CardContent>

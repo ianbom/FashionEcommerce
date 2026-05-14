@@ -2,7 +2,6 @@ import { Link, useForm, usePage } from '@inertiajs/react';
 import {
     User,
     MapPin,
-    Camera,
     Eye,
     EyeOff,
     Loader2,
@@ -277,20 +276,13 @@ export default function MyProfile() {
         >
             <div className="animate-fade-in-up flex flex-col items-start justify-between border-b border-[#EADBD8] pb-8 md:flex-row md:items-center">
                 <div className="mb-6 flex items-center space-x-6 md:mb-0">
-                    <button
-                        type="button"
-                        onClick={() => avatarInputRef.current?.click()}
-                        className="group relative h-20 w-20 cursor-pointer overflow-hidden rounded-full border border-[#EADBD8] md:h-24 md:w-24"
-                    >
+                    <div className="relative h-20 w-20 overflow-hidden rounded-full border border-[#EADBD8] md:h-24 md:w-24">
                         <img
                             src={avatarSrc}
                             alt={user.name}
                             className="h-full w-full object-cover"
                         />
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                            <Camera className="text-white" size={24} />
-                        </div>
-                    </button>
+                    </div>
                     <div>
                         <h2 className="mb-1 font-serif text-xl text-[#4A2525] md:text-2xl">
                             {user.name}
@@ -306,14 +298,6 @@ export default function MyProfile() {
                     </div>
                 </div>
 
-                <div className="text-left md:text-right">
-                    <p className="mb-1 text-[10px] font-bold tracking-[0.2em] text-[#C99A8F] uppercase">
-                        Peran akun
-                    </p>
-                    <p className="font-serif text-lg text-[#4A2525] capitalize">
-                        {user.role}
-                    </p>
-                </div>
             </div>
 
             <div className="grid grid-cols-1 items-start gap-10 md:grid-cols-2 md:gap-12">
@@ -536,8 +520,6 @@ export default function MyProfile() {
                                     toIndonesianError(passwordForm.errors.password)
                                 }
                                 autoComplete="new-password"
-                                hint="Gunakan minimal 8 karakter dengan kombinasi huruf dan angka."
-                                hintColor="text-[#EF4444]"
                             />
                             <PasswordField
                                 label="Konfirmasi Kata Sandi Baru"

@@ -1,18 +1,17 @@
 import { router, useForm } from '@inertiajs/react';
+import type { Icon, LatLng, LeafletMouseEvent, Map as LeafletMap } from 'leaflet';
 import {
     AlertCircle,
     Edit2,
     LocateFixed,
     MapPin,
     Plus,
-    Search,
     Trash2,
     X,
 } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import type { Icon, LatLng, LeafletMouseEvent, Map as LeafletMap } from 'leaflet';
 import type {
     MapContainer,
     Marker,
@@ -177,6 +176,7 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const [defaultingId, setDefaultingId] = useState<number | null>(null);
     const [areaQuery, setAreaQuery] = useState('');
+    const [areaSelectionLabel, setAreaSelectionLabel] = useState('');
     const [areaResults, setAreaResults] = useState<BiteshipArea[]>([]);
     const [areaLoading, setAreaLoading] = useState(false);
     const [areaError, setAreaError] = useState('');
@@ -204,6 +204,7 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
         form.clearErrors();
         form.setData(formDataFromAddress(selectedAddress));
         setAreaQuery('');
+        setAreaSelectionLabel('');
         setAreaResults([]);
         setAreaError('');
         setMapError('');
@@ -216,6 +217,7 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
         form.clearErrors();
         form.setData({ ...EMPTY_FORM });
         setAreaQuery('');
+        setAreaSelectionLabel('');
         setAreaResults([]);
         setAreaError('');
         setMapError('');
@@ -241,40 +243,59 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
         });
     };
 
-    const searchArea = async () => {
-        if (areaQuery.trim().length < 3) {
+    useEffect(() => {
+        const query = areaQuery.trim();
+
+        if (query.length < 3 || query === areaSelectionLabel) {
             return;
         }
 
-        setAreaLoading(true);
-        setAreaError('');
+        const controller = new AbortController();
+        const timeout = window.setTimeout(async () => {
+            setAreaLoading(true);
+            setAreaError('');
 
-        try {
-            const response = await fetch(
-                biteshipAreas.url({ query: { search: areaQuery.trim() } }),
-                {
-                    headers: { Accept: 'application/json' },
-                },
-            );
-            const payload = await response.json();
+            try {
+                const response = await fetch(
+                    biteshipAreas.url({ query: { search: query } }),
+                    {
+                        headers: { Accept: 'application/json' },
+                        signal: controller.signal,
+                    },
+                );
+                const payload = await response.json();
 
-            if (!response.ok) {
-                setAreaError(payload.message ?? 'Gagal mencari area Biteship.');
+                if (!response.ok) {
+                    setAreaError(
+                        payload.message ?? 'Gagal mencari area Biteship.',
+                    );
+                    setAreaResults([]);
+
+                    return;
+                }
+
+                setAreaResults(payload.areas ?? []);
+            } catch (error) {
+                if (error instanceof DOMException && error.name === 'AbortError') {
+                    return;
+                }
+
+                setAreaError('Gagal terhubung ke Biteship.');
                 setAreaResults([]);
-
-                return;
+            } finally {
+                setAreaLoading(false);
             }
+        }, 300);
 
-            setAreaResults(payload.areas ?? []);
-        } catch {
-            setAreaError('Gagal terhubung ke Biteship.');
-            setAreaResults([]);
-        } finally {
-            setAreaLoading(false);
-        }
-    };
+        return () => {
+            controller.abort();
+            window.clearTimeout(timeout);
+        };
+    }, [areaQuery, areaSelectionLabel]);
 
     const chooseArea = (area: BiteshipArea) => {
+        const label = area.name ?? area.id;
+
         form.setData({
             ...form.data,
             biteship_area_id: area.id,
@@ -285,7 +306,8 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                 area.administrative_division_level_3_name ?? form.data.district,
             postal_code: area.postal_code ?? form.data.postal_code,
         });
-        setAreaQuery(area.name ?? area.id);
+        setAreaQuery(label);
+        setAreaSelectionLabel(label);
         setAreaResults([]);
         setAreaError('');
     };
@@ -618,28 +640,30 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                                     <label className="mb-1.5 block text-[11px] font-semibold text-[#4A4A4A]">
                                          Cari berdasarkan Kode Pos
                                     </label>
-                                    <div className="flex gap-2">
+                                    <div>
                                         <input
                                             type="text"
                                             value={areaQuery}
-                                            onChange={(event) =>
-                                                setAreaQuery(event.target.value)
-                                            }
+                                            onChange={(event) => {
+                                                const value = event.target.value;
+
+                                                setAreaQuery(value);
+                                                setAreaSelectionLabel('');
+
+                                                if (value.trim().length < 3) {
+                                                    setAreaLoading(false);
+                                                    setAreaResults([]);
+                                                    setAreaError('');
+                                                }
+                                            }}
                                              placeholder="Cari kecamatan, kota, kode pos"
                                             className="w-full rounded-md border border-[#EADBD8] bg-white px-4 py-2.5 text-[13px] text-[#333] transition-all focus:border-[#B6574B] focus:ring-1 focus:ring-[#B6574B] focus:outline-none"
                                         />
-                                        <button
-                                            type="button"
-                                            onClick={searchArea}
-                                            disabled={
-                                                areaLoading ||
-                                                areaQuery.trim().length < 3
-                                            }
-                                            className="flex items-center gap-2 rounded-md bg-[#F1E6E2] px-4 py-2.5 text-[12px] font-bold text-[#4A4A4A] disabled:opacity-60"
-                                        >
-                                            <Search size={14} />
-                                             {areaLoading ? '...' : 'Cari'}
-                                        </button>
+                                        {areaLoading && (
+                                            <p className="mt-1.5 text-[11px] text-[#8A6B62]">
+                                                Mencari area...
+                                            </p>
+                                        )}
                                     </div>
                                     {form.data.biteship_area_id && (
                                         <p className="mt-1.5 text-[11px] text-[#8A6B62]">

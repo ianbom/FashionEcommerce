@@ -15,7 +15,7 @@ class SyncExpiredMidtransPaymentsCommand extends Command
     {
         $stats = $syncExpiredPayments->execute();
 
-        $this->components->info("Expired Midtrans sync checked {$stats['checked']}, synced {$stats['synced']}, failed {$stats['failed']}.");
+        $this->components->info("Expired Midtrans sync checked {$stats['checked']}, expired {$stats['expired']}, skipped Midtrans-owned {$stats['skipped_midtrans_owned']}, synced {$stats['synced']}, failed {$stats['failed']}.");
 
         return self::SUCCESS;
     }

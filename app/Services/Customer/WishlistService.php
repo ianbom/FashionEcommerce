@@ -2,8 +2,8 @@
 
 namespace App\Services\Customer;
 
-use App\Models\ProductVariant;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\User;
 use App\Models\Wishlist;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -26,6 +26,7 @@ class WishlistService
                     ->orderBy('size'),
             ])
             ->where('user_id', $user->id)
+            ->whereHas('product', fn ($query) => $query->where('status', 'published'))
             ->latest('id')
             ->get()
             ->map(fn (Wishlist $wishlist) => $this->wishlistCard($wishlist))

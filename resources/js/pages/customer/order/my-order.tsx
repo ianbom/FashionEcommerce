@@ -244,7 +244,7 @@ export default function ListOrder({ orders, filters }: Props) {
                             <div className="grid grid-cols-2 gap-4 px-1 md:grid-cols-4">
                                 <div className="col-span-2 md:col-span-1">
                                     <p className="mb-1 font-serif text-[13px] text-[#333333]">
-                                        Pesanan #{order.order_number}
+                                        #{order.order_number}
                                     </p>
                                     <p className="text-[11px] text-[#8A6B62]">
                                         {order.created_date ?? '-'} •{' '}

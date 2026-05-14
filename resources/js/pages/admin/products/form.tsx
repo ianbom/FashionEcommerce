@@ -1,5 +1,12 @@
 import { Head, Link, useForm } from '@inertiajs/react';
+import Highlight from '@tiptap/extension-highlight';
+import Placeholder from '@tiptap/extension-placeholder';
+import Underline from '@tiptap/extension-underline';
+import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
 import {
+    Bold,
+    Highlighter,
     Image as ImageIcon,
     Pencil,
     Plus,
@@ -16,6 +23,15 @@ import {
     Sparkles,
     TrendingUp,
     LayoutGrid,
+    Eraser,
+    Heading2,
+    Italic,
+    List,
+    ListOrdered,
+    Pilcrow,
+    Redo2,
+    Underline as UnderlineIcon,
+    Undo2,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import type { FormEvent, MouseEvent } from 'react';
@@ -216,6 +232,198 @@ function FieldGroup({
             {hint && !error && (
                 <p className="text-[11px] text-zinc-400">{hint}</p>
             )}
+        </div>
+    );
+}
+
+function ProductDescriptionEditor({
+    value,
+    onChange,
+    error,
+}: {
+    value: string;
+    onChange: (html: string) => void;
+    error?: string;
+}) {
+    const editor = useEditor({
+        extensions: [
+            StarterKit.configure({
+                heading: { levels: [2, 3] },
+            }),
+            Highlight.configure({
+                HTMLAttributes: {
+                    class: 'rounded bg-amber-100 px-0.5 text-zinc-950',
+                },
+            }),
+            Placeholder.configure({
+                placeholder: 'Detailed product description...',
+            }),
+            Underline,
+        ],
+        content: value,
+        editorProps: {
+            attributes: {
+                class: 'min-h-[200px] px-4 py-3 text-sm leading-6 text-zinc-900 outline-none',
+            },
+        },
+        immediatelyRender: false,
+        onUpdate: ({ editor }) => onChange(editor.getHTML()),
+    });
+
+    const editorState = useEditorState({
+        editor,
+        selector: ({ editor }) => ({
+            canRedo: editor?.can().chain().focus().redo().run() ?? false,
+            canUndo: editor?.can().chain().focus().undo().run() ?? false,
+            isBold: editor?.isActive('bold') ?? false,
+            isBulletList: editor?.isActive('bulletList') ?? false,
+            isHeading2: editor?.isActive('heading', { level: 2 }) ?? false,
+            isHighlight: editor?.isActive('highlight') ?? false,
+            isItalic: editor?.isActive('italic') ?? false,
+            isOrderedList: editor?.isActive('orderedList') ?? false,
+            isParagraph: editor?.isActive('paragraph') ?? false,
+            isUnderline: editor?.isActive('underline') ?? false,
+        }),
+    });
+    const state = editorState ?? {
+        canRedo: false,
+        canUndo: false,
+        isBold: false,
+        isBulletList: false,
+        isHeading2: false,
+        isHighlight: false,
+        isItalic: false,
+        isOrderedList: false,
+        isParagraph: false,
+        isUnderline: false,
+    };
+
+    useEffect(() => {
+        if (!editor || editor.isFocused) {
+            return;
+        }
+
+        if ((value || '') !== editor.getHTML()) {
+            editor.commands.setContent(value || '<p></p>', {
+                emitUpdate: false,
+            });
+        }
+    }, [editor, value]);
+
+    const toolbar = [
+        {
+            label: 'Undo',
+            icon: Undo2,
+            active: false,
+            disabled: !state.canUndo,
+            action: () => editor?.chain().focus().undo().run(),
+        },
+        {
+            label: 'Redo',
+            icon: Redo2,
+            active: false,
+            disabled: !state.canRedo,
+            action: () => editor?.chain().focus().redo().run(),
+        },
+        {
+            label: 'Paragraph',
+            icon: Pilcrow,
+            active: state.isParagraph,
+            disabled: !editor,
+            action: () => editor?.chain().focus().setParagraph().run(),
+        },
+        {
+            label: 'Heading',
+            icon: Heading2,
+            active: state.isHeading2,
+            disabled: !editor,
+            action: () =>
+                editor?.chain().focus().toggleHeading({ level: 2 }).run(),
+        },
+        {
+            label: 'Bold',
+            icon: Bold,
+            active: state.isBold,
+            disabled: !editor?.can().chain().focus().toggleBold().run(),
+            action: () => editor?.chain().focus().toggleBold().run(),
+        },
+        {
+            label: 'Italic',
+            icon: Italic,
+            active: state.isItalic,
+            disabled: !editor?.can().chain().focus().toggleItalic().run(),
+            action: () => editor?.chain().focus().toggleItalic().run(),
+        },
+        {
+            label: 'Underline',
+            icon: UnderlineIcon,
+            active: state.isUnderline,
+            disabled: !editor?.can().chain().focus().toggleUnderline().run(),
+            action: () => editor?.chain().focus().toggleUnderline().run(),
+        },
+        {
+            label: 'Highlight',
+            icon: Highlighter,
+            active: state.isHighlight,
+            disabled: !editor?.can().chain().focus().toggleHighlight().run(),
+            action: () => editor?.chain().focus().toggleHighlight().run(),
+        },
+        {
+            label: 'Bullet list',
+            icon: List,
+            active: state.isBulletList,
+            disabled: !editor?.can().chain().focus().toggleBulletList().run(),
+            action: () => editor?.chain().focus().toggleBulletList().run(),
+        },
+        {
+            label: 'Ordered list',
+            icon: ListOrdered,
+            active: state.isOrderedList,
+            disabled: !editor?.can().chain().focus().toggleOrderedList().run(),
+            action: () => editor?.chain().focus().toggleOrderedList().run(),
+        },
+        {
+            label: 'Clear formatting',
+            icon: Eraser,
+            active: false,
+            disabled: !editor,
+            action: () => editor?.chain().focus().unsetAllMarks().clearNodes().run(),
+        },
+    ];
+
+    return (
+        <div
+            className={`overflow-hidden rounded-lg border bg-white shadow-sm transition-colors ${
+                error
+                    ? 'border-red-300 ring-1 ring-red-200'
+                    : 'border-zinc-200 focus-within:border-[#7F2020] focus-within:ring-1 focus-within:ring-[#7F2020]'
+            }`}
+        >
+            <div className="flex flex-wrap gap-1 border-b border-zinc-100 bg-zinc-50 px-2 py-2">
+                {toolbar.map((item) => {
+                    const Icon = item.icon;
+
+                    return (
+                        <button
+                            key={item.label}
+                            type="button"
+                            title={item.label}
+                            aria-pressed={item.active}
+                            disabled={item.disabled}
+                            onClick={item.action}
+                            className={`inline-flex h-8 items-center gap-1 rounded-md px-2 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                                item.active
+                                    ? 'bg-[#7F2020] text-white'
+                                    : 'text-zinc-600 hover:bg-white hover:text-zinc-900'
+                            }`}
+                        >
+                            <Icon className="h-3.5 w-3.5" />
+                            <span className="hidden sm:inline">{item.label}</span>
+                        </button>
+                    );
+                })}
+            </div>
+            <EditorContent editor={editor} />
         </div>
     );
 }
@@ -624,16 +832,15 @@ export default function ProductForm({ mode, product, options }: Props) {
                                             required
                                             error={errors.description}
                                         >
-                                            <Textarea
+                                            <ProductDescriptionEditor
                                                 value={data.description}
-                                                onChange={(e) =>
+                                                onChange={(html) =>
                                                     setData(
                                                         'description',
-                                                        e.target.value,
+                                                        html,
                                                     )
                                                 }
-                                                placeholder="Detailed product description..."
-                                                className="min-h-[120px] resize-y border-zinc-200 text-sm focus:border-[#7F2020] focus:ring-[#7F2020]"
+                                                error={errors.description}
                                             />
                                         </FieldGroup>
                                     </div>

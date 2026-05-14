@@ -13,11 +13,8 @@ import {
     Search,
     ShoppingBag,
     Truck,
-    Upload,
-    XCircle,
 } from 'lucide-react';
 import { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -162,6 +159,8 @@ export default function OrdersIndex({
     stats: totals,
 }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
+    const [dateFrom, setDateFrom] = useState(filters.date_from ?? '');
+    const [dateTo, setDateTo] = useState(filters.date_to ?? '');
 
     const applyFilter = (key: string, value: string) =>
         router.get(
@@ -175,11 +174,18 @@ export default function OrdersIndex({
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        applyFilter('search', search);
+        router.get(
+            '/admin/orders',
+            {
+                ...filters,
+                search,
+                date_from: dateFrom,
+                date_to: dateTo,
+                page: 1,
+            },
+            { preserveState: true, replace: true },
+        );
     };
-
-    const doAction = (url: string, method: 'post' | 'delete' = 'post') =>
-        router[method](url, {}, { preserveScroll: true });
 
     const stats = [
         {
@@ -461,18 +467,15 @@ export default function OrdersIndex({
                             <div className="flex gap-2">
                                 <Input
                                     type="date"
-                                    value={filters.date_from || ''}
-                                    onChange={(e) =>
-                                        applyFilter('date_from', e.target.value)
-                                    }
+                                    value={dateFrom}
+                                    onChange={(e) => setDateFrom(e.target.value)}
                                     className="h-9 w-[130px] rounded-lg border-zinc-200 bg-white text-xs shadow-sm"
                                 />
                                 <Input
                                     type="date"
-                                    value={filters.date_to || ''}
-                                    onChange={(e) =>
-                                        applyFilter('date_to', e.target.value)
-                                    }
+                                    value={dateTo}
+                                    min={dateFrom || undefined}
+                                    onChange={(e) => setDateTo(e.target.value)}
                                     className="h-9 w-[130px] rounded-lg border-zinc-200 bg-white text-xs shadow-sm"
                                 />
                             </div>

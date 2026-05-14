@@ -15,6 +15,7 @@ class PaymentManagementService
     public function indexData(Request $request): array
     {
         $filters = [
+            'order_number' => $request->string('order_number')->toString(),
             'transaction_status' => $request->string('transaction_status')->toString(),
             'payment_method' => $request->string('payment_method')->toString(),
             'date_from' => $request->string('date_from')->toString(),
@@ -26,6 +27,7 @@ class PaymentManagementService
         return [
             'payments' => Payment::query()
                 ->with('order:id,order_number,customer_name,customer_email')
+                ->when($filters['order_number'] !== '', fn ($query) => $query->whereHas('order', fn ($query) => $query->where('order_number', 'like', "%{$filters['order_number']}%")))
                 ->when($filters['transaction_status'] !== '', fn ($query) => $query->where('transaction_status', $filters['transaction_status']))
                 ->when($filters['payment_method'] !== '', fn ($query) => $query->where('payment_method', $filters['payment_method']))
                 ->when($filters['date_from'] !== '', fn ($query) => $query->whereDate('created_at', '>=', $filters['date_from']))
