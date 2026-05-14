@@ -18,11 +18,6 @@ class NotificationController extends Controller
         return Inertia::render('customer/notification/list-notification', $notifications->pageData($this->user($request)));
     }
 
-    public function show(Request $request, Notification $notification, NotificationService $notifications): Response
-    {
-        return Inertia::render('customer/notification/detail-notification', $notifications->detailData($this->user($request), $notification));
-    }
-
     public function markAllAsRead(Request $request, NotificationService $notifications): RedirectResponse
     {
         $notifications->markAllAsRead($this->user($request));

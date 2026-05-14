@@ -200,23 +200,6 @@ export default function Home({
                                     ))}
                                 </div>
                             )}
-                        </div>
-
-
-                        <div className="relative h-[330px] overflow-hidden md:col-start-2 md:row-start-2 md:mt-auto md:w-full">
-                            <img
-                                src={bannerImage(
-                                    collectionBanners?.[1] ?? null,
-                                    '/img/mina-rad-2O2cXJemDmo-unsplash.webp',
-                                )}
-                                alt={
-                                    collectionBanners?.[1]?.title ??
-                                    'New Collections Look'
-                                }
-                                className="h-full w-full object-cover"
-                                loading="lazy"
-                                decoding="async"
-                            />
                             {collectionBanners?.[1]?.subtitle && (
                                 <div className="mt-4 space-y-4 text-sm leading-[1.6] text-[#53362d] md:text-[15px]">
                                     {collectionBanners[1].subtitle.split('\n\n').map((paragraph, index) => (
@@ -224,6 +207,26 @@ export default function Home({
                                     ))}
                                 </div>
                             )}
+                        </div>
+
+
+                        <div className="md:col-start-2 md:row-start-2 md:mt-auto md:w-full">
+                            <div className="relative h-[330px] overflow-hidden">
+                                <img
+                                    src={bannerImage(
+                                        collectionBanners?.[1] ?? null,
+                                        '/img/mina-rad-2O2cXJemDmo-unsplash.webp',
+                                    )}
+                                    alt={
+                                        collectionBanners?.[1]?.title ??
+                                        'New Collections Look'
+                                    }
+                                    className="h-full w-full object-cover"
+                                    loading="lazy"
+                                    decoding="async"
+                                />
+                            </div>
+
                         </div>
 
                         <Link

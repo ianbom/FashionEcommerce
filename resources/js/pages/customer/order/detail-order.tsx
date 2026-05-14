@@ -320,27 +320,6 @@ function InfoLine({
     );
 }
 
-function SectionCard({
-    title,
-    children,
-    noPad = false,
-}: {
-    title: string;
-    children: ReactNode;
-    noPad?: boolean;
-}) {
-    return (
-        <div className="border-b border-[#eadbd8] pb-6">
-            <div className="border-b border-[#f0ebe4] py-4">
-                <h2 className="font-serif text-lg text-[#2d2119] sm:text-xl">
-                    {title}
-                </h2>
-            </div>
-            <div className={noPad ? '' : 'py-5 sm:py-6'}>{children}</div>
-        </div>
-    );
-}
-
 function MetaChip({ label, children }: { label: string; children: ReactNode }) {
     return (
         <div className="flex flex-col gap-1.5">
@@ -469,10 +448,7 @@ export default function DetailOrder({ order }: Props) {
         .filter(Boolean)
         .join(' ');
     const address = order.address;
-    const paymentMethod =
-        [order.payment?.payment_provider, order.payment?.payment_method]
-            .filter(Boolean)
-            .join(' / ') || '-';
+    const paymentMethod = order.payment?.payment_method ?? '-';
     const transactionId =
         order.payment?.midtrans_transaction_id ??
         order.payment?.midtrans_order_id ??
