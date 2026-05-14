@@ -15,6 +15,7 @@ import {
 } from '@/actions/App/Http/Controllers/Customer/CartController';
 import ShopLayout from '@/layouts/shop-layout';
 import { checkout, detail, list } from '@/routes';
+import { toast } from 'sonner';
 
 type CartItem = {
     id: number;
@@ -94,6 +95,8 @@ export default function MyCart({
     const errorMessage =
         errors.quantity || errors.cart_item || errors.product_variant_id;
     const checkoutHref = useMemo(() => checkout.url(), []);
+    const stockIssueItems = cartItems.filter((item) => !item.is_available);
+    const hasStockIssues = stockIssueItems.length > 0;
 
     const updateQuantity = (item: CartItem, nextQuantity: number) => {
         if (
@@ -140,6 +143,26 @@ export default function MyCart({
         });
     };
 
+    const stockIssueMessage = (item: CartItem) => {
+        if (item.available_stock <= 0) {
+            return 'Produk sudah habis.';
+        }
+
+        return `Stok tidak mencukupi. Tersedia ${item.available_stock}, di keranjang ${item.quantity}.`;
+    };
+
+    const continueToCheckout = () => {
+        if (hasStockIssues) {
+            toast.error(
+                'Stok barang telah habis/tidak mencukupi. Perbarui keranjang sebelum checkout.',
+            );
+
+            return;
+        }
+
+        router.visit(checkoutHref);
+    };
+
     return (
         <ShopLayout>
             <Head title="Keranjang Saya - Aurea Syari" />
@@ -169,6 +192,13 @@ export default function MyCart({
                                 <div className="mt-4 rounded-xl border border-[#E7C9C9] bg-[#FFF6F6] px-4 py-3 text-[12px] font-medium text-[#B24B4B]">
                                     {errorMessage}
                                 </div>
+                            )}
+                            {hasStockIssues && (
+                                <p className="mt-4 border-l-2 border-[#B24B4B] pl-3 text-[12px] leading-relaxed font-medium text-[#9E4A45]">
+                                    Beberapa item stoknya habis atau tidak
+                                    mencukupi. Perbarui keranjang sebelum
+                                    checkout.
+                                </p>
                             )}
                         </div>
 
@@ -208,7 +238,7 @@ export default function MyCart({
                                                 {productHref ? (
                                                     <Link
                                                         href={productHref}
-                                                        className="relative h-[110px] w-[85px] flex-shrink-0 overflow-hidden rounded-2xl bg-[#F8EDED] sm:h-[140px] sm:w-[110px] shadow-inner"
+                                                        className="relative h-[110px] w-[85px] flex-shrink-0 overflow-hidden rounded-2xl bg-[#F8EDED] shadow-inner sm:h-[140px] sm:w-[110px]"
                                                     >
                                                         <img
                                                             src={
@@ -226,7 +256,7 @@ export default function MyCart({
                                                         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                                                     </Link>
                                                 ) : (
-                                                    <div className="relative h-[110px] w-[85px] flex-shrink-0 overflow-hidden rounded-2xl bg-[#F8EDED] sm:h-[140px] sm:w-[110px] shadow-inner">
+                                                    <div className="relative h-[110px] w-[85px] flex-shrink-0 overflow-hidden rounded-2xl bg-[#F8EDED] shadow-inner sm:h-[140px] sm:w-[110px]">
                                                         <img
                                                             src={
                                                                 item.image ??
@@ -250,75 +280,136 @@ export default function MyCart({
                                                             <div className="pr-2">
                                                                 {productHref ? (
                                                                     <Link
-                                                                        href={productHref}
-                                                                        className="line-clamp-2 text-[13px] font-semibold leading-snug text-[#332b26] transition-colors hover:text-black sm:text-base font-serif"
+                                                                        href={
+                                                                            productHref
+                                                                        }
+                                                                        className="line-clamp-2 font-serif text-[13px] leading-snug font-semibold text-[#332b26] transition-colors hover:text-black sm:text-base"
                                                                     >
-                                                                        {item.title}
+                                                                        {
+                                                                            item.title
+                                                                        }
                                                                     </Link>
                                                                 ) : (
-                                                                    <h3 className="line-clamp-2 text-[13px] font-semibold leading-snug text-[#332b26] sm:text-base font-serif">
-                                                                        {item.title}
+                                                                    <h3 className="line-clamp-2 font-serif text-[13px] leading-snug font-semibold text-[#332b26] sm:text-base">
+                                                                        {
+                                                                            item.title
+                                                                        }
                                                                     </h3>
                                                                 )}
                                                                 <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-medium text-[#8A6B62] sm:mt-2 sm:text-xs">
                                                                     {item.color && (
                                                                         <span className="flex items-center gap-1.5">
-                                                                            <span 
-                                                                                className="block h-2.5 w-2.5 rounded-full border border-gray-200/60 shadow-sm" 
-                                                                                style={{ backgroundColor: item.color_hex || '#ccc' }} 
+                                                                            <span
+                                                                                className="block h-2.5 w-2.5 rounded-full border border-gray-200/60 shadow-sm"
+                                                                                style={{
+                                                                                    backgroundColor:
+                                                                                        item.color_hex ||
+                                                                                        '#ccc',
+                                                                                }}
                                                                             />
-                                                                            {item.color}
+                                                                            {
+                                                                                item.color
+                                                                            }
                                                                         </span>
                                                                     )}
                                                                     {item.size && (
                                                                         <span className="flex items-center gap-1.5">
                                                                             <span className="h-1 w-1 rounded-full bg-[#EADBD8]" />
-                                                                            {item.size}
+                                                                            {
+                                                                                item.size
+                                                                            }
                                                                         </span>
                                                                     )}
                                                                 </div>
                                                                 {!item.is_available && (
-                                                                    <p className="mt-1.5 text-[10px] font-semibold text-[#B24B4B] sm:text-[11px]">
-                                                                        Varian tidak tersedia
+                                                                    <p className="mt-2 max-w-[300px] border-l border-[#C05D5D] pl-2 text-[10px] leading-relaxed font-semibold text-[#B24B4B] sm:text-[11px]">
+                                                                        {stockIssueMessage(
+                                                                            item,
+                                                                        )}{' '}
+                                                                        Tidak
+                                                                        bisa
+                                                                        checkout.
                                                                     </p>
                                                                 )}
                                                             </div>
                                                             <button
                                                                 type="button"
-                                                                onClick={() => removeItem(item)}
-                                                                disabled={itemDisabled}
-                                                                className="flex-shrink-0 -mt-1 -mr-1 rounded-full p-2 text-gray-400 transition-all hover:bg-red-50 hover:text-red-500 disabled:opacity-50 active:scale-90"
+                                                                onClick={() =>
+                                                                    removeItem(
+                                                                        item,
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    itemDisabled
+                                                                }
+                                                                className="-mt-1 -mr-1 flex-shrink-0 rounded-full p-2 text-gray-400 transition-all hover:bg-red-50 hover:text-red-500 active:scale-90 disabled:opacity-50"
                                                                 aria-label="Hapus item"
                                                             >
-                                                                <Trash2 size={16} strokeWidth={1.5} />
+                                                                <Trash2
+                                                                    size={16}
+                                                                    strokeWidth={
+                                                                        1.5
+                                                                    }
+                                                                />
                                                             </button>
                                                         </div>
                                                     </div>
 
                                                     <div className="mt-4 flex items-end justify-between sm:mt-auto">
-                                                        <span className="text-[14px] font-bold text-[#4A3B32] sm:text-base tracking-tight">
-                                                            {formatPrice(item.subtotal)}
+                                                        <span className="text-[14px] font-bold tracking-tight text-[#4A3B32] sm:text-base">
+                                                            {formatPrice(
+                                                                item.subtotal,
+                                                            )}
                                                         </span>
 
                                                         <div className="flex items-center overflow-hidden rounded-full border border-[#F2EFEA] bg-[#FAF9F6] p-0.5 shadow-sm">
                                                             <button
                                                                 type="button"
-                                                                onClick={() => updateQuantity(item, item.quantity - 1)}
-                                                                disabled={itemDisabled || item.quantity <= 1}
+                                                                onClick={() =>
+                                                                    updateQuantity(
+                                                                        item,
+                                                                        item.quantity -
+                                                                            1,
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    itemDisabled ||
+                                                                    item.quantity <=
+                                                                        1
+                                                                }
                                                                 className="flex h-7 w-7 items-center justify-center rounded-full text-[#6B5E55] transition-colors hover:bg-white hover:text-black hover:shadow-sm disabled:bg-transparent disabled:opacity-40 disabled:shadow-none sm:h-8 sm:w-8"
                                                             >
-                                                                <Minus size={12} strokeWidth={2.5} />
+                                                                <Minus
+                                                                    size={12}
+                                                                    strokeWidth={
+                                                                        2.5
+                                                                    }
+                                                                />
                                                             </button>
                                                             <span className="w-6 text-center text-[11px] font-bold text-[#4A3B32] sm:w-8 sm:text-xs">
                                                                 {item.quantity}
                                                             </span>
                                                             <button
                                                                 type="button"
-                                                                onClick={() => updateQuantity(item, item.quantity + 1)}
-                                                                disabled={itemDisabled || !canIncrease}
+                                                                onClick={() =>
+                                                                    updateQuantity(
+                                                                        item,
+                                                                        item.quantity +
+                                                                            1,
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    itemDisabled ||
+                                                                    !canIncrease
+                                                                }
                                                                 className="flex h-7 w-7 items-center justify-center rounded-full text-[#6B5E55] transition-colors hover:bg-white hover:text-black hover:shadow-sm disabled:bg-transparent disabled:opacity-40 disabled:shadow-none sm:h-8 sm:w-8"
                                                             >
-                                                                <Plus size={12} strokeWidth={2.5} />
+                                                                <Plus
+                                                                    size={12}
+                                                                    strokeWidth={
+                                                                        2.5
+                                                                    }
+                                                                />
                                                             </button>
                                                         </div>
                                                     </div>
@@ -335,13 +426,15 @@ export default function MyCart({
 
                             <div className="w-full flex-shrink-0 lg:w-[380px]">
                                 <div className="sticky top-24 lg:top-32">
-                                    <h2 className="mb-6 font-serif text-xl text-[#333333] tracking-tight md:text-2xl">
-                                         Ringkasan Pesanan
+                                    <h2 className="mb-6 font-serif text-xl tracking-tight text-[#333333] md:text-2xl">
+                                        Ringkasan Pesanan
                                     </h2>
 
                                     <div className="mb-6 space-y-4 text-[13px] text-[#4A4A4A]">
                                         <div>
-                                            <span>Item ({summary.item_count})</span>
+                                            <span>
+                                                Item ({summary.item_count})
+                                            </span>
                                             <div className="mt-3 space-y-3 text-[11px] text-[#8A6B62]">
                                                 {cartItems.map((item) => (
                                                     <div
@@ -349,7 +442,9 @@ export default function MyCart({
                                                         className="flex items-start justify-between gap-4"
                                                     >
                                                         <div>
-                                                            <p className='font-bold'>{item.title}</p>
+                                                            <p className="font-bold">
+                                                                {item.title}
+                                                            </p>
                                                             {(item.color ||
                                                                 item.size) && (
                                                                 <p className="mt-1 text-[10px] text-[#A1857B]">
@@ -363,6 +458,12 @@ export default function MyCart({
                                                                         .join(
                                                                             ' / ',
                                                                         )}
+                                                                </p>
+                                                            )}
+                                                            {!item.is_available && (
+                                                                <p className="mt-1 text-[10px] font-medium text-[#B24B4B]">
+                                                                    Stok tidak
+                                                                    tersedia
                                                                 </p>
                                                             )}
                                                         </div>
@@ -389,12 +490,13 @@ export default function MyCart({
                                     </div>
 
                                     <div className="space-y-4">
-                                        <Link
-                                            href={checkoutHref}
+                                        <button
+                                            type="button"
+                                            onClick={continueToCheckout}
                                             className="block w-full rounded-lg bg-[#4A2525] py-4 text-center text-[13px] font-bold tracking-wider text-white transition-all hover:bg-[#5F1717] hover:shadow-lg hover:shadow-[#4A2525]/20 active:scale-[0.98]"
                                         >
                                             Lanjut ke Checkout
-                                        </Link>
+                                        </button>
                                         <div className="text-center">
                                             <Link
                                                 href={list.url()}
@@ -412,9 +514,7 @@ export default function MyCart({
                                                 className="mt-0.5 flex-shrink-0 text-[#C99A8F]"
                                                 strokeWidth={1.5}
                                             />
-                                            <p>
-                                                Pembayaran aman dan terjamin
-                                            </p>
+                                            <p>Pembayaran aman dan terjamin</p>
                                         </div>
                                         <div className="flex items-start space-x-3 text-[11px] text-[#8A6B62]">
                                             <Box
@@ -423,8 +523,8 @@ export default function MyCart({
                                                 strokeWidth={1.5}
                                             />
                                             <p>
-                                                Ongkir dihitung sesuai
-                                                penyedia saat checkout
+                                                Ongkir dihitung sesuai penyedia
+                                                saat checkout
                                             </p>
                                         </div>
                                     </div>

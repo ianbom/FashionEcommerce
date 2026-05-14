@@ -1,8 +1,11 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Fortify\Features;
+
+uses(RefreshDatabase::class);
 
 test('login screen can be rendered', function () {
     $response = $this->get(route('login'));
@@ -19,7 +22,7 @@ test('users can authenticate using the login screen', function () {
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $response->assertRedirect(route('my-profile', absolute: false));
 });
 
 test('users with two factor enabled are redirected to two factor challenge', function () {
@@ -51,11 +54,26 @@ test('users with two factor enabled are redirected to two factor challenge', fun
 test('users can not authenticate with invalid password', function () {
     $user = User::factory()->create();
 
-    $this->post(route('login.store'), [
+    $response = $this->post(route('login.store'), [
         'email' => $user->email,
         'password' => 'wrong-password',
     ]);
 
+    $response->assertSessionHasErrors([
+        'password' => 'Password salah. Periksa kembali kata sandi yang kamu masukkan.',
+    ]);
+    $this->assertGuest();
+});
+
+test('users see a clear error when email is not found', function () {
+    $response = $this->post(route('login.store'), [
+        'email' => 'unknown@example.com',
+        'password' => 'password',
+    ]);
+
+    $response->assertSessionHasErrors([
+        'email' => 'Email tidak ditemukan. Pastikan email sudah benar atau daftar akun baru.',
+    ]);
     $this->assertGuest();
 });
 

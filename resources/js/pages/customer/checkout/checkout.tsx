@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import { Box, Check, Lock, ShieldCheck, Ticket, Truck } from 'lucide-react';
 import type { Icon, LatLngBoundsExpression, Map as LeafletMap } from 'leaflet';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { CheckoutProvider, useCheckout } from '@/contexts/checkout-context';
 import type {
     CheckoutAddress,
@@ -76,7 +77,10 @@ const validCoordinates = (latitude: number, longitude: number): boolean =>
     longitude <= 180;
 
 const coordinatesFrom = (
-    location: Pick<CheckoutAddress | CheckoutStoreLocation, 'latitude' | 'longitude'>,
+    location: Pick<
+        CheckoutAddress | CheckoutStoreLocation,
+        'latitude' | 'longitude'
+    >,
 ): Coordinates | null => {
     const latitude = Number(location.latitude);
     const longitude = Number(location.longitude);
@@ -98,7 +102,9 @@ const distanceMeters = (from: Coordinates, to: Coordinates) => {
             Math.sin(longitudeDelta / 2) ** 2;
 
     return Math.round(
-        earthRadiusMeters * 2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine)),
+        earthRadiusMeters *
+            2 *
+            Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine)),
     );
 };
 
@@ -160,6 +166,8 @@ function CheckoutScreen() {
         storeCoordinates && destinationCoordinates
             ? distanceMeters(storeCoordinates, destinationCoordinates)
             : null;
+    const unavailableItems = cartItems.filter((item) => !item.is_available);
+    const hasUnavailableItems = unavailableItems.length > 0;
 
     useEffect(() => {
         if (selectedAddressId && shippingRates.length === 0) {
@@ -169,7 +177,21 @@ function CheckoutScreen() {
         }
     }, [loadShippingRates, selectedAddressId, shippingRates.length]);
 
+    useEffect(() => {
+        if (errors.cart) {
+            toast.error(errors.cart);
+        }
+    }, [errors.cart]);
+
     const submitOrder = async () => {
+        if (hasUnavailableItems) {
+            toast.error(
+                'Barang telah habis dan tidak bisa checkout. Hapus atau ubah item tersebut dari keranjang.',
+            );
+
+            return;
+        }
+
         const redirectUrl = await placeOrder(notes, agreed);
 
         if (redirectUrl) {
@@ -211,25 +233,27 @@ function CheckoutScreen() {
                         </p>
                     </div>
                     <div className="flex max-w-[380px] items-center">
-                        {['Keranjang', 'Checkout', 'Pembayaran'].map((label, index) => (
-                            <div key={label} className="flex items-center">
-                                <div
-                                    className={`flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold ${index < 2 ? 'bg-[#4A2525] text-white' : 'bg-white text-[#C99A8F] ring-1 ring-[#EADBD8]'}`}
-                                >
-                                    {index === 0 ? (
-                                        <Check size={14} />
-                                    ) : (
-                                        index + 1
+                        {['Keranjang', 'Checkout', 'Pembayaran'].map(
+                            (label, index) => (
+                                <div key={label} className="flex items-center">
+                                    <div
+                                        className={`flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold ${index < 2 ? 'bg-[#4A2525] text-white' : 'bg-white text-[#C99A8F] ring-1 ring-[#EADBD8]'}`}
+                                    >
+                                        {index === 0 ? (
+                                            <Check size={14} />
+                                        ) : (
+                                            index + 1
+                                        )}
+                                    </div>
+                                    <span className="mx-2 hidden text-[11px] text-[#8A6B62] sm:inline">
+                                        {label}
+                                    </span>
+                                    {index < 2 && (
+                                        <div className="mx-2 h-px w-10 bg-[#EADBD8]" />
                                     )}
                                 </div>
-                                <span className="mx-2 hidden text-[11px] text-[#8A6B62] sm:inline">
-                                    {label}
-                                </span>
-                                {index < 2 && (
-                                    <div className="mx-2 h-px w-10 bg-[#EADBD8]" />
-                                )}
-                            </div>
-                        ))}
+                            ),
+                        )}
                     </div>
                 </div>
 
@@ -441,8 +465,9 @@ function CheckoutScreen() {
                                         className="mt-0.5 h-4 w-4 rounded border-[#EADBD8] text-[#4A2525]"
                                     />
                                     <span>
-                                        Saya menyetujui kebijakan tanpa retur/refund,
-                                        Syarat & Ketentuan, dan Kebijakan Privasi.
+                                        Saya menyetujui kebijakan tanpa
+                                        retur/refund, Syarat & Ketentuan, dan
+                                        Kebijakan Privasi.
                                     </span>
                                 </label>
                                 {errors.no_return_refund_agreed && (
@@ -464,89 +489,115 @@ function CheckoutScreen() {
 
                         <aside className="w-full flex-shrink-0 lg:w-[380px]">
                             <div className="sticky top-24 lg:top-32">
-                                <h2 className="mb-6 font-serif text-xl text-[#333333] tracking-tight md:text-2xl">
+                                <h2 className="mb-6 font-serif text-xl tracking-tight text-[#333333] md:text-2xl">
                                     Ringkasan Pesanan
                                 </h2>
                                 <div className="mb-6 max-h-[300px] space-y-4 overflow-y-auto pr-2">
-                                {cartItems.map((item) => (
-                                    <div key={item.id} className="flex gap-3">
-                                        <div className="relative h-20 w-16 flex-shrink-0 overflow-hidden rounded-md bg-[#F8EDED]">
-                                            {item.image && (
-                                                <img
-                                                    src={item.image}
-                                                    alt={item.title}
-                                                    className="h-full w-full object-cover"
-                                                />
-                                            )}
-                                            <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-bl bg-white/90 text-[10px] font-bold">
-                                                {item.quantity}
-                                            </span>
-                                        </div>
-                                        <div className="min-w-0 flex-1">
-                                            <p className="line-clamp-2 text-[12px] font-bold text-[#333]">
-                                                {item.title}
-                                            </p>
-                                            <p className="mt-1 text-[10px] text-[#8A6B62]">
-                                                {[item.color, item.size]
-                                                    .filter(Boolean)
-                                                    .join(' / ') || '-'}
-                                            </p>
-                                            <p className="mt-1 text-[10px] font-medium text-[#8A6B62]">
-                                                Berat: {formatWeight(item.weight)}
-                                            </p>
-                                            {!item.is_available && (
-                                                <p className="mt-1 text-[10px] font-bold text-[#B24B4B]">
-                                                    Stok berubah. Update cart.
+                                    {cartItems.map((item) => (
+                                        <div
+                                            key={item.id}
+                                            className="flex gap-3"
+                                        >
+                                            <div className="relative h-20 w-16 flex-shrink-0 overflow-hidden rounded-md bg-[#F8EDED]">
+                                                {item.image && (
+                                                    <img
+                                                        src={item.image}
+                                                        alt={item.title}
+                                                        className="h-full w-full object-cover"
+                                                    />
+                                                )}
+                                                <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-bl bg-white/90 text-[10px] font-bold">
+                                                    {item.quantity}
+                                                </span>
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <p className="line-clamp-2 text-[12px] font-bold text-[#333]">
+                                                    {item.title}
                                                 </p>
-                                            )}
+                                                <p className="mt-1 text-[10px] text-[#8A6B62]">
+                                                    {[item.color, item.size]
+                                                        .filter(Boolean)
+                                                        .join(' / ') || '-'}
+                                                </p>
+                                                <p className="mt-1 text-[10px] font-medium text-[#8A6B62]">
+                                                    Berat:{' '}
+                                                    {formatWeight(item.weight)}
+                                                </p>
+                                                {!item.is_available && (
+                                                    <div className="mt-2 border-l border-[#C05D5D] pl-2">
+                                                        <p className="text-[10px] leading-relaxed font-semibold text-[#B24B4B]">
+                                                            {item.available_stock <=
+                                                            0
+                                                                ? 'Stok habis.'
+                                                                : 'Stok tidak cukup.'}{' '}
+                                                            Tidak bisa checkout.
+                                                        </p>
+                                                        {item.available_stock >
+                                                            0 && (
+                                                            <p className="mt-0.5 text-[10px] font-medium text-[#9E4A45]">
+                                                                Stok tersedia
+                                                                hanya{' '}
+                                                                {
+                                                                    item.available_stock
+                                                                }
+                                                                .
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <p className="text-right text-[12px] font-semibold text-[#333]">
+                                                {formatPrice(item.subtotal)}
+                                            </p>
                                         </div>
-                                        <p className="text-right text-[12px] font-semibold text-[#333]">
-                                            {formatPrice(item.subtotal)}
-                                        </p>
-                                    </div>
-                                ))}
-                            </div>
-                             <SummaryRow
-                                 label="Subtotal"
-                                 value={summary.subtotal}
-                             />
-                            <div className="mb-3 flex items-center justify-between text-[12px] text-[#4A4A4A]">
-                                <span>Total Berat</span>
-                                <span className="font-semibold">
-                                    {formatWeight(totalWeight)}
-                                </span>
-                            </div>
-                             <SummaryRow
-                                 label="Ongkir"
-                                 value={summary.shipping}
-                            />
-                            <SummaryRow
-                                label="Biaya Layanan"
-                                value={summary.service_fee}
-                            />
-                            <SummaryRow
-                                label="Diskon"
-                                value={-summary.discount}
-                                danger
-                            />
-                            <div className="mt-4 border-t border-[#EADBD8] pt-4">
-                                <div className="flex items-end justify-between">
-                                    <span className="text-[13px] font-semibold text-[#333]">
-                                        Total Pembayaran
-                                    </span>
-                                    <span className="font-serif text-2xl text-[#333]">
-                                        {formatPrice(summary.total)}
+                                    ))}
+                                </div>
+                                {hasUnavailableItems && (
+                                    <p className="mb-4 border-l-2 border-[#B24B4B] pl-3 text-[12px] leading-relaxed font-medium text-[#9E4A45]">
+                                        Ada item yang stoknya tidak tersedia.
+                                        Perbarui keranjang sebelum checkout.
+                                    </p>
+                                )}
+                                <SummaryRow
+                                    label="Subtotal"
+                                    value={summary.subtotal}
+                                />
+                                <div className="mb-3 flex items-center justify-between text-[12px] text-[#4A4A4A]">
+                                    <span>Total Berat</span>
+                                    <span className="font-semibold">
+                                        {formatWeight(totalWeight)}
                                     </span>
                                 </div>
-                            </div>
-                            <button
+                                <SummaryRow
+                                    label="Ongkir"
+                                    value={summary.shipping}
+                                />
+                                <SummaryRow
+                                    label="Biaya Layanan"
+                                    value={summary.service_fee}
+                                />
+                                <SummaryRow
+                                    label="Diskon"
+                                    value={-summary.discount}
+                                    danger
+                                />
+                                <div className="mt-4 border-t border-[#EADBD8] pt-4">
+                                    <div className="flex items-end justify-between">
+                                        <span className="text-[13px] font-semibold text-[#333]">
+                                            Total Pembayaran
+                                        </span>
+                                        <span className="font-serif text-2xl text-[#333]">
+                                            {formatPrice(summary.total)}
+                                        </span>
+                                    </div>
+                                </div>
+                                <button
                                     type="button"
                                     onClick={() => void submitOrder()}
                                     disabled={
                                         placingOrder ||
                                         !selectedShippingRate ||
-                                        !agreed ||
-                                        cartItems.some((item) => !item.is_available)
+                                        !agreed
                                     }
                                     className="mt-6 flex w-full items-center justify-center rounded-lg bg-[#4A2525] py-4 text-[13px] font-bold tracking-wider text-white transition-all hover:bg-[#5F1717] hover:shadow-lg hover:shadow-[#4A2525]/20 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                                 >
@@ -565,11 +616,19 @@ function CheckoutScreen() {
                                         storeCoordinates={storeCoordinates}
                                     />
                                     <div className="flex items-start space-x-3 text-[11px] text-[#8A6B62]">
-                                        <ShieldCheck size={16} className="mt-0.5 flex-shrink-0 text-[#C99A8F]" strokeWidth={1.5} />
+                                        <ShieldCheck
+                                            size={16}
+                                            className="mt-0.5 flex-shrink-0 text-[#C99A8F]"
+                                            strokeWidth={1.5}
+                                        />
                                         <p>Pembayaran aman didukung Midtrans</p>
                                     </div>
                                     <div className="flex items-start space-x-3 text-[11px] text-[#8A6B62]">
-                                        <Box size={16} className="mt-0.5 flex-shrink-0 text-[#C99A8F]" strokeWidth={1.5} />
+                                        <Box
+                                            size={16}
+                                            className="mt-0.5 flex-shrink-0 text-[#C99A8F]"
+                                            strokeWidth={1.5}
+                                        />
                                         <p>Ongkir dihitung oleh Biteship</p>
                                     </div>
                                 </div>
@@ -663,7 +722,9 @@ function CheckoutRouteMap({
             {canShowRoute && leafletModules && markerIcon ? (
                 <RouteMap
                     destinationAddress={destinationAddress}
-                    destinationCoordinates={destinationCoordinates as Coordinates}
+                    destinationCoordinates={
+                        destinationCoordinates as Coordinates
+                    }
                     markerIcon={markerIcon}
                     modules={leafletModules}
                     storeCoordinates={storeCoordinates as Coordinates}

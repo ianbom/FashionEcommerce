@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -43,16 +44,31 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::createUsersUsing(CreateNewUser::class);
         Fortify::authenticateUsing(function (Request $request): ?User {
+            $email = (string) $request->input(Fortify::username());
+
             $user = User::query()
-                ->where('email', $request->input(Fortify::username()))
-                ->where('is_active', true)
+                ->where('email', $email)
                 ->first();
 
-            if ($user && Hash::check((string) $request->input('password'), $user->password)) {
-                return $user;
+            if (! $user) {
+                throw ValidationException::withMessages([
+                    Fortify::username() => 'Email tidak ditemukan. Pastikan email sudah benar atau daftar akun baru.',
+                ]);
             }
 
-            return null;
+            if (! $user->is_active) {
+                throw ValidationException::withMessages([
+                    Fortify::username() => 'Akun ini tidak aktif. Silakan hubungi customer support.',
+                ]);
+            }
+
+            if (! Hash::check((string) $request->input('password'), $user->password)) {
+                throw ValidationException::withMessages([
+                    'password' => 'Password salah. Periksa kembali kata sandi yang kamu masukkan.',
+                ]);
+            }
+
+            return $user;
         });
     }
 

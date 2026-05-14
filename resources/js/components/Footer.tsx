@@ -1,19 +1,100 @@
 import { Link } from '@inertiajs/react';
 import {
-    Instagram,
+    ArrowRight,
     Facebook,
-    Twitter,
-    Youtube,
+    Instagram,
     Mail,
     MapPin,
     Phone,
-    ArrowRight,
+    Twitter,
+    Youtube,
 } from 'lucide-react';
-import React from 'react';
+import type { ReactNode } from 'react';
+
+type PaymentMethod = {
+    name: string;
+    icon: ReactNode;
+};
+
+const paymentMethods: PaymentMethod[] = [
+    {
+        name: 'QRIS',
+        icon: (
+            <span className="flex items-center gap-1 font-black text-slate-900">
+                <span className="grid h-4 w-4 grid-cols-2 gap-0.5">
+                    <span className="bg-slate-900" />
+                    <span className="bg-red-600" />
+                    <span className="bg-blue-600" />
+                    <span className="bg-slate-900" />
+                </span>
+                QRIS
+            </span>
+        ),
+    },
+    {
+        name: 'OVO',
+        icon: <span className="font-black text-[#4c2683]">OVO</span>,
+    },
+    {
+        name: 'ShopeePay',
+        icon: <span className="font-black text-[#ee4d2d]">Shopee</span>,
+    },
+    {
+        name: 'DANA',
+        icon: <span className="font-black text-[#118ee9]">DANA</span>,
+    },
+    {
+        name: 'BNI',
+        icon: (
+            <span className="flex items-center gap-1 font-black text-[#f15a24]">
+                <span className="h-3 w-3 bg-[#007a78]" />
+                BNI
+            </span>
+        ),
+    },
+    {
+        name: 'Mandiri',
+        icon: <span className="font-black text-[#003d79]">mandiri</span>,
+    },
+    {
+        name: 'BCA',
+        icon: <span className="font-black text-[#005baa]">BCA</span>,
+    },
+    {
+        name: 'BSI',
+        icon: <span className="font-black text-[#00a39b]">BSI</span>,
+    },
+    {
+        name: 'Visa',
+        icon: <span className="font-black italic text-[#1a1f71]">VISA</span>,
+    },
+    {
+        name: 'JCB',
+        icon: (
+            <span className="overflow-hidden rounded-sm border border-slate-200 text-[9px] font-black">
+                <span className="bg-[#0b8f3c] px-1 text-white">J</span>
+                <span className="bg-[#0b4ea2] px-1 text-white">C</span>
+                <span className="bg-[#d71920] px-1 text-white">B</span>
+            </span>
+        ),
+    },
+    {
+        name: 'MasterCard',
+        icon: (
+            <span className="flex items-center gap-1 font-black text-slate-900">
+                <span className="relative h-5 w-8">
+                    <span className="absolute top-0 left-0 h-5 w-5 rounded-full bg-[#eb001b]" />
+                    <span className="absolute top-0 right-0 h-5 w-5 rounded-full bg-[#f79e1b] mix-blend-multiply" />
+                </span>
+                MC
+            </span>
+        ),
+    },
+];
 
 export default function Footer() {
     return (
-        <footer className="border-t border-border bg-primary pt-16 pb-8 text-primary-foreground md:pt-24">
+        <footer className="border-t border-border bg-primary pt-16 pb-28 text-primary-foreground md:pt-24 md:pb-8">
             {/* Top Section: Newsletter & Brand */}
             <div className="mx-auto mb-16 max-w-[1500px] px-6 md:px-10">
                 <div className="grid grid-cols-1 items-center gap-12 border-b border-white/10 pb-12 lg:grid-cols-2">

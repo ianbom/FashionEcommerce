@@ -444,7 +444,7 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
     }, [currentIndex, images.length]);
 
     return (
-        <section className="relative h-[60vh] w-full overflow-hidden md:h-[85vh]">
+        <section className="relative h-[calc(100svh-4rem)] w-full overflow-hidden md:h-[85vh]">
             <div
                 ref={sliderRef}
                 onScroll={updateCurrentSlide}
@@ -469,7 +469,7 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
                             draggable={false}
                             className="h-full w-full object-cover"
                         />
-                        <div className="absolute inset-0 bg-black/10" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/10 to-black/5 md:bg-black/10" />
                     </button>
                 ))}
             </div>
@@ -495,7 +495,7 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
                 </button>
             </div>
 
-            <div className="absolute right-0 bottom-8 left-0 z-20 flex justify-center gap-3">
+            <div className="absolute right-0 bottom-24 left-0 z-20 flex justify-center gap-3 md:bottom-8">
                 {images.map((_, index) => (
                     <button
                         key={index}
@@ -654,7 +654,6 @@ function ProductTile({
         </FadeInOnScroll>
     );
 }
-
 
 
 
