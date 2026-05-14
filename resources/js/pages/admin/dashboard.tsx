@@ -251,7 +251,7 @@ function DashboardHeader({ filters }: { filters: Props['filters'] }) {
                             type="date"
                             value={dateFrom}
                             onChange={(event) => setDateFrom(event.target.value)}
-                            className="h-9 w-[140px] rounded-lg border-zinc-200 bg-white text-xs shadow-none"
+                            className="h-11 w-[165px] cursor-pointer rounded-lg border-zinc-200 bg-white px-3 text-sm shadow-none transition-colors hover:border-zinc-300 focus:border-[#7F2020] focus:ring-2 focus:ring-[#7F2020]/20"
                         />
                     </label>
                     <label className="grid gap-1 text-[10px] font-semibold tracking-wider text-zinc-400 uppercase">
@@ -261,7 +261,7 @@ function DashboardHeader({ filters }: { filters: Props['filters'] }) {
                             value={dateTo}
                             min={dateFrom || undefined}
                             onChange={(event) => setDateTo(event.target.value)}
-                            className="h-9 w-[140px] rounded-lg border-zinc-200 bg-white text-xs shadow-none"
+                            className="h-11 w-[165px] cursor-pointer rounded-lg border-zinc-200 bg-white px-3 text-sm shadow-none transition-colors hover:border-zinc-300 focus:border-[#7F2020] focus:ring-2 focus:ring-[#7F2020]/20"
                         />
                     </label>
                     <Button
@@ -754,3 +754,4 @@ function stockStatus(stock: number) {
 
     return 'Low Stock';
 }
+

@@ -8,4 +8,4 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('payments:sync-expired-midtrans')->everyTenMinutes()->withoutOverlapping();
+Schedule::command('payments:sync-expired-midtrans')->everyMinute()->withoutOverlapping();

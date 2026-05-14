@@ -161,6 +161,7 @@ export default function ListProduct({ products, filters, options }: Props) {
                 preserveScroll: true,
                 preserveState: true,
                 replace: true,
+                reset: ['products'],
             });
         }, 400);
 
@@ -173,6 +174,7 @@ export default function ListProduct({ products, filters, options }: Props) {
             preserveScroll: true,
             preserveState: true,
             replace: true,
+            reset: ['products'],
         });
     };
 
@@ -701,7 +703,9 @@ function ProductTile({
         setIsWishlistProcessing(true);
 
         const options = {
+            except: ['products'],
             preserveScroll: true,
+            preserveState: true,
             onSuccess: () => setIsWishlisted((current) => !current),
             onFinish: () => setIsWishlistProcessing(false),
         };

@@ -1,5 +1,12 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, Clock, Heart, RotateCcw, Star } from 'lucide-react';
+import {
+    ChevronLeft,
+    ChevronRight,
+    Clock,
+    Heart,
+    RotateCcw,
+    Star,
+} from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { PointerEvent, ReactNode } from 'react';
 import ShopLayout from '@/layouts/shop-layout';
@@ -160,7 +167,10 @@ export default function Home({
                                     collectionBanners?.[0] ?? null,
                                     '/img/atiyeh-fathi-CvdzGjVX9DA-unsplash.webp',
                                 )}
-                                alt={collectionBanners?.[0]?.title ?? 'New Collections Detail'}
+                                alt={
+                                    collectionBanners?.[0]?.title ??
+                                    'New Collections Detail'
+                                }
                                 className="h-full w-full object-cover"
                                 loading="lazy"
                                 decoding="async"
@@ -183,21 +193,15 @@ export default function Home({
                         </div>
 
                         <div className="md:col-start-3 md:mt-12 md:max-w-[280px]">
-                            <div className="space-y-4 text-sm leading-[1.6] text-[#53362d] md:text-[15px]">
-                                <p>
-                                    A stoical elegance, you might call it.
-                                    Black asymmetric dresses blowing
-                                    voluminously in the artic wind.
-                                </p>
-                                <p>
-                                    Oversized hybrids of hoodie and padded
-                                    outerwear; leather jackets that turn out to
-                                    be made from Balenciaga’s new
-                                    mycelium-derived leather-mimicking
-                                    alternative. Tote bags mated with boots.
-                                </p>
-                            </div>
+                            {collectionBanners?.[0]?.subtitle && (
+                                <div className="space-y-4 text-sm leading-[1.6] text-[#53362d] md:text-[15px]">
+                                    {collectionBanners[0].subtitle.split('\n\n').map((paragraph, index) => (
+                                        <p key={index}>{paragraph}</p>
+                                    ))}
+                                </div>
+                            )}
                         </div>
+
 
                         <div className="relative h-[330px] overflow-hidden md:col-start-2 md:row-start-2 md:mt-auto md:w-full">
                             <img
@@ -205,11 +209,21 @@ export default function Home({
                                     collectionBanners?.[1] ?? null,
                                     '/img/mina-rad-2O2cXJemDmo-unsplash.webp',
                                 )}
-                                alt={collectionBanners?.[1]?.title ?? 'New Collections Look'}
+                                alt={
+                                    collectionBanners?.[1]?.title ??
+                                    'New Collections Look'
+                                }
                                 className="h-full w-full object-cover"
                                 loading="lazy"
                                 decoding="async"
                             />
+                            {collectionBanners?.[1]?.subtitle && (
+                                <div className="mt-4 space-y-4 text-sm leading-[1.6] text-[#53362d] md:text-[15px]">
+                                    {collectionBanners[1].subtitle.split('\n\n').map((paragraph, index) => (
+                                        <p key={index}>{paragraph}</p>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
                         <Link
@@ -261,11 +275,11 @@ export default function Home({
                     </div>
                 </div>
             </section>
-            
+
             {/* CTA Section */}
             <FadeInOnScroll>
                 <section className="mx-auto mt-6 mb-12 w-full max-w-[1500px] px-4 md:mt-10 md:mb-20 md:px-10">
-                    <div className="relative aspect-[21/7] w-full overflow-hidden rounded-[18px] bg-[#7fc6d8] shadow-sm ring-1 ring-black/5">
+                    <div className="relative min-h-[420px] w-full overflow-hidden rounded-[18px] bg-[#7fc6d8] shadow-sm ring-1 ring-black/5 sm:min-h-[360px] md:aspect-[21/7] md:min-h-0">
                         <img
                             src={bannerImage(
                                 promoBanner,
@@ -276,26 +290,26 @@ export default function Home({
                             loading="lazy"
                             decoding="async"
                         />
-                        <div className="absolute inset-0 bg-black/45" />
-                        <div className="absolute inset-0 flex items-end justify-between gap-6 px-[10%] py-[9%] text-white">
-                            <div className="max-w-[46%]">
-                                <h2 className="font-serif text-[clamp(1.75rem,5vw,5rem)] leading-[0.96] tracking-[-0.04em]">
-                                    {promoBanner?.title ?? 'Full control is in your hands'}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/35 to-black/10 md:bg-black/45" />
+                        <div className="absolute inset-0 flex flex-col justify-end gap-5 px-5 py-7 text-white sm:px-7 sm:py-8 md:flex-row md:items-end md:justify-between md:gap-6 md:px-[10%] md:py-[9%]">
+                            <div className="max-w-[92%] md:max-w-[46%]">
+                                <h2 className="font-serif text-[clamp(2rem,12vw,3.35rem)] leading-[0.95] tracking-[-0.04em] md:text-[clamp(1.75rem,5vw,5rem)]">
+                                    {promoBanner?.title ??
+                                        'Full control is in your hands'}
                                 </h2>
                             </div>
-                            <div className="mb-[1%] max-w-[34%]">
-                                <p className="mb-3 text-[clamp(0.55rem,1.1vw,0.95rem)] leading-snug text-white/90">
+                            <div className="max-w-[92%] md:mb-[1%] md:max-w-[34%]">
+                                <p className="mb-4 text-[13px] leading-relaxed text-white/90 md:mb-3 md:text-[clamp(0.55rem,1.1vw,0.95rem)] md:leading-snug">
                                     {promoBanner?.subtitle ??
                                         'A ready-made solution for investing in the cryptocurrency market, built on the best global approaches to capital management.'}
                                 </p>
                                 <Link
                                     href={promoBanner?.button_url ?? list.url()}
-                                    className="inline-flex items-center gap-2 rounded-full bg-white py-1 pr-1 pl-3 text-[clamp(0.55rem,1vw,0.8rem)] font-medium text-[#1f1f1f] transition-colors hover:bg-white/90"
+                                    className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-white py-2 pr-2 pl-4 text-[12px] font-semibold text-[#1f1f1f] transition-colors hover:bg-white/90 sm:w-auto md:min-h-0 md:py-1 md:pr-1 md:pl-3 md:text-[clamp(0.55rem,1vw,0.8rem)] md:font-medium"
                                 >
-                                    {promoBanner?.button_text ?? 'Pelajari lebih lanjut'}
-                                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#1f1f1f] text-[10px] leading-none text-white md:h-7 md:w-7">
-                                        
-                                    </span>
+                                    {promoBanner?.button_text ??
+                                        'Pelajari lebih lanjut'}
+                                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#1f1f1f] text-[10px] leading-none text-white"></span>
                                 </Link>
                             </div>
                         </div>
@@ -407,14 +421,14 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
         updateCurrentSlide();
     };
 
-    const handleHeroClick = (url?: string | null) => {
+    const handleHeroClick = () => {
         if (didDragRef.current) {
             didDragRef.current = false;
 
             return;
         }
 
-        router.visit(url ?? list.url());
+        router.visit(list.url());
     };
 
     useEffect(() => {
@@ -443,7 +457,7 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
                     <button
                         key={index}
                         type="button"
-                        onClick={() => handleHeroClick(heroBanners?.[index]?.button_url)}
+                        onClick={handleHeroClick}
                         className="relative h-full min-w-full snap-start overflow-hidden text-left"
                     >
                         <img
@@ -461,13 +475,13 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
                 <button
                     type="button"
                     onClick={() => goToSlide(currentIndex - 1)}
-                    className="flex h-11 w-11 items-center justify-center rounded-full  text-[#53362d] shadow-sm backdrop-blur-sm transition hover:bg-white/60"
+                    className="flex h-11 w-11 items-center justify-center rounded-full text-[#53362d] shadow-sm backdrop-blur-sm transition hover:bg-white/60"
                     aria-label="Slide sebelumnya"
                 >
                     <ChevronLeft size={20} />
                 </button>
             </div>
-            <div className="absolute bottom-8 right-4 z-20 hidden md:block">
+            <div className="absolute right-4 bottom-8 z-20 hidden md:block">
                 <button
                     type="button"
                     onClick={() => goToSlide(currentIndex + 1)}
@@ -637,3 +651,11 @@ function ProductTile({
         </FadeInOnScroll>
     );
 }
+
+
+
+
+
+
+
+

@@ -436,3 +436,5 @@ class ProductBrowsingService
         return $this->badge($product);
     }
 }
+
+
