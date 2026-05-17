@@ -1,6 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 import {
     Ban,
+    Calendar,
     CheckCircle2,
     ChevronLeft,
     ChevronRight,
@@ -14,7 +15,7 @@ import {
     ShoppingBag,
     Truck,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -277,10 +278,10 @@ export default function OrdersIndex({
     return (
         <>
             <Head title="Orders" />
-            <div className="mx-auto flex max-w-7xl flex-col gap-6 p-6">
+            <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">
                 {/* Header */}
                 <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
-                    <div>
+                    <div className="min-w-0">
                         <p className="mb-1 text-[11px] font-bold tracking-widest text-[#7F2020]/50 uppercase">
                             Sales Management
                         </p>
@@ -292,11 +293,11 @@ export default function OrdersIndex({
                             flow, pengiriman, dan voucher.
                         </p>
                     </div>
-                    <div className="flex shrink-0 items-center gap-2">
+                    <div className="flex w-full flex-wrap items-center gap-2 md:w-auto md:shrink-0">
                         <Button
                             variant="outline"
                             size="sm"
-                            className="h-9 gap-1.5 border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50"
+                            className="h-9 w-full gap-1.5 border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 md:w-auto"
                         >
                             <Download className="h-3.5 w-3.5" /> Export
                         </Button>
@@ -304,7 +305,7 @@ export default function OrdersIndex({
                 </div>
 
                 {/* Stat Cards */}
-                <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+                <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
                     {stats.map((m, i) => (
                         <div
                             key={i}
@@ -376,9 +377,9 @@ export default function OrdersIndex({
                     {/* Filter Bar */}
                     <form
                         onSubmit={handleSearch}
-                        className="flex flex-wrap items-end gap-3 border-b border-zinc-100 bg-zinc-50/40 px-5 py-4"
+                        className="grid gap-3 border-b border-zinc-100 bg-zinc-50/40 px-4 py-4 sm:px-5 md:grid-cols-2 xl:grid-cols-[minmax(220px,1fr)_repeat(3,max-content)_max-content_auto] xl:items-end"
                     >
-                        <div className="relative min-w-[200px] flex-1">
+                        <div className="relative min-w-0 md:col-span-2 xl:col-span-1">
                             <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
                             <Input
                                 value={search}
@@ -460,32 +461,32 @@ export default function OrdersIndex({
                             ))}
                         </FilterSelect>
 
-                        <div className="flex flex-col gap-1">
+                        <div className="flex min-w-0 flex-col gap-1">
                             <span className="px-0.5 text-[10px] font-semibold tracking-wider text-zinc-400 uppercase">
                                 Dates
                             </span>
-                            <div className="flex gap-2">
-                                <Input
-                                    type="date"
+                            <div className="grid grid-cols-2 gap-2">
+                                <DateInput
+                                    label="Tanggal awal"
                                     value={dateFrom}
-                                    onChange={(e) => setDateFrom(e.target.value)}
-                                    className="h-9 w-[130px] rounded-lg border-zinc-200 bg-white text-xs shadow-sm"
+                                    onChange={(e) =>
+                                        setDateFrom(e.target.value)
+                                    }
                                 />
-                                <Input
-                                    type="date"
+                                <DateInput
+                                    label="Tanggal akhir"
                                     value={dateTo}
                                     min={dateFrom || undefined}
                                     onChange={(e) => setDateTo(e.target.value)}
-                                    className="h-9 w-[130px] rounded-lg border-zinc-200 bg-white text-xs shadow-sm"
                                 />
                             </div>
                         </div>
 
-                        <div className="ml-auto flex gap-2">
+                        <div className="flex gap-2 md:col-span-2 xl:col-span-1 xl:ml-auto">
                             <Button
                                 type="submit"
                                 size="sm"
-                                className="h-9 gap-1.5 bg-[#7F2020] text-white hover:bg-[#5F1717]"
+                                className="h-9 flex-1 gap-1.5 bg-[#7F2020] text-white hover:bg-[#5F1717] sm:flex-none"
                             >
                                 <Search className="h-3.5 w-3.5" /> Search
                             </Button>
@@ -493,7 +494,7 @@ export default function OrdersIndex({
                                 type="button"
                                 variant="ghost"
                                 size="sm"
-                                className="h-9 gap-1.5 text-zinc-500 hover:text-zinc-700"
+                                className="h-9 flex-1 gap-1.5 text-zinc-500 hover:text-zinc-700 sm:flex-none"
                                 onClick={resetFilters}
                             >
                                 <RotateCcw className="h-3.5 w-3.5" /> Reset
@@ -503,7 +504,7 @@ export default function OrdersIndex({
 
                     {/* Table */}
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm">
+                        <table className="w-full min-w-[1120px] text-left text-sm">
                             <thead>
                                 <tr className="border-b border-zinc-100 bg-zinc-50/60">
                                     <th className="px-4 py-3 text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">
@@ -724,7 +725,7 @@ export default function OrdersIndex({
                     </div>
 
                     {/* Pagination */}
-                    <div className="flex items-center justify-between border-t border-zinc-100 bg-zinc-50/40 px-5 py-3.5">
+                    <div className="flex flex-col gap-3 border-t border-zinc-100 bg-zinc-50/40 px-4 py-3.5 sm:px-5 lg:flex-row lg:items-center lg:justify-between">
                         <span className="text-xs text-zinc-400">
                             {orders.from && orders.to
                                 ? 'Showing ' +
@@ -736,7 +737,7 @@ export default function OrdersIndex({
                                   ' orders'
                                 : 'No orders'}
                         </span>
-                        <div className="flex items-center gap-1">
+                        <div className="flex flex-wrap items-center gap-1">
                             {orders.links.map((link, i) => {
                                 const isChevronLeft =
                                     link.label.includes('Previous') ||
@@ -785,6 +786,52 @@ export default function OrdersIndex({
     );
 }
 
+function DateInput({
+    label,
+    value,
+    min,
+    onChange,
+}: {
+    label: string;
+    value: string;
+    min?: string;
+    onChange: React.ChangeEventHandler<HTMLInputElement>;
+}) {
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    const openPicker = () => {
+        inputRef.current?.focus();
+        (
+            inputRef.current as
+                | (HTMLInputElement & { showPicker?: () => void })
+                | null
+        )?.showPicker?.();
+    };
+
+    return (
+        <div className="relative min-w-0 xl:w-[150px]">
+            <Input
+                ref={inputRef}
+                type="date"
+                aria-label={label}
+                value={value}
+                min={min}
+                onChange={onChange}
+                onClick={openPicker}
+                className="h-10 w-full cursor-pointer rounded-lg border-zinc-200 bg-white pr-9 text-xs shadow-sm"
+            />
+            <button
+                type="button"
+                aria-label={label}
+                onClick={openPicker}
+                className="absolute top-1/2 right-1 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600"
+            >
+                <Calendar className="h-3.5 w-3.5" />
+            </button>
+        </div>
+    );
+}
+
 function FilterSelect({
     label,
     value,
@@ -797,12 +844,12 @@ function FilterSelect({
     children: React.ReactNode;
 }) {
     return (
-        <div className="flex flex-col gap-1">
+        <div className="flex min-w-0 flex-col gap-1">
             <span className="px-0.5 text-[10px] font-semibold tracking-wider text-zinc-400 uppercase">
                 {label}
             </span>
             <Select value={value} onValueChange={onChange}>
-                <SelectTrigger className="h-9 w-[150px] rounded-lg border-zinc-200 bg-white text-xs shadow-sm">
+                <SelectTrigger className="h-9 w-full rounded-lg border-zinc-200 bg-white text-xs shadow-sm xl:w-[150px]">
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent>{children}</SelectContent>

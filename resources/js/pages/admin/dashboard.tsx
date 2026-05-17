@@ -10,7 +10,7 @@ import {
     ShoppingBag,
     Truck,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
     Bar,
     BarChart,
@@ -226,7 +226,8 @@ function DashboardHeader({ filters }: { filters: Props['filters'] }) {
         );
     };
 
-    const reset = () => router.get('/admin/dashboard', {}, { preserveState: false });
+    const reset = () =>
+        router.get('/admin/dashboard', {}, { preserveState: false });
 
     return (
         <header className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
@@ -243,31 +244,34 @@ function DashboardHeader({ filters }: { filters: Props['filters'] }) {
                 </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-                <form onSubmit={submit} className="flex flex-wrap items-end gap-2">
-                    <label className="grid gap-1 text-[10px] font-semibold tracking-wider text-zinc-400 uppercase">
-                        Tanggal Awal
-                        <Input
-                            type="date"
+            <div className="flex flex-wrap items-end gap-3">
+                <form
+                    onSubmit={submit}
+                    className="flex flex-wrap items-end gap-2"
+                >
+                    <div className="grid gap-1 text-[10px] font-semibold tracking-wider text-zinc-400 uppercase">
+                        <span>Tanggal Awal</span>
+                        <DashboardDateInput
+                            label="Tanggal awal"
                             value={dateFrom}
-                            onChange={(event) => setDateFrom(event.target.value)}
-                            className="h-11 w-[165px] cursor-pointer rounded-lg border-zinc-200 bg-white px-3 text-sm shadow-none transition-colors hover:border-zinc-300 focus:border-[#7F2020] focus:ring-2 focus:ring-[#7F2020]/20"
+                            onChange={(event) =>
+                                setDateFrom(event.target.value)
+                            }
                         />
-                    </label>
-                    <label className="grid gap-1 text-[10px] font-semibold tracking-wider text-zinc-400 uppercase">
-                        Tanggal Akhir
-                        <Input
-                            type="date"
+                    </div>
+                    <div className="grid gap-1 text-[10px] font-semibold tracking-wider text-zinc-400 uppercase">
+                        <span>Tanggal Akhir</span>
+                        <DashboardDateInput
+                            label="Tanggal akhir"
                             value={dateTo}
                             min={dateFrom || undefined}
                             onChange={(event) => setDateTo(event.target.value)}
-                            className="h-11 w-[165px] cursor-pointer rounded-lg border-zinc-200 bg-white px-3 text-sm shadow-none transition-colors hover:border-zinc-300 focus:border-[#7F2020] focus:ring-2 focus:ring-[#7F2020]/20"
                         />
-                    </label>
+                    </div>
                     <Button
                         type="submit"
                         variant="outline"
-                        className="h-9 rounded-lg border-zinc-200 bg-white px-4 text-zinc-600 shadow-none hover:bg-zinc-50 hover:text-zinc-800 active:scale-[0.98]"
+                        className="h-11 rounded-lg border-zinc-200 bg-white px-4 text-zinc-600 shadow-none hover:bg-zinc-50 hover:text-zinc-800 active:scale-[0.98]"
                     >
                         <CalendarDays className="size-4" strokeWidth={1.7} />
                         Filter
@@ -276,14 +280,14 @@ function DashboardHeader({ filters }: { filters: Props['filters'] }) {
                         type="button"
                         variant="ghost"
                         onClick={reset}
-                        className="h-9 rounded-lg px-4 text-zinc-500 shadow-none hover:bg-zinc-50 hover:text-zinc-800 active:scale-[0.98]"
+                        className="h-11 rounded-lg px-4 text-zinc-500 shadow-none hover:bg-zinc-50 hover:text-zinc-800 active:scale-[0.98]"
                     >
                         Reset
                     </Button>
                 </form>
                 <Button
                     asChild
-                    className="h-9 rounded-lg bg-[#7F2020] px-4 text-white shadow-none hover:bg-[#5F1717] active:scale-[0.98]"
+                    className="h-11 rounded-lg bg-[#7F2020] px-4 text-white shadow-none hover:bg-[#5F1717] active:scale-[0.98]"
                 >
                     <Link href="/admin/orders">
                         View Orders
@@ -292,6 +296,52 @@ function DashboardHeader({ filters }: { filters: Props['filters'] }) {
                 </Button>
             </div>
         </header>
+    );
+}
+
+function DashboardDateInput({
+    label,
+    value,
+    min,
+    onChange,
+}: {
+    label: string;
+    value: string;
+    min?: string;
+    onChange: React.ChangeEventHandler<HTMLInputElement>;
+}) {
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    const openPicker = () => {
+        inputRef.current?.focus();
+        (
+            inputRef.current as
+                | (HTMLInputElement & { showPicker?: () => void })
+                | null
+        )?.showPicker?.();
+    };
+
+    return (
+        <div className="relative w-full min-w-[165px] sm:w-[180px]">
+            <Input
+                ref={inputRef}
+                type="date"
+                aria-label={label}
+                value={value}
+                min={min}
+                onChange={onChange}
+                onClick={openPicker}
+                className="h-11 w-full cursor-pointer rounded-lg border-zinc-200 bg-white pr-10 text-sm shadow-none transition-colors hover:border-zinc-300 focus:border-[#7F2020] focus:ring-2 focus:ring-[#7F2020]/20"
+            />
+            <button
+                type="button"
+                aria-label={label}
+                onClick={openPicker}
+                className="absolute top-1/2 right-1 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600"
+            >
+                <CalendarDays className="size-4" strokeWidth={1.7} />
+            </button>
+        </div>
     );
 }
 
@@ -754,4 +804,3 @@ function stockStatus(stock: number) {
 
     return 'Low Stock';
 }
-

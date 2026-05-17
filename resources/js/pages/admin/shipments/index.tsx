@@ -1,5 +1,6 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import {
+    Calendar,
     CheckCircle2,
     ChevronLeft,
     ChevronRight,
@@ -13,7 +14,8 @@ import {
     Truck,
     XCircle,
 } from 'lucide-react';
-import type { FormEvent, ReactNode } from 'react';
+import { useRef } from 'react';
+import type { ChangeEventHandler, FormEvent, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -112,8 +114,8 @@ const getStatusConfig = (status: string | null) => {
 
 const formatDate = (value: string | null) => {
     if (!value) {
-return '-';
-}
+        return '-';
+    }
 
     return new Date(value).toLocaleDateString('id-ID', {
         day: '2-digit',
@@ -396,21 +398,19 @@ export default function ShipmentsIndex({
                                 Dates
                             </span>
                             <div className="flex gap-2">
-                                <Input
-                                    type="date"
+                                <DateInput
+                                    label="Tanggal awal"
                                     value={data.date_from}
                                     onChange={(event) =>
                                         setData('date_from', event.target.value)
                                     }
-                                    className="h-9 w-[130px] rounded-lg border-zinc-200 bg-white text-xs shadow-sm"
                                 />
-                                <Input
-                                    type="date"
+                                <DateInput
+                                    label="Tanggal akhir"
                                     value={data.date_to}
                                     onChange={(event) =>
                                         setData('date_to', event.target.value)
                                     }
-                                    className="h-9 w-[130px] rounded-lg border-zinc-200 bg-white text-xs shadow-sm"
                                 />
                             </div>
                         </div>
@@ -617,7 +617,15 @@ export default function ShipmentsIndex({
                                                         >
                                                             <button
                                                                 type="button"
-                                                                onClick={() => router.post(`/admin/shipments/${shipment.id}/refresh-tracking`, {}, { preserveScroll: true })}
+                                                                onClick={() =>
+                                                                    router.post(
+                                                                        `/admin/shipments/${shipment.id}/refresh-tracking`,
+                                                                        {},
+                                                                        {
+                                                                            preserveScroll: true,
+                                                                        },
+                                                                    )
+                                                                }
                                                                 className="flex w-full items-center gap-2"
                                                             >
                                                                 <RefreshCw className="h-3.5 w-3.5" />
@@ -692,6 +700,52 @@ export default function ShipmentsIndex({
                 </div>
             </div>
         </>
+    );
+}
+
+function DateInput({
+    label,
+    value,
+    min,
+    onChange,
+}: {
+    label: string;
+    value: string;
+    min?: string;
+    onChange: ChangeEventHandler<HTMLInputElement>;
+}) {
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    const openPicker = () => {
+        inputRef.current?.focus();
+        (
+            inputRef.current as
+                | (HTMLInputElement & { showPicker?: () => void })
+                | null
+        )?.showPicker?.();
+    };
+
+    return (
+        <div className="relative min-w-0 xl:w-[150px]">
+            <Input
+                ref={inputRef}
+                type="date"
+                aria-label={label}
+                value={value}
+                min={min}
+                onChange={onChange}
+                onClick={openPicker}
+                className="h-10 w-full cursor-pointer rounded-lg border-zinc-200 bg-white pr-9 text-xs shadow-sm"
+            />
+            <button
+                type="button"
+                aria-label={label}
+                onClick={openPicker}
+                className="absolute top-1/2 right-1 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600"
+            >
+                <Calendar className="h-3.5 w-3.5" />
+            </button>
+        </div>
     );
 }
 
