@@ -17,14 +17,14 @@ class CategorySeeder extends Seeder
                 'name' => "Women's Tops",
                 'slug' => 'womens-tops',
                 'description' => 'Koleksi atasan wanita untuk daily wear, office look, dan weekend style.',
-                'image_url' => 'https://images.unsplash.com/photo-1708151729075-89f1fc21e19e?q=80&w=626&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                'image_url' => '/FotoShayda/2353D225-97BD-4835-AF25-7599A8D1CCA0.JPEG',
                 'is_active' => true,
             ],
             [
                 'name' => "Women's Dresses",
                 'slug' => 'womens-dresses',
                 'description' => 'Dress dengan siluet modern untuk momen kasual hingga acara spesial.',
-                'image_url' => 'https://plus.unsplash.com/premium_photo-1680012590879-39a8ec7c7cea?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                'image_url' => '/FotoShayda/56F72D08-D55A-428D-9112-35B115FB59B7.JPEG',
                 'is_active' => true,
             ],
             // [
@@ -38,14 +38,14 @@ class CategorySeeder extends Seeder
                 'name' => 'Outerwear',
                 'slug' => 'outerwear',
                 'description' => 'Layering pieces seperti blazer, cardigan, dan jacket dengan cutting rapi.',
-                'image_url' => 'https://plus.unsplash.com/premium_photo-1679000359310-13de627abdf4?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                'image_url' => '/FotoShayda/9DD1EBEB-DCBF-45E7-9563-17A40782156F.JPEG',
                 'is_active' => true,
             ],
             [
                 'name' => 'Accessories',
                 'slug' => 'accessories',
                 'description' => 'Aksesori pelengkap gaya harian, dari hijab hingga tas statement.',
-                'image_url' => 'https://images.unsplash.com/photo-1590213363762-49b45897b5a7?q=80&w=1073&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                'image_url' => '/FotoShayda/A450596C-21FD-44B9-9442-BF5985F7EC04.JPEG',
                 'is_active' => true,
             ],
             // [

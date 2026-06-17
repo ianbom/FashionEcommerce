@@ -63,8 +63,8 @@ class BannerSeeder extends Seeder
             [
                 'title' => 'Koleksi Abaya Terbaru',
                 'subtitle' => 'Abaya Premium dengan Material Berkualitas Tinggi',
-                'image_desktop_url' => 'https://plus.unsplash.com/premium_photo-1676925875911-7f46961f8193?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-                'image_mobile_url' => 'https://plus.unsplash.com/premium_photo-1676925875911-7f46961f8193?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                'image_desktop_url' => '/banner/mobile-1.png',
+                'image_mobile_url' => '/banner/mobile-1.png',
                 'button_text' => 'Shop Abaya',
                 'button_url' => '/list',
                 'placement' => 'collection',
@@ -78,8 +78,8 @@ class BannerSeeder extends Seeder
             [
                 'title' => 'Hijab & Khimar Pilihan',
                 'subtitle' => 'Warna-warna Elegan untuk Setiap Kesempatan',
-                'image_desktop_url' => 'https://images.unsplash.com/photo-1655909961998-7d92664b2ecb?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-                'image_mobile_url' => 'https://images.unsplash.com/photo-1655909961998-7d92664b2ecb?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                'image_desktop_url' => '/banner/mobile-2.png',
+                'image_mobile_url' => '/banner/mobile-2.png',
                 'button_text' => 'Lihat Semua',
                 'button_url' => '/list',
                 'placement' => 'collection',
