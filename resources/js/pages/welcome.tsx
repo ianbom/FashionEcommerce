@@ -80,6 +80,12 @@ const productImage = (product: ProductCard | undefined, index: number) =>
 const bannerImage = (banner: BannerCard, fallback: string) =>
     banner?.image_desktop_url ?? fallback;
 
+type HeroSlide = {
+    desktop: string;
+    mobile: string;
+    alt: string;
+};
+
 export default function Home({
     heroBanners,
     promoBanner,
@@ -195,20 +201,23 @@ export default function Home({
                         <div className="md:col-start-3 md:mt-12 md:max-w-[280px]">
                             {collectionBanners?.[0]?.subtitle && (
                                 <div className="space-y-4 text-sm leading-[1.6] text-[#53362d] md:text-[15px]">
-                                    {collectionBanners[0].subtitle.split('\n\n').map((paragraph, index) => (
-                                        <p key={index}>{paragraph}</p>
-                                    ))}
+                                    {collectionBanners[0].subtitle
+                                        .split('\n\n')
+                                        .map((paragraph, index) => (
+                                            <p key={index}>{paragraph}</p>
+                                        ))}
                                 </div>
                             )}
                             {collectionBanners?.[1]?.subtitle && (
                                 <div className="mt-4 space-y-4 text-sm leading-[1.6] text-[#53362d] md:text-[15px]">
-                                    {collectionBanners[1].subtitle.split('\n\n').map((paragraph, index) => (
-                                        <p key={index}>{paragraph}</p>
-                                    ))}
+                                    {collectionBanners[1].subtitle
+                                        .split('\n\n')
+                                        .map((paragraph, index) => (
+                                            <p key={index}>{paragraph}</p>
+                                        ))}
                                 </div>
                             )}
                         </div>
-
 
                         <div className="md:col-start-2 md:row-start-2 md:mt-auto md:w-full">
                             <div className="relative h-[330px] overflow-hidden">
@@ -226,7 +235,6 @@ export default function Home({
                                     decoding="async"
                                 />
                             </div>
-
                         </div>
 
                         <Link
@@ -333,18 +341,44 @@ export default function Home({
 }
 
 function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
-    const images =
+    const slides: HeroSlide[] =
         heroBanners && heroBanners.length > 0
             ? heroBanners.map((banner) =>
-                  bannerImage(
-                      banner,
-                      '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp',
-                  ),
+                  banner
+                      ? {
+                            desktop:
+                                banner.image_desktop_url ||
+                                '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp',
+                            mobile:
+                                banner.image_mobile_url ||
+                                banner.image_desktop_url ||
+                                '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp',
+                            alt: banner.title || 'Hero Banner',
+                        }
+                      : {
+                            desktop:
+                                '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp',
+                            mobile: '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp',
+                            alt: 'Hero Banner',
+                        },
               )
             : [
-                  '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp',
-                  '/img/abdul-raheem-kannath-aNWfK46QWto-unsplash.webp',
-                  '/img/ainur-iman-qcNmigFPTQM-unsplash.webp',
+                  {
+                      desktop: '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp',
+                      mobile: '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp',
+                      alt: 'Hero Banner 1',
+                  },
+                  {
+                      desktop:
+                          '/img/abdul-raheem-kannath-aNWfK46QWto-unsplash.webp',
+                      mobile: '/img/abdul-raheem-kannath-aNWfK46QWto-unsplash.webp',
+                      alt: 'Hero Banner 2',
+                  },
+                  {
+                      desktop: '/img/ainur-iman-qcNmigFPTQM-unsplash.webp',
+                      mobile: '/img/ainur-iman-qcNmigFPTQM-unsplash.webp',
+                      alt: 'Hero Banner 3',
+                  },
               ];
 
     const sliderRef = useRef<HTMLDivElement>(null);
@@ -362,7 +396,7 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
             return;
         }
 
-        const safeIndex = (index + images.length) % images.length;
+        const safeIndex = (index + slides.length) % slides.length;
 
         slider.scrollTo({
             behavior: 'smooth',
@@ -436,12 +470,12 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
 
     useEffect(() => {
         const timer = setInterval(() => {
-            const nextIndex = (currentIndex + 1) % images.length;
+            const nextIndex = (currentIndex + 1) % slides.length;
             goToSlide(nextIndex);
         }, 5000);
 
         return () => clearInterval(timer);
-    }, [currentIndex, images.length]);
+    }, [currentIndex, slides.length]);
 
     return (
         <section className="relative h-[calc(100svh-4rem)] w-full overflow-hidden md:h-[85vh]">
@@ -456,19 +490,25 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
                 className="hide-scrollbar flex h-full cursor-grab snap-x snap-mandatory overflow-x-auto scroll-smooth select-none active:cursor-grabbing"
                 style={{ touchAction: 'pan-y' }}
             >
-                {images.map((img, index) => (
+                {slides.map((slide, index) => (
                     <button
                         key={index}
                         type="button"
                         onClick={handleHeroClick}
                         className="relative h-full min-w-full snap-start overflow-hidden text-left"
                     >
-                        <img
-                            src={img}
-                            alt={`Hero Banner ${index + 1}`}
-                            draggable={false}
-                            className="h-full w-full object-cover"
-                        />
+                        <picture>
+                            <source
+                                media="(max-width: 767px)"
+                                srcSet={slide.mobile}
+                            />
+                            <img
+                                src={slide.desktop}
+                                alt={slide.alt || `Hero Banner ${index + 1}`}
+                                draggable={false}
+                                className="h-full w-full object-cover"
+                            />
+                        </picture>
                         <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/10 to-black/5 md:bg-black/10" />
                     </button>
                 ))}
@@ -496,7 +536,7 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
             </div>
 
             <div className="absolute right-0 bottom-24 left-0 z-20 flex justify-center gap-3 md:bottom-8">
-                {images.map((_, index) => (
+                {slides.map((_, index) => (
                     <button
                         key={index}
                         type="button"
@@ -654,10 +694,3 @@ function ProductTile({
         </FadeInOnScroll>
     );
 }
-
-
-
-
-
-
-
