@@ -61,12 +61,12 @@ const formatWeight = (grams: number) => {
 const formatDistance = (meters: number) =>
     meters >= 1000
         ? `${new Intl.NumberFormat('id-ID', {
-              maximumFractionDigits: 2,
-              minimumFractionDigits: 0,
-          }).format(meters / 1000)} km`
+            maximumFractionDigits: 2,
+            minimumFractionDigits: 0,
+        }).format(meters / 1000)} km`
         : `${new Intl.NumberFormat('id-ID', {
-              maximumFractionDigits: 0,
-          }).format(meters)} m`;
+            maximumFractionDigits: 0,
+        }).format(meters)} m`;
 
 const validCoordinates = (latitude: number, longitude: number): boolean =>
     Number.isFinite(latitude) &&
@@ -98,13 +98,13 @@ const distanceMeters = (from: Coordinates, to: Coordinates) => {
     const haversine =
         Math.sin(latitudeDelta / 2) ** 2 +
         Math.cos(fromLatitude) *
-            Math.cos(toLatitude) *
-            Math.sin(longitudeDelta / 2) ** 2;
+        Math.cos(toLatitude) *
+        Math.sin(longitudeDelta / 2) ** 2;
 
     return Math.round(
         earthRadiusMeters *
-            2 *
-            Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine)),
+        2 *
+        Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine)),
     );
 };
 
@@ -201,7 +201,7 @@ function CheckoutScreen() {
 
     return (
         <ShopLayout>
-            <Head title="Checkout - Aurea Syari" />
+            <Head title="Checkout - Shayda Modest" />
 
             <main className="mx-auto min-h-screen max-w-[1200px] px-4 py-8 md:px-8 md:py-12">
                 <div className="mb-8 flex items-center space-x-2 text-[10px] font-medium tracking-wide text-[#8A6B62] md:text-xs">
@@ -318,11 +318,11 @@ function CheckoutScreen() {
                                             {(!address.postal_code ||
                                                 !address.latitude ||
                                                 !address.longitude) && (
-                                                <p className="mt-2 text-[11px] font-semibold text-[#B24B4B]">
-                                                    Lengkapi kode pos dan
-                                                    koordinat di buku alamat.
-                                                </p>
-                                            )}
+                                                    <p className="mt-2 text-[11px] font-semibold text-[#B24B4B]">
+                                                        Lengkapi kode pos dan
+                                                        koordinat di buku alamat.
+                                                    </p>
+                                                )}
                                         </button>
                                     ))}
                                 </div>
@@ -527,22 +527,22 @@ function CheckoutScreen() {
                                                     <div className="mt-2 border-l border-[#C05D5D] pl-2">
                                                         <p className="text-[10px] leading-relaxed font-semibold text-[#B24B4B]">
                                                             {item.available_stock <=
-                                                            0
+                                                                0
                                                                 ? 'Stok habis.'
                                                                 : 'Stok tidak cukup.'}{' '}
                                                             Tidak bisa checkout.
                                                         </p>
                                                         {item.available_stock >
                                                             0 && (
-                                                            <p className="mt-0.5 text-[10px] font-medium text-[#9E4A45]">
-                                                                Stok tersedia
-                                                                hanya{' '}
-                                                                {
-                                                                    item.available_stock
-                                                                }
-                                                                .
-                                                            </p>
-                                                        )}
+                                                                <p className="mt-0.5 text-[10px] font-medium text-[#9E4A45]">
+                                                                    Stok tersedia
+                                                                    hanya{' '}
+                                                                    {
+                                                                        item.available_stock
+                                                                    }
+                                                                    .
+                                                                </p>
+                                                            )}
                                                     </div>
                                                 )}
                                             </div>
@@ -734,8 +734,8 @@ function CheckoutRouteMap({
                     {!storeCoordinates
                         ? 'Koordinat toko belum dikonfigurasi.'
                         : !destinationCoordinates
-                          ? 'Pilih alamat dengan koordinat untuk melihat rute.'
-                          : 'Memuat peta...'}
+                            ? 'Pilih alamat dengan koordinat untuk melihat rute.'
+                            : 'Memuat peta...'}
                 </div>
             )}
 

@@ -85,6 +85,7 @@ class CheckoutService
 
         $rates = $this->biteship->shippingRates([
             'postal_code' => $address->postal_code,
+            'biteship_area_id' => $address->biteship_area_id,
             'latitude' => $address->latitude,
             'longitude' => $address->longitude,
         ], $this->biteshipItems($items));
@@ -368,6 +369,9 @@ class CheckoutService
                     'price' => (float) $item->price_snapshot,
                     'quantity' => $item->quantity,
                     'weight' => max(1, (int) ($product?->weight ?? 1)) * $item->quantity,
+                    'length' => $product?->length,
+                    'width' => $product?->width,
+                    'height' => $product?->height,
                     'available_stock' => $availableStock,
                     'is_available' => $product?->status === 'published' && (bool) $variant?->is_active && $availableStock >= $item->quantity,
                     'subtotal' => (float) $item->price_snapshot * $item->quantity,
@@ -423,13 +427,17 @@ class CheckoutService
 
     private function biteshipItems(Collection $items): array
     {
-        return $items->map(fn (array $item): array => [
+        return $items->map(fn (array $item): array => array_filter([
             'name' => mb_substr($item['title'], 0, 100),
             'description' => $item['variant_sku'] ?? $item['sku'] ?? $item['title'],
             'value' => (int) round($item['price']),
             'quantity' => $item['quantity'],
             'weight' => max(1, (int) ceil($item['weight'] / max(1, (int) $item['quantity']))),
-        ])->values()->all();
+            'length' => $item['length'],
+            'width' => $item['width'],
+            'height' => $item['height'],
+            'category' => 'fashion',
+        ], fn ($value): bool => filled($value) || $value === 0))->values()->all();
     }
 
     private function validateSelectedShippingRate(User $user, int $addressId, string $rateId): void
@@ -474,6 +482,7 @@ class CheckoutService
         try {
             $freshRate = collect($this->biteship->shippingRates([
                 'postal_code' => $address->postal_code,
+                'biteship_area_id' => $address->biteship_area_id,
                 'latitude' => $address->latitude,
                 'longitude' => $address->longitude,
             ], $this->biteshipItems($this->cartItems($user))))

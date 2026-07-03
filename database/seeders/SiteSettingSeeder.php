@@ -40,6 +40,7 @@ class SiteSettingSeeder extends Seeder
             ['key' => 'shipper_phone',          'value' => '+62 812-3456-7890',                         'type' => 'string'],
             ['key' => 'shipping_couriers',      'value' => 'jne,jnt,sicepat,anteraja',                  'type' => 'string'],
             ['key' => 'store_postal_code',       'value' => '60111',                                    'type' => 'string'],
+            ['key' => 'origin_biteship_area_id', 'value' => 'IDNP11IDNC434IDND5442IDZ60111',             'type' => 'string'],
 
             // ─── Payment ─────────────────────────────────────────────────────────
             ['key' => 'payment_expiry_duration', 'value' => '1440',                                      'type' => 'integer'],

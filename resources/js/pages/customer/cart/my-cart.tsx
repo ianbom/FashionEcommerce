@@ -165,7 +165,7 @@ export default function MyCart({
 
     return (
         <ShopLayout>
-            <Head title="Keranjang Saya - Aurea Syari" />
+            <Head title="Keranjang Saya - Shayda Modest" />
 
             <main className="mx-auto min-h-screen max-w-[1200px] px-4 py-8 md:px-8 md:py-12">
                 <div className="mb-6 flex items-center space-x-2 text-[10px] font-medium tracking-wide text-[#8A6B62] md:mb-8 md:text-xs">
@@ -215,15 +215,15 @@ export default function MyCart({
                                         isUpdating || isRemoving;
                                     const productHref = item.product_slug
                                         ? detail.url({
-                                              query: {
-                                                  product: item.product_slug,
-                                              },
-                                          })
+                                            query: {
+                                                product: item.product_slug,
+                                            },
+                                        })
                                         : undefined;
                                     const canIncrease =
                                         item.is_available &&
                                         item.quantity <
-                                            Math.max(1, item.available_stock);
+                                        Math.max(1, item.available_stock);
 
                                     return (
                                         <div
@@ -244,8 +244,8 @@ export default function MyCart({
                                                             src={
                                                                 item.image ??
                                                                 fallbackImages[
-                                                                    index %
-                                                                        fallbackImages.length
+                                                                index %
+                                                                fallbackImages.length
                                                                 ]
                                                             }
                                                             alt={item.title}
@@ -261,8 +261,8 @@ export default function MyCart({
                                                             src={
                                                                 item.image ??
                                                                 fallbackImages[
-                                                                    index %
-                                                                        fallbackImages.length
+                                                                index %
+                                                                fallbackImages.length
                                                                 ]
                                                             }
                                                             alt={item.title}
@@ -375,13 +375,13 @@ export default function MyCart({
                                                                     updateQuantity(
                                                                         item,
                                                                         item.quantity -
-                                                                            1,
+                                                                        1,
                                                                     )
                                                                 }
                                                                 disabled={
                                                                     itemDisabled ||
                                                                     item.quantity <=
-                                                                        1
+                                                                    1
                                                                 }
                                                                 className="flex h-7 w-7 items-center justify-center rounded-full text-[#6B5E55] transition-colors hover:bg-white hover:text-black hover:shadow-sm disabled:bg-transparent disabled:opacity-40 disabled:shadow-none sm:h-8 sm:w-8"
                                                             >
@@ -401,7 +401,7 @@ export default function MyCart({
                                                                     updateQuantity(
                                                                         item,
                                                                         item.quantity +
-                                                                            1,
+                                                                        1,
                                                                     )
                                                                 }
                                                                 disabled={
@@ -453,19 +453,19 @@ export default function MyCart({
                                                             </p>
                                                             {(item.color ||
                                                                 item.size) && (
-                                                                <p className="mt-1 text-[10px] text-[#A1857B]">
-                                                                    {[
-                                                                        item.color,
-                                                                        item.size,
-                                                                    ]
-                                                                        .filter(
-                                                                            Boolean,
-                                                                        )
-                                                                        .join(
-                                                                            ' / ',
-                                                                        )}
-                                                                </p>
-                                                            )}
+                                                                    <p className="mt-1 text-[10px] text-[#A1857B]">
+                                                                        {[
+                                                                            item.color,
+                                                                            item.size,
+                                                                        ]
+                                                                            .filter(
+                                                                                Boolean,
+                                                                            )
+                                                                            .join(
+                                                                                ' / ',
+                                                                            )}
+                                                                    </p>
+                                                                )}
                                                             {!item.is_available && (
                                                                 <p className="mt-1 text-[10px] font-medium text-[#B24B4B]">
                                                                     Stok tidak
@@ -629,7 +629,7 @@ export default function MyCart({
                                             src={
                                                 product.image ??
                                                 fallbackImages[
-                                                    idx % fallbackImages.length
+                                                idx % fallbackImages.length
                                                 ]
                                             }
                                             alt={product.title}

@@ -40,6 +40,7 @@ class SettingManagementService
                 ['key' => 'origin_city', 'label' => 'Origin City', 'type' => 'string'],
                 ['key' => 'origin_district', 'label' => 'Origin District', 'type' => 'string'],
                 ['key' => 'store_postal_code', 'label' => 'Store Postal Code', 'type' => 'string'],
+                ['key' => 'origin_biteship_area_id', 'label' => 'Origin Biteship Area ID', 'type' => 'string'],
                 ['key' => 'store_latitude', 'label' => 'Store Latitude', 'type' => 'string', 'input' => 'number'],
                 ['key' => 'store_longitude', 'label' => 'Store Longitude', 'type' => 'string', 'input' => 'number'],
                 ['key' => 'shipper_name', 'label' => 'Shipper Name', 'type' => 'string'],

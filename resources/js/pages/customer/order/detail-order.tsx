@@ -90,6 +90,7 @@ type Shipment = {
     delivered_at: string | null;
     cancelled_at: string | null;
     raw_order_response: unknown;
+    tracking_url: string | null;
 };
 
 type Tracking = {
@@ -137,7 +138,12 @@ type Order = {
     trackings: Tracking[];
 };
 
-type Props = { order: Order };
+type Props = {
+    order: Order;
+    support: {
+        whatsapp_url: string | null;
+    };
+};
 
 const FALLBACK_IMAGE = '/img/hasan-almasi-_X2UAmIcpko-unsplash.webp';
 
@@ -404,10 +410,20 @@ function buildProgress(order: Order) {
 }
 
 function getBiteshipTrackingUrl(shipment: Shipment | null): string | null {
+    if (shipment?.tracking_url) {
+        return shipment.tracking_url;
+    }
+
     const raw = shipment?.raw_order_response;
 
     if (!raw || typeof raw !== 'object') {
         return null;
+    }
+
+    const directLink = (raw as Record<string, unknown>).courier_link;
+
+    if (typeof directLink === 'string' && directLink.length > 0) {
+        return directLink;
     }
 
     const courier = (raw as Record<string, unknown>).courier;
@@ -437,7 +453,7 @@ function getMidtransReceiptUrl(payment: Payment | null): string | null {
     return null;
 }
 
-export default function DetailOrder({ order }: Props) {
+export default function DetailOrder({ order, support }: Props) {
     const [isCancelling, setIsCancelling] = useState(false);
     const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
     const progressSteps = buildProgress(order);
@@ -581,7 +597,8 @@ export default function DetailOrder({ order }: Props) {
                                 label={canPay ? 'Bayar Sekarang' : 'Bukti Pembayaran'}
                             />
                             <ActionButton
-                                href="/notifications"
+                                href={support.whatsapp_url}
+                                external
                                 icon={Headphones}
                                 label="Dukungan"
                             />

@@ -48,7 +48,7 @@ return [
         'origin_address' => env('BITESHIP_ORIGIN_ADDRESS'),
         'origin_note' => env('BITESHIP_ORIGIN_NOTE'),
         'origin_postal_code' => env('BITESHIP_ORIGIN_POSTAL_CODE'),
-        'origin_area_id' => env('BITESHIP_ORIGIN_AREA_ID'),
+        'origin_area_id' => env('BITESHIP_ORIGIN_AREA_ID', 'IDNP11IDNC434IDND5442IDZ60111'),
     ],
 
     'midtrans' => [

@@ -2,25 +2,26 @@
 
 namespace App\Services\Admin;
 
-use App\Models\Order;
-use App\Models\Shipment;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\ShippingStatus;
+use App\Models\Order;
+use App\Models\Shipment;
 use App\Services\Integrations\BiteshipService;
 use App\Services\Notifications\NotificationService;
 use App\Services\Settings\SiteSettingService;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class ShipmentManagementService
 {
-    use StoresUploadedFiles;
     use ResolvesAdminPagination;
+    use StoresUploadedFiles;
 
     public function __construct(
         private readonly NotificationService $notifications,
@@ -129,15 +130,31 @@ class ShipmentManagementService
             }
 
             $payload = $this->shipmentPayload($payload, $shipment);
-            $biteshipPayload = $this->biteshipOrderPayload($order, $payload);
-            $this->validateBiteshipPayload($biteshipPayload);
 
-            $shipment->update(['shipping_status' => ShippingStatus::Creating->value, 'creating_at' => now(), 'failed_reason' => null]);
-
-            return [$order, $shipment, $payload, $biteshipPayload];
+            return [$order->id, $shipment->id, $payload];
         });
 
-        [$order, $shipment, $payload, $biteshipPayload] = $prepared;
+        [$orderId, $shipmentId, $payload] = $prepared;
+
+        $order = Order::query()->with(['address', 'items'])->findOrFail($orderId);
+        $shipment = Shipment::query()->findOrFail($shipmentId);
+        $this->validateBiteshipPayload($this->biteshipOrderPayload($order, $payload));
+        $payload = $this->freshRatePayload($order, $shipment, $payload);
+        $biteshipPayload = $this->biteshipOrderPayload($order, $payload);
+        $this->validateBiteshipPayload($biteshipPayload);
+
+        DB::transaction(function () use ($shipment, $payload): void {
+            Shipment::query()->whereKey($shipment->id)->lockForUpdate()->update([
+                'courier_company' => $payload['courier_company'],
+                'courier_type' => $payload['courier_type'],
+                'courier_service_name' => $payload['courier_service_name'] ?? null,
+                'estimated_delivery' => $payload['estimated_delivery'] ?? null,
+                'raw_rate_response' => $payload['raw_rate_response'] ?? $shipment->raw_rate_response,
+                'shipping_status' => ShippingStatus::Creating->value,
+                'creating_at' => now(),
+                'failed_reason' => null,
+            ]);
+        });
 
         try {
             $biteshipOrder = $this->biteship->createOrder($biteshipPayload);
@@ -350,6 +367,8 @@ class ShipmentManagementService
         $originAreaId = $this->validBiteshipAreaId($this->setting('origin_biteship_area_id', config('services.biteship.origin_area_id')));
         $destinationAreaId = $this->validBiteshipAreaId($order->address?->biteship_area_id);
         $destinationNote = data_get($order->address, 'address_note') ?: $order->address?->note;
+        $originCoordinate = $this->coordinatePair($this->setting('store_latitude'), $this->setting('store_longitude'));
+        $destinationCoordinate = $this->coordinatePair($order->address?->latitude, $order->address?->longitude);
 
         return array_filter([
             'shipper_contact_name' => $this->setting('shipper_name', config('services.biteship.shipper_name')) ?: $this->settings->get('store_name'),
@@ -363,8 +382,8 @@ class ShipmentManagementService
             'origin_note' => $this->setting('origin_note', config('services.biteship.origin_note')),
             'origin_postal_code' => $originPostalCode ? (int) $originPostalCode : null,
             'origin_area_id' => $originAreaId,
-            'origin_latitude' => $this->coordinate($this->setting('store_latitude')),
-            'origin_longitude' => $this->coordinate($this->setting('store_longitude')),
+            'origin_coordinate' => $originCoordinate,
+            'origin_collection_method' => $payload['origin_collection_method'] ?? 'pickup',
             'destination_contact_name' => $order->address?->recipient_name ?: $order->customer_name,
             'destination_contact_phone' => $order->address?->recipient_phone ?: $order->customer_phone,
             'destination_contact_email' => $order->customer_email,
@@ -372,8 +391,7 @@ class ShipmentManagementService
             'destination_note' => $destinationNote,
             'destination_postal_code' => $order->address?->postal_code ? (int) $order->address->postal_code : null,
             'destination_area_id' => $destinationAreaId,
-            'destination_latitude' => $this->coordinate($order->address?->latitude),
-            'destination_longitude' => $this->coordinate($order->address?->longitude),
+            'destination_coordinate' => $destinationCoordinate,
             'courier_company' => $payload['courier_company'],
             'courier_type' => $payload['courier_type'],
             'courier_insurance' => 0,
@@ -388,7 +406,7 @@ class ShipmentManagementService
                 'sku' => $item->variant_sku ?: $item->product_sku,
                 'value' => (int) round((float) $item->price),
                 'quantity' => $item->quantity,
-                'weight' => max(1, (int) $item->weight),
+                'weight' => max(1, (int) ceil((float) $item->weight / max(1, (int) $item->quantity))),
                 'height' => $item->height,
                 'length' => $item->length,
                 'width' => $item->width,
@@ -406,6 +424,16 @@ class ShipmentManagementService
         return is_numeric($value) ? (float) $value : null;
     }
 
+    private function coordinatePair(mixed $latitude, mixed $longitude): ?array
+    {
+        $latitude = $this->coordinate($latitude);
+        $longitude = $this->coordinate($longitude);
+
+        return $latitude !== null && $longitude !== null
+            ? ['latitude' => $latitude, 'longitude' => $longitude]
+            : null;
+    }
+
     private function validBiteshipAreaId(?string $areaId): ?string
     {
         $areaId = trim((string) $areaId);
@@ -419,9 +447,91 @@ class ShipmentManagementService
             ...$payload,
             'courier_company' => Str::lower($payload['courier_company'] ?: $shipment->courier_company),
             'courier_type' => Str::lower($payload['courier_type'] ?: $shipment->courier_type),
-            'courier_service_name' => $payload['courier_service_name'] ?: $shipment->courier_service_name,
-            'estimated_delivery' => $payload['estimated_delivery'] ?: $shipment->estimated_delivery,
+            'courier_service_name' => ($payload['courier_service_name'] ?? null) ?: $shipment->courier_service_name,
+            'estimated_delivery' => ($payload['estimated_delivery'] ?? null) ?: $shipment->estimated_delivery,
+            'origin_collection_method' => Arr::first((array) Arr::get($shipment->raw_rate_response, 'available_collection_method')) ?: 'pickup',
         ];
+    }
+
+    private function freshRatePayload(Order $order, Shipment $shipment, array $payload): array
+    {
+        try {
+            $rate = collect($this->biteship->shippingRates([
+                'postal_code' => $order->address?->postal_code,
+                'biteship_area_id' => $order->address?->biteship_area_id,
+                'latitude' => $order->address?->latitude,
+                'longitude' => $order->address?->longitude,
+            ], $this->rateItems($order)))
+                ->first(fn (array $rate): bool => $this->rateMatchesOrder($rate, $order, $payload));
+        } catch (ValidationException $exception) {
+            $this->failShipment($shipment, 'Gagal memvalidasi ongkir. Pilih ulang ongkir atau gunakan kurir lain.');
+
+            throw $exception;
+        }
+
+        if (! $rate) {
+            $message = Str::lower((string) $payload['courier_company']) === 'paxel'
+                ? 'Paket tidak sesuai dengan layanan Paxel yang dipilih. Pilih ulang ongkir.'
+                : 'Kurir tidak tersedia untuk alamat ini. Pilih ulang ongkir atau gunakan kurir lain.';
+            $this->failShipment($shipment, $message);
+
+            throw ValidationException::withMessages(['shipment' => $message]);
+        }
+
+        $raw = $rate['raw'] ?? $rate;
+
+        return [
+            ...$payload,
+            'courier_company' => Str::lower((string) $rate['courier_company']),
+            'courier_type' => Str::lower((string) $rate['courier_type']),
+            'courier_service_name' => $rate['courier_service_name'] ?? $payload['courier_service_name'] ?? null,
+            'estimated_delivery' => $rate['duration'] ?? $payload['estimated_delivery'] ?? null,
+            'origin_collection_method' => Arr::first((array) Arr::get($raw, 'available_collection_method')) ?: ($payload['origin_collection_method'] ?? 'pickup'),
+            'raw_rate_response' => $raw,
+        ];
+    }
+
+    private function rateMatchesOrder(array $rate, Order $order, array $payload): bool
+    {
+        if (Str::lower((string) ($rate['courier_company'] ?? '')) !== Str::lower((string) $payload['courier_company'])) {
+            return false;
+        }
+
+        if (Str::lower((string) ($rate['courier_type'] ?? '')) !== Str::lower((string) $payload['courier_type'])) {
+            return false;
+        }
+
+        if (filled($payload['courier_service_name'] ?? null) && Str::lower((string) ($rate['courier_service_name'] ?? '')) !== Str::lower((string) $payload['courier_service_name'])) {
+            return false;
+        }
+
+        return (int) round((float) ($rate['price'] ?? 0)) === (int) round((float) $order->shipping_cost);
+    }
+
+    private function rateItems(Order $order): array
+    {
+        return $order->items->map(fn ($item): array => array_filter([
+            'name' => mb_substr($item->product_name, 0, 100),
+            'description' => $item->variant_sku ?: $item->product_sku,
+            'value' => (int) round((float) $item->price),
+            'quantity' => $item->quantity,
+            'weight' => max(1, (int) ceil((float) $item->weight / max(1, (int) $item->quantity))),
+            'length' => $item->length,
+            'width' => $item->width,
+            'height' => $item->height,
+            'category' => 'fashion',
+        ], fn ($value): bool => filled($value) || $value === 0))->values()->all();
+    }
+
+    private function failShipment(Shipment $shipment, string $message): void
+    {
+        DB::transaction(function () use ($shipment, $message): void {
+            Shipment::query()->whereKey($shipment->id)->lockForUpdate()->update([
+                'shipping_status' => ShippingStatus::Failed->value,
+                'failed_reason' => $message,
+                'last_synced_at' => now(),
+            ]);
+        });
     }
 
     private function validateBiteshipPayload(array $payload): void
@@ -445,12 +555,8 @@ class ShipmentManagementService
             ]);
         }
 
-        if (blank(Arr::get($payload, 'origin_postal_code')) && blank(Arr::get($payload, 'origin_area_id'))) {
-            throw ValidationException::withMessages(['shipment' => 'Origin postal code atau Biteship area ID wajib diisi.']);
-        }
-
-        if (blank(Arr::get($payload, 'destination_postal_code')) && blank(Arr::get($payload, 'destination_area_id'))) {
-            throw ValidationException::withMessages(['shipment' => 'Destination postal code atau Biteship area ID wajib diisi.']);
+        if (blank(Arr::get($payload, 'origin_area_id')) || blank(Arr::get($payload, 'destination_area_id')) || blank(Arr::get($payload, 'origin_coordinate')) || blank(Arr::get($payload, 'destination_coordinate'))) {
+            throw ValidationException::withMessages(['shipment' => 'Area ID dan koordinat origin/destination wajib untuk membuat pengiriman Biteship.']);
         }
     }
 
@@ -470,7 +576,7 @@ class ShipmentManagementService
         };
     }
 
-    private function providerHappenedAt(array $payload): ?\Carbon\CarbonImmutable
+    private function providerHappenedAt(array $payload): ?CarbonImmutable
     {
         $value = Arr::get($payload, 'updated_at')
             ?? Arr::get($payload, 'created_at')
@@ -484,7 +590,7 @@ class ShipmentManagementService
         }
 
         try {
-            return \Carbon\CarbonImmutable::parse($value);
+            return CarbonImmutable::parse($value);
         } catch (\Throwable) {
             return null;
         }

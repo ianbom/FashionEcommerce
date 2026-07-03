@@ -132,7 +132,8 @@ const orderStatusActions = [
     {
         status: 'ready_to_ship',
         label: 'Ready to ship',
-        description: 'Barang sudah siap diserahkan ke kurir atau dibuat shipment.',
+        description:
+            'Barang sudah siap diserahkan ke kurir atau dibuat shipment.',
     },
     {
         status: 'completed',
@@ -140,6 +141,17 @@ const orderStatusActions = [
         description: 'Order selesai setelah barang diterima customer.',
     },
 ] as const;
+
+const orderTabs = [
+    { id: 'overview', label: 'Overview', icon: FileText },
+    { id: 'items', label: 'Items', icon: Box },
+    { id: 'customer', label: 'Customer', icon: User },
+    { id: 'payment', label: 'Payment', icon: CreditCard },
+    { id: 'fulfillment', label: 'Fulfillment', icon: Truck },
+    { id: 'technical', label: 'Technical', icon: Code },
+] as const;
+
+type OrderTab = (typeof orderTabs)[number]['id'];
 
 function Card({
     children,
@@ -361,6 +373,7 @@ function getShipmentLabelUrl(shipment: Order['shipment']): string | null {
 export default function OrderShow({ order }: Props) {
     const [pendingStatusChange, setPendingStatusChange] =
         useState<PendingStatusChange>(null);
+    const [activeTab, setActiveTab] = useState<OrderTab>('overview');
     const shipmentForm = useForm<{
         courier_company: string;
         courier_type: string;
@@ -455,6 +468,7 @@ export default function OrderShow({ order }: Props) {
     );
     const customerPhone = order.customer_phone?.replace(/\D/g, '');
     const shipmentLabelUrl = getShipmentLabelUrl(order.shipment);
+    const hasSidebar = ['overview', 'fulfillment'].includes(activeTab);
 
     return (
         <>
@@ -484,7 +498,10 @@ export default function OrderShow({ order }: Props) {
                             <ActionLink href={`mailto:${order.customer_email}`}>
                                 <MessageCircle size={14} /> Contact customer
                             </ActionLink>
-                            <label className="sr-only" htmlFor="order-status-action">
+                            <label
+                                className="sr-only"
+                                htmlFor="order-status-action"
+                            >
                                 Change order status
                             </label>
                             <select
@@ -510,7 +527,7 @@ export default function OrderShow({ order }: Props) {
                                     >
                                         {action.label}
                                     </option>
-                                    ))}
+                                ))}
                             </select>
                             {order.shipment ? (
                                 <ActionLink
@@ -563,119 +580,262 @@ export default function OrderShow({ order }: Props) {
                         </Card>
                     </section>
 
-                    <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+                    <nav
+                        aria-label="Order detail sections"
+                        className="overflow-x-auto rounded-xl border border-zinc-200 bg-white p-1 shadow-sm"
+                    >
+                        <div className="flex min-w-max gap-1">
+                            {orderTabs.map((tab) => {
+                                const Icon = tab.icon;
+                                const isActive = activeTab === tab.id;
+
+                                return (
+                                    <button
+                                        key={tab.id}
+                                        type="button"
+                                        role="tab"
+                                        aria-selected={isActive}
+                                        onClick={() => setActiveTab(tab.id)}
+                                        className={`inline-flex h-10 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium transition-colors focus:ring-2 focus:ring-zinc-900/20 focus:outline-none ${
+                                            isActive
+                                                ? 'bg-zinc-900 text-white shadow-sm'
+                                                : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900'
+                                        }`}
+                                    >
+                                        <Icon size={15} />
+                                        {tab.label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </nav>
+
+                    <div
+                        className={
+                            hasSidebar
+                                ? 'grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_360px]'
+                                : 'block'
+                        }
+                    >
                         <div className="flex min-w-0 flex-col gap-5">
-                            <section className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-                                <Card>
-                                    <CardHeader
-                                        icon={FileText}
-                                        title="Order overview"
-                                    />
-                                    <div className="p-5">
-                                        <DetailList>
-                                            <DetailRow
-                                                label="Order number"
-                                                value={
-                                                    <span className="font-mono break-all">
-                                                        {order.order_number}
-                                                    </span>
-                                                }
-                                            />
-                                            <DetailRow
-                                                label="Customer"
-                                                value={order.customer_name}
-                                            />
-                                            <DetailRow
-                                                label="Email"
-                                                value={
-                                                    <a
-                                                        className="break-all text-[#3E3222] hover:underline"
-                                                        href={`mailto:${order.customer_email}`}
-                                                    >
-                                                        {order.customer_email}
-                                                    </a>
-                                                }
-                                            />
-                                            <DetailRow
-                                                label="Phone"
-                                                value={
-                                                    order.customer_phone || '—'
-                                                }
-                                            />
-                                            {order.payment?.processed_at && (
-                                                <DetailRow
-                                                    label="Paid at"
-                                                    value={formatDate(
-                                                        String(
-                                                            order.payment
-                                                                .processed_at,
-                                                        ),
-                                                    )}
-                                                />
-                                            )}
-                                        </DetailList>
-                                        <div className="mt-5 rounded-lg border border-zinc-200 bg-zinc-50 p-4">
-                                            <p className="mb-2 flex items-center gap-2 text-xs font-semibold text-zinc-700">
-                                                <StickyNote size={14} />{' '}
-                                                Customer note
-                                            </p>
-                                            <p className="text-sm break-words whitespace-pre-wrap text-zinc-600">
-                                                {order.notes ||
-                                                    '-'}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </Card>
-
-                                <Card>
-                                    <CardHeader
-                                        icon={CheckCircle2}
-                                        title="Status summary"
-                                    />
-                                    <div className="space-y-3 p-5">
-                                        <div className="flex items-center justify-between gap-3 text-sm">
-                                            <span className="flex items-center gap-2 text-zinc-600">
-                                                <CreditCard size={14} /> Payment
-                                            </span>
-                                            {getStatusBadge(
-                                                order.payment_status,
-                                            )}
-                                        </div>
-                                        <div className="flex items-center justify-between gap-3 text-sm">
-                                            <span className="flex items-center gap-2 text-zinc-600">
-                                                <Box size={14} /> Order
-                                            </span>
-                                            {getStatusBadge(order.order_status)}
-                                        </div>
-                                        <div className="flex items-center justify-between gap-3 text-sm">
-                                            <span className="flex items-center gap-2 text-zinc-600">
-                                                <Truck size={14} /> Shipping
-                                            </span>
-                                            {getStatusBadge(
-                                                order.shipping_status,
-                                            )}
-                                        </div>
-                                        <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-xs text-zinc-500">
-                                            No return/refund:{' '}
-                                            <span className="font-semibold text-zinc-900">
-                                                {order.no_return_refund_agreed
-                                                    ? 'YES'
-                                                    : 'NO'}
-                                            </span>
-                                            {order.no_return_refund_agreed_at && (
-                                                <span className="mt-1 block">
-                                                    Agreed at{' '}
-                                                    {formatDate(
-                                                        order.no_return_refund_agreed_at,
-                                                    )}
+                            {activeTab === 'overview' && (
+                                <>
+                                    <Card>
+                                        <CardHeader
+                                            icon={PackagePlus}
+                                            title="Quick actions"
+                                        />
+                                        <div className="divide-y divide-zinc-100 p-2 text-sm">
+                                            <button
+                                                type="button"
+                                                onClick={() => window.print()}
+                                                className="flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left font-medium text-zinc-700 transition hover:bg-zinc-50"
+                                            >
+                                                <span className="flex items-center gap-2">
+                                                    <Printer
+                                                        size={15}
+                                                        className="text-zinc-400"
+                                                    />{' '}
+                                                    Print invoice
                                                 </span>
+                                                <ChevronRight
+                                                    size={15}
+                                                    className="text-zinc-300"
+                                                />
+                                            </button>
+                                            <a
+                                                href={`mailto:${order.customer_email}`}
+                                                className="flex items-center justify-between gap-3 rounded-md px-3 py-2 font-medium text-zinc-700 transition hover:bg-zinc-50"
+                                            >
+                                                <span className="flex items-center gap-2">
+                                                    <MessageCircle
+                                                        size={15}
+                                                        className="text-zinc-400"
+                                                    />{' '}
+                                                    Contact customer
+                                                </span>
+                                                <ChevronRight
+                                                    size={15}
+                                                    className="text-zinc-300"
+                                                />
+                                            </a>
+                                            {order.shipment && (
+                                                <Link
+                                                    href={`/admin/shipments/${order.shipment.id}`}
+                                                    className="flex items-center justify-between gap-3 rounded-md px-3 py-2 font-medium text-zinc-700 transition hover:bg-zinc-50"
+                                                >
+                                                    <span className="flex items-center gap-2">
+                                                        <ExternalLink
+                                                            size={15}
+                                                            className="text-zinc-400"
+                                                        />{' '}
+                                                        View shipment
+                                                    </span>
+                                                    <ChevronRight
+                                                        size={15}
+                                                        className="text-zinc-300"
+                                                    />
+                                                </Link>
                                             )}
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    requestStatusChange(
+                                                        'completed',
+                                                    )
+                                                }
+                                                className="flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left font-medium text-emerald-700 transition hover:bg-emerald-50"
+                                            >
+                                                <span className="flex items-center gap-2">
+                                                    <CheckCircle2 size={15} />{' '}
+                                                    Mark as completed
+                                                </span>
+                                                <ChevronRight size={15} />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    requestStatusChange(
+                                                        'cancelled',
+                                                    )
+                                                }
+                                                className="flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left font-medium text-rose-700 transition hover:bg-rose-50"
+                                            >
+                                                <span className="flex items-center gap-2">
+                                                    <XCircle size={15} /> Cancel
+                                                    order
+                                                </span>
+                                                <ChevronRight size={15} />
+                                            </button>
                                         </div>
-                                    </div>
-                                </Card>
-                            </section>
+                                    </Card>
 
-                            {!order.shipment &&
+                                    <section className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+                                        <Card>
+                                            <CardHeader
+                                                icon={FileText}
+                                                title="Order overview"
+                                            />
+                                            <div className="p-5">
+                                                <DetailList>
+                                                    <DetailRow
+                                                        label="Order number"
+                                                        value={
+                                                            <span className="font-mono break-all">
+                                                                {
+                                                                    order.order_number
+                                                                }
+                                                            </span>
+                                                        }
+                                                    />
+                                                    <DetailRow
+                                                        label="Customer"
+                                                        value={
+                                                            order.customer_name
+                                                        }
+                                                    />
+                                                    <DetailRow
+                                                        label="Email"
+                                                        value={
+                                                            <a
+                                                                className="break-all text-[#3E3222] hover:underline"
+                                                                href={`mailto:${order.customer_email}`}
+                                                            >
+                                                                {
+                                                                    order.customer_email
+                                                                }
+                                                            </a>
+                                                        }
+                                                    />
+                                                    <DetailRow
+                                                        label="Phone"
+                                                        value={
+                                                            order.customer_phone ||
+                                                            '—'
+                                                        }
+                                                    />
+                                                    {order.payment
+                                                        ?.processed_at && (
+                                                        <DetailRow
+                                                            label="Paid at"
+                                                            value={formatDate(
+                                                                String(
+                                                                    order
+                                                                        .payment
+                                                                        .processed_at,
+                                                                ),
+                                                            )}
+                                                        />
+                                                    )}
+                                                </DetailList>
+                                                <div className="mt-5 rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+                                                    <p className="mb-2 flex items-center gap-2 text-xs font-semibold text-zinc-700">
+                                                        <StickyNote size={14} />{' '}
+                                                        Customer note
+                                                    </p>
+                                                    <p className="text-sm break-words whitespace-pre-wrap text-zinc-600">
+                                                        {order.notes || '-'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </Card>
+
+                                        <Card>
+                                            <CardHeader
+                                                icon={CheckCircle2}
+                                                title="Status summary"
+                                            />
+                                            <div className="space-y-3 p-5">
+                                                <div className="flex items-center justify-between gap-3 text-sm">
+                                                    <span className="flex items-center gap-2 text-zinc-600">
+                                                        <CreditCard size={14} />{' '}
+                                                        Payment
+                                                    </span>
+                                                    {getStatusBadge(
+                                                        order.payment_status,
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center justify-between gap-3 text-sm">
+                                                    <span className="flex items-center gap-2 text-zinc-600">
+                                                        <Box size={14} /> Order
+                                                    </span>
+                                                    {getStatusBadge(
+                                                        order.order_status,
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center justify-between gap-3 text-sm">
+                                                    <span className="flex items-center gap-2 text-zinc-600">
+                                                        <Truck size={14} />{' '}
+                                                        Shipping
+                                                    </span>
+                                                    {getStatusBadge(
+                                                        order.shipping_status,
+                                                    )}
+                                                </div>
+                                                <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-xs text-zinc-500">
+                                                    No return/refund:{' '}
+                                                    <span className="font-semibold text-zinc-900">
+                                                        {order.no_return_refund_agreed
+                                                            ? 'YES'
+                                                            : 'NO'}
+                                                    </span>
+                                                    {order.no_return_refund_agreed_at && (
+                                                        <span className="mt-1 block">
+                                                            Agreed at{' '}
+                                                            {formatDate(
+                                                                order.no_return_refund_agreed_at,
+                                                            )}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </Card>
+                                    </section>
+                                </>
+                            )}
+
+                            {activeTab === 'fulfillment' &&
+                                !order.shipment &&
                                 order.payment_status === 'paid' && (
                                     <Card>
                                         <CardHeader
@@ -803,637 +963,598 @@ export default function OrderShow({ order }: Props) {
                                     </Card>
                                 )}
 
-                            <Card className="overflow-hidden">
-                                <CardHeader
-                                    icon={Box}
-                                    title="Ordered items"
-                                    description={`${totalItems} item type, ${totalQuantity} total quantity`}
-                                />
-                                <div className="overflow-x-auto">
-                                    <table className="w-full min-w-[860px] text-left text-sm">
-                                        <thead className="border-b border-zinc-200 bg-zinc-50 text-xs text-zinc-500">
-                                            <tr>
-                                                <th className="px-5 py-3 font-medium">
-                                                    Product
-                                                </th>
-                                                <th className="px-4 py-3 font-medium">
-                                                    Product SKU
-                                                </th>
-                                                <th className="px-4 py-3 font-medium">
-                                                    Variant
-                                                </th>
-                                                <th className="px-4 py-3 font-medium">
-                                                    Color
-                                                </th>
-                                                <th className="px-4 py-3 font-medium">
-                                                    Size
-                                                </th>
-                                                <th className="px-4 py-3 text-right font-medium">
-                                                    Unit price
-                                                </th>
-                                                <th className="px-4 py-3 text-center font-medium">
-                                                    Qty
-                                                </th>
-                                                <th className="px-5 py-3 text-right font-medium">
-                                                    Subtotal
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-zinc-100">
-                                            {order.items.map((item) => (
-                                                <tr
-                                                    key={item.id}
-                                                    className="align-top hover:bg-zinc-50"
-                                                >
-                                                    <td className="px-5 py-4">
-                                                        <div className="flex min-w-0 gap-3">
-                                                            <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50">
-                                                                {item.product_image_url ? (
-                                                                    <img
-                                                                        src={
-                                                                            item.product_image_url
-                                                                        }
-                                                                        className="h-full w-full object-cover"
-                                                                        alt={
+                            {activeTab === 'items' && (
+                                <Card className="overflow-hidden">
+                                    <CardHeader
+                                        icon={Box}
+                                        title="Ordered items"
+                                        description={`${totalItems} item type, ${totalQuantity} total quantity`}
+                                    />
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full min-w-[860px] text-left text-sm">
+                                            <thead className="border-b border-zinc-200 bg-zinc-50 text-xs text-zinc-500">
+                                                <tr>
+                                                    <th className="px-5 py-3 font-medium">
+                                                        Product
+                                                    </th>
+                                                    <th className="px-4 py-3 font-medium">
+                                                        Product SKU
+                                                    </th>
+                                                    <th className="px-4 py-3 font-medium">
+                                                        Variant
+                                                    </th>
+                                                    <th className="px-4 py-3 font-medium">
+                                                        Color
+                                                    </th>
+                                                    <th className="px-4 py-3 font-medium">
+                                                        Size
+                                                    </th>
+                                                    <th className="px-4 py-3 text-right font-medium">
+                                                        Unit price
+                                                    </th>
+                                                    <th className="px-4 py-3 text-center font-medium">
+                                                        Qty
+                                                    </th>
+                                                    <th className="px-5 py-3 text-right font-medium">
+                                                        Subtotal
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-zinc-100">
+                                                {order.items.map((item) => (
+                                                    <tr
+                                                        key={item.id}
+                                                        className="align-top hover:bg-zinc-50"
+                                                    >
+                                                        <td className="px-5 py-4">
+                                                            <div className="flex min-w-0 gap-3">
+                                                                <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50">
+                                                                    {item.product_image_url ? (
+                                                                        <img
+                                                                            src={
+                                                                                item.product_image_url
+                                                                            }
+                                                                            className="h-full w-full object-cover"
+                                                                            alt={
+                                                                                item.product_name
+                                                                            }
+                                                                        />
+                                                                    ) : (
+                                                                        <Box
+                                                                            size={
+                                                                                16
+                                                                            }
+                                                                            className="text-zinc-400"
+                                                                        />
+                                                                    )}
+                                                                </div>
+                                                                <div className="min-w-0">
+                                                                    <p className="max-w-[320px] font-medium break-words text-zinc-900">
+                                                                        {
                                                                             item.product_name
                                                                         }
-                                                                    />
-                                                                ) : (
-                                                                    <Box
-                                                                        size={
-                                                                            16
-                                                                        }
-                                                                        className="text-zinc-400"
-                                                                    />
-                                                                )}
-                                                            </div>
-                                                            <div className="min-w-0">
-                                                                <p className="max-w-[320px] font-medium break-words text-zinc-900">
-                                                                    {
-                                                                        item.product_name
-                                                                    }
-                                                                </p>
-                                                                {item.dimensions && (
-                                                                    <p className="mt-1 text-xs text-zinc-500">
-                                                                        {
-                                                                            item.dimensions
-                                                                        }
                                                                     </p>
-                                                                )}
+                                                                    {item.dimensions && (
+                                                                        <p className="mt-1 text-xs text-zinc-500">
+                                                                            {
+                                                                                item.dimensions
+                                                                            }
+                                                                        </p>
+                                                                    )}
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-4 py-4 font-mono text-xs break-all text-zinc-600">
-                                                        {item.product_sku ??
-                                                            '—'}
-                                                    </td>
-                                                    <td className="px-4 py-4 font-mono text-xs break-all text-zinc-600">
-                                                        {item.product_id ? (
-                                                            <Link
-                                                                href={`/admin/products/${item.product_id}`}
-                                                                className="inline-flex items-center gap-1 rounded-md text-zinc-700 underline-offset-4 transition hover:text-zinc-950 hover:underline"
-                                                            >
-                                                                {item.variant_sku ??
-                                                                    'View product'}
-                                                                <ExternalLink
-                                                                    size={12}
-                                                                    className="shrink-0"
-                                                                />
-                                                            </Link>
-                                                        ) : (
-                                                            (item.variant_sku ??
+                                                        </td>
+                                                        <td className="px-4 py-4 font-mono text-xs break-all text-zinc-600">
+                                                            {item.product_sku ??
+                                                                '—'}
+                                                        </td>
+                                                        <td className="px-4 py-4 font-mono text-xs break-all text-zinc-600">
+                                                            {item.product_id ? (
+                                                                <Link
+                                                                    href={`/admin/products/${item.product_id}`}
+                                                                    className="inline-flex items-center gap-1 rounded-md text-zinc-700 underline-offset-4 transition hover:text-zinc-950 hover:underline"
+                                                                >
+                                                                    {item.variant_sku ??
+                                                                        'View product'}
+                                                                    <ExternalLink
+                                                                        size={
+                                                                            12
+                                                                        }
+                                                                        className="shrink-0"
+                                                                    />
+                                                                </Link>
+                                                            ) : (
+                                                                (item.variant_sku ??
                                                                 '—')
-                                                        )}
-                                                    </td>
-                                                    <td className="px-4 py-4 break-words text-zinc-600">
-                                                        {item.color_name ?? '—'}
-                                                    </td>
-                                                    <td className="px-4 py-4 text-zinc-600">
-                                                        {item.size ?? '—'}
-                                                    </td>
-                                                    <td className="px-4 py-4 text-right text-zinc-900 tabular-nums">
-                                                        {formatPrice(
-                                                            item.price,
-                                                        )}
-                                                    </td>
-                                                    <td className="px-4 py-4 text-center text-zinc-900 tabular-nums">
-                                                        {item.quantity}
-                                                    </td>
-                                                    <td className="px-5 py-4 text-right font-medium text-zinc-900 tabular-nums">
-                                                        {formatPrice(
-                                                            item.subtotal,
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                            {order.items.length === 0 && (
-                                                <tr>
-                                                    <td
-                                                        colSpan={8}
-                                                        className="px-5 py-8 text-center text-sm text-zinc-500"
-                                                    >
-                                                        No items found in this
-                                                        order.
-                                                    </td>
-                                                </tr>
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </Card>
-
-                            <section className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-                                <Card>
-                                    <CardHeader
-                                        icon={User}
-                                        title="Customer information"
-                                    />
-                                    <div className="space-y-5 p-5">
-                                        <DetailList>
-                                            <DetailRow
-                                                label="Name"
-                                                value={order.customer_name}
-                                            />
-                                            <DetailRow
-                                                label="Email"
-                                                value={
-                                                    <a
-                                                        className="break-all text-[#3E3222] hover:underline"
-                                                        href={`mailto:${order.customer_email}`}
-                                                    >
-                                                        {order.customer_email}
-                                                    </a>
-                                                }
-                                            />
-                                            <DetailRow
-                                                label="Phone"
-                                                value={
-                                                    order.customer_phone || '—'
-                                                }
-                                            />
-                                        </DetailList>
-                                        <div className="grid gap-2 sm:grid-cols-2">
-                                            <ActionLink
-                                                href={`mailto:${order.customer_email}`}
-                                            >
-                                                <Mail size={14} /> Email
-                                            </ActionLink>
-                                            {customerPhone && (
-                                                <ActionLink
-                                                    href={`https://wa.me/${customerPhone}`}
-                                                    external
-                                                >
-                                                    <MessageCircle size={14} />{' '}
-                                                    WhatsApp
-                                                </ActionLink>
-                                            )}
-                                        </div>
-                                    </div>
-                                </Card>
-
-                                <Card>
-                                    <CardHeader
-                                        icon={MapPin}
-                                        title="Shipping address"
-                                        action={
-                                            order.address?.latitude &&
-                                            order.address?.longitude ? (
-                                                <ActionLink
-                                                    href={`https://maps.google.com/?q=${order.address.latitude},${order.address.longitude}`}
-                                                    external
-                                                >
-                                                    <Map size={14} /> Open map
-                                                </ActionLink>
-                                            ) : null
-                                        }
-                                    />
-                                    <div className="p-5">
-                                        <DetailList>
-                                            <DetailRow
-                                                label="Recipient"
-                                                value={String(
-                                                    order.address
-                                                        ?.recipient_name ?? '—',
-                                                )}
-                                            />
-                                            <DetailRow
-                                                label="Phone"
-                                                value={String(
-                                                    order.address
-                                                        ?.recipient_phone ??
-                                                        '—',
-                                                )}
-                                            />
-                                            <DetailRow
-                                                label="City"
-                                                value={String(
-                                                    order.address?.city ?? '—',
-                                                )}
-                                            />
-                                            <DetailRow
-                                                label="Postal code"
-                                                value={String(
-                                                    order.address
-                                                        ?.postal_code ?? '—',
-                                                )}
-                                            />
-                                            <DetailRow
-                                                label="Full address"
-                                                value={String(
-                                                    order.address
-                                                        ?.full_address ?? '—',
-                                                )}
-                                            />
-                                            <DetailRow
-                                                label="Address note"
-                                                value={String(
-                                                    order.address
-                                                        ?.address_note ?? '—',
-                                                )}
-                                            />
-                                        </DetailList>
-                                    </div>
-                                </Card>
-                            </section>
-
-                            <section className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-                                <Card>
-                                    <CardHeader
-                                        icon={CreditCard}
-                                        title="Payment information"
-                                    />
-                                    <div className="space-y-4 p-5">
-                                        {order.payment ? (
-                                            <>
-                                                <DetailList>
-                                                    <DetailRow
-                                                        label="Provider"
-                                                        value={String(
-                                                            order.payment
-                                                                .payment_provider ??
-                                                                '—',
-                                                        )}
-                                                    />
-                                                    <DetailRow
-                                                        label="Method"
-                                                        value={String(
-                                                            order.payment
-                                                                .payment_method ??
-                                                                '—',
-                                                        )}
-                                                    />
-                                                    <DetailRow
-                                                        label="Transaction ID"
-                                                        value={
-                                                            <span className="font-mono break-all">
-                                                                {String(
-                                                                    order
-                                                                        .payment
-                                                                        .midtrans_transaction_id ??
-                                                                        '—',
-                                                                )}
-                                                            </span>
-                                                        }
-                                                    />
-                                                    <DetailRow
-                                                        label="Gross amount"
-                                                        value={formatPrice(
-                                                            String(
-                                                                order.payment
-                                                                    .gross_amount ??
-                                                                    0,
-                                                            ),
-                                                        )}
-                                                    />
-                                                </DetailList>
-                                                <Accordion title="Raw payment data">
-                                                    {JSON.stringify(
-                                                        order.payment,
-                                                        null,
-                                                        2,
-                                                    )}
-                                                </Accordion>
-                                            </>
-                                        ) : (
-                                            <EmptyState>
-                                                No payment record found.
-                                            </EmptyState>
-                                        )}
-                                    </div>
-                                </Card>
-
-                                <Card>
-                                    <CardHeader
-                                        icon={Truck}
-                                        title="Shipment information"
-                                    />
-                                    <div className="space-y-4 p-5">
-                                        {order.shipment ? (
-                                            <>
-                                                <DetailList>
-                                                    <DetailRow
-                                                        label="Courier"
-                                                        value={`${order.shipment.courier_company ?? '—'} ${order.shipment.courier_type ?? ''}`}
-                                                    />
-                                                    <DetailRow
-                                                        label="Service"
-                                                        value={String(
-                                                            order.shipment
-                                                                .courier_service_name ??
-                                                                '—',
-                                                        )}
-                                                    />
-                                                    <DetailRow
-                                                        label="Waybill ID"
-                                                        value={
-                                                            <span className="font-mono break-all">
-                                                                {String(
-                                                                    order
-                                                                        .shipment
-                                                                        .waybill_id ??
-                                                                        '—',
-                                                                )}
-                                                            </span>
-                                                        }
-                                                    />
-                                                    <DetailRow
-                                                        label="Est. delivery"
-                                                        value={String(
-                                                            order.shipment
-                                                                .estimated_delivery ??
-                                                                '—',
-                                                        )}
-                                                    />
-                                                </DetailList>
-                                                 <div className="grid gap-2 sm:grid-cols-2">
-                                                    {shipmentLabelUrl && (
-                                                        <ActionLink
-                                                            href={
-                                                                shipmentLabelUrl
-                                                            }
-                                                            external
-                                                        >
-                                                            <Printer
-                                                                size={14}
-                                                            />{' '}
-                                                            Print resi
-                                                        </ActionLink>
-                                                    )}
-                                                     {order.shipment
-                                                         .tracking_url && (
-                                                        <ActionLink
-                                                            href={String(
-                                                                order.shipment
-                                                                    .tracking_url,
                                                             )}
-                                                            external
+                                                        </td>
+                                                        <td className="px-4 py-4 break-words text-zinc-600">
+                                                            {item.color_name ??
+                                                                '—'}
+                                                        </td>
+                                                        <td className="px-4 py-4 text-zinc-600">
+                                                            {item.size ?? '—'}
+                                                        </td>
+                                                        <td className="px-4 py-4 text-right text-zinc-900 tabular-nums">
+                                                            {formatPrice(
+                                                                item.price,
+                                                            )}
+                                                        </td>
+                                                        <td className="px-4 py-4 text-center text-zinc-900 tabular-nums">
+                                                            {item.quantity}
+                                                        </td>
+                                                        <td className="px-5 py-4 text-right font-medium text-zinc-900 tabular-nums">
+                                                            {formatPrice(
+                                                                item.subtotal,
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                                {order.items.length === 0 && (
+                                                    <tr>
+                                                        <td
+                                                            colSpan={8}
+                                                            className="px-5 py-8 text-center text-sm text-zinc-500"
                                                         >
-                                                            <MapPin size={14} />{' '}
-                                                            Track online
-                                                        </ActionLink>
-                                                    )}
+                                                            No items found in
+                                                            this order.
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </Card>
+                            )}
+
+                            {activeTab === 'customer' && (
+                                <section className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+                                    <Card>
+                                        <CardHeader
+                                            icon={User}
+                                            title="Customer information"
+                                        />
+                                        <div className="space-y-5 p-5">
+                                            <DetailList>
+                                                <DetailRow
+                                                    label="Name"
+                                                    value={order.customer_name}
+                                                />
+                                                <DetailRow
+                                                    label="Email"
+                                                    value={
+                                                        <a
+                                                            className="break-all text-[#3E3222] hover:underline"
+                                                            href={`mailto:${order.customer_email}`}
+                                                        >
+                                                            {
+                                                                order.customer_email
+                                                            }
+                                                        </a>
+                                                    }
+                                                />
+                                                <DetailRow
+                                                    label="Phone"
+                                                    value={
+                                                        order.customer_phone ||
+                                                        '—'
+                                                    }
+                                                />
+                                            </DetailList>
+                                            <div className="grid gap-2 sm:grid-cols-2">
+                                                <ActionLink
+                                                    href={`mailto:${order.customer_email}`}
+                                                >
+                                                    <Mail size={14} /> Email
+                                                </ActionLink>
+                                                {customerPhone && (
                                                     <ActionLink
-                                                        href={`/admin/shipments/${order.shipment.id}`}
+                                                        href={`https://wa.me/${customerPhone}`}
+                                                        external
                                                     >
-                                                        <ExternalLink
+                                                        <MessageCircle
                                                             size={14}
                                                         />{' '}
-                                                        View shipment
+                                                        WhatsApp
                                                     </ActionLink>
-                                                </div>
-                                                <Accordion title="Raw shipment data">
-                                                    {JSON.stringify(
-                                                        order.shipment,
-                                                        null,
-                                                        2,
+                                                )}
+                                            </div>
+                                        </div>
+                                    </Card>
+
+                                    <Card>
+                                        <CardHeader
+                                            icon={MapPin}
+                                            title="Shipping address"
+                                            action={
+                                                order.address?.latitude &&
+                                                order.address?.longitude ? (
+                                                    <ActionLink
+                                                        href={`https://maps.google.com/?q=${order.address.latitude},${order.address.longitude}`}
+                                                        external
+                                                    >
+                                                        <Map size={14} /> Open
+                                                        map
+                                                    </ActionLink>
+                                                ) : null
+                                            }
+                                        />
+                                        <div className="p-5">
+                                            <DetailList>
+                                                <DetailRow
+                                                    label="Recipient"
+                                                    value={String(
+                                                        order.address
+                                                            ?.recipient_name ??
+                                                            '—',
                                                     )}
-                                                </Accordion>
-                                            </>
-                                        ) : (
-                                            <EmptyState>
-                                                No shipment created yet.
-                                            </EmptyState>
-                                        )}
+                                                />
+                                                <DetailRow
+                                                    label="Phone"
+                                                    value={String(
+                                                        order.address
+                                                            ?.recipient_phone ??
+                                                            '—',
+                                                    )}
+                                                />
+                                                <DetailRow
+                                                    label="City"
+                                                    value={String(
+                                                        order.address?.city ??
+                                                            '—',
+                                                    )}
+                                                />
+                                                <DetailRow
+                                                    label="Postal code"
+                                                    value={String(
+                                                        order.address
+                                                            ?.postal_code ??
+                                                            '—',
+                                                    )}
+                                                />
+                                                <DetailRow
+                                                    label="Full address"
+                                                    value={String(
+                                                        order.address
+                                                            ?.full_address ??
+                                                            '—',
+                                                    )}
+                                                />
+                                                <DetailRow
+                                                    label="Address note"
+                                                    value={String(
+                                                        order.address
+                                                            ?.address_note ??
+                                                            '—',
+                                                    )}
+                                                />
+                                            </DetailList>
+                                        </div>
+                                    </Card>
+                                </section>
+                            )}
+
+                            <div className="contents">
+                                {activeTab === 'payment' && (
+                                    <Card>
+                                        <CardHeader
+                                            icon={CreditCard}
+                                            title="Payment information"
+                                        />
+                                        <div className="space-y-4 p-5">
+                                            {order.payment ? (
+                                                <>
+                                                    <DetailList>
+                                                        <DetailRow
+                                                            label="Provider"
+                                                            value={String(
+                                                                order.payment
+                                                                    .payment_provider ??
+                                                                    '—',
+                                                            )}
+                                                        />
+                                                        <DetailRow
+                                                            label="Method"
+                                                            value={String(
+                                                                order.payment
+                                                                    .payment_method ??
+                                                                    '—',
+                                                            )}
+                                                        />
+                                                        <DetailRow
+                                                            label="Transaction ID"
+                                                            value={
+                                                                <span className="font-mono break-all">
+                                                                    {String(
+                                                                        order
+                                                                            .payment
+                                                                            .midtrans_transaction_id ??
+                                                                            '—',
+                                                                    )}
+                                                                </span>
+                                                            }
+                                                        />
+                                                        <DetailRow
+                                                            label="Gross amount"
+                                                            value={formatPrice(
+                                                                String(
+                                                                    order
+                                                                        .payment
+                                                                        .gross_amount ??
+                                                                        0,
+                                                                ),
+                                                            )}
+                                                        />
+                                                    </DetailList>
+                                                    <Accordion title="Raw payment data">
+                                                        {JSON.stringify(
+                                                            order.payment,
+                                                            null,
+                                                            2,
+                                                        )}
+                                                    </Accordion>
+                                                </>
+                                            ) : (
+                                                <EmptyState>
+                                                    No payment record found.
+                                                </EmptyState>
+                                            )}
+                                        </div>
+                                    </Card>
+                                )}
+
+                                {activeTab === 'fulfillment' && (
+                                    <Card>
+                                        <CardHeader
+                                            icon={Truck}
+                                            title="Shipment information"
+                                        />
+                                        <div className="space-y-4 p-5">
+                                            {order.shipment ? (
+                                                <>
+                                                    <DetailList>
+                                                        <DetailRow
+                                                            label="Courier"
+                                                            value={`${order.shipment.courier_company ?? '—'} ${order.shipment.courier_type ?? ''}`}
+                                                        />
+                                                        <DetailRow
+                                                            label="Service"
+                                                            value={String(
+                                                                order.shipment
+                                                                    .courier_service_name ??
+                                                                    '—',
+                                                            )}
+                                                        />
+                                                        <DetailRow
+                                                            label="Waybill ID"
+                                                            value={
+                                                                <span className="font-mono break-all">
+                                                                    {String(
+                                                                        order
+                                                                            .shipment
+                                                                            .waybill_id ??
+                                                                            '—',
+                                                                    )}
+                                                                </span>
+                                                            }
+                                                        />
+                                                        <DetailRow
+                                                            label="Est. delivery"
+                                                            value={String(
+                                                                order.shipment
+                                                                    .estimated_delivery ??
+                                                                    '—',
+                                                            )}
+                                                        />
+                                                    </DetailList>
+                                                    <div className="grid gap-2 sm:grid-cols-2">
+                                                        {shipmentLabelUrl && (
+                                                            <ActionLink
+                                                                href={
+                                                                    shipmentLabelUrl
+                                                                }
+                                                                external
+                                                            >
+                                                                <Printer
+                                                                    size={14}
+                                                                />{' '}
+                                                                Print resi
+                                                            </ActionLink>
+                                                        )}
+                                                        {order.shipment
+                                                            .tracking_url && (
+                                                            <ActionLink
+                                                                href={String(
+                                                                    order
+                                                                        .shipment
+                                                                        .tracking_url,
+                                                                )}
+                                                                external
+                                                            >
+                                                                <MapPin
+                                                                    size={14}
+                                                                />{' '}
+                                                                Track online
+                                                            </ActionLink>
+                                                        )}
+                                                        <ActionLink
+                                                            href={`/admin/shipments/${order.shipment.id}`}
+                                                        >
+                                                            <ExternalLink
+                                                                size={14}
+                                                            />{' '}
+                                                            View shipment
+                                                        </ActionLink>
+                                                    </div>
+                                                    <Accordion title="Raw shipment data">
+                                                        {JSON.stringify(
+                                                            order.shipment,
+                                                            null,
+                                                            2,
+                                                        )}
+                                                    </Accordion>
+                                                </>
+                                            ) : (
+                                                <EmptyState>
+                                                    No shipment created yet.
+                                                </EmptyState>
+                                            )}
+                                        </div>
+                                    </Card>
+                                )}
+                            </div>
+
+                            {activeTab === 'technical' && (
+                                <Card>
+                                    <CardHeader
+                                        icon={Code}
+                                        title="Technical data"
+                                        description="Expandable raw data for support and debugging."
+                                    />
+                                    <div className="space-y-3 p-5">
+                                        <Accordion title="Raw order object">
+                                            {JSON.stringify(order, null, 2)}
+                                        </Accordion>
+                                        <Accordion title="Payment logs">
+                                            {JSON.stringify(
+                                                order.payment_logs,
+                                                null,
+                                                2,
+                                            )}
+                                        </Accordion>
+                                        <Accordion title="Tracking logs">
+                                            {JSON.stringify(
+                                                order.trackings,
+                                                null,
+                                                2,
+                                            )}
+                                        </Accordion>
                                     </div>
                                 </Card>
-                            </section>
-
+                            )}
                         </div>
 
                         <aside className="flex min-w-0 flex-col gap-5 xl:sticky xl:top-5 xl:self-start">
-                            <Card>
-                                <CardHeader
-                                    icon={FileText}
-                                    title="Billing summary"
-                                />
-                                <div className="space-y-3 p-5 text-sm">
-                                    <div className="flex items-center justify-between gap-4 text-zinc-500">
-                                        <span>Subtotal</span>
-                                        <span className="font-medium text-zinc-900 tabular-nums">
-                                            {formatPrice(order.subtotal)}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center justify-between gap-4 text-zinc-500">
-                                        <span>Discount</span>
-                                        <span className="font-medium text-rose-600 tabular-nums">
-                                            -{' '}
-                                            {formatPrice(order.discount_amount)}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center justify-between gap-4 text-zinc-500">
-                                        <span>Shipping</span>
-                                        <span className="font-medium text-zinc-900 tabular-nums">
-                                            {formatPrice(order.shipping_cost)}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center justify-between gap-4 text-zinc-500">
-                                        <span>Service fee</span>
-                                        <span className="font-medium text-zinc-900 tabular-nums">
-                                            {formatPrice(order.service_fee)}
-                                        </span>
-                                    </div>
-                                    <div className="border-t border-zinc-200 pt-4">
-                                        <div className="flex items-start justify-between gap-4">
-                                            <span className="text-sm font-medium text-zinc-900">
-                                                Grand total
-                                            </span>
-                                            <span className="text-right text-xl font-bold text-zinc-900 tabular-nums">
-                                                {formatPrice(order.grand_total)}
-                                            </span>
+                            {activeTab === 'overview' && (
+                                <>
+                                    <Card>
+                                        <CardHeader
+                                            icon={FileText}
+                                            title="Billing summary"
+                                        />
+                                        <div className="space-y-3 p-5 text-sm">
+                                            <div className="flex items-center justify-between gap-4 text-zinc-500">
+                                                <span>Subtotal</span>
+                                                <span className="font-medium text-zinc-900 tabular-nums">
+                                                    {formatPrice(
+                                                        order.subtotal,
+                                                    )}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center justify-between gap-4 text-zinc-500">
+                                                <span>Discount</span>
+                                                <span className="font-medium text-rose-600 tabular-nums">
+                                                    -{' '}
+                                                    {formatPrice(
+                                                        order.discount_amount,
+                                                    )}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center justify-between gap-4 text-zinc-500">
+                                                <span>Shipping</span>
+                                                <span className="font-medium text-zinc-900 tabular-nums">
+                                                    {formatPrice(
+                                                        order.shipping_cost,
+                                                    )}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center justify-between gap-4 text-zinc-500">
+                                                <span>Service fee</span>
+                                                <span className="font-medium text-zinc-900 tabular-nums">
+                                                    {formatPrice(
+                                                        order.service_fee,
+                                                    )}
+                                                </span>
+                                            </div>
+                                            <div className="border-t border-zinc-200 pt-4">
+                                                <div className="flex items-start justify-between gap-4">
+                                                    <span className="text-sm font-medium text-zinc-900">
+                                                        Grand total
+                                                    </span>
+                                                    <span className="text-right text-xl font-bold text-zinc-900 tabular-nums">
+                                                        {formatPrice(
+                                                            order.grand_total,
+                                                        )}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-xs text-zinc-500">
+                                                Voucher:{' '}
+                                                <span className="font-mono font-medium break-all text-zinc-900">
+                                                    {order.voucher_code || '—'}
+                                                </span>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-xs text-zinc-500">
-                                        Voucher:{' '}
-                                        <span className="font-mono font-medium break-all text-zinc-900">
-                                            {order.voucher_code || '—'}
-                                        </span>
-                                    </div>
-                                </div>
-                            </Card>
+                                    </Card>
+                                </>
+                            )}
 
-                            <Card>
-                                <CardHeader
-                                    icon={PackagePlus}
-                                    title="Quick actions"
-                                />
-                                <div className="divide-y divide-zinc-100 p-2 text-sm">
-                                    <button
-                                        type="button"
-                                        onClick={() => window.print()}
-                                        className="flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left font-medium text-zinc-700 transition hover:bg-zinc-50"
-                                    >
-                                        <span className="flex items-center gap-2">
-                                            <Printer
-                                                size={15}
-                                                className="text-zinc-400"
-                                            />{' '}
-                                            Print invoice
-                                        </span>
-                                        <ChevronRight
-                                            size={15}
-                                            className="text-zinc-300"
-                                        />
-                                    </button>
-                                    <a
-                                        href={`mailto:${order.customer_email}`}
-                                        className="flex items-center justify-between gap-3 rounded-md px-3 py-2 font-medium text-zinc-700 transition hover:bg-zinc-50"
-                                    >
-                                        <span className="flex items-center gap-2">
-                                            <MessageCircle
-                                                size={15}
-                                                className="text-zinc-400"
-                                            />{' '}
-                                            Contact customer
-                                        </span>
-                                        <ChevronRight
-                                            size={15}
-                                            className="text-zinc-300"
-                                        />
-                                    </a>
-                                    {order.shipment && (
-                                        <Link
-                                            href={`/admin/shipments/${order.shipment.id}`}
-                                            className="flex items-center justify-between gap-3 rounded-md px-3 py-2 font-medium text-zinc-700 transition hover:bg-zinc-50"
-                                        >
-                                            <span className="flex items-center gap-2">
-                                                <ExternalLink
-                                                    size={15}
-                                                    className="text-zinc-400"
-                                                />{' '}
-                                                View shipment
-                                            </span>
-                                            <ChevronRight
-                                                size={15}
-                                                className="text-zinc-300"
-                                            />
-                                        </Link>
-                                    )}
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            requestStatusChange('completed')
-                                        }
-                                        className="flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left font-medium text-emerald-700 transition hover:bg-emerald-50"
-                                    >
-                                        <span className="flex items-center gap-2">
-                                            <CheckCircle2 size={15} /> Mark as
-                                            completed
-                                        </span>
-                                        <ChevronRight size={15} />
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            requestStatusChange('cancelled')
-                                        }
-                                        className="flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left font-medium text-rose-700 transition hover:bg-rose-50"
-                                    >
-                                        <span className="flex items-center gap-2">
-                                            <XCircle size={15} /> Cancel order
-                                        </span>
-                                        <ChevronRight size={15} />
-                                    </button>
-                                </div>
-                            </Card>
-
-                            <Card>
-                                <CardHeader
-                                    icon={Clock}
-                                    title="Tracking timeline"
-                                />
-                                <div className="p-5">
-                                    {order.trackings?.length > 0 ? (
-                                        <div className="space-y-0">
-                                            {order.trackings.map(
-                                                (track, index) => (
-                                                    <div
-                                                        key={track.id}
-                                                        className="grid grid-cols-[20px_minmax(0,1fr)] gap-3"
-                                                    >
-                                                        <div className="flex flex-col items-center">
-                                                            <div className="mt-1.5 h-2 w-2 rounded-full bg-zinc-400 ring-4 ring-zinc-50" />
-                                                            {index !==
-                                                                order.trackings
-                                                                    .length -
-                                                                    1 && (
-                                                                <div className="mt-1 h-full min-h-10 w-px bg-zinc-200" />
-                                                            )}
-                                                        </div>
-                                                        <div className="pb-5">
-                                                            <p className="text-sm font-medium break-words text-zinc-900">
-                                                                {track.status}
-                                                            </p>
-                                                            <p className="mt-1 text-xs break-words text-zinc-500">
-                                                                {track.description ||
-                                                                    'No description'}
-                                                                {track.location
-                                                                    ? ` - ${track.location}`
-                                                                    : ''}
-                                                            </p>
-                                                            <p className="mt-1 text-xs text-zinc-400">
-                                                                {formatDate(
-                                                                    track.happened_at,
+                            {activeTab === 'fulfillment' && (
+                                <Card>
+                                    <CardHeader
+                                        icon={Clock}
+                                        title="Tracking timeline"
+                                    />
+                                    <div className="p-5">
+                                        {order.trackings?.length > 0 ? (
+                                            <div className="space-y-0">
+                                                {order.trackings.map(
+                                                    (track, index) => (
+                                                        <div
+                                                            key={track.id}
+                                                            className="grid grid-cols-[20px_minmax(0,1fr)] gap-3"
+                                                        >
+                                                            <div className="flex flex-col items-center">
+                                                                <div className="mt-1.5 h-2 w-2 rounded-full bg-zinc-400 ring-4 ring-zinc-50" />
+                                                                {index !==
+                                                                    order
+                                                                        .trackings
+                                                                        .length -
+                                                                        1 && (
+                                                                    <div className="mt-1 h-full min-h-10 w-px bg-zinc-200" />
                                                                 )}
-                                                            </p>
+                                                            </div>
+                                                            <div className="pb-5">
+                                                                <p className="text-sm font-medium break-words text-zinc-900">
+                                                                    {
+                                                                        track.status
+                                                                    }
+                                                                </p>
+                                                                <p className="mt-1 text-xs break-words text-zinc-500">
+                                                                    {track.description ||
+                                                                        'No description'}
+                                                                    {track.location
+                                                                        ? ` - ${track.location}`
+                                                                        : ''}
+                                                                </p>
+                                                                <p className="mt-1 text-xs text-zinc-400">
+                                                                    {formatDate(
+                                                                        track.happened_at,
+                                                                    )}
+                                                                </p>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                ),
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <EmptyState>
-                                            No tracking updates available.
-                                        </EmptyState>
-                                    )}
-                                </div>
-                            </Card>
-
-                            <Card>
-                                <CardHeader
-                                    icon={Code}
-                                    title="Technical data"
-                                    description="Expandable raw data for support and debugging."
-                                />
-                                <div className="space-y-3 p-5">
-                                    <Accordion title="Raw order object">
-                                        {JSON.stringify(order, null, 2)}
-                                    </Accordion>
-                                    <Accordion title="Payment logs">
-                                        {JSON.stringify(
-                                            order.payment_logs,
-                                            null,
-                                            2,
+                                                    ),
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <EmptyState>
+                                                No tracking updates available.
+                                            </EmptyState>
                                         )}
-                                    </Accordion>
-                                    <Accordion title="Tracking logs">
-                                        {JSON.stringify(
-                                            order.trackings,
-                                            null,
-                                            2,
-                                        )}
-                                    </Accordion>
-                                </div>
-                            </Card>
+                                    </div>
+                                </Card>
+                            )}
                         </aside>
                     </div>
                 </div>

@@ -207,7 +207,7 @@ export default function ListProduct({ products, filters, options }: Props) {
 
     return (
         <ShopLayout>
-            <Head title="Produk - Aurea Syari" />
+            <Head title="Produk - Shayda Modest" />
 
             <main className="mx-auto flex max-w-[1500px] flex-col px-4 py-6 md:px-10 md:py-10 lg:flex-row">
                 {isFilterOpen && (
@@ -219,11 +219,10 @@ export default function ListProduct({ products, filters, options }: Props) {
                     />
                 )}
                 <aside
-                    className={`fixed inset-x-0 bottom-0 z-50 max-h-[86vh] w-full shrink-0 overflow-y-auto rounded-t-[28px] border-t border-border bg-background px-5 pt-3 pb-6 shadow-[0_-24px_80px_rgba(0,0,0,0.18)] transition-transform duration-300 ease-out lg:sticky lg:top-24 lg:z-auto lg:mb-0 lg:max-h-[calc(100dvh-7rem)] lg:w-72 lg:translate-y-0 lg:self-start lg:overflow-y-auto lg:rounded-none lg:border-0 lg:bg-transparent lg:px-0 lg:pt-0 lg:pr-12 lg:pb-0 lg:shadow-none ${
-                        isFilterOpen
+                    className={`fixed inset-x-0 bottom-0 z-50 max-h-[86vh] w-full shrink-0 overflow-y-auto rounded-t-[28px] border-t border-border bg-background px-5 pt-3 pb-6 shadow-[0_-24px_80px_rgba(0,0,0,0.18)] transition-transform duration-300 ease-out lg:sticky lg:top-24 lg:z-auto lg:mb-0 lg:max-h-[calc(100dvh-7rem)] lg:w-72 lg:translate-y-0 lg:self-start lg:overflow-y-auto lg:rounded-none lg:border-0 lg:bg-transparent lg:px-0 lg:pt-0 lg:pr-12 lg:pb-0 lg:shadow-none ${isFilterOpen
                             ? 'translate-y-0'
                             : 'pointer-events-none translate-y-full lg:pointer-events-auto'
-                    }`}
+                        }`}
                 >
                     <div className="mb-5 flex items-center justify-between lg:hidden">
                         <div>
@@ -467,11 +466,10 @@ export default function ListProduct({ products, filters, options }: Props) {
                                     <button
                                         type="button"
                                         onClick={() => setFilter('color', '')}
-                                        className={`h-6 w-6 rounded-full border bg-white shadow-sm transition duration-300 hover:-translate-y-0.5 ${
-                                            form.color === ''
+                                        className={`h-6 w-6 rounded-full border bg-white shadow-sm transition duration-300 hover:-translate-y-0.5 ${form.color === ''
                                                 ? 'border-primary ring-4 ring-primary/15'
                                                 : 'border-gray-300 hover:border-foreground'
-                                        }`}
+                                            }`}
                                         aria-label="Semua warna"
                                     />
                                     {options.colors.map((color) => (
@@ -488,11 +486,10 @@ export default function ListProduct({ products, filters, options }: Props) {
                                                     color.hex ?? '',
                                                 )
                                             }
-                                            className={`h-6 w-6 rounded-full border shadow-sm transition duration-300 hover:-translate-y-0.5 ${
-                                                form.color === color.hex
+                                            className={`h-6 w-6 rounded-full border shadow-sm transition duration-300 hover:-translate-y-0.5 ${form.color === color.hex
                                                     ? 'border-primary ring-4 ring-primary/20'
                                                     : 'border-white/80 hover:border-foreground'
-                                            }`}
+                                                }`}
                                             style={{
                                                 backgroundColor: color.hex,
                                             }}
@@ -511,11 +508,10 @@ export default function ListProduct({ products, filters, options }: Props) {
                                     <button
                                         type="button"
                                         onClick={() => setFilter('size', '')}
-                                        className={`flex h-8 min-w-10 items-center justify-center border px-3 transition-all duration-300 ${
-                                            form.size === ''
+                                        className={`flex h-8 min-w-10 items-center justify-center border px-3 transition-all duration-300 ${form.size === ''
                                                 ? 'border-foreground bg-foreground text-background'
                                                 : 'border-input bg-transparent hover:border-foreground hover:text-foreground'
-                                        }`}
+                                            }`}
                                     >
                                         Semua
                                     </button>
@@ -526,11 +522,10 @@ export default function ListProduct({ products, filters, options }: Props) {
                                             onClick={() =>
                                                 setFilter('size', size)
                                             }
-                                            className={`flex h-8 min-w-10 items-center justify-center border px-3 transition-all duration-300 ${
-                                                form.size === size
+                                            className={`flex h-8 min-w-10 items-center justify-center border px-3 transition-all duration-300 ${form.size === size
                                                     ? 'border-foreground bg-foreground text-background'
                                                     : 'border-input bg-transparent hover:border-foreground hover:text-foreground'
-                                            }`}
+                                                }`}
                                         >
                                             {size}
                                         </button>
@@ -669,11 +664,10 @@ function FadeInOnScroll({
     return (
         <div
             ref={ref}
-            className={`h-full transition-all duration-700 ease-out motion-reduce:translate-y-0 motion-reduce:opacity-100 ${
-                visible
+            className={`h-full transition-all duration-700 ease-out motion-reduce:translate-y-0 motion-reduce:opacity-100 ${visible
                     ? 'translate-y-0 opacity-100'
                     : 'translate-y-6 opacity-0'
-            }`}
+                }`}
             style={{ transitionDelay: `${delay}ms` }}
         >
             {children}
@@ -723,9 +717,8 @@ function ProductTile({
         <FadeInOnScroll delay={(index % 12) * 60}>
             <Link
                 href={detail.url({ query: { product: product.slug } })}
-                className={`group flex h-full cursor-pointer flex-col ${
-                    isOutOfStock ? 'text-muted-foreground' : ''
-                }`}
+                className={`group flex h-full cursor-pointer flex-col ${isOutOfStock ? 'text-muted-foreground' : ''
+                    }`}
             >
                 <div className="relative mb-3 aspect-[3/4] overflow-hidden rounded-sm bg-muted">
                     <img
@@ -736,18 +729,16 @@ function ProductTile({
                         alt={product.title}
                         loading="lazy"
                         decoding="async"
-                        className={`h-full w-full object-cover transition-transform duration-700 ease-in-out ${
-                            isOutOfStock
+                        className={`h-full w-full object-cover transition-transform duration-700 ease-in-out ${isOutOfStock
                                 ? 'grayscale-[45%] group-hover:scale-100'
                                 : 'group-hover:scale-[1.03]'
-                        }`}
+                            }`}
                     />
                     <div
-                        className={`pointer-events-none absolute inset-0 transition-colors duration-500 ${
-                            isOutOfStock
+                        className={`pointer-events-none absolute inset-0 transition-colors duration-500 ${isOutOfStock
                                 ? 'bg-background/45'
                                 : 'bg-black/0 group-hover:bg-black/5'
-                        }`}
+                            }`}
                     />
 
                     {product.badge && (
@@ -789,21 +780,19 @@ function ProductTile({
                 )}
 
                 <h3
-                    className={`mb-1 text-[11px] leading-[1.4] font-semibold transition-colors ${
-                        isOutOfStock
+                    className={`mb-1 text-[11px] leading-[1.4] font-semibold transition-colors ${isOutOfStock
                             ? 'text-muted-foreground'
                             : 'text-foreground hover:text-primary'
-                    }`}
+                        }`}
                 >
                     {product.title}
                 </h3>
 
                 <div
-                    className={`mb-4 flex flex-wrap items-center gap-2 text-[11px] ${
-                        isOutOfStock
+                    className={`mb-4 flex flex-wrap items-center gap-2 text-[11px] ${isOutOfStock
                             ? 'text-muted-foreground'
                             : 'text-secondary-foreground'
-                    }`}
+                        }`}
                 >
                     <span>
                         {formatPrice(product.sale_price ?? product.price)}
@@ -816,11 +805,10 @@ function ProductTile({
                 </div>
 
                 <span
-                    className={`mt-auto w-full rounded-full border py-2 text-center text-[11px] font-semibold tracking-wider shadow-sm transition-all duration-300 ${
-                        isOutOfStock
+                    className={`mt-auto w-full rounded-full border py-2 text-center text-[11px] font-semibold tracking-wider shadow-sm transition-all duration-300 ${isOutOfStock
                             ? 'border-border bg-muted text-muted-foreground'
                             : 'border-input text-secondary-foreground hover:border-primary hover:bg-primary hover:text-primary-foreground hover:shadow-md active:scale-95'
-                    }`}
+                        }`}
                 >
                     {isOutOfStock ? 'Stok Habis' : 'Beli'}
                 </span>
@@ -849,9 +837,8 @@ function FilterSection({
             >
                 <span>{title}</span>
                 <div
-                    className={`transform transition-transform duration-300 ease-[cubic-bezier(0.87,_0,_0.13,_1)] ${
-                        isOpen ? 'rotate-180' : 'rotate-0'
-                    }`}
+                    className={`transform transition-transform duration-300 ease-[cubic-bezier(0.87,_0,_0.13,_1)] ${isOpen ? 'rotate-180' : 'rotate-0'
+                        }`}
                 >
                     <ChevronDown
                         size={14}
@@ -860,11 +847,10 @@ function FilterSection({
                 </div>
             </button>
             <div
-                className={`grid transition-[grid-template-rows,opacity,padding] duration-500 ease-[cubic-bezier(0.87,_0,_0.13,_1)] ${
-                    isOpen
+                className={`grid transition-[grid-template-rows,opacity,padding] duration-500 ease-[cubic-bezier(0.87,_0,_0.13,_1)] ${isOpen
                         ? 'grid-rows-[1fr] pt-4 opacity-100'
                         : 'pointer-events-none grid-rows-[0fr] pt-0 opacity-0'
-                }`}
+                    }`}
             >
                 <div className="overflow-hidden">{children}</div>
             </div>
@@ -889,26 +875,23 @@ function FilterRadio({
         >
             <span className="flex items-center gap-3">
                 <span
-                    className={`flex h-[14px] w-[14px] shrink-0 items-center justify-center rounded-full border transition-all duration-300 ${
-                        active
+                    className={`flex h-[14px] w-[14px] shrink-0 items-center justify-center rounded-full border transition-all duration-300 ${active
                             ? 'border-primary ring-4 ring-primary/10'
                             : 'border-input group-hover:border-primary/50'
-                    }`}
+                        }`}
                 >
                     <span
-                        className={`h-[6px] w-[6px] rounded-full bg-primary transition-all duration-300 ${
-                            active
+                        className={`h-[6px] w-[6px] rounded-full bg-primary transition-all duration-300 ${active
                                 ? 'scale-100 opacity-100'
                                 : 'scale-0 opacity-0'
-                        }`}
+                            }`}
                     />
                 </span>
                 <span
-                    className={`text-[11px] tracking-wide transition-colors duration-300 ${
-                        active
+                    className={`text-[11px] tracking-wide transition-colors duration-300 ${active
                             ? 'font-medium text-foreground'
                             : 'text-secondary-foreground group-hover:text-foreground'
-                    }`}
+                        }`}
                 >
                     {label}
                 </span>

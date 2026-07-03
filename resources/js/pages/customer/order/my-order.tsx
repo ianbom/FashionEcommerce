@@ -54,6 +54,7 @@ type Order = {
         waybill_id: string | null;
         courier: string | null;
         service: string | null;
+        tracking_url: string | null;
     };
     payment: {
         midtrans_redirect_url: string | null;
@@ -359,12 +360,25 @@ export default function ListOrder({ orders, filters }: Props) {
                                         </a>
                                     )}
                                     {order.order_status === 'shipped' && (
-                                        <Link
-                                            href={orderShow.url(order.id)}
-                                            className="flex-1 rounded-lg bg-[#4A2525] py-2.5 text-center text-[12px] font-bold text-white transition-colors hover:bg-[#5F1717] lg:w-full"
-                                        >
-                                            Lacak Pesanan
-                                        </Link>
+                                        order.shipment.tracking_url ? (
+                                            <a
+                                                href={
+                                                    order.shipment.tracking_url
+                                                }
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="flex-1 rounded-lg bg-[#4A2525] py-2.5 text-center text-[12px] font-bold text-white transition-colors hover:bg-[#5F1717] lg:w-full"
+                                            >
+                                                Lacak Pesanan
+                                            </a>
+                                        ) : (
+                                            <Link
+                                                href={orderShow.url(order.id)}
+                                                className="flex-1 rounded-lg bg-[#4A2525] py-2.5 text-center text-[12px] font-bold text-white transition-colors hover:bg-[#5F1717] lg:w-full"
+                                            >
+                                                Lacak Pesanan
+                                            </Link>
+                                        )
                                     )}
                                     <Link
                                         href={orderShow.url(order.id)}
@@ -382,60 +396,6 @@ export default function ListOrder({ orders, filters }: Props) {
                                     )}
                                 </div>
                             </div>
-
-                            {order.order_status === 'shipped' && (
-                                <div className="mt-6 hidden border-t border-[#EADBD8]/60 px-5 pt-5 md:block md:px-8">
-                                    <div className="relative z-10 mx-auto flex max-w-[600px] items-center justify-between">
-                                        <div className="absolute top-4 right-[5%] left-[5%] -z-10 h-[2px] bg-[#EADBD8]" />
-                                        <div className="absolute top-4 left-[5%] -z-10 h-[2px] w-[60%] bg-[#B6574B]" />
-                                        {[
-                                            {
-                                                label: 'Pesanan Dikonfirmasi',
-                                                icon: Check,
-                                                active: true,
-                                            },
-                                            {
-                                                label: 'Dikemas',
-                                                icon: Package,
-                                                active: true,
-                                            },
-                                            {
-                                                label: 'Dikirim',
-                                                icon: Truck,
-                                                active: true,
-                                            },
-                                            {
-                                                label: 'Terkirim',
-                                                icon: Check,
-                                                active: false,
-                                            },
-                                        ].map((step) => {
-                                            const Icon = step.icon;
-
-                                            return (
-                                                <div
-                                                    key={step.label}
-                                                    className="flex flex-col items-center"
-                                                >
-                                                    <div
-                                                        className={`mb-2 flex h-8 w-8 items-center justify-center rounded-full border transition-colors ${step.active ? 'border-[#B6574B] text-[#B6574B]' : 'border-[#EADBD8] text-[#C99A8F]'}`}
-                                                    >
-                                                        <Icon
-                                                            size={14}
-                                                            strokeWidth={3}
-                                                        />
-                                                    </div>
-                                                    <p
-                                                        className={`mb-0.5 text-[10px] font-bold ${step.active ? 'text-[#4A2525]' : 'text-[#C99A8F]'}`}
-                                                    >
-                                                        {step.label}
-                                                    </p>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
                         </article>
                     ))}
 

@@ -98,7 +98,7 @@ export default function Home({
 }: Props) {
     return (
         <ShopLayout>
-            <Head title="Beranda - Aurea Syari" />
+            <Head title="Beranda - Shayda Modest" />
 
             <FadeInOnScroll>
                 <HeroSlider heroBanners={heroBanners} />
@@ -147,7 +147,7 @@ export default function Home({
                                     src={
                                         category.image_url ??
                                         fallbackImages[
-                                            index % fallbackImages.length
+                                        index % fallbackImages.length
                                         ]
                                     }
                                     alt={category.name}
@@ -344,42 +344,42 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
     const slides: HeroSlide[] =
         heroBanners && heroBanners.length > 0
             ? heroBanners.map((banner) =>
-                  banner
-                      ? {
-                            desktop:
-                                banner.image_desktop_url ||
-                                '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp',
-                            mobile:
-                                banner.image_mobile_url ||
-                                banner.image_desktop_url ||
-                                '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp',
-                            alt: banner.title || 'Hero Banner',
-                        }
-                      : {
-                            desktop:
-                                '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp',
-                            mobile: '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp',
-                            alt: 'Hero Banner',
-                        },
-              )
+                banner
+                    ? {
+                        desktop:
+                            banner.image_desktop_url ||
+                            '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp',
+                        mobile:
+                            banner.image_mobile_url ||
+                            banner.image_desktop_url ||
+                            '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp',
+                        alt: banner.title || 'Hero Banner',
+                    }
+                    : {
+                        desktop:
+                            '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp',
+                        mobile: '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp',
+                        alt: 'Hero Banner',
+                    },
+            )
             : [
-                  {
-                      desktop: '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp',
-                      mobile: '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp',
-                      alt: 'Hero Banner 1',
-                  },
-                  {
-                      desktop:
-                          '/img/abdul-raheem-kannath-aNWfK46QWto-unsplash.webp',
-                      mobile: '/img/abdul-raheem-kannath-aNWfK46QWto-unsplash.webp',
-                      alt: 'Hero Banner 2',
-                  },
-                  {
-                      desktop: '/img/ainur-iman-qcNmigFPTQM-unsplash.webp',
-                      mobile: '/img/ainur-iman-qcNmigFPTQM-unsplash.webp',
-                      alt: 'Hero Banner 3',
-                  },
-              ];
+                {
+                    desktop: '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp',
+                    mobile: '/img/omar-elsharawy-gFHBofW3ncQ-unsplash.webp',
+                    alt: 'Hero Banner 1',
+                },
+                {
+                    desktop:
+                        '/img/abdul-raheem-kannath-aNWfK46QWto-unsplash.webp',
+                    mobile: '/img/abdul-raheem-kannath-aNWfK46QWto-unsplash.webp',
+                    alt: 'Hero Banner 2',
+                },
+                {
+                    desktop: '/img/ainur-iman-qcNmigFPTQM-unsplash.webp',
+                    mobile: '/img/ainur-iman-qcNmigFPTQM-unsplash.webp',
+                    alt: 'Hero Banner 3',
+                },
+            ];
 
     const sliderRef = useRef<HTMLDivElement>(null);
     const isDraggingRef = useRef(false);
@@ -541,11 +541,10 @@ function HeroSlider({ heroBanners }: { heroBanners: BannerCard[] }) {
                         key={index}
                         type="button"
                         onClick={() => goToSlide(index)}
-                        className={`h-0.5 transition-all duration-300 ${
-                            index === currentIndex
+                        className={`h-0.5 transition-all duration-300 ${index === currentIndex
                                 ? 'w-10 bg-white'
                                 : 'w-6 bg-white/50'
-                        }`}
+                            }`}
                         aria-label={`Pindah ke slide ${index + 1}`}
                     />
                 ))}
@@ -591,11 +590,10 @@ function FadeInOnScroll({
     return (
         <div
             ref={ref}
-            className={`${className} transition-all duration-700 ease-out motion-reduce:translate-y-0 motion-reduce:opacity-100 ${
-                visible
+            className={`${className} transition-all duration-700 ease-out motion-reduce:translate-y-0 motion-reduce:opacity-100 ${visible
                     ? 'translate-y-0 opacity-100'
                     : 'translate-y-6 opacity-0'
-            }`}
+                }`}
             style={{ transitionDelay: `${delay}ms` }}
         >
             {children}
@@ -637,9 +635,8 @@ function ProductTile({
 }) {
     return (
         <FadeInOnScroll
-            className={`${centered ? 'min-w-[45%] sm:min-w-[30%]' : ''} ${
-                wide ? 'min-w-[65%] sm:min-w-[45%]' : ''
-            } snap-start md:min-w-0`}
+            className={`${centered ? 'min-w-[45%] sm:min-w-[30%]' : ''} ${wide ? 'min-w-[65%] sm:min-w-[45%]' : ''
+                } snap-start md:min-w-0`}
             delay={index * 60}
         >
             <Link
@@ -649,11 +646,10 @@ function ProductTile({
                 <div className="relative mb-3 aspect-[3/4] overflow-hidden rounded-sm">
                     {product.label && (
                         <span
-                            className={`absolute top-2 left-2 z-10 px-2 py-1 text-[8px] font-bold tracking-widest uppercase ${
-                                product.label.includes('%')
+                            className={`absolute top-2 left-2 z-10 px-2 py-1 text-[8px] font-bold tracking-widest uppercase ${product.label.includes('%')
                                     ? 'bg-destructive text-destructive-foreground'
                                     : 'bg-background/90 text-secondary-foreground'
-                            }`}
+                                }`}
                         >
                             {product.label}
                         </span>

@@ -27,7 +27,7 @@ export default function AuthLayout({
             <div className="relative hidden bg-muted lg:block">
                 <img
                     src="/img/shedrack-salami-DRjeesi2kFM-unsplash.webp"
-                    alt="Aurea Syari modest fashion"
+                    alt="Shayda Modest modest fashion"
                     className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
                 />
                 <div className="absolute inset-0 bg-black/10" />

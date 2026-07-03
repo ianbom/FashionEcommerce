@@ -7,9 +7,12 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\Shipment;
 use App\Services\Integrations\MidtransService;
+use App\Services\Settings\SiteSettingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -21,6 +24,7 @@ class OrderService
     public function __construct(
         private readonly MidtransService $midtrans,
         private readonly ApplyMidtransPaymentStatusAction $applyPaymentStatus,
+        private readonly SiteSettingService $settings,
     ) {}
 
     public function indexData(Request $request): array
@@ -46,7 +50,7 @@ class OrderService
                         'quantity',
                         'product_image_url',
                     ])->oldest('id'),
-                    'shipment:id,order_id,waybill_id,courier_company,courier_type',
+                    'shipment:id,order_id,waybill_id,label_url,courier_company,courier_type,raw_order_response',
                     'payment:id,order_id,midtrans_redirect_url',
                 ])
                 ->withCount('items')
@@ -85,6 +89,9 @@ class OrderService
 
         return [
             'order' => $this->detail($order),
+            'support' => [
+                'whatsapp_url' => $this->whatsappUrl($order),
+            ],
         ];
     }
 
@@ -203,6 +210,7 @@ class OrderService
                 'waybill_id' => $order->shipment?->waybill_id,
                 'courier' => $order->shipment?->courier_company,
                 'service' => $order->shipment?->courier_type,
+                'tracking_url' => $this->trackingUrl($order->shipment),
             ],
             'payment' => [
                 'midtrans_redirect_url' => $order->payment?->midtrans_redirect_url,
@@ -299,6 +307,7 @@ class OrderService
                 'delivered_at' => $order->shipment->delivered_at?->toDateTimeString(),
                 'cancelled_at' => $order->shipment->cancelled_at?->toDateTimeString(),
                 'raw_order_response' => $order->shipment->raw_order_response,
+                'tracking_url' => $this->trackingUrl($order->shipment),
             ] : null,
             'trackings' => $order->shipment?->trackings?->map(fn ($tracking): array => [
                 'id' => $tracking->id,
@@ -313,6 +322,42 @@ class OrderService
     private function allowed(string $value, array $allowed, string $default = ''): string
     {
         return in_array($value, $allowed, true) ? $value : $default;
+    }
+
+    private function trackingUrl(?Shipment $shipment): ?string
+    {
+        if (! $shipment) {
+            return null;
+        }
+
+        foreach ([
+            $shipment->label_url,
+            Arr::get($shipment->raw_order_response, 'courier.link'),
+            Arr::get($shipment->raw_order_response, 'courier_link'),
+        ] as $url) {
+            if (is_string($url) && filled($url)) {
+                return $url;
+            }
+        }
+
+        return null;
+    }
+
+    private function whatsappUrl(Order $order): ?string
+    {
+        $phone = preg_replace('/\D+/', '', $this->settings->get('whatsapp_number') ?: $this->settings->get('store_phone', '') ?: '');
+
+        if (! $phone) {
+            return null;
+        }
+
+        if (str_starts_with($phone, '0')) {
+            $phone = '62'.substr($phone, 1);
+        }
+
+        $message = rawurlencode("Halo, saya butuh bantuan untuk pesanan {$order->order_number}.");
+
+        return "https://wa.me/{$phone}?text={$message}";
     }
 
     private function perPage(int $value): int

@@ -286,7 +286,7 @@ export default function DetailProduct({
                 setStockAlert(
                     normalizeCartError(
                         cartForm.errors.quantity ||
-                            cartForm.errors.product_variant_id,
+                        cartForm.errors.product_variant_id,
                     ),
                 );
             },
@@ -314,7 +314,7 @@ export default function DetailProduct({
                 setStockAlert(
                     normalizeCartError(
                         cartForm.errors.quantity ||
-                            cartForm.errors.product_variant_id,
+                        cartForm.errors.product_variant_id,
                     ),
                 );
             },
@@ -377,7 +377,7 @@ export default function DetailProduct({
 
     return (
         <ShopLayout>
-            <Head title={`${product.title} - Aurea Syari`} />
+            <Head title={`${product.title} - Shayda Modest`} />
 
             <main className="mx-auto max-w-[1500px] px-4 py-6 md:px-10 md:py-10">
                 <FadeInOnScroll>
@@ -427,11 +427,10 @@ export default function DetailProduct({
                                     key={`${image.url}-${index}`}
                                     type="button"
                                     onClick={() => setMainImage(image.url)}
-                                    className={`relative aspect-square cursor-pointer overflow-hidden rounded-sm transition-all ${
-                                        mainImage === image.url
+                                    className={`relative aspect-square cursor-pointer overflow-hidden rounded-sm transition-all ${mainImage === image.url
                                             ? 'border border-primary opacity-100'
                                             : 'border border-transparent opacity-60 hover:opacity-100 hover:shadow-md'
-                                    }`}
+                                        }`}
                                 >
                                     <img
                                         src={image.url}
@@ -548,9 +547,9 @@ export default function DetailProduct({
                                             !variants.some(
                                                 (candidate) =>
                                                     candidate.color_name ===
-                                                        variant.color_name &&
+                                                    variant.color_name &&
                                                     candidate.available_stock >
-                                                        0,
+                                                    0,
                                             );
 
                                         return (
@@ -562,10 +561,10 @@ export default function DetailProduct({
                                                         variants.find(
                                                             (candidate) =>
                                                                 candidate.color_name ===
-                                                                    (variant.color_name ??
-                                                                        '') &&
+                                                                (variant.color_name ??
+                                                                    '') &&
                                                                 candidate.size ===
-                                                                    selectedSize,
+                                                                selectedSize,
                                                         ) ??
                                                         variants.find(
                                                             (candidate) =>
@@ -583,21 +582,19 @@ export default function DetailProduct({
                                                 className="group flex cursor-pointer flex-col items-center transition-transform hover:-translate-y-1"
                                             >
                                                 <span
-                                                    className={`mb-2 h-[65px] w-[50px] overflow-hidden rounded-sm border p-0.5 transition-all ${
-                                                        isSelected
+                                                    className={`mb-2 h-[65px] w-[50px] overflow-hidden rounded-sm border p-0.5 transition-all ${isSelected
                                                             ? 'border-primary'
                                                             : isColorOutOfStock
-                                                              ? 'border-dashed border-border'
-                                                              : 'border-transparent group-hover:border-border'
-                                                    }`}
+                                                                ? 'border-dashed border-border'
+                                                                : 'border-transparent group-hover:border-border'
+                                                        }`}
                                                 >
                                                     <img
                                                         src={variantImage}
-                                                        className={`h-full w-full rounded-sm object-cover ${
-                                                            isColorOutOfStock
+                                                        className={`h-full w-full rounded-sm object-cover ${isColorOutOfStock
                                                                 ? 'opacity-55 grayscale-[45%]'
                                                                 : ''
-                                                        }`}
+                                                            }`}
                                                         alt={
                                                             variant.color_name ??
                                                             product.title
@@ -605,13 +602,12 @@ export default function DetailProduct({
                                                     />
                                                 </span>
                                                 <span
-                                                    className={`text-[9px] font-medium ${
-                                                        isSelected
+                                                    className={`text-[9px] font-medium ${isSelected
                                                             ? 'text-primary'
                                                             : isColorOutOfStock
-                                                              ? 'text-muted-foreground/60'
-                                                              : 'text-muted-foreground group-hover:text-primary'
-                                                    }`}
+                                                                ? 'text-muted-foreground/60'
+                                                                : 'text-muted-foreground group-hover:text-primary'
+                                                        }`}
                                                 >
                                                     {variant.color_name ??
                                                         variant.color_hex ??
@@ -656,7 +652,7 @@ export default function DetailProduct({
                                                 (variant) =>
                                                     variant.size === size &&
                                                     variant.color_name ===
-                                                        selectedColor,
+                                                    selectedColor,
                                             ) ??
                                             variants.find(
                                                 (variant) =>
@@ -673,17 +669,16 @@ export default function DetailProduct({
                                                 onClick={() => {
                                                     setSelectedVariantId(
                                                         sizeVariant?.id ??
-                                                            initialVariant?.id ??
-                                                            null,
+                                                        initialVariant?.id ??
+                                                        null,
                                                     );
                                                 }}
-                                                className={`rounded-md border px-7 py-2.5 text-[11px] font-semibold tracking-wide transition-all ${
-                                                    selectedSize === size
+                                                className={`rounded-md border px-7 py-2.5 text-[11px] font-semibold tracking-wide transition-all ${selectedSize === size
                                                         ? 'border-primary text-primary shadow-sm hover:bg-secondary'
                                                         : isSizeOutOfStock
-                                                          ? 'border-dashed border-border bg-muted/30 text-muted-foreground/60 hover:border-primary/60 hover:text-primary'
-                                                          : 'border-border text-muted-foreground hover:border-primary hover:text-primary'
-                                                }`}
+                                                            ? 'border-dashed border-border bg-muted/30 text-muted-foreground/60 hover:border-primary/60 hover:text-primary'
+                                                            : 'border-border text-muted-foreground hover:border-primary hover:text-primary'
+                                                    }`}
                                             >
                                                 <span>{size}</span>
                                                 {isSizeOutOfStock && (
@@ -738,13 +733,12 @@ export default function DetailProduct({
                                             !selectedVariant ||
                                             cartForm.processing
                                         }
-                                        className={`flex min-h-12 w-full items-center justify-center rounded-full border border-input px-3 py-3.5 text-center text-[10px] font-bold tracking-widest text-secondary-foreground uppercase transition-all active:scale-[0.99] sm:text-[11px] ${
-                                            isAvailable &&
-                                            selectedVariant &&
-                                            !cartForm.processing
+                                        className={`flex min-h-12 w-full items-center justify-center rounded-full border border-input px-3 py-3.5 text-center text-[10px] font-bold tracking-widest text-secondary-foreground uppercase transition-all active:scale-[0.99] sm:text-[11px] ${isAvailable &&
+                                                selectedVariant &&
+                                                !cartForm.processing
                                                 ? 'hover:bg-secondary hover:shadow-md'
                                                 : 'cursor-not-allowed opacity-50'
-                                        }`}
+                                            }`}
                                     >
                                         {cartForm.processing
                                             ? 'Menambahkan...'
@@ -759,13 +753,12 @@ export default function DetailProduct({
                                         !selectedVariant ||
                                         cartForm.processing
                                     }
-                                    className={`flex min-h-12 w-full min-w-0 items-center justify-center rounded-full bg-primary px-3 py-3.5 text-center text-[10px] font-bold tracking-widest text-primary-foreground uppercase transition-all active:scale-[0.99] sm:text-[11px] ${
-                                        isAvailable &&
-                                        selectedVariant &&
-                                        !cartForm.processing
+                                    className={`flex min-h-12 w-full min-w-0 items-center justify-center rounded-full bg-primary px-3 py-3.5 text-center text-[10px] font-bold tracking-widest text-primary-foreground uppercase transition-all active:scale-[0.99] sm:text-[11px] ${isAvailable &&
+                                            selectedVariant &&
+                                            !cartForm.processing
                                             ? 'hover:bg-primary/90 hover:shadow-md hover:shadow-primary/20'
                                             : 'cursor-not-allowed opacity-50'
-                                    }`}
+                                        }`}
                                 >
                                     {cartForm.processing
                                         ? 'Menambahkan...'
@@ -776,15 +769,15 @@ export default function DetailProduct({
                             {(stockAlert ||
                                 cartForm.errors.quantity ||
                                 cartForm.errors.product_variant_id) && (
-                                <p className="mt-3 border-l border-[#C05D5D] pl-2 text-left text-[11px] leading-relaxed font-medium text-[#B24B4B]">
-                                    {stockAlert ||
-                                        normalizeCartError(
-                                            cartForm.errors.quantity ||
+                                    <p className="mt-3 border-l border-[#C05D5D] pl-2 text-left text-[11px] leading-relaxed font-medium text-[#B24B4B]">
+                                        {stockAlert ||
+                                            normalizeCartError(
+                                                cartForm.errors.quantity ||
                                                 cartForm.errors
                                                     .product_variant_id,
-                                        )}
-                                </p>
-                            )}
+                                            )}
+                                    </p>
+                                )}
                         </div>
 
                         <div className="mb-8 space-y-5 border-t border-border pt-8 text-[11px] leading-[1.9] font-medium tracking-wide text-secondary-foreground">
@@ -929,11 +922,10 @@ function FadeInOnScroll({
     return (
         <div
             ref={ref}
-            className={`${className} transition-all duration-700 ease-out motion-reduce:translate-y-0 motion-reduce:opacity-100 ${
-                visible
+            className={`${className} transition-all duration-700 ease-out motion-reduce:translate-y-0 motion-reduce:opacity-100 ${visible
                     ? 'translate-y-0 opacity-100'
                     : 'translate-y-6 opacity-0'
-            }`}
+                }`}
             style={{ transitionDelay: `${delay}ms` }}
         >
             {children}
@@ -979,7 +971,7 @@ function ProductRail({
                                     src={
                                         product.image ??
                                         fallbackImages[
-                                            index % fallbackImages.length
+                                        index % fallbackImages.length
                                         ]
                                     }
                                     className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"

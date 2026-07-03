@@ -45,9 +45,11 @@ class BiteshipService
     public function shippingRates(array $destination, array $items): array
     {
         $originPostalCode = $this->settings->get('store_postal_code');
+        $originAreaId = $this->settings->get('origin_biteship_area_id', config('services.biteship.origin_area_id'));
         $originLatitude = $this->coordinate($this->settings->get('store_latitude'));
         $originLongitude = $this->coordinate($this->settings->get('store_longitude'));
         $destinationPostalCode = $destination['postal_code'] ?? null;
+        $destinationAreaId = $destination['biteship_area_id'] ?? $destination['area_id'] ?? null;
         $destinationLatitude = $this->coordinate($destination['latitude'] ?? null);
         $destinationLongitude = $this->coordinate($destination['longitude'] ?? null);
 
@@ -57,6 +59,14 @@ class BiteshipService
 
         if (! filled($destinationPostalCode)) {
             throw ValidationException::withMessages(['shipping' => 'Postal code tujuan belum dikonfigurasi.']);
+        }
+
+        if (! filled($originAreaId)) {
+            throw ValidationException::withMessages(['shipping' => 'Origin Biteship area ID wajib dikonfigurasi.']);
+        }
+
+        if (! filled($destinationAreaId)) {
+            throw ValidationException::withMessages(['shipping' => 'Destination Biteship area ID wajib dikonfigurasi.']);
         }
 
         if ($originLatitude === null || $originLongitude === null) {
@@ -69,16 +79,18 @@ class BiteshipService
 
         $couriers = $this->settings->get('shipping_couriers', 'jne,jnt,sicepat,anteraja');
         $response = $this->client()
-            ->post('/v1/rates/couriers', [
+            ->post('/v1/rates/couriers', array_filter([
                 'origin_postal_code' => $originPostalCode,
+                'origin_area_id' => $originAreaId,
                 'origin_latitude' => $originLatitude,
                 'origin_longitude' => $originLongitude,
                 'destination_postal_code' => $destinationPostalCode,
+                'destination_area_id' => $destinationAreaId,
                 'destination_latitude' => $destinationLatitude,
                 'destination_longitude' => $destinationLongitude,
                 'couriers' => $couriers,
                 'items' => $items,
-            ]);
+            ], fn ($value): bool => filled($value) || is_array($value) || $value === 0));
 
         if (! $response->successful()) {
             throw ValidationException::withMessages(['shipping' => $response->json('error') ?? 'Gagal mengambil ongkir Biteship.']);
