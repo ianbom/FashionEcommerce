@@ -1,0 +1,1 @@
+import{n as e,t}from"./jsx-runtime-BwMF8Tm8.js";var n=e(),r=t();function i(e){let t=(0,n.c)(5),{html:i,className:a}=e,o=a===void 0?``:a;if(!i)return null;let s=`tiptap-html ${o}`,c;t[0]===i?c=t[1]:(c={__html:i},t[0]=i,t[1]=c);let l;return t[2]!==s||t[3]!==c?(l=(0,r.jsx)(`div`,{className:s,dangerouslySetInnerHTML:c}),t[2]=s,t[3]=c,t[4]=l):l=t[4],l}export{i as t};
