@@ -1,6 +1,6 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import type { Icon, LatLng, LeafletMouseEvent, Map as LeafletMap } from 'leaflet';
-import { LocateFixed, Save } from 'lucide-react';
+import { LocateFixed, Save, Search } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { useEffect, useState } from 'react';
 import type {
@@ -53,6 +53,13 @@ type BiteshipArea = {
     postal_code: string | null;
     latitude: number | string | null;
     longitude: number | string | null;
+};
+
+type MapSearchResult = {
+    place_id: number;
+    display_name: string;
+    lat: string;
+    lon: string;
 };
 
 type ReactLeafletModules = {
@@ -548,6 +555,10 @@ function LocationPicker({
     const [leafletModules, setLeafletModules] =
         useState<ReactLeafletModules | null>(null);
     const [markerIcon, setMarkerIcon] = useState<Icon | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState<MapSearchResult[]>([]);
+    const [searchLoading, setSearchLoading] = useState(false);
+    const [searchError, setSearchError] = useState('');
     const parsedLatitude = Number(latitude);
     const parsedLongitude = Number(longitude);
     const hasCoordinates = validCoordinates(parsedLatitude, parsedLongitude);
@@ -595,6 +606,68 @@ function LocationPicker({
         };
     }, []);
 
+    const searchAddress = async () => {
+        const query = searchQuery.trim();
+
+        if (query.length < 3) {
+            setSearchError('Masukkan minimal 3 karakter.');
+            setSearchResults([]);
+
+            return;
+        }
+
+        setSearchLoading(true);
+        setSearchError('');
+
+        try {
+            const params = new URLSearchParams({
+                format: 'json',
+                limit: '5',
+                q: query,
+            });
+            const response = await fetch(
+                `https://nominatim.openstreetmap.org/search?${params}`,
+                { headers: { Accept: 'application/json' } },
+            );
+
+            if (!response.ok) {
+                setSearchError('Gagal mencari alamat.');
+                setSearchResults([]);
+
+                return;
+            }
+
+            const results = (await response.json()) as MapSearchResult[];
+
+            setSearchResults(results);
+
+            if (results.length === 0) {
+                setSearchError('Alamat tidak ditemukan.');
+            }
+        } catch {
+            setSearchError('Gagal terhubung ke layanan peta.');
+            setSearchResults([]);
+        } finally {
+            setSearchLoading(false);
+        }
+    };
+
+    const chooseSearchResult = (result: MapSearchResult) => {
+        const latitude = Number(result.lat);
+        const longitude = Number(result.lon);
+
+        if (!validCoordinates(latitude, longitude)) {
+            setSearchError('Koordinat hasil pencarian tidak valid.');
+
+            return;
+        }
+
+        onChange(latitude, longitude);
+        setSearchQuery(result.display_name);
+        setSearchResults([]);
+        setSearchError('');
+    };
+
     return (
         <div>
             <div className="mb-2 flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
@@ -610,7 +683,54 @@ function LocationPicker({
                     Gunakan Lokasi Saat Ini
                 </Button>
             </div>
-            <div className="overflow-hidden rounded-md border bg-muted">
+            <div className="relative overflow-hidden rounded-md border bg-muted">
+                <div className="absolute top-3 right-3 z-[1000] w-[min(360px,calc(100%-1.5rem))]">
+                    <div className="grid gap-2 rounded-md border bg-background/95 p-2 shadow-lg backdrop-blur sm:grid-cols-[minmax(0,1fr)_auto]">
+                        <Input
+                            value={searchQuery}
+                            onChange={(event) =>
+                                setSearchQuery(event.target.value)
+                            }
+                            onKeyDown={(event) => {
+                                if (event.key !== 'Enter') {
+                                    return;
+                                }
+
+                                event.preventDefault();
+                                void searchAddress();
+                            }}
+                            placeholder="Cari alamat pickup"
+                        />
+                        <Button
+                            type="button"
+                            variant="outline"
+                            disabled={searchLoading}
+                            onClick={() => void searchAddress()}
+                        >
+                            <Search />
+                            {searchLoading ? 'Mencari...' : 'Cari'}
+                        </Button>
+                    </div>
+                    {searchResults.length > 0 ? (
+                        <div className="mt-2 max-h-48 overflow-auto rounded-md border bg-background shadow-lg">
+                            {searchResults.map((result) => (
+                                <button
+                                    key={result.place_id}
+                                    type="button"
+                                    onClick={() => chooseSearchResult(result)}
+                                    className="block w-full border-b px-3 py-2 text-left text-sm last:border-b-0 hover:bg-muted"
+                                >
+                                    {result.display_name}
+                                </button>
+                            ))}
+                        </div>
+                    ) : null}
+                    {searchError ? (
+                        <div className="mt-2 rounded-md border bg-background/95 px-3 py-2 shadow-lg">
+                            <InputError message={searchError} />
+                        </div>
+                    ) : null}
+                </div>
                 {leafletModules && markerIcon ? (
                     <ClientMap
                         hasCoordinates={hasCoordinates}
