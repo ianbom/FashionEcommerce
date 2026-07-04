@@ -35,11 +35,11 @@ class SettingManagementService
             'title' => 'Shipping Settings',
             'description' => 'Kelola alamat asal pengiriman dan kurir aktif. API key Biteship tetap disimpan di .env.',
             'fields' => [
+                ['key' => 'store_postal_code', 'label' => 'Store Postal Code', 'type' => 'string'],
                 ['key' => 'origin_address', 'label' => 'Origin Address', 'type' => 'string', 'input' => 'textarea'],
                 ['key' => 'origin_province', 'label' => 'Origin Province', 'type' => 'string'],
                 ['key' => 'origin_city', 'label' => 'Origin City', 'type' => 'string'],
                 ['key' => 'origin_district', 'label' => 'Origin District', 'type' => 'string'],
-                ['key' => 'store_postal_code', 'label' => 'Store Postal Code', 'type' => 'string'],
                 ['key' => 'origin_biteship_area_id', 'label' => 'Origin Biteship Area ID', 'type' => 'string'],
                 ['key' => 'store_latitude', 'label' => 'Store Latitude', 'type' => 'string', 'input' => 'number'],
                 ['key' => 'store_longitude', 'label' => 'Store Longitude', 'type' => 'string', 'input' => 'number'],
