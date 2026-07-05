@@ -6,10 +6,11 @@ import {
     LocateFixed,
     MapPin,
     Plus,
+    Search,
     Trash2,
     X,
 } from 'lucide-react';
-import type { FormEvent } from 'react';
+import type { FormEvent, HTMLAttributes } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type {
@@ -87,6 +88,8 @@ const EMPTY_FORM: AddressFormData = {
 const asText = (value: number | string | null | undefined): string =>
     value === null || value === undefined ? '' : String(value);
 
+const digitsOnly = (value: string): string => value.replace(/\D/g, '');
+
 const formDataFromAddress = (address?: Address): AddressFormData => {
     if (!address) {
         return { ...EMPTY_FORM };
@@ -95,13 +98,13 @@ const formDataFromAddress = (address?: Address): AddressFormData => {
     return {
         label: address.label ?? '',
         recipient_name: address.recipient_name,
-        recipient_phone: address.recipient_phone,
+        recipient_phone: digitsOnly(address.recipient_phone),
         full_address: address.full_address,
         province: address.province,
         city: address.city,
         district: address.district,
         subdistrict: address.subdistrict ?? '',
-        postal_code: address.postal_code,
+        postal_code: digitsOnly(address.postal_code),
         biteship_area_id: address.biteship_area_id ?? '',
         latitude: asText(address.latitude),
         longitude: asText(address.longitude),
@@ -113,6 +116,8 @@ const formDataFromAddress = (address?: Address): AddressFormData => {
 const normalizePayload = (data: AddressFormData) => {
     return {
         ...data,
+        recipient_phone: digitsOnly(data.recipient_phone),
+        postal_code: digitsOnly(data.postal_code),
         label: data.label.trim() === '' ? null : data.label.trim(),
         subdistrict:
             data.subdistrict.trim() === '' ? null : data.subdistrict.trim(),
@@ -145,6 +150,13 @@ type BiteshipArea = {
     postal_code: string | null;
     latitude: number | string | null;
     longitude: number | string | null;
+};
+
+type MapSearchResult = {
+    place_id: number;
+    display_name: string;
+    lat: string;
+    lon: string;
 };
 
 const formatCoordinate = (value: number): string => value.toFixed(7);
@@ -294,7 +306,7 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
     }, [areaQuery, areaSelectionLabel]);
 
     const chooseArea = (area: BiteshipArea) => {
-        const label = area.name ?? area.id;
+        const postalCode = digitsOnly(area.postal_code ?? form.data.postal_code);
 
         form.setData({
             ...form.data,
@@ -304,10 +316,10 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
             city: area.administrative_division_level_2_name ?? form.data.city,
             district:
                 area.administrative_division_level_3_name ?? form.data.district,
-            postal_code: area.postal_code ?? form.data.postal_code,
+            postal_code: postalCode,
         });
-        setAreaQuery(label);
-        setAreaSelectionLabel(label);
+        setAreaQuery(postalCode);
+        setAreaSelectionLabel(postalCode);
         setAreaResults([]);
         setAreaError('');
     };
@@ -630,10 +642,12 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                                         onChange={(value) =>
                                             form.setData(
                                                 'recipient_phone',
-                                                value,
+                                                digitsOnly(value),
                                             )
                                         }
                                         error={form.errors.recipient_phone}
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
                                     />
                                 </div>
                                 <div>
@@ -643,9 +657,13 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                                     <div>
                                         <input
                                             type="text"
+                                            inputMode="numeric"
+                                            pattern="[0-9]*"
                                             value={areaQuery}
                                             onChange={(event) => {
-                                                const value = event.target.value;
+                                                const value = digitsOnly(
+                                                    event.target.value,
+                                                );
 
                                                 setAreaQuery(value);
                                                 setAreaSelectionLabel('');
@@ -656,7 +674,7 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                                                     setAreaError('');
                                                 }
                                             }}
-                                             placeholder="Cari kecamatan, kota, kode pos"
+                                             placeholder="Masukkan kode pos"
                                             className="w-full rounded-md border border-[#EADBD8] bg-white px-4 py-2.5 text-[13px] text-[#333] transition-all focus:border-[#B6574B] focus:ring-1 focus:ring-[#B6574B] focus:outline-none"
                                         />
                                         {areaLoading && (
@@ -739,6 +757,8 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                                         value={form.data.postal_code}
                                         onChange={() => undefined}
                                         error={form.errors.postal_code}
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
                                         readOnly
                                     />
                                 </div>
@@ -831,6 +851,8 @@ type FieldProps = {
     value: string;
     onChange: (value: string) => void;
     error?: string;
+    inputMode?: HTMLAttributes<HTMLInputElement>['inputMode'];
+    pattern?: string;
     placeholder?: string;
     readOnly?: boolean;
 };
@@ -853,6 +875,10 @@ function LocationPicker({
     const [leafletModules, setLeafletModules] =
         useState<ReactLeafletModules | null>(null);
     const [markerIcon, setMarkerIcon] = useState<Icon | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState<MapSearchResult[]>([]);
+    const [searchLoading, setSearchLoading] = useState(false);
+    const [searchError, setSearchError] = useState('');
     const parsedLatitude = Number(latitude);
     const parsedLongitude = Number(longitude);
     const hasCoordinates = validCoordinates(parsedLatitude, parsedLongitude);
@@ -900,6 +926,68 @@ function LocationPicker({
         };
     }, []);
 
+    const searchAddress = async () => {
+        const query = searchQuery.trim();
+
+        if (query.length < 3) {
+            setSearchError('Masukkan minimal 3 karakter.');
+            setSearchResults([]);
+
+            return;
+        }
+
+        setSearchLoading(true);
+        setSearchError('');
+
+        try {
+            const params = new URLSearchParams({
+                format: 'json',
+                limit: '5',
+                q: query,
+            });
+            const response = await fetch(
+                `https://nominatim.openstreetmap.org/search?${params}`,
+                { headers: { Accept: 'application/json' } },
+            );
+
+            if (!response.ok) {
+                setSearchError('Gagal mencari alamat.');
+                setSearchResults([]);
+
+                return;
+            }
+
+            const results = (await response.json()) as MapSearchResult[];
+
+            setSearchResults(results);
+
+            if (results.length === 0) {
+                setSearchError('Alamat tidak ditemukan.');
+            }
+        } catch {
+            setSearchError('Gagal terhubung ke layanan peta.');
+            setSearchResults([]);
+        } finally {
+            setSearchLoading(false);
+        }
+    };
+
+    const chooseSearchResult = (result: MapSearchResult) => {
+        const latitude = Number(result.lat);
+        const longitude = Number(result.lon);
+
+        if (!validCoordinates(latitude, longitude)) {
+            setSearchError('Koordinat hasil pencarian tidak valid.');
+
+            return;
+        }
+
+        onChange(latitude, longitude);
+        setSearchQuery(result.display_name);
+        setSearchResults([]);
+        setSearchError('');
+    };
+
     return (
         <div>
             <div className="mb-2 flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
@@ -919,7 +1007,56 @@ function LocationPicker({
                     <LocateFixed size={14} /> Gunakan Lokasi Saat Ini
                 </button>
             </div>
-            <div className="overflow-hidden rounded-xl border border-[#EADBD8] bg-[#FAF9F6]">
+            <div className="relative overflow-hidden rounded-xl border border-[#EADBD8] bg-[#FAF9F6]">
+                <div className="absolute top-3 right-3 z-[1000] w-[min(320px,calc(100%-1.5rem))]">
+                    <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-1.5 rounded-md border border-[#EADBD8] bg-white/95 p-1.5 shadow-lg backdrop-blur">
+                        <input
+                            type="search"
+                            value={searchQuery}
+                            onChange={(event) =>
+                                setSearchQuery(event.target.value)
+                            }
+                            onKeyDown={(event) => {
+                                if (event.key !== 'Enter') {
+                                    return;
+                                }
+
+                                event.preventDefault();
+                                void searchAddress();
+                            }}
+                            placeholder="Cari alamat"
+                            className="h-8 min-w-0 rounded border border-[#EADBD8] bg-white px-2 text-[11px] text-[#333] outline-none transition-colors focus:border-[#B6574B]"
+                        />
+                        <button
+                            type="button"
+                            disabled={searchLoading}
+                            onClick={() => void searchAddress()}
+                            className="inline-flex h-8 items-center justify-center gap-1 rounded border border-[#EADBD8] bg-white px-2 text-[11px] font-bold text-[#4A4A4A] transition-colors hover:border-[#B6574B] hover:bg-[#FAF9F6] disabled:cursor-not-allowed disabled:opacity-70"
+                        >
+                            <Search size={13} />
+                            {searchLoading ? '...' : 'Cari'}
+                        </button>
+                    </div>
+                    {searchResults.length > 0 && (
+                        <div className="mt-2 max-h-44 overflow-auto rounded-md border border-[#EADBD8] bg-white text-[#4A4A4A] shadow-lg">
+                            {searchResults.map((result) => (
+                                <button
+                                    key={result.place_id}
+                                    type="button"
+                                    onClick={() => chooseSearchResult(result)}
+                                    className="block w-full border-b border-[#EADBD8] px-3 py-2 text-left text-[11px] leading-relaxed last:border-b-0 hover:bg-[#FAF9F6]"
+                                >
+                                    {result.display_name}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                    {searchError && (
+                        <div className="mt-2 rounded-md border border-[#EADBD8] bg-white/95 px-3 py-2 text-[11px] font-medium text-[#B24B4B] shadow-lg">
+                            {searchError}
+                        </div>
+                    )}
+                </div>
                 {leafletModules && markerIcon ? (
                     <ClientMap
                         hasCoordinates={hasCoordinates}
@@ -1037,6 +1174,8 @@ function InputBlock({
     onChange,
     placeholder,
     error,
+    inputMode,
+    pattern,
     readOnly = false,
 }: FieldProps) {
     return (
@@ -1046,6 +1185,8 @@ function InputBlock({
             </label>
             <input
                 type="text"
+                inputMode={inputMode}
+                pattern={pattern}
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
                 placeholder={placeholder}

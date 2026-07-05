@@ -41,6 +41,9 @@ class MidtransService
                 'unit' => 'minutes',
                 'duration' => (int) ($this->settings->first(['payment_expiry_duration'], '1440') ?: 1440),
             ],
+            'callbacks' => [
+                'finish' => route('my-order'),
+            ],
         ]);
 
         if (! $response->successful()) {

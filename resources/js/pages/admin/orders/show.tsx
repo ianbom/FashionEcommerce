@@ -370,6 +370,25 @@ function getShipmentLabelUrl(shipment: Order['shipment']): string | null {
     return null;
 }
 
+function getPaymentValue(payment: Order['payment'], key: string): unknown {
+    return payment?.[key];
+}
+
+function getMidtransSnapUrl(payment: Order['payment']): string | null {
+    const redirectUrl = getPaymentValue(payment, 'midtrans_redirect_url');
+    const snapToken = getPaymentValue(payment, 'midtrans_snap_token');
+
+    if (typeof redirectUrl === 'string' && redirectUrl.length > 0) {
+        return redirectUrl;
+    }
+
+    if (typeof snapToken === 'string' && snapToken.length > 0) {
+        return `https://app.midtrans.com/snap/v2/vtweb/${snapToken}`;
+    }
+
+    return null;
+}
+
 export default function OrderShow({ order }: Props) {
     const [pendingStatusChange, setPendingStatusChange] =
         useState<PendingStatusChange>(null);
@@ -468,6 +487,7 @@ export default function OrderShow({ order }: Props) {
     );
     const customerPhone = order.customer_phone?.replace(/\D/g, '');
     const shipmentLabelUrl = getShipmentLabelUrl(order.shipment);
+    const midtransSnapUrl = getMidtransSnapUrl(order.payment);
     const hasSidebar = ['overview', 'fulfillment'].includes(activeTab);
 
     return (
@@ -495,9 +515,21 @@ export default function OrderShow({ order }: Props) {
                             <ActionButton onClick={() => window.print()}>
                                 <Printer size={14} /> Print invoice
                             </ActionButton>
-                            <ActionLink href={`mailto:${order.customer_email}`}>
-                                <MessageCircle size={14} /> Contact customer
-                            </ActionLink>
+                            {midtransSnapUrl ? (
+                                <ActionLink href={midtransSnapUrl} external>
+                                    <CreditCard size={14} /> Lihat Bukti
+                                    Pembayaran
+                                </ActionLink>
+                            ) : (
+                                <button
+                                    type="button"
+                                    disabled
+                                    className="group inline-flex h-9 cursor-not-allowed items-center justify-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-400 shadow-sm"
+                                >
+                                    <CreditCard size={14} /> Lihat Bukti
+                                    Pembayaran
+                                </button>
+                            )}
                             <label
                                 className="sr-only"
                                 htmlFor="order-status-action"

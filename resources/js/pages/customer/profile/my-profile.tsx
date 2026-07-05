@@ -257,10 +257,7 @@ export default function MyProfile() {
         };
     }, [avatarPreview]);
 
-    const avatarSrc =
-        avatarPreview ||
-        user.avatar_url ||
-        '/img/m-ghufanil-muta-ali-vAyDuvcjXcs-unsplash.webp';
+    const avatarSrc = avatarPreview || user.avatar_url;
 
     return (
         <ProfileLayout
@@ -277,11 +274,17 @@ export default function MyProfile() {
             <div className="animate-fade-in-up flex flex-col items-start justify-between border-b border-[#EADBD8] pb-8 md:flex-row md:items-center">
                 <div className="mb-6 flex items-center space-x-6 md:mb-0">
                     <div className="relative h-20 w-20 overflow-hidden rounded-full border border-[#EADBD8] md:h-24 md:w-24">
-                        <img
-                            src={avatarSrc}
-                            alt={user.name}
-                            className="h-full w-full object-cover"
-                        />
+                        {avatarSrc ? (
+                            <img
+                                src={avatarSrc}
+                                alt={user.name}
+                                className="h-full w-full object-cover"
+                            />
+                        ) : (
+                            <div className="flex h-full w-full items-center justify-center bg-[#F6EFEC] text-[#8A6B62]">
+                                <User size={34} strokeWidth={1.6} />
+                            </div>
+                        )}
                     </div>
                     <div>
                         <h2 className="mb-1 font-serif text-xl text-[#4A2525] md:text-2xl">

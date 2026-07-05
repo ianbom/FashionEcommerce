@@ -79,7 +79,7 @@ export default function ProfileLayout({
                 {/* Background Image / Pattern */}
                 <div className="absolute inset-0 z-0">
                     <img
-                        src="/img/ike-ellyana-2F70bGqQVa4-unsplash.webp"
+                        src="/banner/shayda-banner.png"
                         alt="Latar hero"
                         className="h-full w-full object-cover opacity-60"
                     />

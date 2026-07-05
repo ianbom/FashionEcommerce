@@ -14,13 +14,17 @@ import {
     UserRound,
     WalletCards,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { ComponentType, ReactNode } from 'react';
 import {
     cancel as orderCancel,
     index as orderIndex,
 } from '@/actions/App/Http/Controllers/Customer/OrderController';
 import { show as productShow } from '@/actions/App/Http/Controllers/Customer/ProductController';
+import {
+    downloadPaymentProofPdf,
+    PaymentProofInvoiceDocument,
+} from '@/components/customer/payment-proof-invoice';
 import ProfileLayout from '@/layouts/profile-layout';
 
 type IconComponent = ComponentType<{
@@ -456,6 +460,8 @@ function getMidtransReceiptUrl(payment: Payment | null): string | null {
 export default function DetailOrder({ order, support }: Props) {
     const [isCancelling, setIsCancelling] = useState(false);
     const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+    const [isDownloadingProof, setIsDownloadingProof] = useState(false);
+    const paymentProofRef = useRef<HTMLDivElement>(null);
     const progressSteps = buildProgress(order);
     const courier = [
         order.shipment?.courier_company,
@@ -482,6 +488,20 @@ export default function DetailOrder({ order, support }: Props) {
         : getMidtransReceiptUrl(order.payment);
     const canPay = order.payment_status === 'pending' && !!paymentReceiptUrl;
     const canCancelOrder = order.payment_status === 'pending';
+
+    const downloadPaymentProof = async () => {
+        if (!paymentProofRef.current || isDownloadingProof) {
+            return;
+        }
+
+        setIsDownloadingProof(true);
+
+        try {
+            await downloadPaymentProofPdf(paymentProofRef.current, order);
+        } finally {
+            setIsDownloadingProof(false);
+        }
+    };
 
     const cancelOrder = () => {
         if (isCancelling) {
@@ -591,10 +611,22 @@ export default function DetailOrder({ order, support }: Props) {
                                 }
                             />
                             <ActionButton
-                                href={paymentReceiptUrl}
-                                external
+                                href={canPay ? paymentReceiptUrl : undefined}
+                                external={canPay}
+                                disabled={isDownloadingProof}
+                                onClick={
+                                    canPay
+                                        ? undefined
+                                        : () => void downloadPaymentProof()
+                                }
                                 icon={ReceiptText}
-                                label={canPay ? 'Bayar Sekarang' : 'Bukti Pembayaran'}
+                                label={
+                                    canPay
+                                        ? 'Bayar Sekarang'
+                                        : isDownloadingProof
+                                          ? 'Mengunduh...'
+                                          : 'Bukti Pembayaran'
+                                }
                             />
                             <ActionButton
                                 href={support.whatsapp_url}
@@ -996,6 +1028,22 @@ export default function DetailOrder({ order, support }: Props) {
                 </aside>
             </div>
 
+
+            <div
+                style={{
+                    left: 0,
+                    pointerEvents: 'none',
+                    position: 'fixed',
+                    top: -10000,
+                }}
+            >
+                <div ref={paymentProofRef}>
+                    <PaymentProofInvoiceDocument
+                        fallbackImage={FALLBACK_IMAGE}
+                        order={order}
+                    />
+                </div>
+            </div>
             {isCancelModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4 backdrop-blur-sm">
                     <div className="w-full max-w-md overflow-hidden rounded-3xl border border-red-100 bg-white shadow-2xl shadow-black/20">
