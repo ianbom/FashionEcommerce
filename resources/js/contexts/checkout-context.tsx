@@ -80,11 +80,19 @@ export type CheckoutStoreLocation = {
     longitude: string | null;
 };
 
+export type ManualPayment = {
+    whatsapp_number: string;
+    bank_name: string;
+    bank_account_number: string;
+    bank_account_name: string;
+};
+
 type CheckoutContextValue = {
     addresses: CheckoutAddress[];
     appliedVoucher: Voucher;
     applyVoucher: (code: string) => Promise<void>;
     cartItems: CheckoutItem[];
+    manualPayment: ManualPayment;
     errors: Record<string, string>;
     loadShippingRates: (
         addressId: number,
@@ -163,6 +171,7 @@ export function CheckoutProvider({
     cartItems,
     children,
     defaultAddressId,
+    manualPayment,
     selectedShippingRate,
     storeLocation,
     summary,
@@ -172,6 +181,7 @@ export function CheckoutProvider({
     cartItems: CheckoutItem[];
     children: ReactNode;
     defaultAddressId: number | null;
+    manualPayment: ManualPayment;
     selectedShippingRate: ShippingRate | null;
     storeLocation: CheckoutStoreLocation;
     summary: CheckoutSummary;
@@ -367,6 +377,7 @@ export function CheckoutProvider({
         () => ({
             addresses,
             appliedVoucher: currentVoucher,
+            manualPayment,
             applyVoucher,
             cartItems,
             errors,
@@ -393,6 +404,7 @@ export function CheckoutProvider({
             currentVoucher,
             errors,
             loadShippingRates,
+            manualPayment,
             placeOrder,
             placingOrder,
             rates,

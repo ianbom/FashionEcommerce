@@ -141,6 +141,8 @@ Route::middleware(['auth', 'admin', 'admin.activity'])->prefix('admin')->name('a
     Route::get('payments', [PaymentController::class, 'index'])->name('payments.index');
     Route::get('payments/{payment}', [PaymentController::class, 'show'])->name('payments.show');
     Route::post('payments/{payment}/sync', [PaymentController::class, 'sync'])->name('payments.sync');
+    Route::post('payments/{payment}/confirm', [PaymentController::class, 'confirm'])->name('payments.confirm');
+    Route::post('payments/{payment}/cancel', [PaymentController::class, 'cancel'])->name('payments.cancel');
     Route::get('payment-logs', [PaymentLogController::class, 'index'])->name('payment-logs.index');
     Route::get('payment-logs/{paymentLog}', [PaymentLogController::class, 'show'])->name('payment-logs.show');
 

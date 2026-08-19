@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { RefreshCw } from 'lucide-react';
+import { Check, RefreshCw, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -33,6 +33,8 @@ type Payment = {
     paid_at: string | null;
     expired_at: string | null;
     raw_response: unknown;
+    can_confirm: boolean;
+    can_cancel: boolean;
     logs: {
         id: number;
         event_type: string | null;
@@ -58,12 +60,51 @@ export default function PaymentShow({ payment }: Props) {
                     }
                     description="Detail transaksi Midtrans, related order, raw response, dan payment logs."
                     action={
-                        <Button
-                            type="button"
-                            onClick={() => router.post(`/admin/payments/${payment.id}/sync`, {}, { preserveScroll: true })}
-                        >
-                            <RefreshCw /> Sync Status
-                        </Button>
+                        <div className="flex gap-2">
+                            {payment.can_confirm && (
+                                <Button
+                                    type="button"
+                                    onClick={() =>
+                                        router.post(
+                                            `/admin/payments/${payment.id}/confirm`,
+                                            {},
+                                            { preserveScroll: true },
+                                        )
+                                    }
+                                >
+                                    <Check /> Konfirmasi
+                                </Button>
+                            )}
+                            {payment.can_cancel && (
+                                <Button
+                                    type="button"
+                                    variant="destructive"
+                                    onClick={() =>
+                                        router.post(
+                                            `/admin/payments/${payment.id}/cancel`,
+                                            {},
+                                            { preserveScroll: true },
+                                        )
+                                    }
+                                >
+                                    <X /> Batalkan
+                                </Button>
+                            )}
+                            {payment.payment_provider === 'midtrans' && (
+                                <Button
+                                    type="button"
+                                    onClick={() =>
+                                        router.post(
+                                            `/admin/payments/${payment.id}/sync`,
+                                            {},
+                                            { preserveScroll: true },
+                                        )
+                                    }
+                                >
+                                    <RefreshCw /> Sync Status
+                                </Button>
+                            )}
+                        </div>
                     }
                 />
                 <div className="grid gap-4 md:grid-cols-4">

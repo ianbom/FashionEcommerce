@@ -2,6 +2,7 @@
 
 namespace App\Services\Admin;
 
+use App\Actions\Payments\ManageManualPaymentAction;
 use App\Actions\Payments\SyncMidtransPaymentAction;
 use App\Models\Payment;
 use Illuminate\Http\Request;
@@ -10,7 +11,10 @@ class PaymentManagementService
 {
     use ResolvesAdminPagination;
 
-    public function __construct(private readonly SyncMidtransPaymentAction $syncPayment) {}
+    public function __construct(
+        private readonly SyncMidtransPaymentAction $syncPayment,
+        private readonly ManageManualPaymentAction $manualPayment,
+    ) {}
 
     public function indexData(Request $request): array
     {
@@ -63,6 +67,8 @@ class PaymentManagementService
                 'midtrans_redirect_url' => $payment->midtrans_redirect_url,
                 'currency' => $payment->currency,
                 'raw_response' => $payment->raw_response,
+                'can_confirm' => $payment->payment_provider === 'manual' && $payment->order?->payment_status === 'pending',
+                'can_cancel' => $payment->payment_provider === 'manual' && $payment->order?->payment_status === 'pending',
                 'order' => $payment->order,
                 'logs' => $payment->logs->map(fn ($log): array => [
                     'id' => $log->id,
@@ -78,6 +84,16 @@ class PaymentManagementService
     public function sync(Payment $payment): void
     {
         $this->syncPayment->execute($payment);
+    }
+
+    public function confirm(Payment $payment): void
+    {
+        $this->manualPayment->confirm($payment);
+    }
+
+    public function cancel(Payment $payment): void
+    {
+        $this->manualPayment->cancel($payment);
     }
 
     public function row(Payment $payment): array
@@ -98,5 +114,4 @@ class PaymentManagementService
             'created_at' => $payment->created_at?->toFormattedDateString(),
         ];
     }
-
 }

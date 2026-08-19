@@ -72,5 +72,5 @@ test('order detail exposes tracking and whatsapp support urls', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('customer/order/detail-order')
             ->where('order.shipment.tracking_url', 'https://track.biteship.test/order-2')
-            ->where('support.whatsapp_url', 'https://wa.me/6281234567890?text=Halo%2C%20saya%20butuh%20bantuan%20untuk%20pesanan%20ORD-LINK-1.'));
+            ->where('support.whatsapp_url', 'https://wa.me/6285736426304 ?text=Halo%2C%20saya%20butuh%20bantuan%20untuk%20pesanan%20ORD-LINK-1.'));
 });

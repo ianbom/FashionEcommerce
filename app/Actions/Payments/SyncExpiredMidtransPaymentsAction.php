@@ -23,6 +23,7 @@ class SyncExpiredMidtransPaymentsAction
 
         Payment::query()
             ->with('order')
+            ->where('payment_provider', 'midtrans')
             ->whereIn('transaction_status', ['pending', 'authorize'])
             ->whereNull('midtrans_transaction_id')
             ->whereNull('payment_method')
@@ -86,6 +87,7 @@ class SyncExpiredMidtransPaymentsAction
     private function midtransOwnedExpiredPaymentsCount(): int
     {
         return Payment::query()
+            ->where('payment_provider', 'midtrans')
             ->whereIn('transaction_status', ['pending', 'authorize'])
             ->where(fn ($query) => $query
                 ->whereNotNull('midtrans_transaction_id')

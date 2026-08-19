@@ -25,9 +25,12 @@ class SettingManagementService
         ],
         'payment' => [
             'title' => 'Payment Settings',
-            'description' => 'Simpan konfigurasi pembayaran non-sensitif. Server key tetap dikelola dari .env.',
+            'description' => 'Kelola rekening dan WhatsApp untuk pembayaran transfer manual. Konfigurasi Midtrans tetap di .env untuk aktivasi berikutnya.',
             'fields' => [
-                ['key' => 'payment_expiry_duration', 'label' => 'Payment Expiry Duration (minutes)', 'type' => 'number', 'input' => 'number'],
+                ['key' => 'payment_whatsapp_number', 'label' => 'WhatsApp Payment Number', 'type' => 'string'],
+                ['key' => 'bank_name', 'label' => 'Bank Name', 'type' => 'string'],
+                ['key' => 'bank_account_number', 'label' => 'Bank Account Number', 'type' => 'string'],
+                ['key' => 'bank_account_name', 'label' => 'Bank Account Holder', 'type' => 'string'],
                 ['key' => 'payment_service_fee', 'label' => 'Payment Service Fee', 'type' => 'number', 'input' => 'number'],
             ],
         ],
@@ -76,7 +79,9 @@ class SettingManagementService
             SiteSetting::query()->updateOrCreate(
                 ['key' => $key],
                 [
-                    'value' => $this->normalizeValue($validated[$key]),
+                    'value' => $key === 'payment_whatsapp_number'
+                        ? preg_replace('/\D+/', '', (string) $validated[$key])
+                        : $this->normalizeValue($validated[$key]),
                     'type' => $field['type'],
                 ],
             );

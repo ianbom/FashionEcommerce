@@ -1,5 +1,10 @@
 import { router, useForm } from '@inertiajs/react';
-import type { Icon, LatLng, LeafletMouseEvent, Map as LeafletMap } from 'leaflet';
+import type {
+    Icon,
+    LatLng,
+    LeafletMouseEvent,
+    Map as LeafletMap,
+} from 'leaflet';
 import {
     AlertCircle,
     Edit2,
@@ -88,7 +93,8 @@ const EMPTY_FORM: AddressFormData = {
 const asText = (value: number | string | null | undefined): string =>
     value === null || value === undefined ? '' : String(value);
 
-const digitsOnly = (value: string): string => value.replace(/\D/g, '');
+const digitsOnly = (value: number | string | null | undefined): string =>
+    String(value ?? '').replace(/\D/g, '');
 
 const formDataFromAddress = (address?: Address): AddressFormData => {
     if (!address) {
@@ -147,7 +153,7 @@ type BiteshipArea = {
     administrative_division_level_2_name: string | null;
     administrative_division_level_3_name: string | null;
     administrative_division_level_4_name: string | null;
-    postal_code: string | null;
+    postal_code: number | string | null;
     latitude: number | string | null;
     longitude: number | string | null;
 };
@@ -288,7 +294,10 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
 
                 setAreaResults(payload.areas ?? []);
             } catch (error) {
-                if (error instanceof DOMException && error.name === 'AbortError') {
+                if (
+                    error instanceof DOMException &&
+                    error.name === 'AbortError'
+                ) {
                     return;
                 }
 
@@ -306,17 +315,18 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
     }, [areaQuery, areaSelectionLabel]);
 
     const chooseArea = (area: BiteshipArea) => {
-        const postalCode = digitsOnly(area.postal_code ?? form.data.postal_code);
+        const postalCode = digitsOnly(area.postal_code ?? areaQuery);
 
         form.setData({
             ...form.data,
             biteship_area_id: area.id,
-            province:
-                area.administrative_division_level_1_name ?? form.data.province,
-            city: area.administrative_division_level_2_name ?? form.data.city,
-            district:
-                area.administrative_division_level_3_name ?? form.data.district,
+            province: area.administrative_division_level_1_name ?? '',
+            city: area.administrative_division_level_2_name ?? '',
+            district: area.administrative_division_level_3_name ?? '',
+            subdistrict: area.administrative_division_level_4_name ?? '',
             postal_code: postalCode,
+            latitude: asText(area.latitude),
+            longitude: asText(area.longitude),
         });
         setAreaQuery(postalCode);
         setAreaSelectionLabel(postalCode);
@@ -468,7 +478,7 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                                 {address.is_default && (
                                     <div className="absolute top-0 right-8 -translate-y-1/2">
                                         <span className="rounded-full bg-[#4A2525] px-3 py-1 text-[10px] font-bold text-white shadow-sm">
-                                             Alamat Utama
+                                            Alamat Utama
                                         </span>
                                     </div>
                                 )}
@@ -538,8 +548,8 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                                         className="w-full rounded-lg border border-[#EADBD8] py-2.5 text-[12px] font-bold text-[#4A4A4A] transition-colors hover:border-[#B6574B] hover:bg-[#FAF9F6] disabled:cursor-not-allowed disabled:opacity-60"
                                     >
                                         {defaultingThis
-                                             ? 'Menjadikan utama...'
-                                             : 'Jadikan utama'}
+                                            ? 'Menjadikan utama...'
+                                            : 'Jadikan utama'}
                                     </button>
                                 )}
 
@@ -549,10 +559,10 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                                             <AlertCircle size={24} />
                                         </div>
                                         <h4 className="mb-1 text-[14px] font-bold text-[#333]">
-                                             Hapus alamat ini?
+                                            Hapus alamat ini?
                                         </h4>
                                         <p className="mb-4 text-[11px] text-[#8A6B62]">
-                                             Tindakan ini tidak dapat dibatalkan.
+                                            Tindakan ini tidak dapat dibatalkan.
                                         </p>
                                         <div className="flex w-full space-x-3">
                                             <button
@@ -563,7 +573,7 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                                                 }
                                                 className="flex-1 rounded-lg border border-[#EADBD8] py-2 text-[12px] font-bold text-[#4A4A4A] transition-colors hover:bg-[#FAF9F6]"
                                             >
-                                                 Batal
+                                                Batal
                                             </button>
                                             <button
                                                 type="button"
@@ -574,8 +584,8 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                                                 className="flex-1 rounded-lg bg-[#EF4444] py-2 text-[12px] font-bold text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
                                             >
                                                 {deletingThis
-                                                     ? 'Menghapus...'
-                                                     : 'Hapus'}
+                                                    ? 'Menghapus...'
+                                                    : 'Hapus'}
                                             </button>
                                         </div>
                                     </div>
@@ -590,255 +600,260 @@ export default function ManageAddress({ addresses, redirectTo = '' }: Props) {
                 typeof document !== 'undefined' &&
                 createPortal(
                     <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
-                    <div
-                        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-                        onClick={closeModal}
-                    />
-                    <div className="relative z-[10001] flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
-                        <div className="flex items-center justify-between border-b border-[#EADBD8] bg-[#FAF9F6] px-6 py-4">
-                            <h3 className="font-serif text-lg text-[#4A2525]">
-                                {editingAddress
-                                     ? 'Edit Alamat'
-                                     : 'Tambah Alamat Baru'}
-                            </h3>
-                            <button
-                                type="button"
-                                onClick={closeModal}
-                                className="p-1 text-[#C99A8F] transition-colors hover:text-[#333]"
-                            >
-                                <X size={20} />
-                            </button>
-                        </div>
-
-                        <form
-                            onSubmit={submit}
-                            className="flex min-h-0 flex-1 flex-col"
-                        >
-                            <div className="custom-scrollbar space-y-4 overflow-y-auto p-6">
-                                <InputBlock
-                                     label="Label Alamat"
-                                    value={form.data.label}
-                                    onChange={(value) =>
-                                        form.setData('label', value)
-                                    }
-                                     placeholder="mis. Rumah, Kantor"
-                                    error={form.errors.label}
-                                />
-                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                    <InputBlock
-                                         label="Nama Penerima"
-                                        value={form.data.recipient_name}
-                                        onChange={(value) =>
-                                            form.setData(
-                                                'recipient_name',
-                                                value,
-                                            )
-                                        }
-                                        error={form.errors.recipient_name}
-                                    />
-                                    <InputBlock
-                                         label="Nomor Telepon"
-                                        value={form.data.recipient_phone}
-                                        onChange={(value) =>
-                                            form.setData(
-                                                'recipient_phone',
-                                                digitsOnly(value),
-                                            )
-                                        }
-                                        error={form.errors.recipient_phone}
-                                        inputMode="numeric"
-                                        pattern="[0-9]*"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="mb-1.5 block text-[11px] font-semibold text-[#4A4A4A]">
-                                         Cari berdasarkan Kode Pos
-                                    </label>
-                                    <div>
-                                        <input
-                                            type="text"
-                                            inputMode="numeric"
-                                            pattern="[0-9]*"
-                                            value={areaQuery}
-                                            onChange={(event) => {
-                                                const value = digitsOnly(
-                                                    event.target.value,
-                                                );
-
-                                                setAreaQuery(value);
-                                                setAreaSelectionLabel('');
-
-                                                if (value.trim().length < 3) {
-                                                    setAreaLoading(false);
-                                                    setAreaResults([]);
-                                                    setAreaError('');
-                                                }
-                                            }}
-                                             placeholder="Masukkan kode pos"
-                                            className="w-full rounded-md border border-[#EADBD8] bg-white px-4 py-2.5 text-[13px] text-[#333] transition-all focus:border-[#B6574B] focus:ring-1 focus:ring-[#B6574B] focus:outline-none"
-                                        />
-                                        {areaLoading && (
-                                            <p className="mt-1.5 text-[11px] text-[#8A6B62]">
-                                                Mencari area...
-                                            </p>
-                                        )}
-                                    </div>
-                                    {form.data.biteship_area_id && (
-                                        <p className="mt-1.5 text-[11px] text-[#8A6B62]">
-                                            Area ID:{' '}
-                                            {form.data.biteship_area_id}
-                                        </p>
-                                    )}
-                                    {areaResults.length > 0 && (
-                                        <div className="mt-2 max-h-48 overflow-y-auto rounded-md border border-[#EADBD8] bg-white">
-                                            {areaResults.map((area) => (
-                                                <button
-                                                    key={area.id}
-                                                    type="button"
-                                                    onClick={() =>
-                                                        chooseArea(area)
-                                                    }
-                                                    className="block w-full border-b border-[#F1EEE8] px-4 py-2 text-left text-[12px] hover:bg-[#FAF9F6]"
-                                                >
-                                                    <span className="font-semibold text-[#333]">
-                                                        {area.name ?? area.id}
-                                                    </span>
-                                                    <span className="block text-[#8A6B62]">
-                                                        {[
-                                                            area.administrative_division_level_3_name,
-                                                            area.administrative_division_level_2_name,
-                                                            area.administrative_division_level_1_name,
-                                                            area.postal_code,
-                                                        ]
-                                                            .filter(Boolean)
-                                                            .join(', ')}
-                                                    </span>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-                                    {areaError && (
-                                        <p className="mt-1.5 text-[11px] font-medium text-[#B24B4B]">
-                                            {areaError}
-                                        </p>
-                                    )}
-                                    {form.errors.biteship_area_id && (
-                                        <p className="mt-1.5 text-[11px] font-medium text-[#B24B4B]">
-                                            {form.errors.biteship_area_id}
-                                        </p>
-                                    )}
-                                </div>
-                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                    <InputBlock
-                                         label="Provinsi"
-                                        value={form.data.province}
-                                        onChange={() => undefined}
-                                        error={form.errors.province}
-                                        readOnly
-                                    />
-                                    <InputBlock
-                                         label="Kota"
-                                        value={form.data.city}
-                                        onChange={() => undefined}
-                                        error={form.errors.city}
-                                        readOnly
-                                    />
-                                </div>
-                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                    <InputBlock
-                                         label="Kecamatan"
-                                        value={form.data.district}
-                                        onChange={() => undefined}
-                                        error={form.errors.district}
-                                        readOnly
-                                    />
-                                    <InputBlock
-                                         label="Kode Pos"
-                                        value={form.data.postal_code}
-                                        onChange={() => undefined}
-                                        error={form.errors.postal_code}
-                                        inputMode="numeric"
-                                        pattern="[0-9]*"
-                                        readOnly
-                                    />
-                                </div>
-                                <InputBlock
-                                     label="Kelurahan"
-                                    value={form.data.subdistrict}
-                                    onChange={(value) =>
-                                        form.setData('subdistrict', value)
-                                    }
-                                    error={form.errors.subdistrict}
-                                />
-                                <LocationPicker
-                                    latitude={form.data.latitude}
-                                    longitude={form.data.longitude}
-                                    error={
-                                        mapError ||
-                                        form.errors.latitude ||
-                                        form.errors.longitude
-                                    }
-                                    onChange={updateCoordinates}
-                                    onUseCurrentLocation={useCurrentLocation}
-                                />
-                                <TextareaBlock
-                                     label="Alamat Lengkap"
-                                    value={form.data.full_address}
-                                    onChange={(value) =>
-                                        form.setData('full_address', value)
-                                    }
-                                     placeholder="Nama jalan, gedung, nomor rumah"
-                                    error={form.errors.full_address}
-                                />
-                                <TextareaBlock
-                                     label="Catatan Alamat (opsional)"
-                                    value={form.data.note}
-                                    onChange={(value) =>
-                                        form.setData('note', value)
-                                    }
-                                     placeholder="Patokan, catatan pengiriman, dll."
-                                    error={form.errors.note}
-                                />
-                                <label className="flex items-center pt-2">
-                                    <input
-                                        type="checkbox"
-                                        checked={form.data.is_default}
-                                        onChange={(event) =>
-                                            form.setData(
-                                                'is_default',
-                                                event.target.checked,
-                                            )
-                                        }
-                                        className="h-4 w-4 rounded border-[#EADBD8] text-[#4A2525] focus:ring-[#B6574B]"
-                                    />
-                                    <span className="ml-2 cursor-pointer text-[12px] font-medium text-[#4A4A4A]">
-                                        Jadikan alamat utama
-                                    </span>
-                                </label>
-                            </div>
-
-                            <div className="flex justify-end gap-3 border-t border-[#EADBD8] bg-[#FAF9F6] px-6 py-4">
+                        <div
+                            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                            onClick={closeModal}
+                        />
+                        <div className="relative z-[10001] flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+                            <div className="flex items-center justify-between border-b border-[#EADBD8] bg-[#FAF9F6] px-6 py-4">
+                                <h3 className="font-serif text-lg text-[#4A2525]">
+                                    {editingAddress
+                                        ? 'Edit Alamat'
+                                        : 'Tambah Alamat Baru'}
+                                </h3>
                                 <button
                                     type="button"
                                     onClick={closeModal}
-                                    className="rounded-md border border-[#EADBD8] px-6 py-2.5 text-[12px] font-bold text-[#4A4A4A] transition-colors hover:bg-white"
+                                    className="p-1 text-[#C99A8F] transition-colors hover:text-[#333]"
                                 >
-                                    Batal
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={form.processing}
-                                    className="rounded-md bg-[#4A2525] px-6 py-2.5 text-[12px] font-bold text-white transition-colors hover:bg-[#5F1717] disabled:cursor-not-allowed disabled:opacity-70"
-                                >
-                                    {form.processing
-                                         ? 'Menyimpan...'
-                                        : editingAddress
-                                           ? 'Perbarui Alamat'
-                                           : 'Simpan Alamat'}
+                                    <X size={20} />
                                 </button>
                             </div>
-                        </form>
-                    </div>
+
+                            <form
+                                onSubmit={submit}
+                                className="flex min-h-0 flex-1 flex-col"
+                            >
+                                <div className="custom-scrollbar space-y-4 overflow-y-auto p-6">
+                                    <InputBlock
+                                        label="Label Alamat"
+                                        value={form.data.label}
+                                        onChange={(value) =>
+                                            form.setData('label', value)
+                                        }
+                                        placeholder="mis. Rumah, Kantor"
+                                        error={form.errors.label}
+                                    />
+                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                        <InputBlock
+                                            label="Nama Penerima"
+                                            value={form.data.recipient_name}
+                                            onChange={(value) =>
+                                                form.setData(
+                                                    'recipient_name',
+                                                    value,
+                                                )
+                                            }
+                                            error={form.errors.recipient_name}
+                                        />
+                                        <InputBlock
+                                            label="Nomor Telepon"
+                                            value={form.data.recipient_phone}
+                                            onChange={(value) =>
+                                                form.setData(
+                                                    'recipient_phone',
+                                                    digitsOnly(value),
+                                                )
+                                            }
+                                            error={form.errors.recipient_phone}
+                                            inputMode="numeric"
+                                            pattern="[0-9]*"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="mb-1.5 block text-[11px] font-semibold text-[#4A4A4A]">
+                                            Cari berdasarkan Kode Pos
+                                        </label>
+                                        <div>
+                                            <input
+                                                type="text"
+                                                inputMode="numeric"
+                                                pattern="[0-9]*"
+                                                value={areaQuery}
+                                                onChange={(event) => {
+                                                    const value = digitsOnly(
+                                                        event.target.value,
+                                                    );
+
+                                                    setAreaQuery(value);
+                                                    setAreaSelectionLabel('');
+
+                                                    if (
+                                                        value.trim().length < 3
+                                                    ) {
+                                                        setAreaLoading(false);
+                                                        setAreaResults([]);
+                                                        setAreaError('');
+                                                    }
+                                                }}
+                                                placeholder="Masukkan kode pos"
+                                                className="w-full rounded-md border border-[#EADBD8] bg-white px-4 py-2.5 text-[13px] text-[#333] transition-all focus:border-[#B6574B] focus:ring-1 focus:ring-[#B6574B] focus:outline-none"
+                                            />
+                                            {areaLoading && (
+                                                <p className="mt-1.5 text-[11px] text-[#8A6B62]">
+                                                    Mencari area...
+                                                </p>
+                                            )}
+                                        </div>
+                                        {form.data.biteship_area_id && (
+                                            <p className="mt-1.5 text-[11px] text-[#8A6B62]">
+                                                Area ID:{' '}
+                                                {form.data.biteship_area_id}
+                                            </p>
+                                        )}
+                                        {areaResults.length > 0 && (
+                                            <div className="relative z-[1001] mt-2 max-h-48 overflow-y-auto rounded-md border border-[#EADBD8] bg-white">
+                                                {areaResults.map((area) => (
+                                                    <button
+                                                        key={area.id}
+                                                        type="button"
+                                                        onClick={() =>
+                                                            chooseArea(area)
+                                                        }
+                                                        className="block w-full border-b border-[#F1EEE8] px-4 py-2 text-left text-[12px] hover:bg-[#FAF9F6]"
+                                                    >
+                                                        <span className="font-semibold text-[#333]">
+                                                            {area.name ??
+                                                                area.id}
+                                                        </span>
+                                                        <span className="block text-[#8A6B62]">
+                                                            {[
+                                                                area.administrative_division_level_3_name,
+                                                                area.administrative_division_level_2_name,
+                                                                area.administrative_division_level_1_name,
+                                                                area.postal_code,
+                                                            ]
+                                                                .filter(Boolean)
+                                                                .join(', ')}
+                                                        </span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                        {areaError && (
+                                            <p className="mt-1.5 text-[11px] font-medium text-[#B24B4B]">
+                                                {areaError}
+                                            </p>
+                                        )}
+                                        {form.errors.biteship_area_id && (
+                                            <p className="mt-1.5 text-[11px] font-medium text-[#B24B4B]">
+                                                {form.errors.biteship_area_id}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                        <InputBlock
+                                            label="Provinsi"
+                                            value={form.data.province}
+                                            onChange={() => undefined}
+                                            error={form.errors.province}
+                                            readOnly
+                                        />
+                                        <InputBlock
+                                            label="Kota"
+                                            value={form.data.city}
+                                            onChange={() => undefined}
+                                            error={form.errors.city}
+                                            readOnly
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                        <InputBlock
+                                            label="Kecamatan"
+                                            value={form.data.district}
+                                            onChange={() => undefined}
+                                            error={form.errors.district}
+                                            readOnly
+                                        />
+                                        <InputBlock
+                                            label="Kode Pos"
+                                            value={form.data.postal_code}
+                                            onChange={() => undefined}
+                                            error={form.errors.postal_code}
+                                            inputMode="numeric"
+                                            pattern="[0-9]*"
+                                            readOnly
+                                        />
+                                    </div>
+                                    <InputBlock
+                                        label="Kelurahan"
+                                        value={form.data.subdistrict}
+                                        onChange={(value) =>
+                                            form.setData('subdistrict', value)
+                                        }
+                                        error={form.errors.subdistrict}
+                                    />
+                                    <LocationPicker
+                                        latitude={form.data.latitude}
+                                        longitude={form.data.longitude}
+                                        error={
+                                            mapError ||
+                                            form.errors.latitude ||
+                                            form.errors.longitude
+                                        }
+                                        onChange={updateCoordinates}
+                                        onUseCurrentLocation={
+                                            useCurrentLocation
+                                        }
+                                    />
+                                    <TextareaBlock
+                                        label="Alamat Lengkap"
+                                        value={form.data.full_address}
+                                        onChange={(value) =>
+                                            form.setData('full_address', value)
+                                        }
+                                        placeholder="Nama jalan, gedung, nomor rumah"
+                                        error={form.errors.full_address}
+                                    />
+                                    <TextareaBlock
+                                        label="Catatan Alamat (opsional)"
+                                        value={form.data.note}
+                                        onChange={(value) =>
+                                            form.setData('note', value)
+                                        }
+                                        placeholder="Patokan, catatan pengiriman, dll."
+                                        error={form.errors.note}
+                                    />
+                                    <label className="flex items-center pt-2">
+                                        <input
+                                            type="checkbox"
+                                            checked={form.data.is_default}
+                                            onChange={(event) =>
+                                                form.setData(
+                                                    'is_default',
+                                                    event.target.checked,
+                                                )
+                                            }
+                                            className="h-4 w-4 rounded border-[#EADBD8] text-[#4A2525] focus:ring-[#B6574B]"
+                                        />
+                                        <span className="ml-2 cursor-pointer text-[12px] font-medium text-[#4A4A4A]">
+                                            Jadikan alamat utama
+                                        </span>
+                                    </label>
+                                </div>
+
+                                <div className="flex justify-end gap-3 border-t border-[#EADBD8] bg-[#FAF9F6] px-6 py-4">
+                                    <button
+                                        type="button"
+                                        onClick={closeModal}
+                                        className="rounded-md border border-[#EADBD8] px-6 py-2.5 text-[12px] font-bold text-[#4A4A4A] transition-colors hover:bg-white"
+                                    >
+                                        Batal
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={form.processing}
+                                        className="rounded-md bg-[#4A2525] px-6 py-2.5 text-[12px] font-bold text-white transition-colors hover:bg-[#5F1717] disabled:cursor-not-allowed disabled:opacity-70"
+                                    >
+                                        {form.processing
+                                            ? 'Menyimpan...'
+                                            : editingAddress
+                                              ? 'Perbarui Alamat'
+                                              : 'Simpan Alamat'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>,
                     document.body,
                 )}
@@ -894,32 +909,32 @@ function LocationPicker({
             import('leaflet/dist/leaflet.css'),
             import('react-leaflet'),
         ]).then(([leaflet, , reactLeaflet]) => {
-                if (!isMounted) {
-                    return;
-                }
+            if (!isMounted) {
+                return;
+            }
 
-                setMarkerIcon(
-                    leaflet.icon({
-                        iconUrl:
-                            'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-                        iconRetinaUrl:
-                            'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-                        shadowUrl:
-                            'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-                        iconSize: [25, 41],
-                        iconAnchor: [12, 41],
-                        popupAnchor: [1, -34],
-                        shadowSize: [41, 41],
-                    }),
-                );
-                setLeafletModules({
-                    MapContainer: reactLeaflet.MapContainer,
-                    Marker: reactLeaflet.Marker,
-                    TileLayer: reactLeaflet.TileLayer,
-                    useMap: reactLeaflet.useMap,
-                    useMapEvents: reactLeaflet.useMapEvents,
-                });
+            setMarkerIcon(
+                leaflet.icon({
+                    iconUrl:
+                        'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                    iconRetinaUrl:
+                        'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+                    shadowUrl:
+                        'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                    shadowSize: [41, 41],
+                }),
+            );
+            setLeafletModules({
+                MapContainer: reactLeaflet.MapContainer,
+                Marker: reactLeaflet.Marker,
+                TileLayer: reactLeaflet.TileLayer,
+                useMap: reactLeaflet.useMap,
+                useMapEvents: reactLeaflet.useMapEvents,
             });
+        });
 
         return () => {
             isMounted = false;
@@ -1025,7 +1040,7 @@ function LocationPicker({
                                 void searchAddress();
                             }}
                             placeholder="Cari alamat"
-                            className="h-8 min-w-0 rounded border border-[#EADBD8] bg-white px-2 text-[11px] text-[#333] outline-none transition-colors focus:border-[#B6574B]"
+                            className="h-8 min-w-0 rounded border border-[#EADBD8] bg-white px-2 text-[11px] text-[#333] transition-colors outline-none focus:border-[#B6574B]"
                         />
                         <button
                             type="button"

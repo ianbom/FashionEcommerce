@@ -8,6 +8,7 @@ import type {
     CheckoutAddress,
     CheckoutItem,
     CheckoutStoreLocation,
+    ManualPayment,
     CheckoutSummary,
     ShippingRate,
     Voucher,
@@ -19,6 +20,7 @@ type Props = {
     appliedVoucher: Voucher;
     cartItems: CheckoutItem[];
     defaultAddressId: number | null;
+    manualPayment: ManualPayment;
     selectedShippingRate: ShippingRate | null;
     storeLocation: CheckoutStoreLocation;
     summary: CheckoutSummary;
@@ -61,12 +63,12 @@ const formatWeight = (grams: number) => {
 const formatDistance = (meters: number) =>
     meters >= 1000
         ? `${new Intl.NumberFormat('id-ID', {
-            maximumFractionDigits: 2,
-            minimumFractionDigits: 0,
-        }).format(meters / 1000)} km`
+              maximumFractionDigits: 2,
+              minimumFractionDigits: 0,
+          }).format(meters / 1000)} km`
         : `${new Intl.NumberFormat('id-ID', {
-            maximumFractionDigits: 0,
-        }).format(meters)} m`;
+              maximumFractionDigits: 0,
+          }).format(meters)} m`;
 
 const validCoordinates = (latitude: number, longitude: number): boolean =>
     Number.isFinite(latitude) &&
@@ -98,13 +100,13 @@ const distanceMeters = (from: Coordinates, to: Coordinates) => {
     const haversine =
         Math.sin(latitudeDelta / 2) ** 2 +
         Math.cos(fromLatitude) *
-        Math.cos(toLatitude) *
-        Math.sin(longitudeDelta / 2) ** 2;
+            Math.cos(toLatitude) *
+            Math.sin(longitudeDelta / 2) ** 2;
 
     return Math.round(
         earthRadiusMeters *
-        2 *
-        Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine)),
+            2 *
+            Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine)),
     );
 };
 
@@ -137,6 +139,7 @@ function CheckoutScreen() {
         cartItems,
         errors,
         loadShippingRates,
+        manualPayment,
         placeOrder,
         placingOrder,
         removeVoucher,
@@ -229,7 +232,7 @@ function CheckoutScreen() {
                         </h1>
                         <p className="text-xs text-[#8A6B62] md:text-sm">
                             Pilih alamat tersimpan, ongkir Biteship, voucher,
-                            lalu bayar via Midtrans.
+                            lalu konfirmasi transfer melalui WhatsApp.
                         </p>
                     </div>
                     <div className="flex max-w-[380px] items-center">
@@ -318,11 +321,11 @@ function CheckoutScreen() {
                                             {(!address.postal_code ||
                                                 !address.latitude ||
                                                 !address.longitude) && (
-                                                    <p className="mt-2 text-[11px] font-semibold text-[#B24B4B]">
-                                                        Lengkapi kode pos dan
-                                                        koordinat di buku alamat.
-                                                    </p>
-                                                )}
+                                                <p className="mt-2 text-[11px] font-semibold text-[#B24B4B]">
+                                                    Lengkapi kode pos dan
+                                                    koordinat di buku alamat.
+                                                </p>
+                                            )}
                                         </button>
                                     ))}
                                 </div>
@@ -527,22 +530,22 @@ function CheckoutScreen() {
                                                     <div className="mt-2 border-l border-[#C05D5D] pl-2">
                                                         <p className="text-[10px] leading-relaxed font-semibold text-[#B24B4B]">
                                                             {item.available_stock <=
-                                                                0
+                                                            0
                                                                 ? 'Stok habis.'
                                                                 : 'Stok tidak cukup.'}{' '}
                                                             Tidak bisa checkout.
                                                         </p>
                                                         {item.available_stock >
                                                             0 && (
-                                                                <p className="mt-0.5 text-[10px] font-medium text-[#9E4A45]">
-                                                                    Stok tersedia
-                                                                    hanya{' '}
-                                                                    {
-                                                                        item.available_stock
-                                                                    }
-                                                                    .
-                                                                </p>
-                                                            )}
+                                                            <p className="mt-0.5 text-[10px] font-medium text-[#9E4A45]">
+                                                                Stok tersedia
+                                                                hanya{' '}
+                                                                {
+                                                                    item.available_stock
+                                                                }
+                                                                .
+                                                            </p>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>
@@ -591,6 +594,27 @@ function CheckoutScreen() {
                                         </span>
                                     </div>
                                 </div>
+                                <div className="mt-6 rounded-lg border border-[#EADBD8] bg-[#FAF8F5] p-4 text-[12px] text-[#4A4A4A]">
+                                    <p className="font-bold text-[#4A2525]">
+                                        Transfer Bank
+                                    </p>
+                                    <p className="mt-2">
+                                        Bank: {manualPayment.bank_name || '-'}
+                                    </p>
+                                    <p>
+                                        Nomor rekening:{' '}
+                                        {manualPayment.bank_account_number ||
+                                            '-'}
+                                    </p>
+                                    <p>
+                                        Atas nama:{' '}
+                                        {manualPayment.bank_account_name || '-'}
+                                    </p>
+                                    <p className="mt-2 text-[11px] text-[#8A6B62]">
+                                        Setelah order dibuat, WhatsApp akan
+                                        terbuka dengan ringkasan pembayaran.
+                                    </p>
+                                </div>
                                 <button
                                     type="button"
                                     onClick={() => void submitOrder()}
@@ -603,8 +627,8 @@ function CheckoutScreen() {
                                 >
                                     <Lock size={16} className="mr-2" />
                                     {placingOrder
-                                        ? 'Membuat Pembayaran...'
-                                        : 'Bayar Sekarang'}
+                                        ? 'Membuat Order...'
+                                        : 'Kirim Detail Order ke WhatsApp'}
                                 </button>
                                 <div className="mt-8 space-y-4 border-t border-[#EADBD8]/60 pt-6">
                                     <CheckoutRouteMap
@@ -621,7 +645,10 @@ function CheckoutScreen() {
                                             className="mt-0.5 flex-shrink-0 text-[#C99A8F]"
                                             strokeWidth={1.5}
                                         />
-                                        <p>Pembayaran aman didukung Midtrans</p>
+                                        <p>
+                                            Pembayaran melalui transfer bank
+                                            dikonfirmasi admin
+                                        </p>
                                     </div>
                                     <div className="flex items-start space-x-3 text-[11px] text-[#8A6B62]">
                                         <Box
@@ -734,8 +761,8 @@ function CheckoutRouteMap({
                     {!storeCoordinates
                         ? 'Koordinat toko belum dikonfigurasi.'
                         : !destinationCoordinates
-                            ? 'Pilih alamat dengan koordinat untuk melihat rute.'
-                            : 'Memuat peta...'}
+                          ? 'Pilih alamat dengan koordinat untuk melihat rute.'
+                          : 'Memuat peta...'}
                 </div>
             )}
 

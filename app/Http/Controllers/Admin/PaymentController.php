@@ -27,4 +27,18 @@ class PaymentController extends Controller
 
         return back()->with('success', 'Payment status berhasil disinkronkan.');
     }
+
+    public function confirm(Payment $payment, PaymentManagementService $payments): RedirectResponse
+    {
+        $payments->confirm($payment);
+
+        return back()->with('success', 'Pembayaran manual berhasil dikonfirmasi.');
+    }
+
+    public function cancel(Payment $payment, PaymentManagementService $payments): RedirectResponse
+    {
+        $payments->cancel($payment);
+
+        return back()->with('success', 'Pembayaran manual berhasil dibatalkan.');
+    }
 }

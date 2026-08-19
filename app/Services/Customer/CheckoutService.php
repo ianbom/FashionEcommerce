@@ -2,8 +2,6 @@
 
 namespace App\Services\Customer;
 
-use App\Actions\Stock\ReleaseStockReservationAction;
-use App\Actions\Vouchers\ReleaseVoucherReservationAction;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\CustomerAddress;
@@ -13,7 +11,6 @@ use App\Models\ProductVariant;
 use App\Models\User;
 use App\Models\Voucher;
 use App\Services\Integrations\BiteshipService;
-use App\Services\Integrations\MidtransService;
 use App\Services\Settings\SiteSettingService;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
@@ -26,10 +23,8 @@ class CheckoutService
 {
     public function __construct(
         private readonly BiteshipService $biteship,
-        private readonly MidtransService $midtrans,
         private readonly SiteSettingService $settings,
-        private readonly ReleaseStockReservationAction $releaseStock,
-        private readonly ReleaseVoucherReservationAction $releaseVoucher,
+        private readonly WhatsAppOrderMessage $whatsAppOrderMessage,
     ) {}
 
     public function pageData(User $user): array
@@ -50,6 +45,12 @@ class CheckoutService
             'storeLocation' => [
                 'latitude' => $this->settings->get('store_latitude'),
                 'longitude' => $this->settings->get('store_longitude'),
+            ],
+            'manualPayment' => [
+                'whatsapp_number' => $this->settings->first(['payment_whatsapp_number', 'whatsapp_number'], '6285736426304 '),
+                'bank_name' => $this->settings->get('bank_name', ''),
+                'bank_account_number' => $this->settings->get('bank_account_number', ''),
+                'bank_account_name' => $this->settings->get('bank_account_name', ''),
             ],
             'appliedVoucher' => $voucher ? $this->voucherPayload($voucher, $discount) : null,
             'selectedShippingRate' => $rate,
@@ -164,16 +165,12 @@ class CheckoutService
             ->where('checkout_idempotency_key', $idempotencyKey)
             ->first();
 
-        if ($existingOrder) {
-            if ($existingOrder->payment?->midtrans_redirect_url) {
-                return [
-                    'order_id' => $existingOrder->id,
-                    'payment_id' => $existingOrder->payment->id,
-                    'redirect_url' => $existingOrder->payment->midtrans_redirect_url,
-                ];
-            }
-
-            throw ValidationException::withMessages(['checkout' => 'Checkout sebelumnya masih diproses atau gagal. Muat ulang checkout untuk mencoba lagi.']);
+        if ($existingOrder?->payment) {
+            return [
+                'order_id' => $existingOrder->id,
+                'payment_id' => $existingOrder->payment->id,
+                'redirect_url' => $this->whatsAppOrderMessage->url($existingOrder->load('items')),
+            ];
         }
 
         $this->validateSelectedShippingRate($user, (int) $payload['customer_address_id'], (string) $payload['shipping_rate_id']);
@@ -303,37 +300,18 @@ class CheckoutService
             ]);
 
             $payment = $order->payment()->create([
-                'payment_provider' => 'midtrans',
-                'midtrans_order_id' => $order->order_number,
+                'payment_provider' => 'manual',
+                'payment_method' => 'bank_transfer',
                 'gross_amount' => $order->grand_total,
                 'currency' => 'IDR',
                 'transaction_status' => 'pending',
-                'expires_at' => now()->addMinutes((int) ($this->settings->first(['payment_expiry_duration'], '1440') ?: 1440)),
             ]);
 
             return $payment;
         });
 
-        try {
-            $snap = $this->midtrans->createSnapTransaction($payment->order()->with(['items', 'address'])->firstOrFail());
-            DB::transaction(function () use ($payment, $snap): void {
-                $payment->refresh()->update([
-                    'midtrans_snap_token' => $snap['token'] ?? null,
-                    'midtrans_redirect_url' => $snap['redirect_url'] ?? null,
-                    'raw_response' => $snap,
-                ]);
-            });
-        } catch (\Throwable $exception) {
-            DB::transaction(function () use ($payment): void {
-                $order = $payment->order()->lockForUpdate()->firstOrFail();
-                $this->releaseStock->execute($order);
-                $this->releaseVoucher->execute($order);
-                $order->update(['payment_status' => 'failed', 'order_status' => 'payment_failed', 'cancelled_at' => now()]);
-                $payment->update(['transaction_status' => 'snap_failed', 'raw_response' => ['error' => $exception->getMessage()]]);
-            });
-
-            throw ValidationException::withMessages(['payment' => 'Gagal membuat transaksi Midtrans. Silakan coba lagi.']);
-        }
+        $order = $payment->order()->with('items')->firstOrFail();
+        $redirectUrl = $this->whatsAppOrderMessage->url($order);
 
         $cart = Cart::query()->firstWhere('user_id', $user->id);
         $cart?->items()->delete();
@@ -343,7 +321,7 @@ class CheckoutService
         return [
             'order_id' => $payment->order_id,
             'payment_id' => $payment->id,
-            'redirect_url' => $payment->midtrans_redirect_url,
+            'redirect_url' => $redirectUrl,
         ];
     }
 
