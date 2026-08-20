@@ -135,6 +135,7 @@ Route::middleware(['auth', 'admin', 'admin.activity'])->prefix('admin')->name('a
     Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     Route::post('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.status');
+    Route::post('orders/{order}/payment/confirm', [OrderController::class, 'verifyManualPayment'])->name('orders.payment.confirm');
     Route::post('orders/{order}/notes', [OrderController::class, 'updateNotes'])->name('orders.notes');
     Route::post('orders/{order}/shipments', [ShipmentController::class, 'createFromOrder'])->name('orders.shipments.store');
 

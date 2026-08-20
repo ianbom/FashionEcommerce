@@ -45,9 +45,9 @@ class SiteSettingSeeder extends Seeder
             // ─── Payment ─────────────────────────────────────────────────────────
             ['key' => 'payment_provider',       'value' => 'manual',                                    'type' => 'string'],
             ['key' => 'payment_whatsapp_number', 'value' => '6285736426304 ',                             'type' => 'string'],
-            ['key' => 'bank_name',              'value' => '',                                          'type' => 'string'],
-            ['key' => 'bank_account_number',    'value' => '',                                          'type' => 'string'],
-            ['key' => 'bank_account_name',      'value' => '',                                          'type' => 'string'],
+            ['key' => 'bank_name',              'value' => 'BCA',                                          'type' => 'string'],
+            ['key' => 'bank_account_number',    'value' => '2582758329',                                          'type' => 'string'],
+            ['key' => 'bank_account_name',      'value' => 'ANNA AYULIASTRI',                                          'type' => 'string'],
             ['key' => 'payment_expiry_duration', 'value' => '1440',                                      'type' => 'integer'],
             ['key' => 'payment_service_fee',    'value' => '0',                                         'type' => 'integer'],
 

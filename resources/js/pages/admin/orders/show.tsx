@@ -488,6 +488,9 @@ export default function OrderShow({ order }: Props) {
     const customerPhone = order.customer_phone?.replace(/\D/g, '');
     const shipmentLabelUrl = getShipmentLabelUrl(order.shipment);
     const midtransSnapUrl = getMidtransSnapUrl(order.payment);
+    const canVerifyManualPayment =
+        order.payment_status === 'pending' &&
+        getPaymentValue(order.payment, 'payment_provider') === 'manual';
     const hasSidebar = ['overview', 'fulfillment'].includes(activeTab);
 
     return (
@@ -536,6 +539,20 @@ export default function OrderShow({ order }: Props) {
                             >
                                 Change order status
                             </label>
+                            {canVerifyManualPayment && (
+                                <ActionButton
+                                    onClick={() =>
+                                        router.post(
+                                            `/admin/orders/${order.id}/payment/confirm`,
+                                            {},
+                                            { preserveScroll: true },
+                                        )
+                                    }
+                                >
+                                    <CheckCircle2 size={14} /> Verifikasi
+                                    Pembayaran
+                                </ActionButton>
+                            )}
                             <select
                                 id="order-status-action"
                                 value=""

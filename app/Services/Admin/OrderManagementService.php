@@ -2,6 +2,7 @@
 
 namespace App\Services\Admin;
 
+use App\Actions\Payments\ManageManualPaymentAction;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\ShippingStatus;
@@ -14,7 +15,10 @@ class OrderManagementService
 {
     use ResolvesAdminPagination;
 
-    public function __construct(private readonly NotificationService $notifications) {}
+    public function __construct(
+        private readonly NotificationService $notifications,
+        private readonly ManageManualPaymentAction $manualPayment,
+    ) {}
 
     public function indexData(Request $request): array
     {
@@ -107,6 +111,17 @@ class OrderManagementService
 
         $order->update($payload);
         $this->notifications->forOrder($order->fresh(), 'Order status updated', "Order {$order->order_number} sekarang berstatus {$target}.", 'order');
+    }
+
+    public function verifyManualPayment(Order $order): void
+    {
+        $payment = $order->payment;
+
+        if (! $payment) {
+            throw ValidationException::withMessages(['payment' => 'Payment untuk order ini tidak ditemukan.']);
+        }
+
+        $this->manualPayment->confirm($payment);
     }
 
     public function updateNotes(Order $order, ?string $notes): void

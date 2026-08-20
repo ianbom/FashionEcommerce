@@ -30,6 +30,13 @@ class OrderController extends Controller
         return back()->with('success', 'Order status berhasil diperbarui.');
     }
 
+    public function verifyManualPayment(Order $order, OrderManagementService $orders): RedirectResponse
+    {
+        $orders->verifyManualPayment($order);
+
+        return back()->with('success', 'Pembayaran manual berhasil diverifikasi.');
+    }
+
     public function updateNotes(OrderNoteRequest $request, Order $order, OrderManagementService $orders): RedirectResponse
     {
         $validated = $request->validated();
