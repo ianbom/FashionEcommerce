@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
 
@@ -134,6 +135,66 @@ it('creates a product with images, variants, and stock logs from the admin form 
         'reference_type' => 'manual_adjustment',
         'note' => 'Initial variant stock.',
     ]);
+});
+
+it('stores an optional size guide image for a product', function () {
+    Storage::fake('public');
+    $admin = User::factory()->create(['role' => 'admin', 'is_active' => true]);
+    $category = Category::query()->create(['name' => 'Gamis', 'slug' => 'gamis-size-guide', 'description' => 'Gamis category', 'is_active' => true]);
+    $collection = Collection::query()->create(['name' => 'Ramadan Collection', 'slug' => 'ramadan-size-guide', 'description' => 'Collection', 'is_featured' => true, 'is_active' => true]);
+    $payload = productPayload($category, $collection);
+    $payload['size_guide'] = UploadedFile::fake()->image('size-guide.png');
+
+    $this->actingAs($admin)->post(route('admin.products.store'), $payload)->assertRedirect();
+
+    $product = Product::query()->where('slug', 'gamis-syari-pita')->firstOrFail();
+    expect($product->size_guide)->toStartWith('/storage/product/gamis-syari-pita/size-guide/');
+    Storage::disk('public')->assertExists(Str::after($product->size_guide, '/storage/'));
+
+    $this->get(route('detail', ['product' => $product->slug]))
+        ->assertInertia(fn (Assert $page) => $page->where('product.size_guide', $product->size_guide));
+
+    $invalidPayload = productPayload($category, $collection);
+    $invalidPayload['status'] = 'draft';
+    $invalidPayload['size_guide'] = UploadedFile::fake()->create('size-guide.txt', 1, 'text/plain');
+    $this->actingAs($admin)->put(route('admin.products.update', $product), $invalidPayload)
+        ->assertSessionHasErrors('size_guide');
+
+    $invalidPayload['size_guide'] = UploadedFile::fake()->image('too-large.png')->size(4097);
+    $this->actingAs($admin)->put(route('admin.products.update', $product), $invalidPayload)
+        ->assertSessionHasErrors('size_guide');
+
+    $payload = productPayload($category, $collection);
+    $payload['images'][0]['id'] = $product->images()->firstOrFail()->id;
+    $payload['variants'][0]['id'] = $product->variants()->firstOrFail()->id;
+    $this->actingAs($admin)->put(route('admin.products.update', $product), $payload)->assertRedirect();
+    expect($product->fresh()->size_guide)->toBe($product->size_guide);
+
+    $payload['size_guide'] = UploadedFile::fake()->image('replacement.png');
+    $this->actingAs($admin)->put(route('admin.products.update', $product), $payload)->assertRedirect();
+    $replacement = $product->fresh()->size_guide;
+    expect($replacement)->not->toBe($product->size_guide);
+    Storage::disk('public')->assertExists(Str::after($replacement, '/storage/'));
+    Storage::disk('public')->assertMissing(Str::after($product->size_guide, '/storage/'));
+
+    unset($payload['size_guide']);
+    $payload['remove_size_guide'] = true;
+    $this->actingAs($admin)->put(route('admin.products.update', $product), $payload)->assertRedirect();
+    expect($product->fresh()->size_guide)->toBeNull();
+    Storage::disk('public')->assertMissing(Str::after($replacement, '/storage/'));
+});
+
+it('allows products without a size guide', function () {
+    Storage::fake('public');
+    $admin = User::factory()->create(['role' => 'admin', 'is_active' => true]);
+    $category = Category::query()->create(['name' => 'Gamis', 'slug' => 'gamis-no-guide', 'description' => 'Gamis category', 'is_active' => true]);
+    $collection = Collection::query()->create(['name' => 'Ramadan Collection', 'slug' => 'ramadan-no-guide', 'description' => 'Collection', 'is_featured' => true, 'is_active' => true]);
+    $payload = productPayload($category, $collection);
+    $payload['status'] = 'draft';
+
+    $this->actingAs($admin)->post(route('admin.products.store'), $payload)->assertRedirect();
+
+    expect(Product::query()->where('slug', 'gamis-syari-pita')->firstOrFail()->size_guide)->toBeNull();
 });
 
 /**

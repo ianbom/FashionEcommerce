@@ -105,27 +105,7 @@ export default function Home({
             </FadeInOnScroll>
 
             {/* Feature Strip */}
-            <div className="flex w-full flex-col items-center justify-between border-b border-[#e6d5c8] bg-[#fcfbf9] px-4 py-3.5 text-[10px] font-medium text-[#53362d] md:flex-row md:px-10 md:text-xs">
-                <div className="mb-2 flex w-full items-center justify-center gap-4 md:mb-0 md:w-auto md:gap-10">
-                    <div className="flex items-center gap-2">
-                        <Clock size={16} strokeWidth={1.5} />
-                        <span>Dikirim dalam 24 Jam</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Star size={16} strokeWidth={1.5} />
-                        <span>Brand Publik Figur, Harga Menghibur</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <RotateCcw size={16} strokeWidth={1.5} />
-                        <span>Produk Original *</span>
-                    </div>
-                </div>
-                <div className="hidden md:block">
-                    <Link href="#" className="hover:underline">
-                        Butuh Bantuan? Chat dengan kami
-                    </Link>
-                </div>
-            </div>
+         
 
             {/* Category Section */}
             <section className="mx-auto max-w-[1500px] px-4 py-12 md:px-10 md:py-16">
@@ -288,45 +268,7 @@ export default function Home({
             </section>
 
             {/* CTA Section */}
-            <FadeInOnScroll>
-                <section className="mx-auto mt-6 mb-12 w-full max-w-[1500px] px-4 md:mt-10 md:mb-20 md:px-10">
-                    <div className="relative min-h-[420px] w-full overflow-hidden rounded-[18px] bg-[#7fc6d8] shadow-sm ring-1 ring-black/5 sm:min-h-[360px] md:aspect-[21/7] md:min-h-0">
-                        <img
-                            src={bannerImage(
-                                promoBanner,
-                                '/img/sarah-khan-R7p66Oj8ZOQ-unsplash.webp',
-                            )}
-                            alt={promoBanner?.title ?? 'Promo Banner'}
-                            className="absolute inset-0 h-full w-full object-cover object-center"
-                            loading="lazy"
-                            decoding="async"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/35 to-black/10 md:bg-black/45" />
-                        <div className="absolute inset-0 flex flex-col justify-end gap-5 px-5 py-7 text-white sm:px-7 sm:py-8 md:flex-row md:items-end md:justify-between md:gap-6 md:px-[10%] md:py-[9%]">
-                            <div className="max-w-[92%] md:max-w-[46%]">
-                                <h2 className="font-serif text-[clamp(2rem,12vw,3.35rem)] leading-[0.95] tracking-[-0.04em] md:text-[clamp(1.75rem,5vw,5rem)]">
-                                    {promoBanner?.title ??
-                                        'Full control is in your hands'}
-                                </h2>
-                            </div>
-                            <div className="max-w-[92%] md:mb-[1%] md:max-w-[34%]">
-                                <p className="mb-4 text-[13px] leading-relaxed text-white/90 md:mb-3 md:text-[clamp(0.55rem,1.1vw,0.95rem)] md:leading-snug">
-                                    {promoBanner?.subtitle ??
-                                        'A ready-made solution for investing in the cryptocurrency market, built on the best global approaches to capital management.'}
-                                </p>
-                                <Link
-                                    href={promoBanner?.button_url ?? list.url()}
-                                    className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-white py-2 pr-2 pl-4 text-[12px] font-semibold text-[#1f1f1f] transition-colors hover:bg-white/90 sm:w-auto md:min-h-0 md:py-1 md:pr-1 md:pl-3 md:text-[clamp(0.55rem,1vw,0.8rem)] md:font-medium"
-                                >
-                                    {promoBanner?.button_text ??
-                                        'Pelajari lebih lanjut'}
-                                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#1f1f1f] text-[10px] leading-none text-white"></span>
-                                </Link>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </FadeInOnScroll>
+    
 
             <style
                 dangerouslySetInnerHTML={{

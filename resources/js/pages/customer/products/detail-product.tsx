@@ -60,6 +60,7 @@ type ProductDetail = ProductCard & {
     description: string | null;
     material: string | null;
     care_instruction: string | null;
+    size_guide: string | null;
     weight: number | null;
     dimensions: {
         length: number | null;
@@ -631,19 +632,21 @@ export default function DetailProduct({
                                     <h3 className="text-[11px] font-semibold tracking-wide text-foreground">
                                         Ukuran
                                     </h3>
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsSizeGuideOpen(true)}
-                                        className="group flex items-center text-accent transition-colors hover:text-primary"
-                                    >
-                                        <span className="text-[10px] font-medium tracking-wide">
-                                            Panduan Ukuran
-                                        </span>
-                                        <ChevronRight
-                                            size={14}
-                                            className="ml-1 transition-transform group-hover:translate-x-0.5"
-                                        />
-                                    </button>
+                                    {product.size_guide && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsSizeGuideOpen(true)}
+                                            className="group flex items-center text-accent transition-colors hover:text-primary"
+                                        >
+                                            <span className="text-[10px] font-medium tracking-wide">
+                                                Panduan Ukuran
+                                            </span>
+                                            <ChevronRight
+                                                size={14}
+                                                className="ml-1 transition-transform group-hover:translate-x-0.5"
+                                            />
+                                        </button>
+                                    )}
                                 </div>
                                 <div className="flex flex-wrap gap-3">
                                     {sizes.map((size) => {
@@ -841,7 +844,7 @@ export default function DetailProduct({
                 />
             </main>
 
-            {isSizeGuideOpen && (
+            {isSizeGuideOpen && product.size_guide && (
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-sm"
                     role="dialog"
@@ -873,7 +876,7 @@ export default function DetailProduct({
                         </div>
                         <div className="max-h-[calc(90vh-74px)] overflow-auto bg-muted/30 p-3">
                             <img
-                                src="/size-guide.webp"
+                                src={product.size_guide}
                                 alt="Size guide"
                                 className="mx-auto h-auto w-full max-w-full rounded-sm object-contain"
                             />

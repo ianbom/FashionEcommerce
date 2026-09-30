@@ -50,6 +50,8 @@ class ProductRequest extends FormRequest
             'is_best_seller' => ['sometimes', 'boolean'],
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string', 'max:500'],
+            'size_guide' => ['nullable', 'file', 'image', 'max:4096'],
+            'remove_size_guide' => ['sometimes', 'boolean'],
             'images' => ['nullable', 'array'],
             'images.*.id' => ['nullable', 'integer', $imageIdRule],
             'images.*.image_url' => ['nullable', 'string', 'max:255', 'not_regex:/^blob:/i'],

@@ -1,96 +1,5 @@
 import { Link } from '@inertiajs/react';
-import {
-    ArrowRight,
-    Facebook,
-    Instagram,
-    Mail,
-    MapPin,
-    Phone,
-    Twitter,
-    Youtube,
-} from 'lucide-react';
-import type { ReactNode } from 'react';
-
-type PaymentMethod = {
-    name: string;
-    icon: ReactNode;
-};
-
-const paymentMethods: PaymentMethod[] = [
-    {
-        name: 'QRIS',
-        icon: (
-            <span className="flex items-center gap-1 font-black text-slate-900">
-                <span className="grid h-4 w-4 grid-cols-2 gap-0.5">
-                    <span className="bg-slate-900" />
-                    <span className="bg-red-600" />
-                    <span className="bg-blue-600" />
-                    <span className="bg-slate-900" />
-                </span>
-                QRIS
-            </span>
-        ),
-    },
-    {
-        name: 'OVO',
-        icon: <span className="font-black text-[#4c2683]">OVO</span>,
-    },
-    {
-        name: 'ShopeePay',
-        icon: <span className="font-black text-[#ee4d2d]">Shopee</span>,
-    },
-    {
-        name: 'DANA',
-        icon: <span className="font-black text-[#118ee9]">DANA</span>,
-    },
-    {
-        name: 'BNI',
-        icon: (
-            <span className="flex items-center gap-1 font-black text-[#f15a24]">
-                <span className="h-3 w-3 bg-[#007a78]" />
-                BNI
-            </span>
-        ),
-    },
-    {
-        name: 'Mandiri',
-        icon: <span className="font-black text-[#003d79]">mandiri</span>,
-    },
-    {
-        name: 'BCA',
-        icon: <span className="font-black text-[#005baa]">BCA</span>,
-    },
-    {
-        name: 'BSI',
-        icon: <span className="font-black text-[#00a39b]">BSI</span>,
-    },
-    {
-        name: 'Visa',
-        icon: <span className="font-black italic text-[#1a1f71]">VISA</span>,
-    },
-    {
-        name: 'JCB',
-        icon: (
-            <span className="overflow-hidden rounded-sm border border-slate-200 text-[9px] font-black">
-                <span className="bg-[#0b8f3c] px-1 text-white">J</span>
-                <span className="bg-[#0b4ea2] px-1 text-white">C</span>
-                <span className="bg-[#d71920] px-1 text-white">B</span>
-            </span>
-        ),
-    },
-    {
-        name: 'MasterCard',
-        icon: (
-            <span className="flex items-center gap-1 font-black text-slate-900">
-                <span className="relative h-5 w-8">
-                    <span className="absolute top-0 left-0 h-5 w-5 rounded-full bg-[#eb001b]" />
-                    <span className="absolute top-0 right-0 h-5 w-5 rounded-full bg-[#f79e1b] mix-blend-multiply" />
-                </span>
-                MC
-            </span>
-        ),
-    },
-];
+import { ArrowRight, Facebook, Instagram, MessageCircle } from 'lucide-react';
 
 export default function Footer() {
     return (
@@ -142,33 +51,15 @@ export default function Footer() {
                         <h3 className="mb-6 text-xs font-bold tracking-[0.2em] text-white/95 uppercase">
                             Hubungi Kami
                         </h3>
-                        <ul className="space-y-4 text-white/60">
-                            <li className="group flex cursor-pointer items-start gap-3 transition-colors hover:text-white">
-                                <MapPin
-                                    size={16}
-                                    className="mt-0.5 shrink-0 transition-colors group-hover:text-accent"
-                                />
-                                <span className="leading-relaxed">
-                                    Jl. Raya Surabaya No. 123,
-                                    <br />
-                                    Surabaya, 12345
-                                </span>
-                            </li>
-                            <li className="group flex cursor-pointer items-center gap-3 transition-colors hover:text-white">
-                                <Phone
-                                    size={16}
-                                    className="shrink-0 transition-colors group-hover:text-accent"
-                                />
-                                <span>+62 812 3456 7890</span>
-                            </li>
-                            <li className="group flex cursor-pointer items-center gap-3 transition-colors hover:text-white">
-                                <Mail
-                                    size={16}
-                                    className="shrink-0 transition-colors group-hover:text-accent"
-                                />
-                                <span>hello@shayda.com</span>
-                            </li>
-                        </ul>
+                        <a
+                            href="https://wa.me/6281993200593"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 rounded bg-white/10 px-4 py-3 text-white transition-colors hover:bg-white/20 hover:text-accent"
+                        >
+                            <MessageCircle size={16} />
+                            WhatsApp Kami
+                        </a>
                     </div>
 
                     {/* Customer Care */}
@@ -300,10 +191,6 @@ export default function Footer() {
                                     'BNI',
                                     'Mandiri',
                                     'BCA',
-                                    'BSI',
-                                    'VISA',
-                                    'JCB',
-                                    'MasterCard',
                                 ].map((method) => (
                                     <div
                                         key={method}
@@ -320,8 +207,8 @@ export default function Footer() {
                 {/* Bottom Section */}
                 <div className="flex flex-col items-center justify-between border-t border-white/10 pt-8 text-[10px] tracking-[0.15em] text-white/50 md:flex-row">
                     <p className="mb-4 md:mb-0">
-                        © {new Date().getFullYear()} Shayda. All
-                        Rights Reserved.
+                        © {new Date().getFullYear()} Shayda. All Rights
+                        Reserved.
                     </p>
 
                     <div className="flex items-center space-x-6">
@@ -336,18 +223,6 @@ export default function Footer() {
                             className="transition-all duration-300 hover:-translate-y-1 hover:text-accent"
                         >
                             <Facebook size={18} strokeWidth={1.5} />
-                        </button>
-                        <button
-                            type="button"
-                            className="transition-all duration-300 hover:-translate-y-1 hover:text-accent"
-                        >
-                            <Twitter size={18} strokeWidth={1.5} />
-                        </button>
-                        <button
-                            type="button"
-                            className="transition-all duration-300 hover:-translate-y-1 hover:text-accent"
-                        >
-                            <Youtube size={18} strokeWidth={1.5} />
                         </button>
                     </div>
                 </div>

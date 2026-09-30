@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'description',
     'material',
     'care_instruction',
+    'size_guide',
     'base_price',
     'sale_price',
     'weight',

@@ -90,11 +90,17 @@ type ProductFormData = {
     is_best_seller: boolean;
     meta_title: string;
     meta_description: string;
+    size_guide: File | null;
+    remove_size_guide: boolean;
     images: ProductImageRow[];
     variants: ProductVariantRow[];
 };
-type Product = Omit<ProductFormData, 'images' | 'variants'> & {
+type Product = Omit<
+    ProductFormData,
+    'images' | 'variants' | 'size_guide' | 'remove_size_guide'
+> & {
     id: number;
+    size_guide: string | null;
     images: ProductImagePayload[];
     variants: ProductVariantPayload[];
 };
@@ -387,7 +393,8 @@ function ProductDescriptionEditor({
             icon: Eraser,
             active: false,
             disabled: !editor,
-            action: () => editor?.chain().focus().unsetAllMarks().clearNodes().run(),
+            action: () =>
+                editor?.chain().focus().unsetAllMarks().clearNodes().run(),
         },
     ];
 
@@ -418,7 +425,9 @@ function ProductDescriptionEditor({
                             }`}
                         >
                             <Icon className="h-3.5 w-3.5" />
-                            <span className="hidden sm:inline">{item.label}</span>
+                            <span className="hidden sm:inline">
+                                {item.label}
+                            </span>
                         </button>
                     );
                 })}
@@ -453,6 +462,8 @@ export default function ProductForm({ mode, product, options }: Props) {
             is_best_seller: product?.is_best_seller ?? false,
             meta_title: product?.meta_title ?? '',
             meta_description: product?.meta_description ?? '',
+            size_guide: null,
+            remove_size_guide: false,
             images: product?.images?.length
                 ? product.images.map((image) => ({ ...image, image: null }))
                 : [blankImage()],
@@ -466,6 +477,18 @@ export default function ProductForm({ mode, product, options }: Props) {
 
     const fieldError = (key: string) =>
         (errors as Record<string, string | undefined>)[key];
+    const [sizeGuidePreview, setSizeGuidePreview] = useState(
+        product?.size_guide ?? null,
+    );
+
+    useEffect(
+        () => () => {
+            if (sizeGuidePreview?.startsWith('blob:')) {
+                URL.revokeObjectURL(sizeGuidePreview);
+            }
+        },
+        [sizeGuidePreview],
+    );
 
     // Local blob previews — never sent to server, never stored in image_url
     const [previews, setPreviews] = useState<(string | null)[]>(() =>
@@ -477,9 +500,8 @@ export default function ProductForm({ mode, product, options }: Props) {
     const [editingVariantIndex, setEditingVariantIndex] = useState<
         number | null
     >(null);
-    const [variantDraft, setVariantDraft] = useState<ProductVariantRow>(
-        blankVariant(),
-    );
+    const [variantDraft, setVariantDraft] =
+        useState<ProductVariantRow>(blankVariant());
     const [variantDraftPreview, setVariantDraftPreview] = useState<
         string | null
     >(null);
@@ -517,7 +539,8 @@ export default function ProductForm({ mode, product, options }: Props) {
 
     const openVariantModal = (index: number | null = null) => {
         setEditingVariantIndex(index);
-        const draft = index === null ? blankVariant() : { ...data.variants[index] };
+        const draft =
+            index === null ? blankVariant() : { ...data.variants[index] };
         setVariantDraft(draft);
         setVariantDraftPreview(draft.image_url || null);
         setVariantModalOpen(true);
@@ -835,10 +858,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                             <ProductDescriptionEditor
                                                 value={data.description}
                                                 onChange={(html) =>
-                                                    setData(
-                                                        'description',
-                                                        html,
-                                                    )
+                                                    setData('description', html)
                                                 }
                                                 error={errors.description}
                                             />
@@ -1107,6 +1127,75 @@ export default function ProductForm({ mode, product, options }: Props) {
                                             />
                                         </FieldGroup>
                                     </FieldRow>
+                                </SectionCard>
+
+                                <SectionCard
+                                    title="Size Guide"
+                                    description="Upload an optional size guide image for this product."
+                                    icon={
+                                        <ImageIcon className="h-4 w-4 text-zinc-500" />
+                                    }
+                                >
+                                    <div className="space-y-3">
+                                        {sizeGuidePreview && (
+                                            <div className="relative w-fit">
+                                                <img
+                                                    src={sizeGuidePreview}
+                                                    alt="Product size guide"
+                                                    className="max-h-72 max-w-full rounded-lg border border-zinc-200 object-contain"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setSizeGuidePreview(
+                                                            null,
+                                                        );
+                                                        setData({
+                                                            ...data,
+                                                            size_guide: null,
+                                                            remove_size_guide: true,
+                                                        });
+                                                    }}
+                                                    className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-white text-red-600 shadow"
+                                                    aria-label="Remove size guide"
+                                                >
+                                                    <X className="h-4 w-4" />
+                                                </button>
+                                            </div>
+                                        )}
+                                        <Label htmlFor="size-guide-upload" className="text-xs font-medium text-zinc-700">
+                                            Gambar panduan ukuran (opsional)
+                                        </Label>
+                                        <Input
+                                            id="size-guide-upload"
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(event) => {
+                                                const file =
+                                                    event.target.files?.[0] ??
+                                                    null;
+                                                setData({
+                                                    ...data,
+                                                    size_guide: file,
+                                                    remove_size_guide: false,
+                                                });
+                                                setSizeGuidePreview(
+                                                    file
+                                                        ? URL.createObjectURL(
+                                                              file,
+                                                          )
+                                                        : (product?.size_guide ??
+                                                              null),
+                                                );
+                                                event.currentTarget.value = '';
+                                            }}
+                                        />
+                                        {fieldError('size_guide') && (
+                                            <p className="text-xs text-red-500">
+                                                {fieldError('size_guide')}
+                                            </p>
+                                        )}
+                                    </div>
                                 </SectionCard>
 
                                 {/* 5. Product Images */}
@@ -1404,7 +1493,8 @@ export default function ProductForm({ mode, product, options }: Props) {
                                                                 </td>
                                                                 <td className="px-3 py-2">
                                                                     <span className="rounded bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-700">
-                                                                        {variant.size || '—'}
+                                                                        {variant.size ||
+                                                                            '—'}
                                                                     </span>
                                                                 </td>
                                                                 <td className="px-3 py-2 text-center">
@@ -1431,10 +1521,14 @@ export default function ProductForm({ mode, product, options }: Props) {
                                                                     )}
                                                                 </td>
                                                                 <td className="px-3 py-2 text-right font-mono text-zinc-700">
-                                                                    {variant.stock}
+                                                                    {
+                                                                        variant.stock
+                                                                    }
                                                                 </td>
                                                                 <td className="px-3 py-2 text-right font-mono text-zinc-500">
-                                                                    {variant.reserved_stock}
+                                                                    {
+                                                                        variant.reserved_stock
+                                                                    }
                                                                 </td>
                                                                 <td className="px-3 py-2 text-center">
                                                                     <Switch
@@ -1512,7 +1606,9 @@ export default function ProductForm({ mode, product, options }: Props) {
                                                 type="button"
                                                 variant="outline"
                                                 size="sm"
-                                                onClick={() => openVariantModal()}
+                                                onClick={() =>
+                                                    openVariantModal()
+                                                }
                                                 className="h-7 gap-1.5 border-zinc-200 bg-white text-xs text-zinc-700"
                                             >
                                                 <Plus className="h-3.5 w-3.5" />
@@ -2086,7 +2182,8 @@ export default function ProductForm({ mode, product, options }: Props) {
                                         : 'Edit Variant'}
                                 </h2>
                                 <p className="mt-0.5 text-xs text-zinc-500">
-                                    Input size, color, stock, price, and image file.
+                                    Input size, color, stock, price, and image
+                                    file.
                                 </p>
                             </div>
                             <button
@@ -2214,8 +2311,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                         onChange={(e) =>
                                             setVariantDraft({
                                                 ...variantDraft,
-                                                reserved_stock:
-                                                    e.target.value,
+                                                reserved_stock: e.target.value,
                                             })
                                         }
                                         className="h-9 border-zinc-200 font-mono text-sm focus:border-[#7F2020] focus:ring-[#7F2020]"
@@ -2245,8 +2341,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                             accept="image/*"
                                             onChange={(e) => {
                                                 const file =
-                                                    e.target.files?.[0] ??
-                                                    null;
+                                                    e.target.files?.[0] ?? null;
 
                                                 if (
                                                     variantDraftPreview?.startsWith(
@@ -2292,7 +2387,9 @@ export default function ProductForm({ mode, product, options }: Props) {
                                                         image: null,
                                                         image_url: '',
                                                     });
-                                                    setVariantDraftPreview(null);
+                                                    setVariantDraftPreview(
+                                                        null,
+                                                    );
                                                 }}
                                                 className="text-xs font-medium text-red-500 hover:text-red-600"
                                             >

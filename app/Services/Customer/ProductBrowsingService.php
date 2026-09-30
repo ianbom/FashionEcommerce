@@ -269,6 +269,7 @@ class ProductBrowsingService
             'description' => $product->description,
             'material' => $product->material,
             'care_instruction' => $product->care_instruction,
+            'size_guide' => $product->size_guide,
             'weight' => $product->weight,
             'dimensions' => [
                 'length' => $product->length,
@@ -456,4 +457,3 @@ class ProductBrowsingService
         return $this->badge($product);
     }
 }
-

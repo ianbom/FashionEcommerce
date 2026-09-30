@@ -77,6 +77,7 @@ class ProductManagementService
 
         return DB::transaction(function () use ($request, $validated): Product {
             $product = Product::query()->create($this->payload($request, $validated));
+            $this->syncSizeGuide($request, $product);
             $this->images->sync($request, $product, $validated['images'] ?? []);
             $this->syncVariants($request, $product, $validated['variants'] ?? [], $request->user()->id);
 
@@ -89,11 +90,18 @@ class ProductManagementService
         $validated = $request->validated();
         $this->assertVariantSkusAreUnique($validated['variants'] ?? [], $product);
 
-        DB::transaction(function () use ($request, $product, $validated): void {
+        $previousSizeGuide = DB::transaction(function () use ($request, $product, $validated): ?string {
             $product->update($this->payload($request, $validated));
+            $previous = $this->syncSizeGuide($request, $product);
             $this->images->sync($request, $product, $validated['images'] ?? []);
             $this->syncVariants($request, $product, $validated['variants'] ?? [], $request->user()->id);
+
+            return $previous;
         });
+
+        if ($previousSizeGuide && ! Product::withTrashed()->where('size_guide', $previousSizeGuide)->exists()) {
+            $this->images->deleteStoredImage($previousSizeGuide);
+        }
     }
 
     public function publish(Product $product): void
@@ -181,7 +189,7 @@ class ProductManagementService
             ...$product->only([
                 'id', 'category_id', 'collection_id', 'name', 'slug', 'sku', 'short_description', 'description',
                 'material', 'care_instruction', 'base_price', 'sale_price', 'weight', 'length', 'width', 'height',
-                'status', 'is_featured', 'is_new_arrival', 'is_best_seller', 'meta_title', 'meta_description',
+                'status', 'is_featured', 'is_new_arrival', 'is_best_seller', 'meta_title', 'meta_description', 'size_guide',
             ]),
             'images' => $product->images->map->only(['id', 'image_url', 'alt_text', 'sort_order', 'is_primary'])->values(),
             'variants' => $product->variants->map->only(['id', 'sku', 'color_name', 'color_hex', 'size', 'additional_price', 'stock', 'reserved_stock', 'image_url', 'is_active'])->values(),
@@ -200,11 +208,29 @@ class ProductManagementService
     private function payload(Request $request, array $validated): array
     {
         return [
-            ...collect($validated)->except(['images', 'variants'])->all(),
+            ...collect($validated)->except(['images', 'variants', 'size_guide', 'remove_size_guide'])->all(),
             'is_featured' => $request->boolean('is_featured'),
             'is_new_arrival' => $request->boolean('is_new_arrival'),
             'is_best_seller' => $request->boolean('is_best_seller'),
         ];
+    }
+
+    private function syncSizeGuide(Request $request, Product $product): ?string
+    {
+        $previous = $product->size_guide;
+
+        if ($request->hasFile('size_guide')) {
+            $folder = 'product/'.Str::slug($product->slug ?: $product->name).'/size-guide';
+            $product->update([
+                'size_guide' => Storage::url($request->file('size_guide')->store($folder, 'public')),
+            ]);
+        } elseif ($request->boolean('remove_size_guide')) {
+            $product->update(['size_guide' => null]);
+        } else {
+            return null;
+        }
+
+        return $previous;
     }
 
     private function syncVariants(Request $request, Product $product, array $variants, int $userId): void
