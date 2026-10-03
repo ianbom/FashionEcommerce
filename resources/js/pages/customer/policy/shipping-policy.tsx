@@ -280,7 +280,7 @@ export default function ShippingPolicy() {
                                         Email
                                     </div>
                                     <div className="text-sm text-[#846b60]">
-                                        support@aureasyari.com
+                                        shayda.modest@gmail.com
                                     </div>
                                 </div>
                             </div>
@@ -296,7 +296,7 @@ export default function ShippingPolicy() {
                                         WhatsApp
                                     </div>
                                     <div className="text-sm text-[#846b60]">
-                                        +62 812-0000-0000
+                                        6281993200520
                                     </div>
                                 </div>
                             </div>

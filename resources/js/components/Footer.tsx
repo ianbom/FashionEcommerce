@@ -19,9 +19,7 @@ export default function Footer() {
                             </span>
                         </div>
                         <p className="max-w-md text-xs leading-relaxed text-white/60 md:text-sm">
-                            Menghadirkan modest fashion dengan elegansi dan
-                            kelembutan. Temukan identitas terbaikmu lewat
-                            koleksi eksklusif kami.
+                            Menghadirkan sentuhan modest fashion yang tak lekang oleh waktu, minimalis, dan penuh keanggunan.
                         </p>
                     </div>
 
@@ -52,7 +50,7 @@ export default function Footer() {
                             Hubungi Kami
                         </h3>
                         <a
-                            href="https://wa.me/6281993200593"
+                            href="https://wa.me/6281993200520"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 rounded bg-white/10 px-4 py-3 text-white transition-colors hover:bg-white/20 hover:text-accent"
