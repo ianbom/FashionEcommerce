@@ -4,15 +4,26 @@ namespace App\Services\Customer;
 
 use App\Models\Order;
 use App\Services\Settings\SiteSettingService;
+use Illuminate\Validation\ValidationException;
 
 class WhatsAppOrderMessage
 {
     public function __construct(private readonly SiteSettingService $settings) {}
 
+    public function number(): string
+    {
+        $number = SiteSettingService::normalizePhone($this->settings->get('store_phone'));
+        if ($number === null) {
+            throw ValidationException::withMessages(['payment' => 'Nomor telepon toko belum dikonfigurasi dengan benar.']);
+        }
+
+        return $number;
+    }
+
     public function url(Order $order): string
     {
         $order->loadMissing('items');
-        $number = preg_replace('/\D+/', '', (string) $this->settings->first(['payment_whatsapp_number', 'whatsapp_number'], '6285736426304 '));
+        $number = $this->number();
         $divider = '━━━━━━━━━━━━━━━━━━━━';
         $lines = [
             'Halo Kak ',

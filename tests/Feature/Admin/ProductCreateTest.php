@@ -105,7 +105,7 @@ it('creates a product with images, variants, and stock logs from the admin form 
         ->color_hex->toBe('#000000')
         ->size->toBe('M')
         ->stock->toBe(12)
-        ->reserved_stock->toBe(2)
+        ->reserved_stock->toBe(0)
         ->is_active->toBeTrue();
 
     expect((float) $variant->additional_price)->toBe(15000.00);
@@ -121,7 +121,7 @@ it('creates a product with images, variants, and stock logs from the admin form 
         'size' => 'M',
         'additional_price' => 15000,
         'stock' => 12,
-        'reserved_stock' => 2,
+        'reserved_stock' => 0,
         'is_active' => true,
     ]);
 

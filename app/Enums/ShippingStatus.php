@@ -17,6 +17,23 @@ enum ShippingStatus: string
     case Lost = 'lost';
     case Returned = 'returned';
 
+    public function canTransitionTo(string $target): bool
+    {
+        if ($target === $this->value) {
+            return true;
+        }
+
+        return in_array($target, match ($this) {
+            self::NotCreated => ['creating'],
+            self::Creating, self::Confirmed => ['confirmed', 'allocated', 'picked', 'in_transit', 'delivered', 'cancelled', 'failed', 'problem'],
+            self::Allocated => ['picked', 'in_transit', 'delivered', 'cancelled', 'failed', 'problem'],
+            self::Picked, self::InTransit => ['in_transit', 'delivered', 'failed', 'problem', 'lost', 'returned'],
+            self::Problem => ['confirmed', 'allocated', 'picked', 'in_transit', 'delivered', 'cancelled', 'failed', 'lost', 'returned'],
+            self::Failed => ['lost', 'returned'],
+            default => [],
+        }, true);
+    }
+
     public static function activeValues(): array
     {
         return [self::Creating->value, self::Confirmed->value, self::Allocated->value, self::Picked->value, self::InTransit->value, self::Delivered->value];

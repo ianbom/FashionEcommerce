@@ -6,9 +6,12 @@ use App\Actions\Payments\ManageManualPaymentAction;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\ShippingStatus;
+use App\Models\AdminActivityLog;
 use App\Models\Order;
+use App\Models\StockLog;
 use App\Services\Notifications\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class OrderManagementService
@@ -80,37 +83,54 @@ class OrderManagementService
         ];
     }
 
-    public function updateStatus(Order $order, string $target): void
+    public function availableActions(Order $order): array
     {
-        if ($target === OrderStatus::Cancelled->value && $order->payment_status === PaymentStatus::Paid->value) {
-            throw ValidationException::withMessages(['status' => 'Order paid tidak bisa dibatalkan dari dashboard tanpa flow khusus.']);
+        if ($order->payment_status !== 'paid') {
+            return [];
         }
-
-        $allowed = match ($target) {
-            OrderStatus::Processing->value => in_array($order->order_status, [OrderStatus::Paid->value, OrderStatus::Processing->value], true) && $order->payment_status === PaymentStatus::Paid->value,
-            OrderStatus::ReadyToShip->value => in_array($order->order_status, [OrderStatus::Processing->value, OrderStatus::ReadyToShip->value], true) && $order->payment_status === PaymentStatus::Paid->value,
-            OrderStatus::Completed->value => in_array($order->order_status, [OrderStatus::Delivered->value, OrderStatus::Completed->value], true),
-            OrderStatus::Cancelled->value => $order->payment_status !== PaymentStatus::Paid->value && in_array($order->order_status, [OrderStatus::PendingPayment->value, OrderStatus::Cancelled->value], true),
-            default => false,
+        $actions = match ($order->order_status) {
+            'paid' => ['processing'], 'processing' => ['ready_to_ship'],
+            'delivered' => $order->shipping_status === 'delivered' && $order->shipment?->shipping_status === 'delivered' ? ['completed'] : [],
+            default => [],
         };
-
-        if (! $allowed) {
-            throw ValidationException::withMessages(['status' => 'Perubahan status tidak sesuai flow order.']);
+        if ($order->shipment && $order->shipping_status === $order->shipment->shipping_status
+            && (app(ShipmentManagementService::class)->shippingIssue($order->shipment)['is_terminal'] ?? false)
+            && ! in_array($order->order_status, ['completed', 'shipment_failed', 'refunded'], true)) {
+            $actions[] = 'shipment_failed';
         }
 
-        $payload = ['order_status' => $target];
+        return $actions;
+    }
 
-        if ($target === OrderStatus::Cancelled->value) {
-            $payload['payment_status'] = PaymentStatus::Cancelled->value;
-            $payload['cancelled_at'] = now();
-        }
-
-        if ($target === OrderStatus::Completed->value) {
-            $payload['completed_at'] = now();
-        }
-
-        $order->update($payload);
-        $this->notifications->forOrder($order->fresh(), 'Order status updated', "Order {$order->order_number} sekarang berstatus {$target}.", 'order');
+    public function updateStatus(Order $order, string $target, ?string $reason = null): void
+    {
+        DB::transaction(function () use ($order, $target, $reason): void {
+            $order = Order::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
+            $shipment = $order->shipment()->lockForUpdate()->first();
+            $order->setRelation('shipment', $shipment);
+            if ($target === $order->order_status && $target !== 'cancelled') {
+                return;
+            }
+            if (! in_array($target, $this->availableActions($order), true)) {
+                throw ValidationException::withMessages(['status' => 'Perubahan status tidak sesuai flow order.']);
+            }
+            $reason = trim((string) $reason);
+            if ($target === 'shipment_failed' && ($reason === '' || mb_strlen($reason) > 1000)) {
+                throw ValidationException::withMessages(['reason' => 'Alasan wajib diisi, maksimal 1000 karakter.']);
+            }
+            $before = $order->order_status;
+            $values = ['order_status' => $target];
+            if ($target === 'completed') {
+                $values['completed_at'] = $order->completed_at ?? now();
+            }
+            $order->update($values);
+            AdminActivityLog::query()->create([
+                'user_id' => auth()->id(), 'action' => $target === 'shipment_failed' ? 'admin_order_failure' : 'order_status',
+                'module' => 'orders', 'reference_type' => 'order', 'reference_id' => $order->id,
+                'old_values' => ['order_status' => $before], 'new_values' => ['order_status' => $target, 'reason' => $reason],
+            ]);
+            $this->notifications->forOrder($order, 'Order status updated', "Order {$order->order_number} sekarang berstatus {$target}.", 'order');
+        });
     }
 
     public function verifyManualPayment(Order $order): void
@@ -158,20 +178,39 @@ class OrderManagementService
 
     private function detail(Order $order): array
     {
+        $shipments = app(ShipmentManagementService::class);
+        $movements = StockLog::query()->where('reference_type', 'order')->where('reference_id', $order->id)
+            ->whereIn('product_variant_id', $order->items->pluck('product_variant_id')->filter())->orderBy('id')->get();
+
         return [
             ...$this->row($order),
+            'created_at' => $order->created_at?->toISOString(),
+            'booking_uncertain' => (bool) data_get($order->shipment?->raw_order_response, 'booking_creation_uncertain', false),
+            'available_actions' => $this->availableActions($order),
+            'can_confirm_manual_payment' => $order->payment?->payment_provider === 'manual' && $order->payment_status === 'pending' && $order->order_status === 'pending_payment' && ! $order->stock_released_at && ! $order->stock_finalized_at,
+            'can_create_shipment' => $order->payment_status === 'paid' && in_array($order->order_status, ['paid', 'processing', 'ready_to_ship'], true)
+                && $order->shipment && filled($order->shipment->courier_company) && filled($order->shipment->courier_type) && $shipments->canBook($order->shipment),
+            'shipping_issue' => $order->shipment ? app(ShipmentManagementService::class)->shippingIssue($order->shipment) : null,
+            'status_history' => AdminActivityLog::query()->with('user:id,name')->where('reference_type', 'order')->where('reference_id', $order->id)->whereIn('action', ['order_status', 'admin_order_failure', 'shipment_status'])->orderBy('id')->get()->map(fn ($log): array => [
+                ...$log->toArray(),
+                'status' => $log->new_values['order_status'] ?? $log->new_values['shipping_status'] ?? null,
+                'reason' => $log->new_values['reason'] ?? null,
+                'actor' => $log->user?->name ?? 'Sistem',
+                'created_at' => $log->created_at?->toISOString(),
+            ]),
+            'stock_movements' => $movements,
             'subtotal' => $order->subtotal,
             'discount_amount' => $order->discount_amount,
             'shipping_cost' => $order->shipping_cost,
             'service_fee' => $order->service_fee,
             'voucher_code' => $order->voucher_code,
             'notes' => $order->notes,
-            'paid_at' => $order->paid_at?->toDateTimeString(),
-            'cancelled_at' => $order->cancelled_at?->toDateTimeString(),
-            'expired_at' => $order->expired_at?->toDateTimeString(),
-            'completed_at' => $order->completed_at?->toDateTimeString(),
+            'paid_at' => $order->paid_at?->toISOString(),
+            'cancelled_at' => $order->cancelled_at?->toISOString(),
+            'expired_at' => $order->expired_at?->toISOString(),
+            'completed_at' => $order->completed_at?->toISOString(),
             'no_return_refund_agreed' => $order->no_return_refund_agreed,
-            'no_return_refund_agreed_at' => $order->no_return_refund_agreed_at?->toDateTimeString(),
+            'no_return_refund_agreed_at' => $order->no_return_refund_agreed_at?->toISOString(),
             'items' => $order->items->map(fn ($item): array => [
                 'id' => $item->id,
                 'product_id' => $item->product_id,
@@ -186,6 +225,7 @@ class OrderManagementService
                 'subtotal' => $item->subtotal,
                 'weight' => $item->weight,
                 'product_image_url' => $item->product_image_url,
+                'stock_movements' => $movements->where('product_variant_id', $item->product_variant_id)->values(),
             ])->values(),
             'address' => $order->address,
             'payment' => $order->payment,
@@ -193,8 +233,8 @@ class OrderManagementService
                 'id' => $log->id,
                 'event_type' => $log->event_type,
                 'transaction_status' => $log->transaction_status,
-                'processed_at' => $log->processed_at?->toDateTimeString(),
-                'created_at' => $log->created_at?->toDateTimeString(),
+                'processed_at' => $log->processed_at?->toISOString(),
+                'created_at' => $log->created_at?->toISOString(),
             ])->values() ?? [],
             'shipment' => $order->shipment,
             'trackings' => $order->shipment?->trackings?->map(fn ($tracking): array => [
@@ -202,7 +242,7 @@ class OrderManagementService
                 'status' => $tracking->status,
                 'description' => $tracking->description,
                 'location' => $tracking->location,
-                'happened_at' => $tracking->happened_at?->toDateTimeString(),
+                'happened_at' => $tracking->happened_at?->toISOString(),
             ])->values() ?? [],
         ];
     }

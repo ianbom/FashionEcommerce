@@ -34,7 +34,7 @@ function createPendingOrder(string $orderNumber = 'ORD-TEST-EXPIRED'): Order
     ]);
 }
 
-it('marks locally expired pending payments without requiring Midtrans sync to succeed', function () {
+it('preserves pending payment and reservation when provider reconciliation is uncertain', function () {
     $order = createPendingOrder();
 
     $payment = Payment::query()->create([
@@ -49,20 +49,19 @@ it('marks locally expired pending payments without requiring Midtrans sync to su
 
     $this->app->instance(
         SyncMidtransPaymentAction::class,
-        Mockery::mock(SyncMidtransPaymentAction::class)->shouldNotReceive('execute')->getMock(),
+        Mockery::mock(SyncMidtransPaymentAction::class)->shouldReceive('execute')->once()->andThrow(new RuntimeException('Provider unavailable'))->getMock(),
     );
 
     $stats = app(SyncExpiredMidtransPaymentsAction::class)->execute();
 
-    expect($stats)->toMatchArray(['checked' => 1, 'expired' => 1, 'skipped_midtrans_owned' => 0, 'synced' => 0, 'failed' => 0])
-        ->and($payment->refresh()->transaction_status)->toBe('expire')
-        ->and($payment->expired_at)->not->toBeNull()
-        ->and($order->refresh()->payment_status)->toBe(PaymentStatus::Expired->value)
-        ->and($order->order_status)->toBe(OrderStatus::PaymentExpired->value)
-        ->and($order->expired_at)->not->toBeNull();
+    expect($stats)->toMatchArray(['checked' => 1, 'expired' => 0, 'synced' => 0, 'failed' => 1])
+        ->and($payment->refresh()->transaction_status)->toBe('pending')
+        ->and($payment->expired_at)->toBeNull()
+        ->and($order->refresh()->payment_status)->toBe(PaymentStatus::Pending->value)
+        ->and($order->stock_released_at)->toBeNull();
 });
 
-it('does not locally expire payments already owned by Midtrans transaction', function () {
+it('reconciles payments already owned by a Midtrans transaction', function () {
     $order = createPendingOrder('ORD-TEST-MIDTRANS-OWNED');
 
     $payment = Payment::query()->create([
@@ -77,9 +76,12 @@ it('does not locally expire payments already owned by Midtrans transaction', fun
         'expires_at' => now()->subMinute(),
     ]);
 
+    $sync = Mockery::mock(SyncMidtransPaymentAction::class);
+    $sync->shouldReceive('execute')->once()->with(Mockery::on(fn ($value) => $value->id === $payment->id), 'scheduled_sync')->andReturnNull();
+    $this->app->instance(SyncMidtransPaymentAction::class, $sync);
     $stats = app(SyncExpiredMidtransPaymentsAction::class)->execute();
 
-    expect($stats)->toMatchArray(['checked' => 0, 'expired' => 0, 'skipped_midtrans_owned' => 1, 'synced' => 0, 'failed' => 0])
+    expect($stats)->toMatchArray(['checked' => 1, 'expired' => 0, 'synced' => 1, 'failed' => 0])
         ->and($payment->refresh()->transaction_status)->toBe('pending')
         ->and($payment->expired_at)->toBeNull()
         ->and($order->refresh()->payment_status)->toBe(PaymentStatus::Pending->value)
@@ -112,6 +114,7 @@ it('marks payment and order expired from Midtrans webhook expire status', functi
 
     $midtrans = Mockery::mock(MidtransService::class);
     $midtrans->shouldReceive('validateNotificationSignature')->once()->with($payload)->andReturnTrue();
+    $midtrans->shouldReceive('validatePaymentPayload')->once()->with($payload)->andReturnNull();
     $midtrans->shouldReceive('amountMatches')->once()->with('100000.00', Mockery::type(Payment::class))->andReturnTrue();
     $this->app->instance(MidtransService::class, $midtrans);
 

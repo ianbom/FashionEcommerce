@@ -18,7 +18,8 @@ class OrderStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => ['required', Rule::in(['processing', 'ready_to_ship', 'completed', 'cancelled'])],
+            'status' => ['required', Rule::in(['processing', 'ready_to_ship', 'completed', 'shipment_failed'])],
+            'reason' => ['nullable', 'required_if:status,shipment_failed', 'string', 'max:1000'],
         ];
     }
 }

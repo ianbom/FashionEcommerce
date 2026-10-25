@@ -1,7 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
 import {
-    ChevronLeft,
-    ChevronRight,
     Eye,
     MoreVertical,
     Pencil,
@@ -30,7 +28,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { PerPageSelect } from '../pagination';
+import { PaginationLabel, PerPageSelect } from '../pagination';
 
 interface Collection {
     id: number;
@@ -532,22 +530,8 @@ export default function CollectionsIndex({
                         </span>
                         <div className="flex items-center gap-1">
                             {collections.links.map((link, i) => {
-                                const isChevronLeft =
-                                    link.label.includes('Previous') ||
-                                    link.label.includes('&laquo;');
-                                const isChevronRight =
-                                    link.label.includes('Next') ||
-                                    link.label.includes('&raquo;');
-                                const label = isChevronLeft ? (
-                                    <ChevronLeft className="h-3.5 w-3.5" />
-                                ) : isChevronRight ? (
-                                    <ChevronRight className="h-3.5 w-3.5" />
-                                ) : (
-                                    <span
-                                        dangerouslySetInnerHTML={{
-                                            __html: link.label,
-                                        }}
-                                    />
+                                const label = (
+                                    <PaginationLabel label={link.label} />
                                 );
 
                                 return (

@@ -18,8 +18,8 @@ class ShipmentStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'shipping_status' => ['required', Rule::in(['confirmed', 'allocated', 'picked', 'in_transit', 'delivered', 'cancelled', 'problem'])],
-            'description' => ['nullable', 'string', 'max:500'],
+            'shipping_status' => ['required', Rule::in(['confirmed', 'allocated', 'picked', 'in_transit', 'delivered', 'cancelled', 'failed', 'problem', 'lost', 'returned'])],
+            'description' => ['required', 'string', 'max:500'],
             'location' => ['nullable', 'string', 'max:255'],
         ];
     }

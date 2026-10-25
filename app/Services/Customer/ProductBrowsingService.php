@@ -3,12 +3,11 @@
 namespace App\Services\Customer;
 
 use App\Models\Banner;
+use App\Models\CartItem;
 use App\Models\Category;
 use App\Models\Collection;
 use App\Models\Page;
 use App\Models\Product;
-use App\Models\ProductVariant;
-use App\Models\CartItem;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -345,6 +344,7 @@ class ProductBrowsingService
             'best_seller' => $query->orderByDesc('is_best_seller')->orderByDesc('created_at'),
             default => $query->orderByDesc('is_featured')->orderByDesc('is_new_arrival')->orderByDesc('created_at'),
         };
+        $query->orderBy('products.id', $order);
     }
 
     private function filterOptions(): array

@@ -1,12 +1,5 @@
 import { Link, router } from '@inertiajs/react';
-import {
-    Check,
-    ChevronLeft,
-    ChevronRight,
-    Package,
-    Search,
-    Truck,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight, Package, Search } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { useState } from 'react';
 import {
@@ -340,7 +333,7 @@ export default function ListOrder({ orders, filters }: Props) {
                                             href={
                                                 order.payment
                                                     .midtrans_redirect_url ??
-                                                '/checkout'
+                                                orderShow.url(order.id)
                                             }
                                             target={
                                                 order.payment
@@ -359,8 +352,8 @@ export default function ListOrder({ orders, filters }: Props) {
                                             Bayar Sekarang
                                         </a>
                                     )}
-                                    {order.order_status === 'shipped' && (
-                                        order.shipment.tracking_url ? (
+                                    {order.order_status === 'shipped' &&
+                                        (order.shipment.tracking_url ? (
                                             <a
                                                 href={
                                                     order.shipment.tracking_url
@@ -378,8 +371,7 @@ export default function ListOrder({ orders, filters }: Props) {
                                             >
                                                 Lacak Pesanan
                                             </Link>
-                                        )
-                                    )}
+                                        ))}
                                     <Link
                                         href={orderShow.url(order.id)}
                                         className="flex-1 rounded-lg border border-[#EADBD8] bg-white py-2.5 text-center text-[12px] font-bold text-[#4A2525] transition-colors hover:border-[#C4BDB1] hover:bg-[#FAF9F6] lg:w-full"

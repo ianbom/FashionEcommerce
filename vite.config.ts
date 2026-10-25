@@ -20,6 +20,9 @@ export default defineConfig({
         tailwindcss(),
         wayfinder({
             formVariants: true,
+            ...(process.env.ISOLATED_BUILD === '1'
+                ? { command: 'php tests/console.php wayfinder:generate' }
+                : {}),
         }),
     ],
 });

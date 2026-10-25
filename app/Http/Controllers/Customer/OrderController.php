@@ -26,4 +26,9 @@ class OrderController extends Controller
     {
         return $orders->cancel($request, $order);
     }
+
+    public function syncPayment(Request $request, Order $order, OrderService $orders): RedirectResponse
+    {
+        return $orders->syncPayment($request, $order);
+    }
 }

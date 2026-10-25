@@ -6,6 +6,18 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class CreateShipmentRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        if ($this->input('source') === 'order_detail') {
+            $shipment = $this->route('order')?->shipment;
+            $this->merge([
+                'courier_company' => $shipment?->courier_company,
+                'courier_type' => $shipment?->courier_type,
+                'courier_service_name' => $shipment?->courier_service_name,
+            ]);
+        }
+    }
+
     public function authorize(): bool
     {
         return $this->user()?->role === 'admin' && (bool) $this->user()?->is_active;
@@ -17,6 +29,7 @@ class CreateShipmentRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'source' => ['sometimes', 'string', 'in:order_detail'],
             'courier_company' => ['required', 'string', 'max:100'],
             'courier_type' => ['required', 'string', 'max:100'],
             'courier_service_name' => ['nullable', 'string', 'max:150'],

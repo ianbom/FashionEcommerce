@@ -1,14 +1,15 @@
 import { Head, Link } from '@inertiajs/react';
-import { Box, Check, Lock, ShieldCheck, Ticket, Truck } from 'lucide-react';
 import type { Icon, LatLngBoundsExpression, Map as LeafletMap } from 'leaflet';
+import { Box, Check, Lock, ShieldCheck, Ticket, Truck } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import type * as ReactLeaflet from 'react-leaflet';
 import { toast } from 'sonner';
 import { CheckoutProvider, useCheckout } from '@/contexts/checkout-context';
 import type {
     CheckoutAddress,
     CheckoutItem,
     CheckoutStoreLocation,
-    ManualPayment,
+    PaymentGateway,
     CheckoutSummary,
     ShippingRate,
     Voucher,
@@ -20,19 +21,19 @@ type Props = {
     appliedVoucher: Voucher;
     cartItems: CheckoutItem[];
     defaultAddressId: number | null;
-    manualPayment: ManualPayment;
+    paymentGateway: PaymentGateway;
     selectedShippingRate: ShippingRate | null;
     storeLocation: CheckoutStoreLocation;
     summary: CheckoutSummary;
 };
 
 type ReactLeafletModules = {
-    MapContainer: typeof import('react-leaflet').MapContainer;
-    Marker: typeof import('react-leaflet').Marker;
-    Polyline: typeof import('react-leaflet').Polyline;
-    Popup: typeof import('react-leaflet').Popup;
-    TileLayer: typeof import('react-leaflet').TileLayer;
-    useMap: typeof import('react-leaflet').useMap;
+    MapContainer: typeof ReactLeaflet.MapContainer;
+    Marker: typeof ReactLeaflet.Marker;
+    Polyline: typeof ReactLeaflet.Polyline;
+    Popup: typeof ReactLeaflet.Popup;
+    TileLayer: typeof ReactLeaflet.TileLayer;
+    useMap: typeof ReactLeaflet.useMap;
 };
 
 type Coordinates = [number, number];
@@ -139,7 +140,7 @@ function CheckoutScreen() {
         cartItems,
         errors,
         loadShippingRates,
-        manualPayment,
+        paymentGateway,
         placeOrder,
         placingOrder,
         removeVoucher,
@@ -232,7 +233,7 @@ function CheckoutScreen() {
                         </h1>
                         <p className="text-xs text-[#8A6B62] md:text-sm">
                             Pilih alamat tersimpan, ongkir Biteship, voucher,
-                            lalu konfirmasi transfer melalui WhatsApp.
+                            lalu selesaikan pembayaran melalui Midtrans.
                         </p>
                     </div>
                     <div className="flex max-w-[380px] items-center">
@@ -584,6 +585,21 @@ function CheckoutScreen() {
                                     value={-summary.discount}
                                     danger
                                 />
+                                {!!summary.rounding_adjustment && (
+                                    <div className="flex justify-between text-xs">
+                                        <span>Pembulatan</span>
+                                        <span>
+                                            {summary.rounding_adjustment.toLocaleString(
+                                                'id-ID',
+                                                {
+                                                    style: 'currency',
+                                                    currency: 'IDR',
+                                                    minimumFractionDigits: 2,
+                                                },
+                                            )}
+                                        </span>
+                                    </div>
+                                )}
                                 <div className="mt-4 border-t border-[#EADBD8] pt-4">
                                     <div className="flex items-end justify-between">
                                         <span className="text-[13px] font-semibold text-[#333]">
@@ -594,25 +610,19 @@ function CheckoutScreen() {
                                         </span>
                                     </div>
                                 </div>
-                                <div className="mt-6 rounded-lg border border-[#EADBD8] bg-[#FAF8F5] p-4 text-[12px] text-[#4A4A4A]">
+                                <div
+                                    data-provider={paymentGateway.provider}
+                                    className="mt-6 rounded-lg border border-[#EADBD8] bg-[#FAF8F5] p-4 text-[12px] text-[#4A4A4A]"
+                                >
                                     <p className="font-bold text-[#4A2525]">
-                                        Transfer Bank
+                                        Midtrans Snap
                                     </p>
                                     <p className="mt-2">
-                                        Bank: {manualPayment.bank_name || '-'}
-                                    </p>
-                                    <p>
-                                        Nomor rekening:{' '}
-                                        {manualPayment.bank_account_number ||
-                                            '-'}
-                                    </p>
-                                    <p>
-                                        Atas nama:{' '}
-                                        {manualPayment.bank_account_name || '-'}
-                                    </p>
-                                    <p className="mt-2 text-[11px] text-[#8A6B62]">
-                                        Setelah order dibuat, WhatsApp akan
-                                        terbuka dengan ringkasan pembayaran.
+                                        Anda akan diarahkan ke halaman
+                                        pembayaran Midtrans untuk memilih metode
+                                        pembayaran yang tersedia. Status
+                                        diperbarui otomatis setelah pembayaran
+                                        terverifikasi.
                                     </p>
                                 </div>
                                 <button
@@ -628,7 +638,7 @@ function CheckoutScreen() {
                                     <Lock size={16} className="mr-2" />
                                     {placingOrder
                                         ? 'Membuat Order...'
-                                        : 'Kirim Detail Order ke WhatsApp'}
+                                        : 'Bayar dengan Midtrans'}
                                 </button>
                                 <div className="mt-8 space-y-4 border-t border-[#EADBD8]/60 pt-6">
                                     <CheckoutRouteMap
@@ -646,8 +656,9 @@ function CheckoutScreen() {
                                             strokeWidth={1.5}
                                         />
                                         <p>
-                                            Pembayaran melalui transfer bank
-                                            dikonfirmasi admin
+                                            Pembayaran diproses melalui
+                                            Midtrans. Tidak perlu mengirim bukti
+                                            transfer melalui WhatsApp.
                                         </p>
                                     </div>
                                     <div className="flex items-start space-x-3 text-[11px] text-[#8A6B62]">

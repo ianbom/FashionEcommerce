@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\Cart;
 use App\Models\Collection;
+use App\Services\Settings\SiteSettingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Middleware;
@@ -54,6 +55,10 @@ class HandleInertiaRequests extends Middleware
             'shop' => [
                 'cart_count' => fn (): int => $this->cartCount($request),
                 'featured_collections' => fn (): array => $this->featuredCollections(),
+                'contact' => fn (): array => [
+                    'phone' => SiteSettingService::normalizePhone(app(SiteSettingService::class)->get('store_phone')),
+                    'address' => app(SiteSettingService::class)->get('origin_address'),
+                ],
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];

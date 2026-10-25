@@ -7,11 +7,12 @@ use App\Models\ProductVariant;
 use App\Services\Stock\StockLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class ProductVariantService
 {
-    use StoresUploadedFiles;
     use ResolvesAdminPagination;
+    use StoresUploadedFiles;
 
     public function __construct(private readonly StockLogService $stockLogs) {}
 
@@ -54,6 +55,7 @@ class ProductVariantService
         $validated = $this->payload($request, true);
 
         return DB::transaction(function () use ($request, $validated): ProductVariant {
+            $validated['reserved_stock'] = 0;
             $variant = ProductVariant::query()->create($validated);
             $this->stockLogs->logIfChanged($variant, 0, $variant->stock, $request->user()->id, 'adjustment', 'Initial variant stock.');
 
@@ -66,6 +68,11 @@ class ProductVariantService
         $validated = $this->payload($request, false, $variant);
 
         DB::transaction(function () use ($request, $variant, $validated): void {
+            $variant = ProductVariant::query()->whereKey($variant->id)->lockForUpdate()->firstOrFail();
+            $validated['reserved_stock'] = $variant->reserved_stock;
+            if ($validated['stock'] < $variant->reserved_stock) {
+                throw ValidationException::withMessages(['stock' => 'Stock tidak boleh lebih kecil dari reservasi aktif.']);
+            }
             $stockBefore = $variant->stock;
             $variant->update($validated);
             $this->stockLogs->logIfChanged($variant, $stockBefore, $variant->stock, $request->user()->id, 'adjustment', 'Stock updated from variant form.');

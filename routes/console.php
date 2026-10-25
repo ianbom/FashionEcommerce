@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('payments:sync-expired-midtrans')->everyFiveMinutes()->withoutOverlapping();
+Schedule::command('shipments:replay-biteship-webhooks')->everyTenMinutes()->withoutOverlapping();

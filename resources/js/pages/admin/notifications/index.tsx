@@ -3,8 +3,6 @@ import {
     Bell,
     BellRing,
     CheckCircle2,
-    ChevronLeft,
-    ChevronRight,
     Clock,
     Plus,
     RotateCcw,
@@ -23,7 +21,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import type { Paginated } from '@/pages/admin/marketing/shared';
-import { PerPageSelect } from '../pagination';
+import { PaginationLabel, PerPageSelect } from '../pagination';
 
 type Notification = {
     id: number;
@@ -538,21 +536,7 @@ function PaginationFooter<T>({
             </span>
             <div className="flex items-center gap-1">
                 {paginator.links.map((link, i) => {
-                    const isChevronLeft =
-                        link.label.includes('Previous') ||
-                        link.label.includes('&laquo;');
-                    const isChevronRight =
-                        link.label.includes('Next') ||
-                        link.label.includes('&raquo;');
-                    const content = isChevronLeft ? (
-                        <ChevronLeft className="h-3.5 w-3.5" />
-                    ) : isChevronRight ? (
-                        <ChevronRight className="h-3.5 w-3.5" />
-                    ) : (
-                        <span
-                            dangerouslySetInnerHTML={{ __html: link.label }}
-                        />
-                    );
+                    const content = <PaginationLabel label={link.label} />;
 
                     return (
                         <button

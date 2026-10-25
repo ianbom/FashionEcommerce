@@ -18,6 +18,10 @@ type SharedShopProps = {
             name: string;
             slug: string;
         }>;
+        contact?: {
+            phone?: string | null;
+            address?: string | null;
+        };
     };
 };
 
@@ -56,7 +60,7 @@ export default function ShopLayout({ children }: ShopLayoutProps) {
                 {children}
             </main>
             <Toaster />
-            <Footer />
+            <Footer phone={props.shop?.contact?.phone} />
 
             {/* Mobile Bottom Navigation */}
             <nav className="pb-safe fixed bottom-0 left-1/2 z-50 w-full max-w-md -translate-x-1/2 border-t border-[#ddd0c4] bg-[#f7f0e8]/98 px-6 py-2 backdrop-blur-xl md:hidden">

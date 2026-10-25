@@ -69,9 +69,8 @@
             "@test"
         ],
         "test": [
-            "@php artisan config:clear --ansi",
             "@lint:check",
-            "@php artisan test"
+            "@php vendor/bin/pest"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

@@ -1,5 +1,10 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import type { Icon, LatLng, LeafletMouseEvent, Map as LeafletMap } from 'leaflet';
+import type {
+    Icon,
+    LatLng,
+    LeafletMouseEvent,
+    Map as LeafletMap,
+} from 'leaflet';
 import { LocateFixed, Save, Search } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { useEffect, useState } from 'react';
@@ -499,8 +504,12 @@ export default function AdminSettingsIndex({
                             <CardTitle>{current.title}</CardTitle>
                             <CardDescription>
                                 Sensitive API keys seperti Midtrans server key
-                                dan Biteship API key tetap dikelola dari file
-                                environment.
+                                dan Biteship API key, serta environment
+                                Midtrans, dikelola melalui konfigurasi server.
+                                Store Name dan Store Phone digunakan untuk
+                                kontak pengirim, bantuan, dan WhatsApp
+                                pembayaran lama. Alamat toko dikelola melalui
+                                Origin Address di Shipping Settings.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>

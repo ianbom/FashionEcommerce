@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { httpUrl } from '@/lib/http-url';
 import {
     formatPrice,
     JsonBlock,
@@ -39,6 +40,14 @@ type Shipment = {
     shipping_cost: string;
     insurance_cost: string;
     shipping_status: string;
+    can_create: boolean;
+    available_statuses: string[];
+    requires_reconciliation: boolean;
+    shipping_issue: {
+        label: string;
+        description: string | null;
+        is_terminal: boolean;
+    } | null;
     estimated_delivery: string | null;
     shipped_at: string | null;
     delivered_at: string | null;
@@ -67,7 +76,18 @@ type Shipment = {
 type Props = { shipment: Shipment; shippingStatuses: string[] };
 
 function getLabelUrl(shipment: Shipment): string | null {
-    return shipment.label_url || null;
+    if (shipment.label_url?.startsWith('/storage/')) {
+        return shipment.label_url;
+    }
+
+    const raw = shipment.raw_order_response as Record<string, unknown> | null;
+    const courier = raw?.courier as Record<string, unknown> | undefined;
+
+    return (
+        httpUrl(shipment.label_url) ??
+        httpUrl(courier?.link) ??
+        httpUrl(raw?.courier_link)
+    );
 }
 
 function text(value: unknown): string {
@@ -212,9 +232,9 @@ function printBiteshipLabel(shipment: Shipment) {
     printWindow.document.close();
 }
 
-export default function ShipmentShow({ shipment, shippingStatuses }: Props) {
+export default function ShipmentShow({ shipment }: Props) {
     const form = useForm({
-        shipping_status: shipment.shipping_status,
+        shipping_status: '',
         description: '',
         location: '',
     });
@@ -264,13 +284,24 @@ export default function ShipmentShow({ shipment, shippingStatuses }: Props) {
                                 </Button>
                             )}
                             {!labelUrl && (
-                                <Button type="button" variant="outline" disabled>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    disabled
+                                >
                                     <Printer /> Cetak Resi Biteship
                                 </Button>
                             )}
                             <Button
                                 type="button"
-                                onClick={() => router.post(`/admin/shipments/${shipment.id}/refresh-tracking`, {}, { preserveScroll: true })}
+                                disabled={!shipment.biteship_order_id}
+                                onClick={() =>
+                                    router.post(
+                                        `/admin/shipments/${shipment.id}/refresh-tracking`,
+                                        {},
+                                        { preserveScroll: true },
+                                    )
+                                }
                             >
                                 <RefreshCw /> Refresh Tracking
                             </Button>
@@ -297,14 +328,39 @@ export default function ShipmentShow({ shipment, shippingStatuses }: Props) {
                         value={shipment.estimated_delivery ?? '-'}
                     />
                 </div>
-                {!shipment.biteship_order_id && (
+                {(shipment.requires_reconciliation ||
+                    shipment.shipping_issue) && (
+                    <div
+                        role="status"
+                        className="rounded border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950"
+                    >
+                        {shipment.requires_reconciliation && (
+                            <p>
+                                Booking belum pasti atau status pembayaran
+                                berubah. Rekonsiliasi diperlukan; jangan booking
+                                ulang.
+                            </p>
+                        )}
+                        {shipment.shipping_issue && (
+                            <p>
+                                Masalah pengiriman:{' '}
+                                {shipment.shipping_issue.label}.{' '}
+                                {shipment.shipping_issue.description}
+                            </p>
+                        )}
+                    </div>
+                )}
+                {shipment.can_create && (
                     <Card className="border-amber-200 bg-amber-50/60 dark:border-amber-900 dark:bg-amber-950/20">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
-                                <PackagePlus className="size-5" /> Create Biteship Order
+                                <PackagePlus className="size-5" /> Create
+                                Biteship Order
                             </CardTitle>
                             <CardDescription>
-                                Jangan melakukan perubahan data pada form dibawah ini, langsung create order untuk melakukan pengiriman.
+                                Jangan melakukan perubahan data pada form
+                                dibawah ini, langsung create order untuk
+                                melakukan pengiriman.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -457,7 +513,8 @@ export default function ShipmentShow({ shipment, shippingStatuses }: Props) {
                                     rel="noreferrer"
                                     className="inline-flex items-center gap-2 text-sm font-medium text-primary underline"
                                 >
-                                    <Printer className="size-4" /> Cetak Resi Biteship
+                                    <Printer className="size-4" /> Cetak Resi
+                                    Biteship
                                 </a>
                             ) : null}
                             <button
@@ -515,8 +572,13 @@ export default function ShipmentShow({ shipment, shippingStatuses }: Props) {
                             className="grid gap-4 md:grid-cols-[220px_minmax(0,1fr)_minmax(0,1fr)_auto]"
                         >
                             <div className="grid gap-2">
-                                <Label>Status</Label>
+                                <Label htmlFor="shipment-status">Status</Label>
                                 <select
+                                    id="shipment-status"
+                                    disabled={
+                                        shipment.available_statuses.length === 0
+                                    }
+                                    required
                                     value={form.data.shipping_status}
                                     onChange={(event) =>
                                         form.setData(
@@ -526,16 +588,27 @@ export default function ShipmentShow({ shipment, shippingStatuses }: Props) {
                                     }
                                     className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm"
                                 >
-                                    {shippingStatuses.map((status) => (
-                                        <option key={status} value={status}>
-                                            {status}
-                                        </option>
-                                    ))}
+                                    <option value="" disabled>
+                                        Pilih status
+                                    </option>
+                                    {shipment.available_statuses.map(
+                                        (status) => (
+                                            <option key={status} value={status}>
+                                                {status}
+                                            </option>
+                                        ),
+                                    )}
                                 </select>
                             </div>
                             <div className="grid gap-2">
-                                <Label>Description</Label>
+                                <Label htmlFor="shipment-description">
+                                    Description
+                                </Label>
                                 <Input
+                                    id="shipment-description"
+                                    required
+                                    maxLength={500}
+                                    aria-invalid={!!form.errors.description}
                                     value={form.data.description}
                                     onChange={(event) =>
                                         form.setData(
@@ -560,11 +633,27 @@ export default function ShipmentShow({ shipment, shippingStatuses }: Props) {
                             <div className="flex items-end">
                                 <Button
                                     type="submit"
-                                    disabled={form.processing}
+                                    disabled={
+                                        form.processing ||
+                                        shipment.available_statuses.length ===
+                                            0 ||
+                                        !form.data.shipping_status
+                                    }
                                 >
                                     <Save /> Save
                                 </Button>
                             </div>
+                            {Object.entries(form.errors).map(
+                                ([key, message]) => (
+                                    <p
+                                        key={key}
+                                        role="alert"
+                                        className="text-sm text-destructive"
+                                    >
+                                        {message}
+                                    </p>
+                                ),
+                            )}
                         </form>
                     </CardContent>
                 </Card>

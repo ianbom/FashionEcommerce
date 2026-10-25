@@ -33,7 +33,7 @@ import {
     Underline as UnderlineIcon,
     Undo2,
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useId, useRef } from 'react';
 import type { FormEvent, MouseEvent } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -198,6 +198,7 @@ function FieldRow({
 
 function FieldGroup({
     label,
+    name,
     hint,
     required,
     error,
@@ -206,6 +207,7 @@ function FieldGroup({
     maxChar,
 }: {
     label: string;
+    name?: string;
     hint?: string;
     required?: boolean;
     error?: string;
@@ -213,30 +215,61 @@ function FieldGroup({
     charCount?: number;
     maxChar?: number;
 }) {
+    const generatedId = useId();
+    const fieldId =
+        'product-' + (name ?? generatedId).replace(/[^a-zA-Z0-9_-]/g, '-');
+
     return (
-        <div className="space-y-1.5">
+        <div
+            className="space-y-1.5"
+            data-error-key={name}
+            ref={(node) => {
+                const control = node?.querySelector<HTMLElement>(
+                    'input, textarea, select, [role="combobox"], [role="switch"], [contenteditable="true"]',
+                );
+
+                if (control) {
+                    control.id = fieldId;
+                    control.setAttribute(
+                        'aria-invalid',
+                        error ? 'true' : 'false',
+                    );
+
+                    if (error || hint) {
+                        control.setAttribute(
+                            'aria-describedby',
+                            fieldId + '-message',
+                        );
+                    } else {
+                        control.removeAttribute('aria-describedby');
+                    }
+                }
+            }}
+        >
             <div className="flex items-center justify-between">
-                <Label className="text-xs font-medium text-zinc-700">
+                <Label
+                    htmlFor={fieldId}
+                    className="text-xs font-medium text-zinc-700"
+                >
                     {label}
                     {required && <span className="ml-0.5 text-red-500">*</span>}
                 </Label>
                 {maxChar !== undefined && (
-                    <span
-                        className={`text-[11px] tabular-nums ${(charCount ?? 0) > maxChar * 0.9 ? 'text-amber-500' : 'text-zinc-400'}`}
-                    >
+                    <span className="text-[11px] text-zinc-500">
                         {charCount ?? 0}/{maxChar}
                     </span>
                 )}
             </div>
             {children}
-            {error && (
-                <p className="flex items-center gap-1 text-[11px] text-red-500">
-                    <AlertTriangle className="h-3 w-3" />
-                    {error}
+            {(error || hint) && (
+                <p
+                    id={fieldId + '-message'}
+                    className={
+                        error ? 'text-xs text-red-700' : 'text-xs text-zinc-500'
+                    }
+                >
+                    {error ?? hint}
                 </p>
-            )}
-            {hint && !error && (
-                <p className="text-[11px] text-zinc-400">{hint}</p>
             )}
         </div>
     );
@@ -497,6 +530,40 @@ export default function ProductForm({ mode, product, options }: Props) {
         ),
     );
     const [variantModalOpen, setVariantModalOpen] = useState(false);
+    const dialogRef = useRef<HTMLDialogElement>(null);
+    const summaryRef = useRef<HTMLDivElement>(null);
+    const [focusErrorKey, setFocusErrorKey] = useState<string | null>(null);
+    const [focusAttempt, setFocusAttempt] = useState(0);
+    useEffect(() => {
+        const dialog = dialogRef.current;
+
+        if (!variantModalOpen || !dialog) {
+            return;
+        }
+
+        const opener = document.activeElement as HTMLElement | null;
+        dialog.showModal();
+
+        return () => {
+            dialog.close();
+            opener?.focus();
+        };
+    }, [variantModalOpen]);
+    useEffect(() => {
+        if (!focusErrorKey) {
+            return;
+        }
+
+        const target = document.querySelector<HTMLElement>(
+            '[data-error-key="' + CSS.escape(focusErrorKey) + '"]',
+        );
+        const control =
+            target?.querySelector<HTMLElement>(
+                'input:not([type="hidden"]), textarea, select, button, [role="combobox"], [contenteditable="true"]',
+            ) ?? target;
+        control?.focus();
+        control?.scrollIntoView({ block: 'center' });
+    }, [focusErrorKey, variantModalOpen, focusAttempt]);
     const [editingVariantIndex, setEditingVariantIndex] = useState<
         number | null
     >(null);
@@ -538,6 +605,7 @@ export default function ProductForm({ mode, product, options }: Props) {
     };
 
     const openVariantModal = (index: number | null = null) => {
+        setFocusErrorKey(null);
         setEditingVariantIndex(index);
         const draft =
             index === null ? blankVariant() : { ...data.variants[index] };
@@ -547,6 +615,8 @@ export default function ProductForm({ mode, product, options }: Props) {
     };
 
     const closeVariantModal = () => {
+        setFocusErrorKey(null);
+
         if (variantDraftPreview?.startsWith('blob:')) {
             URL.revokeObjectURL(variantDraftPreview);
         }
@@ -558,6 +628,7 @@ export default function ProductForm({ mode, product, options }: Props) {
     };
 
     const saveVariantDraft = () => {
+        setFocusErrorKey(null);
         const draft = { ...variantDraft };
 
         if (editingVariantIndex === null) {
@@ -584,18 +655,40 @@ export default function ProductForm({ mode, product, options }: Props) {
         );
     };
 
+    const showError = (key: string) => {
+        setFocusAttempt((attempt) => attempt + 1);
+        const match = /^variants\.(\d+)\./.exec(key);
+
+        if (match && data.variants[Number(match[1])]) {
+            openVariantModal(Number(match[1]));
+        }
+
+        const imageMatch = /^images\.(\d+)\./.exec(key);
+        setFocusErrorKey(imageMatch ? 'images.' + imageMatch[1] : key);
+    };
+    const onError = (messages: Record<string, string>) => {
+        summaryRef.current?.focus();
+        const firstKey = Object.keys(messages)[0];
+
+        if (firstKey) {
+            showError(firstKey);
+        }
+    };
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
         if (isEdit) {
             transform((data) => ({ ...data, _method: 'put' }));
-            post(`/admin/products/${product.id}`, { forceFormData: true });
+            post(`/admin/products/${product.id}`, {
+                forceFormData: true,
+                onError,
+            });
 
             return;
         }
 
         transform((data) => data);
-        post('/admin/products', { forceFormData: true });
+        post('/admin/products', { forceFormData: true, onError });
     };
 
     const variantsCount = data.variants.filter((v) => v.sku).length;
@@ -669,6 +762,33 @@ export default function ProductForm({ mode, product, options }: Props) {
                 </div>
 
                 <form onSubmit={submit}>
+                    {Object.keys(errors).length > 0 && (
+                        <div
+                            ref={summaryRef}
+                            tabIndex={-1}
+                            role="alert"
+                            className="mb-4 rounded border border-red-300 bg-red-50 p-4 text-red-900"
+                        >
+                            <h2 className="font-semibold">
+                                Periksa kembali data produk
+                            </h2>
+                            <ul>
+                                {Object.entries(errors).map(
+                                    ([key, message]) => (
+                                        <li key={key}>
+                                            <button
+                                                type="button"
+                                                className="text-left underline"
+                                                onClick={() => showError(key)}
+                                            >
+                                                {key}: {message}
+                                            </button>
+                                        </li>
+                                    ),
+                                )}
+                            </ul>
+                        </div>
+                    )}
                     <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
                         <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[1fr_320px]">
                             {/* ── Main Column ── */}
@@ -686,6 +806,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                             <FieldGroup
                                                 label="Product Name"
                                                 required
+                                                name="name"
                                                 error={errors.name}
                                             >
                                                 <Input
@@ -713,6 +834,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                             <FieldGroup
                                                 label="SKU"
                                                 required
+                                                name="sku"
                                                 error={errors.sku}
                                                 hint="Unique product identifier"
                                             >
@@ -733,6 +855,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                         <FieldGroup
                                             label="URL Slug"
                                             required
+                                            name="slug"
                                             error={errors.slug}
                                             hint="Used in the product URL — lowercase letters, numbers, hyphens only"
                                         >
@@ -770,6 +893,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                         <FieldRow cols={2}>
                                             <FieldGroup
                                                 label="Category"
+                                                name="category_id"
                                                 error={errors.category_id}
                                             >
                                                 <select
@@ -799,6 +923,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                             </FieldGroup>
                                             <FieldGroup
                                                 label="Collection"
+                                                name="collection_id"
                                                 error={errors.collection_id}
                                             >
                                                 <select
@@ -831,6 +956,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                         <FieldGroup
                                             label="Short Description"
                                             required
+                                            name="short_description"
                                             error={errors.short_description}
                                             charCount={
                                                 data.short_description?.length
@@ -853,6 +979,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                         <FieldGroup
                                             label="Description"
                                             required
+                                            name="description"
                                             error={errors.description}
                                         >
                                             <ProductDescriptionEditor
@@ -878,6 +1005,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                         <FieldGroup
                                             label="Material"
                                             required
+                                            name="material"
                                             error={errors.material}
                                             hint="e.g. 100% Premium Voile, Linen"
                                         >
@@ -896,6 +1024,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                         <FieldGroup
                                             label="Care Instruction"
                                             required
+                                            name="care_instruction"
                                             error={errors.care_instruction}
                                             hint="e.g. Hand wash cold, do not bleach"
                                         >
@@ -927,6 +1056,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                             <FieldGroup
                                                 label="Base Price (IDR)"
                                                 required
+                                                name="base_price"
                                                 error={errors.base_price}
                                             >
                                                 <Input
@@ -945,6 +1075,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                             </FieldGroup>
                                             <FieldGroup
                                                 label="Sale Price (IDR)"
+                                                name="sale_price"
                                                 error={errors.sale_price}
                                                 hint="Must be lower than or equal to base price"
                                             >
@@ -1053,6 +1184,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                         <FieldGroup
                                             label="Weight (g)"
                                             required
+                                            name="weight"
                                             error={errors.weight}
                                         >
                                             <Input
@@ -1072,6 +1204,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                         <FieldGroup
                                             label="Length (cm)"
                                             required
+                                            name="length"
                                             error={errors.length}
                                         >
                                             <Input
@@ -1091,6 +1224,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                         <FieldGroup
                                             label="Width (cm)"
                                             required
+                                            name="width"
                                             error={errors.width}
                                         >
                                             <Input
@@ -1110,6 +1244,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                         <FieldGroup
                                             label="Height (cm)"
                                             required
+                                            name="height"
                                             error={errors.height}
                                         >
                                             <Input
@@ -1163,7 +1298,10 @@ export default function ProductForm({ mode, product, options }: Props) {
                                                 </button>
                                             </div>
                                         )}
-                                        <Label htmlFor="size-guide-upload" className="text-xs font-medium text-zinc-700">
+                                        <Label
+                                            htmlFor="size-guide-upload"
+                                            className="text-xs font-medium text-zinc-700"
+                                        >
                                             Gambar panduan ukuran (opsional)
                                         </Label>
                                         <Input
@@ -1210,7 +1348,10 @@ export default function ProductForm({ mode, product, options }: Props) {
                                         {data.images.map((image, index) => (
                                             <div
                                                 key={index}
-                                                className={`group relative overflow-hidden rounded-lg border-2 transition-all ${
+                                                tabIndex={-1}
+                                                data-error-key={`images.${index}`}
+                                                aria-describedby={`product-image-${index}-errors`}
+                                                className={`group relative overflow-hidden rounded-lg border-2 transition-all focus-within:ring-2 focus-within:ring-[#7F2020] ${
                                                     image.is_primary
                                                         ? 'border-[#7F2020] ring-2 ring-[#7F2020]/20'
                                                         : 'border-zinc-200 hover:border-zinc-300'
@@ -1239,6 +1380,13 @@ export default function ProductForm({ mode, product, options }: Props) {
                                                     <input
                                                         type="file"
                                                         accept="image/*"
+                                                        aria-label={`Upload product image ${index + 1}`}
+                                                        aria-describedby={`product-image-${index}-errors`}
+                                                        aria-invalid={Boolean(
+                                                            fieldError(
+                                                                `images.${index}.image`,
+                                                            ),
+                                                        )}
                                                         className="absolute inset-0 cursor-pointer opacity-0"
                                                         onChange={(e) => {
                                                             const file =
@@ -1282,6 +1430,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                                     {/* Remove button */}
                                                     <button
                                                         type="button"
+                                                        aria-label={`Remove product image ${index + 1}`}
                                                         onClick={() => {
                                                             if (
                                                                 previews[
@@ -1330,6 +1479,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                                     <input
                                                         type="text"
                                                         value={image.alt_text}
+                                                        aria-label={`Product image ${index + 1} alt text`}
                                                         onChange={(e) =>
                                                             updateImage(
                                                                 index,
@@ -1364,6 +1514,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                                             </span>
                                                             <input
                                                                 type="number"
+                                                                aria-label={`Product image ${index + 1} order`}
                                                                 value={
                                                                     image.sort_order
                                                                 }
@@ -1382,6 +1533,27 @@ export default function ProductForm({ mode, product, options }: Props) {
                                                             />
                                                         </div>
                                                     </div>
+                                                </div>
+                                                <div
+                                                    id={`product-image-${index}-errors`}
+                                                    className="px-2 text-xs text-red-700"
+                                                >
+                                                    {Object.entries(errors)
+                                                        .filter(([key]) =>
+                                                            key.startsWith(
+                                                                `images.${index}.`,
+                                                            ),
+                                                        )
+                                                        .map(
+                                                            ([
+                                                                key,
+                                                                message,
+                                                            ]) => (
+                                                                <p key={key}>
+                                                                    {message}
+                                                                </p>
+                                                            ),
+                                                        )}
                                                 </div>
                                             </div>
                                         ))}
@@ -1655,6 +1827,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                         <div className="space-y-4">
                                             <FieldGroup
                                                 label="Meta Title"
+                                                name="meta_title"
                                                 error={errors.meta_title}
                                                 hint="Recommended: 50–60 characters"
                                                 charCount={
@@ -1679,6 +1852,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                             </FieldGroup>
                                             <FieldGroup
                                                 label="Meta Description"
+                                                name="meta_description"
                                                 error={errors.meta_description}
                                                 hint="Recommended: 120–160 characters"
                                                 charCount={
@@ -1826,14 +2000,29 @@ export default function ProductForm({ mode, product, options }: Props) {
                                         </p>
                                     </div>
                                     <div className="space-y-4 p-5">
-                                        <div className="space-y-1.5">
-                                            <Label className="text-xs font-medium text-zinc-700">
+                                        <div
+                                            className="space-y-1.5"
+                                            data-error-key="status"
+                                        >
+                                            <Label
+                                                htmlFor="product-status"
+                                                className="text-xs font-medium text-zinc-700"
+                                            >
                                                 Status{' '}
                                                 <span className="text-red-500">
                                                     *
                                                 </span>
                                             </Label>
                                             <select
+                                                id="product-status"
+                                                aria-invalid={Boolean(
+                                                    errors.status,
+                                                )}
+                                                aria-describedby={
+                                                    errors.status
+                                                        ? 'product-status-error'
+                                                        : undefined
+                                                }
                                                 value={data.status}
                                                 onChange={(e) =>
                                                     setData(
@@ -1853,7 +2042,10 @@ export default function ProductForm({ mode, product, options }: Props) {
                                                 ))}
                                             </select>
                                             {errors.status && (
-                                                <p className="text-[11px] text-red-500">
+                                                <p
+                                                    id="product-status-error"
+                                                    className="text-[11px] text-red-500"
+                                                >
                                                     {errors.status}
                                                 </p>
                                             )}
@@ -2165,9 +2357,12 @@ export default function ProductForm({ mode, product, options }: Props) {
             </div>
 
             {variantModalOpen && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
-                    onMouseDown={(event: MouseEvent<HTMLDivElement>) => {
+                <dialog
+                    ref={dialogRef}
+                    aria-label="Varian produk"
+                    onCancel={closeVariantModal}
+                    className="fixed inset-0 z-50 m-0 h-full max-h-none w-full max-w-none items-center justify-center border-0 bg-black/40 p-4 backdrop-blur-sm open:flex"
+                    onMouseDown={(event: MouseEvent<HTMLDialogElement>) => {
                         if (event.target === event.currentTarget) {
                             closeVariantModal();
                         }
@@ -2188,6 +2383,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                             </div>
                             <button
                                 type="button"
+                                aria-label="Close variant dialog"
                                 onClick={closeVariantModal}
                                 className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700"
                             >
@@ -2197,7 +2393,14 @@ export default function ProductForm({ mode, product, options }: Props) {
 
                         <div className="space-y-4 px-6 py-5">
                             <FieldRow cols={2}>
-                                <FieldGroup label="Variant SKU" required>
+                                <FieldGroup
+                                    label="Variant SKU"
+                                    name={`variants.${editingVariantIndex ?? data.variants.length}.sku`}
+                                    error={fieldError(
+                                        `variants.${editingVariantIndex ?? data.variants.length}.sku`,
+                                    )}
+                                    required
+                                >
                                     <Input
                                         value={variantDraft.sku}
                                         onChange={(e) =>
@@ -2210,7 +2413,13 @@ export default function ProductForm({ mode, product, options }: Props) {
                                         className="h-9 border-zinc-200 font-mono text-sm focus:border-[#7F2020] focus:ring-[#7F2020]"
                                     />
                                 </FieldGroup>
-                                <FieldGroup label="Size">
+                                <FieldGroup
+                                    label="Size"
+                                    name={`variants.${editingVariantIndex ?? data.variants.length}.size`}
+                                    error={fieldError(
+                                        `variants.${editingVariantIndex ?? data.variants.length}.size`,
+                                    )}
+                                >
                                     <Input
                                         value={variantDraft.size}
                                         onChange={(e) =>
@@ -2226,7 +2435,13 @@ export default function ProductForm({ mode, product, options }: Props) {
                             </FieldRow>
 
                             <FieldRow cols={2}>
-                                <FieldGroup label="Color Name">
+                                <FieldGroup
+                                    label="Color Name"
+                                    name={`variants.${editingVariantIndex ?? data.variants.length}.color_name`}
+                                    error={fieldError(
+                                        `variants.${editingVariantIndex ?? data.variants.length}.color_name`,
+                                    )}
+                                >
                                     <Input
                                         value={variantDraft.color_name}
                                         onChange={(e) =>
@@ -2239,7 +2454,13 @@ export default function ProductForm({ mode, product, options }: Props) {
                                         className="h-9 border-zinc-200 text-sm focus:border-[#7F2020] focus:ring-[#7F2020]"
                                     />
                                 </FieldGroup>
-                                <FieldGroup label="Color Hex">
+                                <FieldGroup
+                                    label="Color Hex"
+                                    name={`variants.${editingVariantIndex ?? data.variants.length}.color_hex`}
+                                    error={fieldError(
+                                        `variants.${editingVariantIndex ?? data.variants.length}.color_hex`,
+                                    )}
+                                >
                                     <div className="flex h-9 items-center gap-2 rounded-md border border-zinc-200 bg-white px-2 shadow-sm focus-within:border-[#7F2020] focus-within:ring-1 focus-within:ring-[#7F2020]">
                                         <input
                                             type="color"
@@ -2257,6 +2478,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                                         />
                                         <input
                                             type="text"
+                                            aria-label="Color hex value"
                                             value={
                                                 variantDraft.color_hex ||
                                                 '#000000'
@@ -2274,7 +2496,13 @@ export default function ProductForm({ mode, product, options }: Props) {
                             </FieldRow>
 
                             <FieldRow cols={3}>
-                                <FieldGroup label="Price Addition">
+                                <FieldGroup
+                                    label="Price Addition"
+                                    name={`variants.${editingVariantIndex ?? data.variants.length}.additional_price`}
+                                    error={fieldError(
+                                        `variants.${editingVariantIndex ?? data.variants.length}.additional_price`,
+                                    )}
+                                >
                                     <Input
                                         type="number"
                                         min="0"
@@ -2289,7 +2517,13 @@ export default function ProductForm({ mode, product, options }: Props) {
                                         className="h-9 border-zinc-200 font-mono text-sm focus:border-[#7F2020] focus:ring-[#7F2020]"
                                     />
                                 </FieldGroup>
-                                <FieldGroup label="Stock">
+                                <FieldGroup
+                                    label="Stock"
+                                    name={`variants.${editingVariantIndex ?? data.variants.length}.stock`}
+                                    error={fieldError(
+                                        `variants.${editingVariantIndex ?? data.variants.length}.stock`,
+                                    )}
+                                >
                                     <Input
                                         type="number"
                                         min="0"
@@ -2303,11 +2537,18 @@ export default function ProductForm({ mode, product, options }: Props) {
                                         className="h-9 border-zinc-200 font-mono text-sm focus:border-[#7F2020] focus:ring-[#7F2020]"
                                     />
                                 </FieldGroup>
-                                <FieldGroup label="Reserved">
+                                <FieldGroup
+                                    label="Reserved"
+                                    name={`variants.${editingVariantIndex ?? data.variants.length}.reserved_stock`}
+                                    error={fieldError(
+                                        `variants.${editingVariantIndex ?? data.variants.length}.reserved_stock`,
+                                    )}
+                                >
                                     <Input
                                         type="number"
                                         min="0"
                                         value={variantDraft.reserved_stock}
+                                        readOnly
                                         onChange={(e) =>
                                             setVariantDraft({
                                                 ...variantDraft,
@@ -2321,6 +2562,15 @@ export default function ProductForm({ mode, product, options }: Props) {
 
                             <FieldGroup
                                 label="Variant Image"
+                                name={`variants.${editingVariantIndex ?? data.variants.length}.image`}
+                                error={
+                                    fieldError(
+                                        `variants.${editingVariantIndex ?? data.variants.length}.image`,
+                                    ) ||
+                                    fieldError(
+                                        `variants.${editingVariantIndex ?? data.variants.length}.image_url`,
+                                    )
+                                }
                                 hint="Stored in Laravel public storage. JPG, PNG, WEBP up to 4MB."
                             >
                                 <div className="flex items-center gap-4 rounded-lg border border-zinc-200 bg-zinc-50 p-3">
@@ -2437,7 +2687,7 @@ export default function ProductForm({ mode, product, options }: Props) {
                             </Button>
                         </div>
                     </div>
-                </div>
+                </dialog>
             )}
         </>
     );

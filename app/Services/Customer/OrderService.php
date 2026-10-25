@@ -2,19 +2,18 @@
 
 namespace App\Services\Customer;
 
-use App\Actions\Payments\ApplyMidtransPaymentStatusAction;
+use App\Actions\Payments\ManageManualPaymentAction;
+use App\Actions\Payments\SyncMidtransPaymentAction;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
-use App\Models\Payment;
 use App\Models\Shipment;
+use App\Services\Admin\ShipmentManagementService;
 use App\Services\Integrations\MidtransService;
 use App\Services\Settings\SiteSettingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class OrderService
@@ -23,7 +22,6 @@ class OrderService
 
     public function __construct(
         private readonly MidtransService $midtrans,
-        private readonly ApplyMidtransPaymentStatusAction $applyPaymentStatus,
         private readonly SiteSettingService $settings,
     ) {}
 
@@ -98,87 +96,54 @@ class OrderService
     public function cancel(Request $request, Order $order): RedirectResponse
     {
         abort_unless((int) $order->user_id === (int) $request->user()->id, 404);
-
-        $order->loadMissing('payment');
-
-        Log::info('customer_cancel_requested', [
-            'order_id' => $order->id,
-            'order_number' => $order->order_number,
-            'payment_status' => $order->payment_status,
-            'order_status' => $order->order_status,
-            'midtrans_order_id' => $order->payment?->midtrans_order_id,
-            'user_id' => $request->user()?->id,
-        ]);
-
-        if ($order->payment_status !== PaymentStatus::Pending->value || $order->payment === null) {
+        $order->load('payment');
+        $payment = $order->payment;
+        if (! $payment || $order->payment_status !== 'pending') {
             throw ValidationException::withMessages(['order' => 'Order hanya dapat dibatalkan sebelum pembayaran berhasil.']);
         }
-
-        $payload = $this->cancelMidtransOrLocal($order);
-
-        DB::transaction(function () use ($order, $payload): void {
-            $payment = Payment::query()->with('order')->whereKey($order->payment->id)->lockForUpdate()->firstOrFail();
-            $isLocalCancel = (bool) ($payload['local_cancel'] ?? false);
-
-            $payment->logs()->create([
-                'order_id' => $payment->order_id,
-                'provider' => $payment->payment_provider,
-                'event_type' => 'customer_cancel',
-                'transaction_status' => $payload['transaction_status'] ?? 'cancel',
-                'payload_hash' => hash('sha256', json_encode(['customer_cancel', $payment->id, now()->toISOString(), $payload], JSON_THROW_ON_ERROR)),
-                'payload' => $payload,
-                'processed_at' => now(),
-            ]);
-
-            $payment->update([
-                'midtrans_transaction_id' => $payload['transaction_id'] ?? $payment->midtrans_transaction_id,
-                'midtrans_snap_token' => $isLocalCancel ? null : $payment->midtrans_snap_token,
-                'midtrans_redirect_url' => $isLocalCancel ? null : $payment->midtrans_redirect_url,
-                'transaction_status' => $payload['transaction_status'] ?? 'cancel',
-                'fraud_status' => $payload['fraud_status'] ?? $payment->fraud_status,
-                'last_synced_at' => now(),
-                'raw_response' => $payload,
-            ]);
-
-            $this->applyPaymentStatus->execute($payment, (string) ($payload['transaction_status'] ?? 'cancel'), $payload['fraud_status'] ?? null);
-        });
+        if ($payment->payment_provider === 'manual') {
+            app(ManageManualPaymentAction::class)->cancel($payment);
+        } elseif ($payment->payment_provider === 'midtrans') {
+            app(SyncMidtransPaymentAction::class)->cancel($payment);
+        } else {
+            throw ValidationException::withMessages(['order' => 'Provider pembayaran tidak mendukung pembatalan ini.']);
+        }
+        if ($order->refresh()->payment_status !== 'cancelled') {
+            throw ValidationException::withMessages(['order' => 'Status pembayaran telah berubah; order tidak dibatalkan.']);
+        }
 
         return back()->with('success', 'Order berhasil dibatalkan.');
     }
 
-    private function cancelMidtransOrLocal(Order $order): array
+    public function syncPayment(Request $request, Order $order): RedirectResponse
     {
-        $payment = $order->payment;
-
-        if (! filled($payment->midtrans_order_id)) {
-            return $this->localCancelPayload($order, 'missing_midtrans_order_id');
+        abort_unless((int) $order->user_id === (int) $request->user()->id, 404);
+        $order->load('payment');
+        if (! $order->payment || ! $this->paymentActions($order)['can_sync']) {
+            throw ValidationException::withMessages(['payment' => 'Pembayaran ini tidak memerlukan sinkronisasi customer.']);
         }
+        app(SyncMidtransPaymentAction::class)->execute($order->payment, 'customer_sync');
 
-        if (blank($payment->payment_method) && blank($payment->midtrans_transaction_id)) {
-            return $this->localCancelPayload($order, 'payment_method_not_selected');
-        }
-
-        Log::info('midtrans_order_id', ['data' => $payment->midtrans_order_id]);
-
-        return $this->midtrans->cancelTransaction((string) $payment->midtrans_order_id);
+        return back()->with('success', 'Status pembayaran diperbarui.');
     }
 
-    private function localCancelPayload(Order $order, string $reason): array
+    private function paymentActions(Order $order): array
     {
-        Log::info('customer_cancel_local_only', [
-            'order_id' => $order->id,
-            'order_number' => $order->order_number,
-            'reason' => $reason,
-        ]);
+        $payment = $order->payment;
+        $midtrans = $payment?->payment_provider === 'midtrans';
+        $pending = $order->payment_status === 'pending' && ! $order->stock_released_at;
+        $creation = data_get($payment?->raw_response, 'snap_creation_state');
+        $uncertain = in_array($creation, ['new', 'creating', 'uncertain'], true) || (bool) data_get($payment?->raw_response, 'snap_creation_uncertain');
+        $canResume = $midtrans && $pending && ! $uncertain && filled($payment->midtrans_snap_token)
+            && (! $payment->expires_at || $payment->expires_at->isFuture()) && $this->midtrans->validRedirectUrl($payment->midtrans_redirect_url);
 
         return [
-            'status_code' => '200',
-            'status_message' => 'Local cancellation before Midtrans transaction exists.',
-            'order_id' => $order->payment?->midtrans_order_id ?? $order->order_number,
-            'transaction_status' => 'cancel',
-            'gross_amount' => (string) $order->grand_total,
-            'local_cancel' => true,
-            'local_cancel_reason' => $reason,
+            'can_resume' => $canResume,
+            'can_sync' => $midtrans && in_array($order->payment_status, ['pending', 'manual_review'], true),
+            'can_cancel' => $pending && ($payment?->payment_provider === 'manual' || ($midtrans && ! $uncertain)),
+            'requires_reconciliation' => $midtrans && ($order->payment_status === 'manual_review' || ($pending && $uncertain)),
+            'failure_reason' => $payment?->failure_reason,
+            'resume_url' => $canResume ? $payment->midtrans_redirect_url : null,
         ];
     }
 
@@ -213,7 +178,8 @@ class OrderService
                 'tracking_url' => $this->trackingUrl($order->shipment),
             ],
             'payment' => [
-                'midtrans_redirect_url' => $order->payment?->midtrans_redirect_url,
+                ...$this->paymentActions($order),
+                'midtrans_redirect_url' => $this->paymentActions($order)['resume_url'],
             ],
         ];
     }
@@ -233,6 +199,7 @@ class OrderService
             'order_status' => $order->order_status,
             'shipping_status' => $order->shipping_status,
             'subtotal' => (float) $order->subtotal,
+            'shipping_issue' => $order->shipment ? app(ShipmentManagementService::class)->shippingIssue($order->shipment) : null,
             'discount_amount' => (float) $order->discount_amount,
             'shipping_cost' => (float) $order->shipping_cost,
             'service_fee' => (float) $order->service_fee,
@@ -269,6 +236,7 @@ class OrderService
                 'note' => $order->address->note,
             ] : null,
             'payment' => $order->payment ? [
+                ...$this->paymentActions($order),
                 'payment_provider' => $order->payment->payment_provider,
                 'payment_method' => $order->payment->payment_method,
                 'midtrans_order_id' => $order->payment->midtrans_order_id,
@@ -335,7 +303,7 @@ class OrderService
             Arr::get($shipment->raw_order_response, 'courier.link'),
             Arr::get($shipment->raw_order_response, 'courier_link'),
         ] as $url) {
-            if (is_string($url) && filled($url)) {
+            if (is_string($url) && filter_var($url, FILTER_VALIDATE_URL) && in_array(strtolower((string) parse_url($url, PHP_URL_SCHEME)), ['http', 'https'], true)) {
                 return $url;
             }
         }
@@ -345,14 +313,9 @@ class OrderService
 
     private function whatsappUrl(Order $order): ?string
     {
-        $phone = preg_replace('/\D+/', '', $this->settings->get('whatsapp_number') ?: $this->settings->get('store_phone', '') ?: '');
-
-        if (! $phone) {
+        $phone = SiteSettingService::normalizePhone($this->settings->get('store_phone'));
+        if ($phone === null) {
             return null;
-        }
-
-        if (str_starts_with($phone, '0')) {
-            $phone = '62'.substr($phone, 1);
         }
 
         $message = rawurlencode("Halo, saya butuh bantuan untuk pesanan {$order->order_number}.");

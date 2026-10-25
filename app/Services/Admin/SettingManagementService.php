@@ -3,6 +3,7 @@
 namespace App\Services\Admin;
 
 use App\Models\SiteSetting;
+use App\Services\Settings\SiteSettingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
@@ -16,8 +17,6 @@ class SettingManagementService
                 ['key' => 'store_name', 'label' => 'Store Name', 'type' => 'string'],
                 ['key' => 'store_email', 'label' => 'Store Email', 'type' => 'string', 'input' => 'email'],
                 ['key' => 'store_phone', 'label' => 'Store Phone', 'type' => 'string'],
-                ['key' => 'whatsapp_number', 'label' => 'WhatsApp Number', 'type' => 'string'],
-                ['key' => 'store_address', 'label' => 'Store Address', 'type' => 'string', 'input' => 'textarea'],
                 ['key' => 'instagram_url', 'label' => 'Instagram URL', 'type' => 'string', 'input' => 'url'],
                 ['key' => 'tiktok_url', 'label' => 'TikTok URL', 'type' => 'string', 'input' => 'url'],
                 ['key' => 'footer_text', 'label' => 'Footer Text', 'type' => 'string', 'input' => 'textarea'],
@@ -25,9 +24,9 @@ class SettingManagementService
         ],
         'payment' => [
             'title' => 'Payment Settings',
-            'description' => 'Kelola rekening dan WhatsApp untuk pembayaran transfer manual. Konfigurasi Midtrans tetap di .env untuk aktivasi berikutnya.',
+            'description' => 'Checkout menggunakan Midtrans. Kredensial dan environment Midtrans dikelola melalui konfigurasi server. Informasi rekening tetap dipakai untuk pesanan manual lama.',
             'fields' => [
-                ['key' => 'payment_whatsapp_number', 'label' => 'WhatsApp Payment Number', 'type' => 'string'],
+                ['key' => 'payment_expiry_duration', 'label' => 'Durasi Pembayaran (menit, 1-10080)', 'type' => 'number', 'input' => 'number'],
                 ['key' => 'bank_name', 'label' => 'Bank Name', 'type' => 'string'],
                 ['key' => 'bank_account_number', 'label' => 'Bank Account Number', 'type' => 'string'],
                 ['key' => 'bank_account_name', 'label' => 'Bank Account Holder', 'type' => 'string'],
@@ -46,8 +45,6 @@ class SettingManagementService
                 ['key' => 'origin_biteship_area_id', 'label' => 'Origin Biteship Area ID', 'type' => 'string'],
                 ['key' => 'store_latitude', 'label' => 'Store Latitude', 'type' => 'string', 'input' => 'number'],
                 ['key' => 'store_longitude', 'label' => 'Store Longitude', 'type' => 'string', 'input' => 'number'],
-                ['key' => 'shipper_name', 'label' => 'Shipper Name', 'type' => 'string'],
-                ['key' => 'shipper_phone', 'label' => 'Shipper Phone', 'type' => 'string'],
                 ['key' => 'shipping_couriers', 'label' => 'Shipping Couriers', 'type' => 'string'],
             ],
         ],
@@ -63,7 +60,9 @@ class SettingManagementService
         return [
             'activeSection' => $activeSection,
             'sections' => $this->sections,
-            'values' => SiteSetting::query()->whereIn('key', $keys)->pluck('value', 'key')->all(),
+            'values' => array_replace([
+                'payment_expiry_duration' => '1440',
+            ], SiteSetting::query()->whereIn('key', $keys)->pluck('value', 'key')->all()),
         ];
     }
 
@@ -79,8 +78,8 @@ class SettingManagementService
             SiteSetting::query()->updateOrCreate(
                 ['key' => $key],
                 [
-                    'value' => $key === 'payment_whatsapp_number'
-                        ? preg_replace('/\D+/', '', (string) $validated[$key])
+                    'value' => $key === 'store_phone'
+                        ? SiteSettingService::normalizePhone($validated[$key])
                         : $this->normalizeValue($validated[$key]),
                     'type' => $field['type'],
                 ],

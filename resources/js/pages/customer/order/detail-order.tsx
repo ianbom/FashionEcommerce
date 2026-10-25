@@ -19,6 +19,7 @@ import type { ComponentType, ReactNode } from 'react';
 import {
     cancel as orderCancel,
     index as orderIndex,
+    syncPayment,
 } from '@/actions/App/Http/Controllers/Customer/OrderController';
 import { show as productShow } from '@/actions/App/Http/Controllers/Customer/ProductController';
 import {
@@ -26,6 +27,7 @@ import {
     PaymentProofInvoiceDocument,
 } from '@/components/customer/payment-proof-invoice';
 import ProfileLayout from '@/layouts/profile-layout';
+import { httpUrl } from '@/lib/http-url';
 
 type IconComponent = ComponentType<{
     className?: string;
@@ -62,6 +64,12 @@ type Address = {
 };
 
 type Payment = {
+    can_resume: boolean;
+    can_sync: boolean;
+    can_cancel: boolean;
+    requires_reconciliation: boolean;
+    failure_reason: string | null;
+    resume_url: string | null;
     payment_provider: string;
     payment_method: string | null;
     midtrans_order_id: string | null;
@@ -119,6 +127,11 @@ type Order = {
     shipping_status: string;
     subtotal: number;
     discount_amount: number;
+    shipping_issue: {
+        label: string;
+        description: string | null;
+        is_terminal: boolean;
+    } | null;
     shipping_cost: number;
     service_fee: number;
     grand_total: number;
@@ -414,50 +427,31 @@ function buildProgress(order: Order) {
 }
 
 function getBiteshipTrackingUrl(shipment: Shipment | null): string | null {
-    if (shipment?.tracking_url) {
-        return shipment.tracking_url;
-    }
+    const raw = shipment?.raw_order_response as Record<string, unknown> | null;
+    const courier = raw?.courier as Record<string, unknown> | undefined;
 
-    const raw = shipment?.raw_order_response;
+    for (const candidate of [
+        shipment?.tracking_url,
+        courier?.link,
+        raw?.courier_link,
+    ]) {
+        const url = httpUrl(candidate);
 
-    if (!raw || typeof raw !== 'object') {
-        return null;
-    }
-
-    const directLink = (raw as Record<string, unknown>).courier_link;
-
-    if (typeof directLink === 'string' && directLink.length > 0) {
-        return directLink;
-    }
-
-    const courier = (raw as Record<string, unknown>).courier;
-
-    if (!courier || typeof courier !== 'object') {
-        return null;
-    }
-
-    const link = (courier as Record<string, unknown>).link;
-
-    return typeof link === 'string' && link.length > 0 ? link : null;
-}
-
-function getMidtransReceiptUrl(payment: Payment | null): string | null {
-    if (!payment) {
-        return null;
-    }
-
-    if (payment.midtrans_redirect_url) {
-        return payment.midtrans_redirect_url;
-    }
-
-    if (payment.midtrans_snap_token) {
-        return `https://app.midtrans.com/snap/v2/vtweb/${payment.midtrans_snap_token}`;
+        if (url) {
+            return url;
+        }
     }
 
     return null;
 }
 
+function getMidtransReceiptUrl(payment: Payment | null): string | null {
+    return payment?.can_resume ? httpUrl(payment.resume_url) : null;
+}
+
 export default function DetailOrder({ order, support }: Props) {
+    const [syncingPayment, setSyncingPayment] = useState(false);
+    const [paymentError, setPaymentError] = useState<string | null>(null);
     const [isCancelling, setIsCancelling] = useState(false);
     const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
     const [isDownloadingProof, setIsDownloadingProof] = useState(false);
@@ -486,8 +480,13 @@ export default function DetailOrder({ order, support }: Props) {
     const paymentReceiptUrl = isPaymentTerminal
         ? null
         : getMidtransReceiptUrl(order.payment);
-    const canPay = order.payment_status === 'pending' && !!paymentReceiptUrl;
-    const canCancelOrder = order.payment_status === 'pending';
+    const canPay = !!order.payment?.can_resume && !!paymentReceiptUrl;
+    const canCancelOrder = !!order.payment?.can_cancel;
+    const canDownloadProof = [
+        'paid',
+        'refunded',
+        'partially_refunded',
+    ].includes(order.payment_status);
 
     const downloadPaymentProof = async () => {
         if (!paymentProofRef.current || isDownloadingProof) {
@@ -600,20 +599,25 @@ export default function DetailOrder({ order, support }: Props) {
                                         : undefined
                                 }
                                 disabled={isCancelling}
-                                icon={canCancelOrder ? ClipboardList : RefreshCcw}
+                                icon={
+                                    canCancelOrder ? ClipboardList : RefreshCcw
+                                }
                                 tone={canCancelOrder ? 'danger' : 'default'}
                                 label={
                                     isCancelling
                                         ? 'Membatalkan...'
                                         : canCancelOrder
-                                           ? 'Batalkan Pesanan'
-                                           : 'Beli Lagi'
+                                          ? 'Batalkan Pesanan'
+                                          : 'Beli Lagi'
                                 }
                             />
                             <ActionButton
                                 href={canPay ? paymentReceiptUrl : undefined}
                                 external={canPay}
-                                disabled={isDownloadingProof}
+                                disabled={
+                                    isDownloadingProof ||
+                                    (!canPay && !canDownloadProof)
+                                }
                                 onClick={
                                     canPay
                                         ? undefined
@@ -623,9 +627,11 @@ export default function DetailOrder({ order, support }: Props) {
                                 label={
                                     canPay
                                         ? 'Bayar Sekarang'
-                                        : isDownloadingProof
-                                          ? 'Mengunduh...'
-                                          : 'Bukti Pembayaran'
+                                        : !canDownloadProof
+                                          ? 'Pembayaran Belum Selesai'
+                                          : isDownloadingProof
+                                            ? 'Mengunduh...'
+                                            : 'Bukti Pembayaran'
                                 }
                             />
                             <ActionButton
@@ -637,9 +643,80 @@ export default function DetailOrder({ order, support }: Props) {
                         </div>
                     </section>
 
+                    {order.payment?.payment_provider === 'midtrans' && (
+                        <section
+                            aria-label="Status pembayaran Midtrans"
+                            className="space-y-3 rounded-lg border border-[#eadbd8] p-4 text-sm text-[#4a392c]"
+                        >
+                            {order.payment.requires_reconciliation && (
+                                <p role="status">
+                                    Pembayaran sedang diproses atau memerlukan
+                                    rekonsiliasi. Jangan membuat pembayaran
+                                    ulang.
+                                </p>
+                            )}
+                            {order.payment.failure_reason && (
+                                <p>{order.payment.failure_reason}</p>
+                            )}
+                            {order.payment.can_sync && (
+                                <button
+                                    type="button"
+                                    disabled={syncingPayment}
+                                    onClick={() =>
+                                        router.post(
+                                            syncPayment.url(order.id),
+                                            {},
+                                            {
+                                                preserveScroll: true,
+                                                onStart: () => {
+                                                    setSyncingPayment(true);
+                                                    setPaymentError(null);
+                                                },
+                                                onError: (errors) =>
+                                                    setPaymentError(
+                                                        Object.values(
+                                                            errors,
+                                                        ).join(' '),
+                                                    ),
+                                                onFinish: () =>
+                                                    setSyncingPayment(false),
+                                            },
+                                        )
+                                    }
+                                    className="rounded border border-[#b9877b] px-4 py-2 font-medium disabled:opacity-60"
+                                >
+                                    {syncingPayment
+                                        ? 'Memperbarui...'
+                                        : 'Perbarui status pembayaran'}
+                                </button>
+                            )}
+                            {paymentError && (
+                                <p role="alert" className="text-red-700">
+                                    {paymentError}
+                                </p>
+                            )}
+                        </section>
+                    )}
                     {/* Order Progress */}
+                    {order.shipping_issue && (
+                        <section
+                            role="status"
+                            className="mb-6 border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950"
+                        >
+                            <h3 className="font-semibold">
+                                Masalah pengiriman: {order.shipping_issue.label}
+                            </h3>
+                            <p>{order.shipping_issue.description}</p>
+                            <p>
+                                Hubungi dukungan untuk tindak lanjut. Status
+                                pembayaran tidak berubah otomatis.
+                            </p>
+                        </section>
+                    )}
                     <section className="border-b border-[#eadbd8] pb-8">
-                        <h3 className="mb-6 text-sm font-semibold text-[#4a392c]">Progres Pesanan</h3>
+                        <h3 className="mb-6 text-sm font-semibold text-[#4a392c]">
+                            Progres Pesanan
+                        </h3>
                         <div className="hide-scrollbar overflow-x-auto pb-1">
                             <div className="relative grid min-w-[520px] grid-cols-6">
                                 <div className="absolute top-[21px] right-[8%] left-[8%] h-px bg-gradient-to-r from-[#d8ae8f] to-[#e5ddd6]" />
@@ -674,7 +751,9 @@ export default function DetailOrder({ order, support }: Props) {
 
                     {/* Ordered Items */}
                     <section className="border-b border-[#eadbd8] pb-8">
-                        <h3 className="mb-4 text-sm font-semibold text-[#4a392c]">Barang Dipesan</h3>
+                        <h3 className="mb-4 text-sm font-semibold text-[#4a392c]">
+                            Barang Dipesan
+                        </h3>
                         {/* Desktop table */}
                         <div className="hidden sm:block">
                             <div className="hide-scrollbar overflow-x-auto">
@@ -691,7 +770,7 @@ export default function DetailOrder({ order, support }: Props) {
                                                 Harga Satuan
                                             </th>
                                             <th className="px-4 py-3 text-center font-semibold">
-                                                 Jumlah
+                                                Jumlah
                                             </th>
                                             <th className="px-0 py-3 text-right font-semibold">
                                                 Subtotal
@@ -720,7 +799,7 @@ export default function DetailOrder({ order, support }: Props) {
                                                                 href={
                                                                     productUrl
                                                                 }
-                                                                    className="h-16 w-16 shrink-0 overflow-hidden bg-[#f4ebe4]"
+                                                                className="h-16 w-16 shrink-0 overflow-hidden bg-[#f4ebe4]"
                                                             >
                                                                 <img
                                                                     src={
@@ -756,21 +835,21 @@ export default function DetailOrder({ order, support }: Props) {
                                                     <td className="px-4 py-4">
                                                         <div className="space-y-1 text-[12px] text-[#6d5c50]">
                                                             <p>
-                                                                 Warna:{' '}
+                                                                Warna:{' '}
                                                                 <span className="font-semibold text-[#3d3027]">
                                                                     {item.color_name ??
                                                                         '-'}
                                                                 </span>
                                                             </p>
                                                             <p>
-                                                                 Ukuran:{' '}
+                                                                Ukuran:{' '}
                                                                 <span className="font-semibold text-[#3d3027]">
                                                                     {item.size ??
                                                                         '-'}
                                                                 </span>
                                                             </p>
                                                             <p>
-                                                                 Berat:{' '}
+                                                                Berat:{' '}
                                                                 <span className="font-semibold text-[#3d3027]">
                                                                     {item.weight
                                                                         ? `${item.weight} gr`
@@ -838,7 +917,7 @@ export default function DetailOrder({ order, support }: Props) {
                                             <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-[#9a8575]">
                                                 {item.color_name && (
                                                     <span>
-                                                         Warna:{' '}
+                                                        Warna:{' '}
                                                         <strong className="text-[#4a392c]">
                                                             {item.color_name}
                                                         </strong>
@@ -846,7 +925,7 @@ export default function DetailOrder({ order, support }: Props) {
                                                 )}
                                                 {item.size && (
                                                     <span>
-                                                         Ukuran:{' '}
+                                                        Ukuran:{' '}
                                                         <strong className="text-[#4a392c]">
                                                             {item.size}
                                                         </strong>
@@ -854,7 +933,7 @@ export default function DetailOrder({ order, support }: Props) {
                                                 )}
                                                 {item.weight && (
                                                     <span>
-                                                         Berat:{' '}
+                                                        Berat:{' '}
                                                         <strong className="text-[#4a392c]">
                                                             {item.weight} gr
                                                         </strong>
@@ -869,7 +948,7 @@ export default function DetailOrder({ order, support }: Props) {
                                             </p>
                                             <div className="mt-2.5 flex items-center justify-between">
                                                 <span className="text-xs text-[#9a8575]">
-                                                     Jumlah:{' '}
+                                                    Jumlah:{' '}
                                                     <strong className="text-[#4a392c]">
                                                         {item.quantity}
                                                     </strong>
@@ -889,7 +968,9 @@ export default function DetailOrder({ order, support }: Props) {
                     <section className="border-b border-[#eadbd8] pb-8">
                         <div className="grid gap-8 md:grid-cols-2">
                             <div>
-                                <h3 className="mb-4 text-sm font-semibold text-[#4a392c]">Info Pengiriman</h3>
+                                <h3 className="mb-4 text-sm font-semibold text-[#4a392c]">
+                                    Info Pengiriman
+                                </h3>
                                 <div className="divide-y divide-[#f5ede6]">
                                     <InfoLine
                                         icon={UserRound}
@@ -924,7 +1005,9 @@ export default function DetailOrder({ order, support }: Props) {
                                     <InfoLine
                                         icon={ReceiptText}
                                         label="No. Resi"
-                                        value={order.shipment?.waybill_id ?? '-'}
+                                        value={
+                                            order.shipment?.waybill_id ?? '-'
+                                        }
                                     />
                                     <InfoLine
                                         icon={FileText}
@@ -934,7 +1017,9 @@ export default function DetailOrder({ order, support }: Props) {
                                 </div>
                             </div>
                             <div>
-                                <h3 className="mb-4 text-sm font-semibold text-[#4a392c]">Info Pembayaran</h3>
+                                <h3 className="mb-4 text-sm font-semibold text-[#4a392c]">
+                                    Info Pembayaran
+                                </h3>
                                 <div className="divide-y divide-[#f5ede6]">
                                     <InfoLine
                                         icon={CreditCard}
@@ -965,7 +1050,9 @@ export default function DetailOrder({ order, support }: Props) {
                                             Status
                                         </span>
                                         <StatusPill
-                                            tone={statusTone(order.payment_status)}
+                                            tone={statusTone(
+                                                order.payment_status,
+                                            )}
                                         >
                                             {labelStatus(order.payment_status)}
                                         </StatusPill>
@@ -980,7 +1067,9 @@ export default function DetailOrder({ order, support }: Props) {
                 <aside className="space-y-8 xl:sticky xl:top-6 xl:self-start">
                     {/* Order Summary */}
                     <section className="border-b border-[#eadbd8] pb-6">
-                        <h3 className="mb-4 text-sm font-semibold text-[#4a392c]">Ringkasan Pesanan</h3>
+                        <h3 className="mb-4 text-sm font-semibold text-[#4a392c]">
+                            Ringkasan Pesanan
+                        </h3>
                         <div className="space-y-2.5">
                             <SummaryRow
                                 label="Subtotal"
@@ -1020,14 +1109,16 @@ export default function DetailOrder({ order, support }: Props) {
 
                     {/* Order Notes */}
                     <section>
-                        <h3 className="mb-3 text-sm font-semibold text-[#4a392c]">Catatan Pesanan</h3>
+                        <h3 className="mb-3 text-sm font-semibold text-[#4a392c]">
+                            Catatan Pesanan
+                        </h3>
                         <p className="border-l-2 border-[#e5d7ca] pl-3 text-sm leading-relaxed text-[#716155] italic">
-                            {order.notes ?? 'Tidak ada catatan untuk pesanan ini.'}
+                            {order.notes ??
+                                'Tidak ada catatan untuk pesanan ini.'}
                         </p>
                     </section>
                 </aside>
             </div>
-
 
             <div
                 style={{
@@ -1038,10 +1129,12 @@ export default function DetailOrder({ order, support }: Props) {
                 }}
             >
                 <div ref={paymentProofRef}>
-                    <PaymentProofInvoiceDocument
-                        fallbackImage={FALLBACK_IMAGE}
-                        order={order}
-                    />
+                    {canDownloadProof && (
+                        <PaymentProofInvoiceDocument
+                            fallbackImage={FALLBACK_IMAGE}
+                            order={order}
+                        />
+                    )}
                 </div>
             </div>
             {isCancelModalOpen && (
@@ -1050,7 +1143,10 @@ export default function DetailOrder({ order, support }: Props) {
                         <div className="border-b border-red-100 bg-red-50 px-6 py-5">
                             <div className="flex items-start gap-4">
                                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-700">
-                                    <ClipboardList size={22} strokeWidth={1.8} />
+                                    <ClipboardList
+                                        size={22}
+                                        strokeWidth={1.8}
+                                    />
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-semibold tracking-[0.2em] text-red-500 uppercase">

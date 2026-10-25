@@ -69,11 +69,11 @@ class BiteshipService
             throw ValidationException::withMessages(['shipping' => 'Destination Biteship area ID wajib dikonfigurasi.']);
         }
 
-        if ($originLatitude === null || $originLongitude === null) {
+        if ($originLatitude === null || $originLongitude === null || abs($originLatitude) > 90 || abs($originLongitude) > 180) {
             throw ValidationException::withMessages(['shipping' => 'Koordinat toko belum dikonfigurasi.']);
         }
 
-        if ($destinationLatitude === null || $destinationLongitude === null) {
+        if ($destinationLatitude === null || $destinationLongitude === null || abs($destinationLatitude) > 90 || abs($destinationLongitude) > 180) {
             throw ValidationException::withMessages(['shipping' => 'Koordinat tujuan belum dikonfigurasi.']);
         }
 
@@ -97,14 +97,18 @@ class BiteshipService
         }
 
         return collect($response->json('pricing', []))
-            ->map(function (array $rate): array {
+            ->map(function (mixed $rate): ?array {
+                $price = is_array($rate) ? ($rate['price'] ?? $rate['shipping_fee'] ?? null) : null;
+                if (! is_numeric($price) || ! is_finite((float) $price) || (float) $price < 0) {
+                    return null;
+                }
                 $payload = [
                     'courier_company' => $rate['courier_company'] ?? $rate['company'] ?? $rate['courier_code'] ?? null,
                     'courier_type' => $rate['courier_type'] ?? $rate['type'] ?? $rate['courier_service_code'] ?? null,
                     'courier_service_name' => $rate['courier_service_name'] ?? null,
                     'description' => $rate['description'] ?? null,
                     'duration' => $rate['duration'] ?? null,
-                    'price' => (float) ($rate['price'] ?? $rate['shipping_fee'] ?? 0),
+                    'price' => round((float) $price, 2),
                     'raw' => $rate,
                 ];
 
@@ -113,7 +117,7 @@ class BiteshipService
                     'id' => sha1(json_encode($payload, JSON_THROW_ON_ERROR)),
                 ];
             })
-            ->filter(fn (array $rate): bool => filled($rate['courier_company']) && filled($rate['courier_type']) && $rate['price'] >= 0)
+            ->filter(fn (?array $rate): bool => $rate !== null && filled($rate['courier_company']) && filled($rate['courier_type']) && $rate['price'] >= 0)
             ->values()
             ->all();
     }
@@ -167,13 +171,12 @@ class BiteshipService
         return Http::baseUrl('https://api.biteship.com')
             ->connectTimeout(5)
             ->timeout(15)
-            ->retry(2, 500, throw: false)
             ->acceptJson()
             ->withToken($apiKey);
     }
 
     private function coordinate(mixed $value): ?float
     {
-        return is_numeric($value) ? (float) $value : null;
+        return is_numeric($value) && is_finite((float) $value) ? (float) $value : null;
     }
 }

@@ -72,6 +72,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/my-order', [CustomerOrderController::class, 'index'])->name('my-order');
     Route::get('/my-order/{order}', [CustomerOrderController::class, 'show'])->name('order.detail');
     Route::post('/my-order/{order}/cancel', [CustomerOrderController::class, 'cancel'])->name('order.cancel');
+    Route::post('/my-order/{order}/payment/sync', [CustomerOrderController::class, 'syncPayment'])->middleware('throttle:6,1')->name('order.payment.sync');
     Route::get('/wishlist', [WishlistController::class, 'index'])->name('my-wishlist');
     Route::post('/wishlist/{product}', [WishlistController::class, 'store'])->name('wishlist.store');
     Route::delete('/wishlist/products/{product}', [WishlistController::class, 'destroyProduct'])->name('wishlist.products.destroy');

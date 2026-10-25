@@ -43,21 +43,21 @@ class PaymentManagementService
                 ->withQueryString()
                 ->through(fn (Payment $payment): array => $this->row($payment)),
             'filters' => $filters,
-            'statuses' => ['pending', 'settlement', 'capture', 'expire', 'cancel', 'deny', 'failure'],
+            'statuses' => ['pending', 'settlement', 'capture', 'expire', 'cancel', 'deny', 'failure', 'manual_review', 'refund', 'partial_refund'],
             'stats' => [
                 'total' => Payment::query()->count(),
                 'settled' => Payment::query()->whereIn('transaction_status', ['settlement', 'capture', 'paid', 'success'])->count(),
                 'pending' => Payment::query()->whereIn('transaction_status', ['pending', 'authorize'])->count(),
                 'challenge' => Payment::query()->where('fraud_status', 'challenge')->count(),
                 'failed' => Payment::query()->whereIn('transaction_status', ['deny', 'cancel', 'expire', 'expired', 'failure', 'failed'])->count(),
-                'manual_review' => Payment::query()->whereIn('fraud_status', ['challenge', 'deny'])->count(),
+                'manual_review' => Payment::query()->where('transaction_status', 'manual_review')->count(),
             ],
         ];
     }
 
     public function detailData(Payment $payment): array
     {
-        $payment->load(['order:id,order_number,customer_name,customer_email,payment_status,order_status,paid_at', 'logs' => fn ($query) => $query->latest()]);
+        $payment->load(['order:id,order_number,customer_name,customer_email,payment_status,order_status,paid_at,stock_released_at,stock_finalized_at', 'logs' => fn ($query) => $query->latest()]);
 
         return [
             'payment' => [
@@ -67,8 +67,8 @@ class PaymentManagementService
                 'midtrans_redirect_url' => $payment->midtrans_redirect_url,
                 'currency' => $payment->currency,
                 'raw_response' => $payment->raw_response,
-                'can_confirm' => $payment->payment_provider === 'manual' && $payment->order?->payment_status === 'pending',
-                'can_cancel' => $payment->payment_provider === 'manual' && $payment->order?->payment_status === 'pending',
+                'can_confirm' => $payment->payment_provider === 'manual' && $payment->order?->payment_status === 'pending' && $payment->order?->order_status === 'pending_payment' && ! $payment->order?->stock_released_at && ! $payment->order?->stock_finalized_at,
+                'can_cancel' => $payment->payment_provider === 'manual' && $payment->order?->payment_status === 'pending' && ! $payment->order?->stock_finalized_at,
                 'order' => $payment->order,
                 'logs' => $payment->logs->map(fn ($log): array => [
                     'id' => $log->id,
@@ -109,6 +109,7 @@ class PaymentManagementService
             'gross_amount' => $payment->gross_amount,
             'transaction_status' => $payment->transaction_status,
             'fraud_status' => $payment->fraud_status,
+            'failure_reason' => $payment->failure_reason,
             'paid_at' => $payment->paid_at?->toDateTimeString(),
             'expired_at' => $payment->expired_at?->toDateTimeString(),
             'created_at' => $payment->created_at?->toFormattedDateString(),

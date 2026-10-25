@@ -1,7 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { ArrowRight, Facebook, Instagram, MessageCircle } from 'lucide-react';
 
-export default function Footer() {
+export default function Footer({ phone }: { phone?: string | null }) {
     return (
         <footer className="border-t border-border bg-primary pt-16 pb-28 text-primary-foreground md:pt-24 md:pb-8">
             {/* Top Section: Newsletter & Brand */}
@@ -19,7 +19,8 @@ export default function Footer() {
                             </span>
                         </div>
                         <p className="max-w-md text-xs leading-relaxed text-white/60 md:text-sm">
-                            Menghadirkan sentuhan modest fashion yang tak lekang oleh waktu, minimalis, dan penuh keanggunan.
+                            Menghadirkan sentuhan modest fashion yang tak lekang
+                            oleh waktu, minimalis, dan penuh keanggunan.
                         </p>
                     </div>
 
@@ -49,15 +50,17 @@ export default function Footer() {
                         <h3 className="mb-6 text-xs font-bold tracking-[0.2em] text-white/95 uppercase">
                             Hubungi Kami
                         </h3>
-                        <a
-                            href="https://wa.me/6281993200520"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 rounded bg-white/10 px-4 py-3 text-white transition-colors hover:bg-white/20 hover:text-accent"
-                        >
-                            <MessageCircle size={16} />
-                            WhatsApp Kami
-                        </a>
+                        {phone ? (
+                            <a
+                                href={`https://wa.me/${phone}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 rounded bg-white/10 px-4 py-3 text-white transition-colors hover:bg-white/20 hover:text-accent"
+                            >
+                                <MessageCircle size={16} />
+                                WhatsApp Kami
+                            </a>
+                        ) : null}
                     </div>
 
                     {/* Customer Care */}

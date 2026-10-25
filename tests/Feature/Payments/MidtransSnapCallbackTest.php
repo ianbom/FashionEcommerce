@@ -5,7 +5,7 @@ use App\Models\User;
 use App\Services\Integrations\MidtransService;
 use Illuminate\Support\Facades\Http;
 
-it('sends my order as Midtrans finish callback', function () {
+it('sends the specific order detail as Midtrans finish callback', function () {
     config(['services.midtrans.server_key' => 'test-server-key']);
 
     $user = User::factory()->create();
@@ -52,5 +52,5 @@ it('sends my order as Midtrans finish callback', function () {
     app(MidtransService::class)->createSnapTransaction($order);
 
     Http::assertSent(fn ($request): bool => $request->url() === 'https://app.sandbox.midtrans.com/snap/v1/transactions'
-        && $request['callbacks']['finish'] === route('my-order'));
+        && $request['callbacks']['finish'] === route('order.detail', $order));
 });

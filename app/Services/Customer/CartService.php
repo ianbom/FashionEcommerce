@@ -38,6 +38,8 @@ class CartService
     public function addProductVariantToCart(ProductVariant $productVariant, User $user, int $quantity = 1): CartItem
     {
         return DB::transaction(function () use ($productVariant, $user, $quantity): CartItem {
+            $cart = $this->getOrCreateCart($user);
+            Cart::query()->whereKey($cart->id)->lockForUpdate()->firstOrFail();
             $variant = ProductVariant::query()
                 ->with('product')
                 ->whereKey($productVariant->id)
@@ -86,6 +88,7 @@ class CartService
     public function updateCartItemQuantity(CartItem $cartItem, User $user, int $quantity): CartItem
     {
         return DB::transaction(function () use ($cartItem, $user, $quantity): CartItem {
+            Cart::query()->where('user_id', $user->id)->lockForUpdate()->firstOrFail();
             $item = $this->ownedCartItem($cartItem, $user);
             $variant = ProductVariant::query()
                 ->with('product')
@@ -120,7 +123,10 @@ class CartService
 
     public function removeCartItem(CartItem $cartItem, User $user): void
     {
-        $this->ownedCartItem($cartItem, $user)->delete();
+        DB::transaction(function () use ($cartItem, $user): void {
+            Cart::query()->where('user_id', $user->id)->lockForUpdate()->firstOrFail();
+            $this->ownedCartItem($cartItem, $user)->delete();
+        });
     }
 
     private function cartItems(User $user): Collection

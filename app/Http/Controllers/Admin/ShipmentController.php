@@ -31,6 +31,10 @@ class ShipmentController extends Controller
         try {
             $shipment = $shipments->createFromOrder($request, $order);
 
+            if ($request->validated('source') === 'order_detail') {
+                return redirect()->route('admin.orders.show', $order)->with('success', 'Shipment berhasil dibuat.');
+            }
+
             return redirect()->route('admin.shipments.show', $shipment)->with('success', 'Shipment berhasil dibuat.');
         } catch (ValidationException $exception) {
             throw $exception;

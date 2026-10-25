@@ -9,6 +9,7 @@ use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use RuntimeException;
 
 class MidtransService
 {
@@ -16,6 +17,7 @@ class MidtransService
 
     public function createSnapTransaction(Order $order): array
     {
+        $this->assertConfigured();
         $order->load(['items', 'address']);
 
         $response = $this->snapClient()->post('/snap/v1/transactions', [
@@ -39,29 +41,122 @@ class MidtransService
             'item_details' => $this->itemDetails($order),
             'expiry' => [
                 'unit' => 'minutes',
-                'duration' => (int) ($this->settings->first(['payment_expiry_duration'], '1440') ?: 1440),
+                'duration' => $this->expiryMinutes(),
+                'start_time' => $order->created_at->format('Y-m-d H:i:s O'),
             ],
             'callbacks' => [
-                'finish' => route('my-order'),
+                'finish' => route('order.detail', $order),
             ],
         ]);
 
-        if (! $response->successful()) {
-            throw ValidationException::withMessages(['payment' => $response->json('error_messages.0') ?? 'Gagal membuat transaksi Midtrans.']);
+        $payload = $response->json();
+        $errors = is_array($payload) ? ($payload['error_messages'] ?? null) : null;
+        if (in_array($response->status(), [400, 401, 403, 422], true) && is_array($errors) && array_is_list($errors) && count($errors) > 0
+            && ! isset($payload['token']) && ! isset($payload['redirect_url']) && ! isset($payload['transaction_status'])
+            && collect($errors)->every(fn ($error) => is_string($error) && trim($error) !== '')
+            && ! preg_match('/duplicate|order.*(taken|exist|used|registered)/i', implode(' ', $errors))) {
+            return ['state' => 'rejected'];
         }
 
-        return $response->json();
+        if (! $response->successful() || ! is_array($payload) || ! empty($errors)
+            || ! is_string($payload['token'] ?? null) || ! preg_match('/^[a-zA-Z0-9_-]{1,255}$/D', $payload['token'])
+            || ! $this->validRedirectUrl($payload['redirect_url'] ?? null)) {
+            throw new RuntimeException('Snap creation is unconfirmed.');
+        }
+
+        return ['state' => 'ready', 'token' => $payload['token'], 'redirect_url' => $payload['redirect_url']];
+    }
+
+    public function assertConfigured(): void
+    {
+        $this->serverKey();
+        $this->environment();
+        $this->expiryMinutes();
+    }
+
+    public function expiryMinutes(): int
+    {
+        $value = $this->settings->first(['payment_expiry_duration'], '1440');
+        if (! ctype_digit((string) $value) || (int) $value < 1 || (int) $value > 10080) {
+            throw ValidationException::withMessages(['payment' => 'Durasi pembayaran Midtrans tidak valid.']);
+        }
+
+        return (int) $value;
+    }
+
+    public function environment(): string
+    {
+        $value = config('services.midtrans.environment', 'sandbox');
+        if (! in_array($value, ['sandbox', 'production'], true)) {
+            throw ValidationException::withMessages(['payment' => 'Environment Midtrans tidak valid.']);
+        }
+
+        return $value;
+    }
+
+    public function validRedirectUrl(mixed $url): bool
+    {
+        return is_string($url) && filter_var($url, FILTER_VALIDATE_URL)
+            && parse_url($url, PHP_URL_SCHEME) === 'https'
+            && parse_url($url, PHP_URL_HOST) === parse_url($this->snapBaseUrl(), PHP_URL_HOST)
+            && ! parse_url($url, PHP_URL_USER) && ! parse_url($url, PHP_URL_PASS)
+            && in_array(parse_url($url, PHP_URL_PORT), [null, 443], true);
+    }
+
+    public function cancelSnapSession(string $token): void
+    {
+        if (! preg_match('/^[a-zA-Z0-9_-]{1,255}$/D', $token)) {
+            throw ValidationException::withMessages(['payment' => 'Identitas sesi Snap tidak valid.']);
+        }
+        $response = Http::timeout(20)->acceptJson()->withHeaders(['Authorization' => $this->serverKey()])
+            ->post($this->snapBaseUrl().'/snap/v1/transactions/'.rawurlencode($token).'/cancel');
+        $cancelledAt = $response->json('canceled_at');
+        $alreadyCancelled = $response->json('error_messages') === ['token already canceled'];
+        if (($response->successful() && empty($response->json('error_messages')) && is_string($cancelledAt)
+            && preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/D', $cancelledAt) && strtotime($cancelledAt) !== false)
+            || (in_array($response->status(), [200, 400, 409], true) && $alreadyCancelled)) {
+            return;
+        }
+
+        throw ValidationException::withMessages(['payment' => 'Pembatalan sesi Snap belum terkonfirmasi; reservasi dipertahankan.']);
     }
 
     public function transactionStatus(string $midtransOrderId): array
     {
+        return $this->findTransactionStatus($midtransOrderId)
+            ?? throw ValidationException::withMessages(['payment' => 'Transaksi provider belum ditemukan; reservasi dipertahankan.']);
+    }
+
+    public function findTransactionStatus(string $midtransOrderId): ?array
+    {
+        if (trim($midtransOrderId) === '') {
+            throw ValidationException::withMessages(['payment' => 'Referensi provider tidak tersedia.']);
+        }
         $response = $this->apiClient()->get('/v2/'.rawurlencode($midtransOrderId).'/status');
 
-        if (! $response->successful()) {
-            throw ValidationException::withMessages(['payment' => $response->json('status_message') ?? 'Gagal mengambil status Midtrans.']);
+        if (in_array($response->status(), [200, 404], true) && (string) $response->json('status_code') === '404'
+            && $response->json('transaction_status') === null && $response->json('gross_amount') === null) {
+            return null;
         }
 
-        return $response->json();
+        if (! $response->successful()) {
+            throw ValidationException::withMessages(['payment' => 'Status provider belum dapat dipastikan.']);
+        }
+
+        $payload = $response->json();
+        if (! is_array($payload) || ! isset($payload['order_id'], $payload['transaction_status'], $payload['gross_amount'], $payload['status_code'])) {
+            throw ValidationException::withMessages(['payment' => 'Response status provider tidak valid.']);
+        }
+        foreach (['order_id', 'transaction_status', 'gross_amount', 'status_code'] as $field) {
+            if (! is_scalar($payload[$field]) || blank($payload[$field])) {
+                throw ValidationException::withMessages(['payment' => 'Response status provider tidak valid.']);
+            }
+        }
+        if (! in_array((string) $payload['status_code'], ['200', '201', '202'], true)) {
+            throw ValidationException::withMessages(['payment' => 'Status provider belum dapat dipastikan.']);
+        }
+
+        return $payload;
     }
 
     public function cancelTransaction(string $midtransOrderId): array
@@ -72,17 +167,21 @@ class MidtransService
             Log::warning('midtrans_cancel_failed', [
                 'order_id' => $midtransOrderId,
                 'status' => $response->status(),
-                'response' => $response->json(),
-                'body' => $response->body(),
             ]);
 
             throw ValidationException::withMessages([
-                'payment' => $response->json('status_message')
-                    ?? 'Gagal membatalkan transaksi Midtrans.',
+                'payment' => 'Pembatalan provider belum dapat dipastikan.',
             ]);
         }
 
-        return $response->json();
+        $payload = $response->json();
+        if (! is_array($payload) || (string) ($payload['status_code'] ?? '') !== '200'
+            || ($payload['transaction_status'] ?? null) !== 'cancel'
+            || ($payload['order_id'] ?? null) !== $midtransOrderId) {
+            throw ValidationException::withMessages(['payment' => 'Pembatalan provider belum terkonfirmasi.']);
+        }
+
+        return $payload;
     }
 
     public function notificationIsValid(array $payload): bool
@@ -90,8 +189,28 @@ class MidtransService
         return $this->validateNotificationSignature($payload);
     }
 
+    public function validatePaymentPayload(array $payload): void
+    {
+        foreach (['fraud_status', 'transaction_id', 'payment_type'] as $field) {
+            if (isset($payload[$field]) && ! is_string($payload[$field])) {
+                throw ValidationException::withMessages(['payment' => 'Metadata pembayaran Midtrans tidak valid.']);
+            }
+        }
+        if (in_array($payload['transaction_status'] ?? null, ['settlement', 'capture'], true)
+            && ((string) ($payload['status_code'] ?? '') !== '200'
+                || (isset($payload['fraud_status']) && ! in_array($payload['fraud_status'], ['accept', 'challenge', 'deny'], true))
+                || (($payload['transaction_status'] ?? null) === 'settlement' && isset($payload['fraud_status']) && $payload['fraud_status'] !== 'accept'))) {
+            throw ValidationException::withMessages(['payment' => 'Response Midtrans belum membuktikan pembayaran berhasil.']);
+        }
+    }
+
     public function validateNotificationSignature(array $payload): bool
     {
+        foreach (['signature_key', 'order_id', 'status_code', 'gross_amount'] as $field) {
+            if (! is_scalar($payload[$field] ?? null)) {
+                return false;
+            }
+        }
         $signature = $payload['signature_key'] ?? null;
         $orderId = $payload['order_id'] ?? '';
         $statusCode = $payload['status_code'] ?? '';
@@ -101,8 +220,13 @@ class MidtransService
             && hash_equals((string) $signature, hash('sha512', $orderId.$statusCode.$grossAmount.$this->serverKey()));
     }
 
-    public function amountMatches(string|float|int $payloadAmount, Payment $payment): bool
+    public function amountMatches(mixed $payloadAmount, Payment $payment): bool
     {
+        if (! is_scalar($payloadAmount) || ! is_numeric($payloadAmount) || ! is_finite((float) $payloadAmount)
+            || (float) $payloadAmount < 0 || (float) $payloadAmount > 9999999999999.99) {
+            return false;
+        }
+
         return $this->minorUnits($payloadAmount) === $this->minorUnits($payment->gross_amount);
     }
 
@@ -132,6 +256,11 @@ class MidtransService
             $items->push(['id' => 'discount', 'price' => -1 * (int) round((float) $order->discount_amount), 'quantity' => 1, 'name' => 'Discount']);
         }
 
+        $adjustment = (int) round((float) $order->grand_total) - $items->sum(fn (array $item): int => $item['price'] * $item['quantity']);
+        if ($adjustment !== 0) {
+            $items->push(['id' => 'rounding_adjustment', 'price' => $adjustment, 'quantity' => 1, 'name' => 'Penyesuaian pembulatan']);
+        }
+
         return $items->all();
     }
 
@@ -155,7 +284,7 @@ class MidtransService
 
     private function snapBaseUrl(): string
     {
-        $environment = $this->settings->first(['midtrans_environment', 'payment_midtrans_env'], 'sandbox');
+        $environment = $this->environment();
 
         return $environment === 'production'
             ? 'https://app.midtrans.com'
@@ -164,7 +293,7 @@ class MidtransService
 
     private function apiBaseUrl(): string
     {
-        $environment = $this->settings->first(['midtrans_environment', 'payment_midtrans_env'], 'sandbox');
+        $environment = $this->environment();
 
         return $environment === 'production'
             ? 'https://api.midtrans.com'
@@ -173,7 +302,7 @@ class MidtransService
 
     private function serverKey(): string
     {
-        $serverKey = config('services.midtrans.server_key') ?: env('MIDTRANS_SERVER_KEY');
+        $serverKey = config('services.midtrans.server_key');
 
         if (! filled($serverKey)) {
             throw ValidationException::withMessages(['midtrans' => 'MIDTRANS_SERVER_KEY belum dikonfigurasi.']);

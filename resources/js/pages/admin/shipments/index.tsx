@@ -2,8 +2,6 @@ import { Head, Link, router, useForm } from '@inertiajs/react';
 import {
     Calendar,
     CheckCircle2,
-    ChevronLeft,
-    ChevronRight,
     Clock,
     Eye,
     MoreVertical,
@@ -33,7 +31,7 @@ import {
 } from '@/components/ui/select';
 import type { Paginated } from '@/pages/admin/sales/shared';
 import { formatPrice } from '@/pages/admin/sales/shared';
-import { PerPageSelect } from '../pagination';
+import { PaginationLabel, PerPageSelect } from '../pagination';
 
 type Shipment = {
     id: number;
@@ -656,22 +654,8 @@ export default function ShipmentsIndex({
                         </span>
                         <div className="flex items-center gap-1">
                             {shipments.links.map((link, i) => {
-                                const isChevronLeft =
-                                    link.label.includes('Previous') ||
-                                    link.label.includes('&laquo;');
-                                const isChevronRight =
-                                    link.label.includes('Next') ||
-                                    link.label.includes('&raquo;');
-                                const label = isChevronLeft ? (
-                                    <ChevronLeft className="h-3.5 w-3.5" />
-                                ) : isChevronRight ? (
-                                    <ChevronRight className="h-3.5 w-3.5" />
-                                ) : (
-                                    <span
-                                        dangerouslySetInnerHTML={{
-                                            __html: link.label,
-                                        }}
-                                    />
+                                const label = (
+                                    <PaginationLabel label={link.label} />
                                 );
 
                                 return (

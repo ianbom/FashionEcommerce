@@ -1,9 +1,17 @@
 <?php
 
+use App\Models\AdminActivityLog;
+use App\Models\BiteshipWebhookLog;
 use App\Models\Order;
 use App\Models\SiteSetting;
 use App\Models\User;
+use App\Services\Admin\OrderManagementService;
+use App\Services\Admin\ShipmentManagementService;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Validation\ValidationException;
 
 function createPaidOrderForBiteship(?string $latitude = '-7.2883581', ?string $longitude = '112.8094750', ?string $areaId = 'IDNP11IDNC434IDND5442IDZ60111'): Order
 {
@@ -72,6 +80,183 @@ function createAdminUserForBiteship(): User
         ->forceFill(['role' => 'admin', 'is_active' => true]);
 }
 
+test('immediate booking status preserves fulfillment snapshots and first timestamps', function (string $status, string $expectedOrder, string $timestamp) {
+    createBiteshipSettings();
+    $order = createPaidOrderForBiteship();
+    Http::fake([
+        'api.biteship.com/v1/rates/couriers' => Http::response(['pricing' => [['courier_company' => 'anteraja', 'courier_type' => 'same_day', 'courier_service_name' => 'Same Day', 'price' => 20600]]]),
+        'api.biteship.com/v1/orders' => Http::response(['id' => 'immediate-booking', 'status' => $status]),
+    ]);
+    $this->actingAs(createAdminUserForBiteship())->post(route('admin.orders.shipments.store', $order), ['courier_company' => 'anteraja', 'courier_type' => 'same_day'])->assertSessionHasNoErrors();
+    $shipment = $order->refresh()->shipment;
+    expect($order->order_status)->toBe($expectedOrder)
+        ->and($order->shipping_status)->toBe($shipment->shipping_status)
+        ->and($shipment->{$timestamp})->not->toBeNull();
+    $first = $shipment->{$timestamp}->toISOString();
+    $this->travel(5)->minutes();
+    app(ShipmentManagementService::class)->applyBiteshipPayload($shipment, ['status' => $status]);
+    expect($shipment->refresh()->{$timestamp}->toISOString())->toBe($first);
+})->with([
+    ['picked', 'shipped', 'shipped_at'],
+    ['delivered', 'delivered', 'delivered_at'],
+    ['cancelled', 'shipment_problem', 'cancelled_at'],
+]);
+
+test('uncertain booking never sends a second create request', function (int $status, array $body) {
+    config(['services.biteship.api_key' => 'test-key']);
+    createBiteshipSettings();
+    $order = createPaidOrderForBiteship();
+    Http::fake([
+        'api.biteship.com/v1/rates/couriers' => Http::response(['pricing' => [['courier_company' => 'anteraja', 'courier_type' => 'same_day', 'courier_service_name' => 'Same Day', 'price' => 20600]]]),
+        'api.biteship.com/v1/orders' => Http::response($body, $status),
+    ]);
+    $admin = createAdminUserForBiteship();
+    $payload = ['courier_company' => 'anteraja', 'courier_type' => 'same_day', 'courier_service_name' => 'Same Day'];
+    $this->actingAs($admin)->post(route('admin.orders.shipments.store', $order), $payload)->assertSessionHasErrors('shipment');
+    $this->post(route('admin.orders.shipments.store', $order), $payload)->assertSessionHasErrors('shipment');
+    expect($order->shipment->refresh()->shipping_status)->toBe('creating')
+        ->and(data_get($order->shipment->raw_order_response, 'booking_creation_uncertain'))->toBeTrue();
+    expect(Http::recorded(fn ($request) => $request->method() === 'POST' && $request->url() === 'https://api.biteship.com/v1/orders'))->toHaveCount(1);
+})->with([[503, ['error' => 'Unavailable']], [200, ['success' => true]], [200, ['id' => 'wrong-booking', 'reference_id' => 'OTHER']]]);
+
+test('uncertain create response cannot overwrite a concurrently confirmed shipment', function () {
+    createBiteshipSettings();
+    $order = createPaidOrderForBiteship();
+    Http::fake([
+        'api.biteship.com/v1/rates/couriers' => Http::response(['pricing' => [['courier_company' => 'anteraja', 'courier_type' => 'same_day', 'courier_service_name' => 'Same Day', 'price' => 20600]]]),
+        'api.biteship.com/v1/orders' => function () use ($order) {
+            $order->shipment->update(['biteship_order_id' => 'reconciled-booking', 'shipping_status' => 'confirmed']);
+            app(ShipmentManagementService::class)->applyBiteshipPayload($order->shipment, ['status' => 'delivered', 'courier' => ['link' => 'https://tracking.test/confirmed']]);
+
+            throw new ConnectionException('Simulated timeout after callback');
+        },
+    ]);
+    $this->actingAs(createAdminUserForBiteship())->post(route('admin.orders.shipments.store', $order), ['courier_company' => 'anteraja', 'courier_type' => 'same_day'])->assertSessionHasErrors('shipment');
+    expect($order->shipment->refresh()->shipping_status)->toBe('delivered')
+        ->and($order->shipment->biteship_order_id)->toBe('reconciled-booking')
+        ->and(data_get($order->shipment->raw_order_response, 'courier.link'))->toBe('https://tracking.test/confirmed')
+        ->and($order->refresh()->shipping_status)->toBe('delivered');
+});
+
+test('booking result preserves concurrent financial state and saves provider identity', function () {
+    config(['services.biteship.api_key' => 'test-key']);
+    createBiteshipSettings();
+    $order = createPaidOrderForBiteship();
+    Http::fake([
+        'api.biteship.com/v1/rates/couriers' => Http::response(['pricing' => [['courier_company' => 'anteraja', 'courier_type' => 'same_day', 'courier_service_name' => 'Same Day', 'price' => 20600]]]),
+        'api.biteship.com/v1/orders' => function () use ($order) {
+            $order->update(['payment_status' => 'refunded', 'order_status' => 'refunded']);
+
+            return Http::response(['id' => 'remote-booking', 'status' => 'confirmed']);
+        },
+    ]);
+    $this->actingAs(createAdminUserForBiteship())->post(route('admin.orders.shipments.store', $order), ['courier_company' => 'anteraja', 'courier_type' => 'same_day', 'courier_service_name' => 'Same Day'])->assertSessionHasNoErrors();
+    expect($order->refresh()->payment_status)->toBe('refunded')->and($order->order_status)->toBe('refunded')
+        ->and($order->shipment->biteship_order_id)->toBe('remote-booking')->and($order->shipment->failed_reason)->not->toBeNull();
+    $this->assertDatabaseCount('notifications', 0);
+});
+
+test('pending receipts replay once after booking identifiers become available', function () {
+    $order = createPaidOrderForBiteship();
+    $receipt = BiteshipWebhookLog::query()->create([
+        'biteship_order_id' => 'early-booking', 'payload_hash' => hash('sha256', 'early'),
+        'payload' => ['order_id' => 'early-booking', 'status' => 'delivered', 'courier' => ['link' => 'https://tracking.test/first']],
+    ]);
+    $service = app(ShipmentManagementService::class);
+    expect($service->processWebhook($receipt))->toBeFalse()->and($receipt->refresh()->processed_at)->toBeNull();
+    $order->shipment->update(['biteship_order_id' => 'early-booking', 'shipping_status' => 'confirmed']);
+    expect($service->replayWebhooks($order->shipment))->toMatchArray(['processed' => 1, 'failed' => 0]);
+    $deliveredAt = $order->shipment->refresh()->delivered_at->toISOString();
+    expect($service->processWebhook($receipt))->toBeTrue();
+    $service->applyBiteshipPayload($order->shipment, ['id' => 'early-booking', 'status' => 'delivered', 'courier' => ['link' => 'https://tracking.test/replaced']]);
+    expect(data_get($order->shipment->refresh()->raw_order_response, 'courier.link'))->toBe('https://tracking.test/first')
+        ->and($order->shipment->delivered_at->toISOString())->toBe($deliveredAt);
+    $service->applyBiteshipPayload($order->shipment, ['id' => 'early-booking', 'status' => 'allocated']);
+    expect($order->refresh()->shipping_status)->toBe('delivered')->and($order->shipment->trackings()->count())->toBe(1);
+    $this->assertDatabaseCount('notifications', 1);
+});
+
+test('receipt and shipment changes roll back atomically when receipt persistence fails', function () {
+    $order = createPaidOrderForBiteship();
+    $order->shipment->update(['biteship_order_id' => 'atomic-booking', 'shipping_status' => 'confirmed']);
+    $receipt = BiteshipWebhookLog::query()->create(['biteship_order_id' => 'atomic-booking', 'payload_hash' => hash('sha256', 'atomic'), 'payload' => ['status' => 'delivered']]);
+    $event = 'eloquent.updating: '.BiteshipWebhookLog::class;
+    Event::listen($event, fn () => throw new RuntimeException('Simulated persistence failure'));
+    try {
+        expect(fn () => app(ShipmentManagementService::class)->processWebhook($receipt))->toThrow(RuntimeException::class);
+    } finally {
+        Event::forget($event);
+    }
+    expect($receipt->refresh()->processed_at)->toBeNull()->and($order->shipment->refresh()->shipping_status)->toBe('confirmed');
+    $this->assertDatabaseCount('shipment_trackings', 0);
+    $this->assertDatabaseCount('notifications', 0);
+});
+
+test('return flow and terminal issues cannot resume normal fulfillment', function (string $terminal) {
+    $order = createPaidOrderForBiteship();
+    $shipment = $order->shipment;
+    $shipment->update(['biteship_order_id' => 'return-booking', 'shipping_status' => 'in_transit']);
+    $service = app(ShipmentManagementService::class);
+    $service->applyBiteshipPayload($shipment, ['status' => 'return_in_transit']);
+    expect(data_get($shipment->refresh()->raw_order_response, 'return_started'))->toBeTrue();
+    $service->applyBiteshipPayload($shipment, ['status' => 'delivered']);
+    expect($shipment->refresh()->shipping_status)->toBe('problem');
+    $service->applyBiteshipPayload($shipment, ['status' => $terminal]);
+    expect($service->shippingIssue($shipment->refresh())['is_terminal'])->toBeTrue();
+    $count = $shipment->trackings()->count();
+    $service->applyBiteshipPayload($shipment, ['status' => 'confirmed']);
+    expect($shipment->trackings()->count())->toBe($count)
+        ->and($order->refresh()->payment_status)->toBe('paid')
+        ->and($order->stock_released_at)->toBeNull();
+})->with(['lost', 'returned', 'disposed']);
+
+test('terminal fulfillment requires a reason and records the responsible actor', function () {
+    $admin = createAdminUserForBiteship();
+    $this->actingAs($admin);
+    $order = createPaidOrderForBiteship();
+    $order->update(['shipping_status' => 'lost', 'order_status' => 'lost']);
+    $order->shipment->update(['biteship_order_id' => 'lost-booking', 'shipping_status' => 'lost']);
+    $service = app(OrderManagementService::class);
+    expect(fn () => $service->updateStatus($order, 'shipment_failed', '  '))->toThrow(ValidationException::class);
+    $service->updateStatus($order, 'shipment_failed', 'Kurir mengonfirmasi paket hilang');
+    $log = AdminActivityLog::query()->where('action', 'admin_order_failure')->firstOrFail();
+    expect($log->user_id)->toBe($admin->id)
+        ->and($log->new_values['reason'])->toBe('Kurir mengonfirmasi paket hilang')
+        ->and($order->refresh()->order_status)->toBe('shipment_failed')
+        ->and($order->payment_status)->toBe('paid');
+});
+
+test('unpaid or unbooked shipments cannot receive manual delivery updates', function (bool $paid) {
+    $order = createPaidOrderForBiteship();
+    $order->update(['payment_status' => $paid ? 'paid' : 'pending']);
+    $shipment = $order->shipment;
+    $shipment->update(['shipping_status' => 'in_transit', 'biteship_order_id' => $paid ? null : 'unpaid-booking']);
+    expect(fn () => app(ShipmentManagementService::class)->updateStatus($shipment, new Request(['shipping_status' => 'delivered', 'description' => 'Manual delivery'])))->toThrow(ValidationException::class);
+    expect($shipment->refresh()->shipping_status)->toBe('in_transit');
+    $this->assertDatabaseCount('shipment_trackings', 0);
+})->with([true, false]);
+
+test('generic admin cancellation cannot leak stock reservation', function () {
+    $order = createPaidOrderForBiteship();
+    $order->update(['payment_status' => 'pending', 'order_status' => 'pending_payment']);
+    expect(fn () => app(OrderManagementService::class)->updateStatus($order, 'cancelled'))->toThrow(ValidationException::class);
+    expect($order->refresh()->order_status)->toBe('pending_payment');
+});
+
+test('completion requires paid and both delivered snapshots', function () {
+    $this->actingAs(createAdminUserForBiteship());
+    $order = createPaidOrderForBiteship();
+    $order->update(['order_status' => 'delivered', 'shipping_status' => 'delivered']);
+    $service = app(OrderManagementService::class);
+    expect(fn () => $service->updateStatus($order, 'completed'))->toThrow(ValidationException::class);
+    $order->shipment->update(['shipping_status' => 'delivered']);
+    $service->updateStatus($order, 'completed');
+    $completed = $order->refresh()->completed_at->toISOString();
+    $service->updateStatus($order, 'completed');
+    expect($order->refresh()->completed_at->toISOString())->toBe($completed);
+    $this->assertDatabaseCount('admin_activity_logs', 1);
+});
+
 function createBiteshipSettings(?string $latitude = '-7.2871053', ?string $longitude = '112.8026283', ?string $areaId = 'IDNP11IDNC434IDND5442IDZ60111'): void
 {
     foreach ([
@@ -88,6 +273,63 @@ function createBiteshipSettings(?string $latitude = '-7.2871053', ?string $longi
         SiteSetting::query()->create(['key' => $key, 'value' => $value]);
     }
 }
+
+test('order detail booking preserves the courier snapshot and returns to order detail', function () {
+    createBiteshipSettings();
+    foreach (['shipper_name' => 'Retired shipper', 'shipper_phone' => '628111111111', 'store_address' => 'Retired address'] as $key => $value) {
+        SiteSetting::query()->updateOrCreate(['key' => $key], ['value' => $value]);
+    }
+    config(['services.biteship.shipper_name' => 'Environment shipper', 'services.biteship.shipper_phone' => '628222222222']);
+    $order = createPaidOrderForBiteship();
+    Http::fake([
+        'api.biteship.com/v1/rates/couriers' => Http::response(['pricing' => [['courier_company' => 'anteraja', 'courier_type' => 'same_day', 'courier_service_name' => 'Same Day', 'price' => 20600]]]),
+        'api.biteship.com/v1/orders' => Http::response(['id' => 'detail-booking', 'status' => 'confirmed']),
+    ]);
+    $this->actingAs(createAdminUserForBiteship())->post(route('admin.orders.shipments.store', $order), ['source' => 'order_detail', 'courier_company' => 'other', 'courier_type' => 'express'])
+        ->assertSessionHasNoErrors()->assertRedirect(route('admin.orders.show', $order));
+    expect($order->fresh()->shipment->courier_company)->toBe('anteraja')->and($order->fresh()->shipment->biteship_order_id)->toBe('detail-booking');
+    Http::assertSent(fn ($request): bool => $request->url() === 'https://api.biteship.com/v1/orders'
+        && $request['shipper_contact_name'] === 'Aurea Syari'
+        && $request['origin_contact_name'] === 'Aurea Syari'
+        && $request['shipper_contact_phone'] === '6281234567890'
+        && $request['origin_contact_phone'] === '6281234567890'
+        && $request['origin_address'] === 'Jl. Pahlawan No. 88');
+    $this->post(route('admin.orders.shipments.store', $order), ['source' => 'order_detail'])->assertSessionHasErrors('shipment');
+    Http::assertSentCount(2);
+});
+
+test('order detail booking blocks unpaid uncertain and already booked orders', function (string $case) {
+    $order = createPaidOrderForBiteship();
+    match ($case) {
+        'unpaid' => $order->update(['payment_status' => 'pending']),
+        'uncertain' => $order->shipment->update(['raw_order_response' => ['booking_creation_uncertain' => true]]),
+        'booked' => $order->shipment->update(['biteship_order_id' => 'existing-booking']),
+    };
+    $this->actingAs(createAdminUserForBiteship())->post(route('admin.orders.shipments.store', $order), ['source' => 'order_detail'])->assertSessionHasErrors('shipment');
+    Http::assertNothingSent();
+})->with(['unpaid', 'uncertain', 'booked']);
+
+test('booking rejects missing canonical sender data even when retired settings exist', function (string $missingKey) {
+    createBiteshipSettings();
+    SiteSetting::query()->where('key', $missingKey)->update(['value' => null]);
+    foreach ([
+        'shipper_name' => 'Retired shipper',
+        'shipper_phone' => '628111111111',
+        'store_address' => 'Retired address',
+    ] as $key => $value) {
+        SiteSetting::query()->updateOrCreate(['key' => $key], ['value' => $value]);
+    }
+    config(['services.biteship.shipper_name' => 'Environment shipper', 'services.biteship.shipper_phone' => '628222222222', 'services.biteship.origin_address' => 'Environment address']);
+    Http::fake();
+    $order = createPaidOrderForBiteship();
+
+    $this->actingAs(createAdminUserForBiteship())
+        ->post(route('admin.orders.shipments.store', $order), ['source' => 'order_detail'])
+        ->assertSessionHasErrors('shipment');
+
+    Http::assertNothingSent();
+    expect($order->fresh()->shipment->biteship_order_id)->toBeNull();
+})->with(['store_name', 'store_phone', 'origin_address']);
 
 test('admin create shipment sends create order coordinates in Biteship order shape', function () {
     config(['services.biteship.api_key' => 'test-key']);

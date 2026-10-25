@@ -29,6 +29,7 @@ type Payment = {
     gross_amount: string;
     currency: string;
     transaction_status: string | null;
+    failure_reason?: string | null;
     fraud_status: string | null;
     paid_at: string | null;
     expired_at: string | null;
@@ -53,6 +54,14 @@ export default function PaymentShow({ payment }: Props) {
                 title={`Payment ${payment.midtrans_order_id ?? payment.id}`}
             />
             <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">
+                {payment.failure_reason && (
+                    <p
+                        role="alert"
+                        className="rounded border border-amber-300 p-3 text-amber-900"
+                    >
+                        {payment.failure_reason}
+                    </p>
+                )}
                 <PageHeader
                     eyebrow="Sales Management"
                     title={

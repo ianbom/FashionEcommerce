@@ -8,6 +8,7 @@ use App\Models\Collection;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Services\Stock\StockLogService;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -91,6 +92,8 @@ class ProductManagementService
         $this->assertVariantSkusAreUnique($validated['variants'] ?? [], $product);
 
         $previousSizeGuide = DB::transaction(function () use ($request, $product, $validated): ?string {
+            $product = Product::query()->whereKey($product->id)->lockForUpdate()->firstOrFail();
+            $product->variants()->orderBy('id')->lockForUpdate()->get();
             $product->update($this->payload($request, $validated));
             $previous = $this->syncSizeGuide($request, $product);
             $this->images->sync($request, $product, $validated['images'] ?? []);
@@ -139,7 +142,8 @@ class ProductManagementService
             }
 
             foreach ($product->variants as $variant) {
-                $variantCopy = $variant->replicate(['sku']);
+                $variantCopy = $variant->replicate(['sku', 'reserved_stock']);
+                $variantCopy->reserved_stock = 0;
                 $variantCopy->sku = $this->uniqueVariantSku($variant->sku.'-COPY');
                 $copy->variants()->save($variantCopy);
             }
@@ -243,8 +247,10 @@ class ProductManagementService
         $folder = 'product/'.Str::slug($product->slug ?: $product->name).'/variants';
 
         foreach ($variants as $index => $variant) {
-            if ((int) ($variant['reserved_stock'] ?? 0) > (int) ($variant['stock'] ?? 0)) {
-                throw ValidationException::withMessages(["variants.{$variant['_index']}.reserved_stock" => 'Reserved stock tidak boleh lebih besar dari stock.']);
+            $existing = ! empty($variant['id']) ? $product->variants()->whereKey($variant['id'])->lockForUpdate()->firstOrFail() : null;
+            $reserved = $existing?->reserved_stock ?? 0;
+            if ($reserved > (int) ($variant['stock'] ?? 0)) {
+                throw ValidationException::withMessages(["variants.{$variant['_index']}.stock" => 'Stock tidak boleh lebih kecil dari reservasi aktif.']);
             }
 
             $uploadedImage = $request->file("variants.{$variant['_index']}.image");
@@ -255,31 +261,29 @@ class ProductManagementService
                 'size' => $variant['size'] ?? null,
                 'additional_price' => $variant['additional_price'] ?? 0,
                 'stock' => $variant['stock'] ?? 0,
-                'reserved_stock' => $variant['reserved_stock'] ?? 0,
+                'reserved_stock' => $reserved,
                 'image_url' => $uploadedImage
                     ? Storage::url($uploadedImage->storeAs($folder, $this->makeVariantFilename($variant['sku'], $index, $uploadedImage->getClientOriginalExtension()), 'public'))
                     : ($variant['image_url'] ?? null),
                 'is_active' => (bool) ($variant['is_active'] ?? false),
             ];
 
-            if (! empty($variant['id'])) {
-                $productVariant = $product->variants()->whereKey($variant['id'])->firstOrFail();
-                $stockBefore = $productVariant->stock;
-
-                if ($uploadedImage || blank($payload['image_url'])) {
-                    $this->images->deleteStoredImage($productVariant->image_url);
+            $productVariant = $existing ?? $product->variants()->make();
+            $stockBefore = $existing?->stock ?? 0;
+            $previousImage = $existing?->image_url;
+            try {
+                $productVariant->fill($payload)->save();
+            } catch (UniqueConstraintViolationException $exception) {
+                if (! str_contains($exception->getMessage(), 'product_variants_sku_unique') && ! str_contains($exception->getMessage(), 'product_variants.sku')) {
+                    throw $exception;
                 }
-
-                $productVariant->update($payload);
-                $this->stockLogs->logIfChanged($productVariant, $stockBefore, $payload['stock'], $userId, 'adjustment', 'Stock updated from product form.');
-                $keptIds[] = (int) $variant['id'];
-
-                continue;
+                throw ValidationException::withMessages(["variants.{$variant['_index']}.sku" => 'SKU varian sudah digunakan.']);
             }
-
-            $created = $product->variants()->create($payload);
-            $this->stockLogs->logIfChanged($created, 0, $created->stock, $userId, 'adjustment', 'Initial variant stock.');
-            $keptIds[] = $created->id;
+            if ($existing && ($uploadedImage || blank($payload['image_url']))) {
+                $this->images->deleteStoredImage($previousImage);
+            }
+            $this->stockLogs->logIfChanged($productVariant, $stockBefore, $productVariant->stock, $userId, 'adjustment', $existing ? 'Stock updated from product form.' : 'Initial variant stock.');
+            $keptIds[] = $productVariant->id;
         }
 
         $product->variants()->whereNotIn('id', $keptIds)->get()->each(function (ProductVariant $variant): void {
@@ -303,20 +307,21 @@ class ProductManagementService
 
     private function assertVariantSkusAreUnique(array $variants, ?Product $product = null): void
     {
-        $incoming = collect($variants)->pluck('sku')->filter()->values();
-
-        if ($incoming->duplicates()->isNotEmpty()) {
-            throw ValidationException::withMessages(['variants' => 'SKU varian tidak boleh duplikat dalam satu produk.']);
-        }
-
-        $query = ProductVariant::query()->whereIn('sku', $incoming);
-
-        if ($product) {
-            $query->where('product_id', '!=', $product->id);
-        }
-
-        if ($query->exists()) {
-            throw ValidationException::withMessages(['variants' => 'Salah satu SKU varian sudah digunakan produk lain.']);
+        $seen = [];
+        foreach ($variants as $index => $variant) {
+            $sku = $variant['sku'] ?? '';
+            if ($sku === '') {
+                continue;
+            }
+            $id = ! empty($variant['id']) && $product ? $product->variants()->whereKey($variant['id'])->value('id') : null;
+            if (! empty($variant['id']) && ! $id) {
+                throw ValidationException::withMessages(["variants.{$index}.id" => 'Varian bukan milik produk ini.']);
+            }
+            $used = ProductVariant::withTrashed()->where('sku', $sku)->when($id, fn ($query) => $query->whereKeyNot($id))->exists();
+            if ($used || in_array(mb_strtolower($sku), $seen, true)) {
+                throw ValidationException::withMessages(["variants.{$index}.sku" => 'SKU varian sudah digunakan.']);
+            }
+            $seen[] = mb_strtolower($sku);
         }
     }
 

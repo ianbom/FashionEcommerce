@@ -60,7 +60,7 @@ class ProductRequest extends FormRequest
             'images.*.sort_order' => ['nullable', 'integer', 'min:0'],
             'images.*.is_primary' => ['sometimes', 'boolean'],
             'variants' => ['nullable', 'array'],
-            'variants.*.id' => ['nullable', 'integer', $variantIdRule],
+            'variants.*.id' => ['nullable', 'integer', 'distinct', $productId ? $variantIdRule : 'prohibited'],
             'variants.*.sku' => ['nullable', 'string', 'max:100'],
             'variants.*.color_name' => ['nullable', 'string', 'max:100'],
             'variants.*.color_hex' => ['nullable'],
@@ -102,12 +102,6 @@ class ProductRequest extends FormRequest
 
                 $variants = collect($this->input('variants', []))
                     ->filter(fn (array $variant): bool => filled($variant['sku'] ?? null));
-
-                $variants->each(function (array $variant, int $index) use ($validator): void {
-                    if ((int) ($variant['reserved_stock'] ?? 0) > (int) ($variant['stock'] ?? 0)) {
-                        $validator->errors()->add("variants.{$index}.reserved_stock", 'Reserved stock tidak boleh lebih besar dari stock.');
-                    }
-                });
 
                 if (! $variants->contains(fn (array $variant): bool => (bool) ($variant['is_active'] ?? false) && (int) ($variant['stock'] ?? 0) > 0)) {
                     $validator->errors()->add('variants', 'Produk published membutuhkan satu varian aktif dengan stok tersedia.');

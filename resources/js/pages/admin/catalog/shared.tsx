@@ -10,7 +10,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { PerPageSelect } from '../pagination';
+import { PaginationLabel, PerPageSelect } from '../pagination';
 
 export type PaginationLink = {
     url: string | null;
@@ -29,10 +29,6 @@ export type Paginated<T> = {
 
 export function formatPrice(value: string | number | null | undefined) {
     return `Rp ${new Intl.NumberFormat('id-ID').format(Number(value ?? 0))}`;
-}
-
-export function cleanPageLabel(label: string) {
-    return label.replace('&laquo;', '').replace('&raquo;', '').trim();
 }
 
 export function PageHeader({
@@ -101,7 +97,7 @@ export function Pagination<T>({ paginator }: { paginator: Paginated<T> }) {
                             variant={link.active ? 'secondary' : 'outline'}
                         >
                             <Link href={link.url}>
-                                {cleanPageLabel(link.label)}
+                                <PaginationLabel label={link.label} />
                             </Link>
                         </Button>
                     ) : (
@@ -111,7 +107,7 @@ export function Pagination<T>({ paginator }: { paginator: Paginated<T> }) {
                             variant="outline"
                             disabled
                         >
-                            {cleanPageLabel(link.label)}
+                            <PaginationLabel label={link.label} />
                         </Button>
                     ),
                 )}

@@ -27,7 +27,7 @@ class ProductVariantRequest extends FormRequest
             'size' => ['nullable', 'string', 'max:50'],
             'additional_price' => ['nullable', 'numeric', 'min:0'],
             'stock' => ['required', 'integer', 'min:0'],
-            'reserved_stock' => ['required', 'integer', 'min:0', 'lte:stock'],
+            'reserved_stock' => ['sometimes', 'integer', 'min:0'],
             'image' => ['nullable', 'file', 'image', 'max:2048'],
             'is_active' => ['sometimes', 'boolean'],
         ];

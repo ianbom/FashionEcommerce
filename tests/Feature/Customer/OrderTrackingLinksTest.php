@@ -65,12 +65,19 @@ test('order detail exposes tracking and whatsapp support urls', function () {
             'courier_link' => 'https://track.biteship.test/order-2',
         ],
     ]);
-    SiteSetting::query()->create(['key' => 'whatsapp_number', 'value' => '081234567890']);
+    SiteSetting::query()->create(['key' => 'store_phone', 'value' => '081234567890']);
+    SiteSetting::query()->create(['key' => 'whatsapp_number', 'value' => '628111111111']);
 
     $this->actingAs($user)
         ->get(route('order.detail', $order))
         ->assertInertia(fn (Assert $page) => $page
             ->component('customer/order/detail-order')
             ->where('order.shipment.tracking_url', 'https://track.biteship.test/order-2')
-            ->where('support.whatsapp_url', 'https://wa.me/6285736426304 ?text=Halo%2C%20saya%20butuh%20bantuan%20untuk%20pesanan%20ORD-LINK-1.'));
+            ->where('support.whatsapp_url', 'https://wa.me/6281234567890?text=Halo%2C%20saya%20butuh%20bantuan%20untuk%20pesanan%20ORD-LINK-1.'));
 });
+
+test('invalid tracking URLs never become customer links', function (string $url) {
+    $user = User::factory()->create();
+    $order = createOrderWithShipmentLink($user, ['label_url' => $url, 'raw_order_response' => ['courier' => ['link' => $url]]]);
+    $this->actingAs($user)->get(route('order.detail', $order))->assertInertia(fn (Assert $page) => $page->where('order.shipment.tracking_url', null));
+})->with(['javascript:alert(1)', 'data:text/html,test', '/storage/label.pdf', ' https://tracking.test/path', 'not-a-url']);

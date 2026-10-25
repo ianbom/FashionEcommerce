@@ -239,6 +239,7 @@ export default function ProductVariantForm({
                                     </Label>
                                     <Input
                                         id="reserved_stock"
+                                        readOnly
                                         type="number"
                                         min="0"
                                         value={data.reserved_stock}

@@ -2,15 +2,18 @@
 
 namespace App\Services\Customer;
 
+use App\Actions\Payments\CreateMidtransSnapAction;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\CustomerAddress;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\User;
 use App\Models\Voucher;
 use App\Services\Integrations\BiteshipService;
+use App\Services\Integrations\MidtransService;
 use App\Services\Settings\SiteSettingService;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
@@ -24,7 +27,8 @@ class CheckoutService
     public function __construct(
         private readonly BiteshipService $biteship,
         private readonly SiteSettingService $settings,
-        private readonly WhatsAppOrderMessage $whatsAppOrderMessage,
+        private readonly MidtransService $midtrans,
+        private readonly CreateMidtransSnapAction $createSnap,
     ) {}
 
     public function pageData(User $user): array
@@ -46,12 +50,7 @@ class CheckoutService
                 'latitude' => $this->settings->get('store_latitude'),
                 'longitude' => $this->settings->get('store_longitude'),
             ],
-            'manualPayment' => [
-                'whatsapp_number' => $this->settings->first(['payment_whatsapp_number', 'whatsapp_number'], '6285736426304 '),
-                'bank_name' => $this->settings->get('bank_name', ''),
-                'bank_account_number' => $this->settings->get('bank_account_number', ''),
-                'bank_account_name' => $this->settings->get('bank_account_name', ''),
-            ],
+            'paymentGateway' => ['provider' => 'midtrans'],
             'appliedVoucher' => $voucher ? $this->voucherPayload($voucher, $discount) : null,
             'selectedShippingRate' => $rate,
             'summary' => $this->summary($items, (float) ($rate['price'] ?? 0), $discount),
@@ -93,6 +92,7 @@ class CheckoutService
         session([
             'checkout.shipping_rates' => $rates,
             'checkout.customer_address_id' => $address->id,
+            'checkout.address_hash' => $this->addressHash($address),
             'checkout.cart_hash' => $this->cartHash($items),
             'checkout.rates_generated_at' => now()->toIso8601String(),
             'checkout.rates_expires_at' => now()->addMinutes($this->shippingRateTtlMinutes())->toIso8601String(),
@@ -118,6 +118,7 @@ class CheckoutService
                 'shipping_rate_id' => $rateId,
                 'customer_address_id' => session('checkout.customer_address_id'),
                 'cart_hash' => session('checkout.cart_hash'),
+                'address_hash' => session('checkout.address_hash'),
                 'selected_at' => now()->toIso8601String(),
             ],
         ]);
@@ -134,7 +135,6 @@ class CheckoutService
         $discount = $this->discountAmount($voucher, (float) $items->sum('subtotal'));
 
         session(['checkout.voucher_code' => $voucher->code]);
-        session()->forget(['checkout.shipping_rates', 'checkout.shipping_rate_id', 'checkout.selected_rate_binding']);
 
         return [
             'voucher' => $this->voucherPayload($voucher, $discount),
@@ -144,8 +144,8 @@ class CheckoutService
 
     public function removeVoucher(User $user): array
     {
+        $this->forgetExpiredCheckoutSession();
         session()->forget('checkout.voucher_code');
-        session()->forget(['checkout.shipping_rates', 'checkout.shipping_rate_id', 'checkout.selected_rate_binding']);
         $items = $this->cartItems($user);
 
         return [
@@ -166,17 +166,23 @@ class CheckoutService
             ->first();
 
         if ($existingOrder?->payment) {
-            return [
-                'order_id' => $existingOrder->id,
-                'payment_id' => $existingOrder->payment->id,
-                'redirect_url' => $this->whatsAppOrderMessage->url($existingOrder->load('items')),
-            ];
+            return $this->createSnap->execute($existingOrder->payment);
         }
 
+        $this->midtrans->assertConfigured();
         $this->validateSelectedShippingRate($user, (int) $payload['customer_address_id'], (string) $payload['shipping_rate_id']);
+        $verifiedAddressHash = $this->addressHash($this->ownedAddress($user, (int) $payload['customer_address_id']));
 
-        $payment = DB::transaction(function () use ($user, $payload): Payment {
-            $address = $this->ownedAddress($user, (int) $payload['customer_address_id']);
+        $payment = DB::transaction(function () use ($user, $payload, $verifiedAddressHash): ?Payment {
+            $cart = Cart::query()->where('user_id', $user->id)->lockForUpdate()->firstOrFail();
+            $existing = Order::query()->where('user_id', $user->id)->where('checkout_idempotency_key', $payload['idempotency_key'])->first();
+            if ($existing?->payment) {
+                return $existing->payment;
+            }
+            $address = CustomerAddress::query()->where('user_id', $user->id)->whereKey($payload['customer_address_id'])->lockForUpdate()->firstOrFail();
+            if ($this->addressHash($address) !== $verifiedAddressHash || $verifiedAddressHash !== session('checkout.selected_rate_binding.address_hash')) {
+                throw ValidationException::withMessages(['shipping_rate_id' => 'Alamat berubah. Pilih ulang ongkir.']);
+            }
             $rate = $this->rateFromPayload((string) $payload['shipping_rate_id']);
             $items = $this->lockedCartItems($user);
 
@@ -184,17 +190,20 @@ class CheckoutService
                 throw ValidationException::withMessages(['cart' => 'Keranjang kosong.']);
             }
 
+            $products = Product::query()->with('primaryImage:id,product_id,image_url')->whereIn('id', $items->pluck('product_id'))->orderBy('id')->lockForUpdate()->get()->keyBy('id');
+            $items = $items->sortBy('product_variant_id');
             $subtotal = 0.0;
+            $priceChanged = false;
             foreach ($items as $item) {
                 $variant = ProductVariant::query()
-                    ->with('product.primaryImage:id,product_id,image_url')
                     ->whereKey($item->product_variant_id)
                     ->lockForUpdate()
                     ->first();
-                $product = $variant?->product;
+                $product = $products->get($item->product_id);
+                $variant?->setRelation('product', $product);
                 $available = $variant ? max(0, $variant->stock - $variant->reserved_stock) : 0;
 
-                if (! $variant || ! $product || $product->status !== 'published' || ! $variant->is_active || $available < $item->quantity) {
+                if (! $variant || ! $product || $variant->product_id !== $product->id || $product->status !== 'published' || ! $variant->is_active || $available < $item->quantity) {
                     throw ValidationException::withMessages(['cart' => "Stok {$product?->name} tidak mencukupi."]);
                 }
 
@@ -203,7 +212,7 @@ class CheckoutService
                 if ($this->minorUnits($item->price_snapshot) !== $this->minorUnits($currentPrice)) {
                     $item->forceFill(['price_snapshot' => $currentPrice])->save();
 
-                    throw ValidationException::withMessages(['cart' => "Harga {$product->name} berubah. Tinjau ulang keranjang dan pilih ulang ongkir."]);
+                    $priceChanged = true;
                 }
 
                 $item->setRelation('variant', $variant);
@@ -211,6 +220,26 @@ class CheckoutService
                 $subtotal += (float) $item->price_snapshot * $item->quantity;
             }
 
+            if ($priceChanged) {
+                return null;
+            }
+            $packages = $items->map(fn ($item): array => [
+                'id' => $item->id,
+                'product_variant_id' => $item->product_variant_id,
+                'title' => $item->product->name,
+                'sku' => $item->product->sku,
+                'variant_sku' => $item->variant->sku,
+                'price' => (float) $item->price_snapshot,
+                'quantity' => $item->quantity,
+                'weight' => (float) $item->product->weight * $item->quantity,
+                'length' => $item->product->length,
+                'width' => $item->product->width,
+                'height' => $item->product->height,
+            ]);
+            if ($this->cartHash($packages) !== session('checkout.selected_rate_binding.cart_hash')) {
+                throw ValidationException::withMessages(['shipping_rate_id' => 'Paket berubah. Pilih ulang ongkir.']);
+            }
+            $this->biteshipItems($packages);
             $voucher = null;
             $discount = 0.0;
             $voucherCode = session('checkout.voucher_code');
@@ -224,7 +253,13 @@ class CheckoutService
                 $voucher->increment('used_count');
             }
 
-            $serviceFee = (float) ($this->settings->first(['payment_service_fee'], '0') ?: 0);
+            $serviceFee = round((float) ($this->settings->first(['payment_service_fee'], '0') ?: 0), 2);
+            $subtotal = round($subtotal, 2);
+            $discount = round($discount, 2);
+            $grandTotal = round(max(0, $subtotal + round((float) $rate['price'], 2) + $serviceFee - $discount), 0, PHP_ROUND_HALF_UP);
+            if (! is_finite($grandTotal) || $grandTotal < 1) {
+                throw ValidationException::withMessages(['payment' => 'Total pembayaran Midtrans harus minimal Rp1.']);
+            }
             $order = Order::query()->create([
                 'user_id' => $user->id,
                 'customer_address_id' => $address->id,
@@ -237,7 +272,7 @@ class CheckoutService
                 'discount_amount' => $discount,
                 'shipping_cost' => (float) $rate['price'],
                 'service_fee' => $serviceFee,
-                'grand_total' => max(0, $subtotal + (float) $rate['price'] + $serviceFee - $discount),
+                'grand_total' => $grandTotal,
                 'voucher_id' => $voucher?->id,
                 'voucher_code' => $voucher?->code,
                 'payment_status' => 'pending',
@@ -300,29 +335,31 @@ class CheckoutService
             ]);
 
             $payment = $order->payment()->create([
-                'payment_provider' => 'manual',
-                'payment_method' => 'bank_transfer',
+                'payment_provider' => 'midtrans',
+                'midtrans_order_id' => $order->order_number,
                 'gross_amount' => $order->grand_total,
                 'currency' => 'IDR',
                 'transaction_status' => 'pending',
+                'expires_at' => $order->created_at->copy()->addMinutes($this->midtrans->expiryMinutes()),
+                'raw_response' => ['snap_creation_state' => 'new'],
             ]);
+
+            $cart->items()->whereIn('id', $items->pluck('id'))->delete();
 
             return $payment;
         });
+        if ($payment === null) {
+            $this->forgetCheckoutSession();
+            throw ValidationException::withMessages(['cart' => 'Harga berubah. Tinjau ulang keranjang dan pilih ulang ongkir.']);
+        }
 
-        $order = $payment->order()->with('items')->firstOrFail();
-        $redirectUrl = $this->whatsAppOrderMessage->url($order);
-
-        $cart = Cart::query()->firstWhere('user_id', $user->id);
-        $cart?->items()->delete();
+        $result = $this->createSnap->execute($payment);
         $this->forgetCheckoutSession();
-        $payment->refresh();
+        if ($result['payment_state'] === 'failed') {
+            session()->flash('warning', 'Pembayaran ditolak. Item tersedia dipulihkan ke keranjang; periksa kembali sebelum checkout.');
+        }
 
-        return [
-            'order_id' => $payment->order_id,
-            'payment_id' => $payment->id,
-            'redirect_url' => $redirectUrl,
-        ];
+        return $result;
     }
 
     private function cartItems(User $user): Collection
@@ -346,7 +383,7 @@ class CheckoutService
                     'image' => $variant?->image_url ?? $product?->primaryImage?->image_url,
                     'price' => (float) $item->price_snapshot,
                     'quantity' => $item->quantity,
-                    'weight' => max(1, (int) ($product?->weight ?? 1)) * $item->quantity,
+                    'weight' => (float) ($product?->weight ?? 0) * $item->quantity,
                     'length' => $product?->length,
                     'width' => $product?->width,
                     'height' => $product?->height,
@@ -405,6 +442,15 @@ class CheckoutService
 
     private function biteshipItems(Collection $items): array
     {
+        foreach ($items as $item) {
+            foreach (['weight', 'length', 'width', 'height'] as $key) {
+                $value = $item[$key];
+                if (($key === 'weight' || $value !== null) && (! is_numeric($value) || ! is_finite((float) $value) || (float) $value < ($key === 'weight' ? 1 : 0))) {
+                    throw ValidationException::withMessages(['cart' => 'Ukuran paket produk tidak valid.']);
+                }
+            }
+        }
+
         return $items->map(fn (array $item): array => array_filter([
             'name' => mb_substr($item['title'], 0, 100),
             'description' => $item['variant_sku'] ?? $item['sku'] ?? $item['title'],
@@ -524,6 +570,7 @@ class CheckoutService
             'checkout.shipping_rate_id',
             'checkout.customer_address_id',
             'checkout.cart_hash',
+            'checkout.address_hash',
             'checkout.rates_generated_at',
             'checkout.rates_expires_at',
             'checkout.session_expires_at',
@@ -531,17 +578,20 @@ class CheckoutService
         ];
     }
 
+    private function addressHash(CustomerAddress $address): string
+    {
+        return hash('sha256', json_encode($address->only(['recipient_name', 'recipient_phone', 'province', 'city', 'district', 'subdistrict', 'postal_code', 'biteship_area_id', 'latitude', 'longitude', 'full_address', 'note']), JSON_THROW_ON_ERROR));
+    }
+
     private function cartHash(Collection $items): string
     {
-        $voucherCode = session('checkout.voucher_code');
-
         return hash('sha256', json_encode([
-            'voucher' => is_string($voucherCode) ? Str::upper($voucherCode) : null,
             'items' => $items->sortBy('id')->map(fn (array $item): array => [
                 'id' => $item['id'],
                 'product_variant_id' => $item['product_variant_id'],
                 'quantity' => $item['quantity'],
                 'price' => number_format((float) $item['price'], 2, '.', ''),
+                'package' => array_map(fn ($value) => $value === null ? null : (float) $value, [$item['weight'], $item['length'], $item['width'], $item['height']]),
             ])->values()->all(),
         ], JSON_THROW_ON_ERROR));
     }
@@ -558,15 +608,21 @@ class CheckoutService
 
     private function summary(Collection $items, float $shipping, float $discount): array
     {
-        $subtotal = (float) $items->sum('subtotal');
+        $subtotal = round((float) $items->sum('subtotal'), 2);
+        $shipping = round($shipping, 2);
+        $discount = round($discount, 2);
+        $serviceFee = round((float) ($this->settings->first(['payment_service_fee'], '0') ?: 0), 2);
+        $rawTotal = max(0, $subtotal + $shipping + $serviceFee - $discount);
+        $total = round($rawTotal, 0, PHP_ROUND_HALF_UP);
 
         return [
             'item_count' => (int) $items->sum('quantity'),
             'subtotal' => $subtotal,
             'shipping' => $shipping,
             'discount' => $discount,
-            'service_fee' => (float) ($this->settings->first(['payment_service_fee'], '0') ?: 0),
-            'total' => max(0, $subtotal + $shipping + (float) ($this->settings->first(['payment_service_fee'], '0') ?: 0) - $discount),
+            'service_fee' => $serviceFee,
+            'rounding_adjustment' => round($total - $rawTotal, 2),
+            'total' => $total,
         ];
     }
 

@@ -72,6 +72,7 @@ export type CheckoutSummary = {
     shipping: number;
     discount: number;
     service_fee: number;
+    rounding_adjustment?: number;
     total: number;
 };
 
@@ -80,11 +81,8 @@ export type CheckoutStoreLocation = {
     longitude: string | null;
 };
 
-export type ManualPayment = {
-    whatsapp_number: string;
-    bank_name: string;
-    bank_account_number: string;
-    bank_account_name: string;
+export type PaymentGateway = {
+    provider: 'midtrans';
 };
 
 type CheckoutContextValue = {
@@ -92,7 +90,7 @@ type CheckoutContextValue = {
     appliedVoucher: Voucher;
     applyVoucher: (code: string) => Promise<void>;
     cartItems: CheckoutItem[];
-    manualPayment: ManualPayment;
+    paymentGateway: PaymentGateway;
     errors: Record<string, string>;
     loadShippingRates: (
         addressId: number,
@@ -171,7 +169,7 @@ export function CheckoutProvider({
     cartItems,
     children,
     defaultAddressId,
-    manualPayment,
+    paymentGateway,
     selectedShippingRate,
     storeLocation,
     summary,
@@ -181,7 +179,7 @@ export function CheckoutProvider({
     cartItems: CheckoutItem[];
     children: ReactNode;
     defaultAddressId: number | null;
-    manualPayment: ManualPayment;
+    paymentGateway: PaymentGateway;
     selectedShippingRate: ShippingRate | null;
     storeLocation: CheckoutStoreLocation;
     summary: CheckoutSummary;
@@ -288,13 +286,35 @@ export function CheckoutProvider({
             setCurrentSummary((current) => ({
                 ...current,
                 shipping: rate.price,
-                total: Math.max(
-                    0,
-                    current.subtotal +
-                        rate.price +
-                        current.service_fee -
-                        current.discount,
+                total: Math.round(
+                    Math.max(
+                        0,
+                        current.subtotal +
+                            rate.price +
+                            current.service_fee -
+                            current.discount,
+                    ),
                 ),
+                rounding_adjustment:
+                    Math.round(
+                        (Math.round(
+                            Math.max(
+                                0,
+                                current.subtotal +
+                                    rate.price +
+                                    current.service_fee -
+                                    current.discount,
+                            ),
+                        ) -
+                            Math.max(
+                                0,
+                                current.subtotal +
+                                    rate.price +
+                                    current.service_fee -
+                                    current.discount,
+                            )) *
+                            100,
+                    ) / 100,
             }));
         } catch (error) {
             setErrors(error as Record<string, string>);
@@ -353,6 +373,38 @@ export function CheckoutProvider({
                     },
                 );
 
+                if (
+                    !payload.order_id ||
+                    !payload.payment_id ||
+                    !['ready', 'processing', 'failed', 'final'].includes(
+                        payload.payment_state,
+                    ) ||
+                    typeof payload.redirect_url !== 'string'
+                ) {
+                    throw {
+                        payment:
+                            'Respons checkout tidak valid. Coba lagi dengan pesanan yang sama.',
+                    };
+                }
+
+                const redirect = new URL(
+                    payload.redirect_url,
+                    window.location.origin,
+                );
+                const local = redirect.origin === window.location.origin;
+                const snap =
+                    redirect.protocol === 'https:' &&
+                    ['app.midtrans.com', 'app.sandbox.midtrans.com'].includes(
+                        redirect.hostname,
+                    ) &&
+                    !redirect.username &&
+                    !redirect.password &&
+                    !redirect.port;
+
+                if (!local && !snap) {
+                    throw { payment: 'Tujuan pembayaran tidak valid.' };
+                }
+
                 window.sessionStorage.removeItem('checkout.idempotency_key');
 
                 return payload.redirect_url ?? null;
@@ -377,7 +429,7 @@ export function CheckoutProvider({
         () => ({
             addresses,
             appliedVoucher: currentVoucher,
-            manualPayment,
+            paymentGateway,
             applyVoucher,
             cartItems,
             errors,
@@ -404,7 +456,7 @@ export function CheckoutProvider({
             currentVoucher,
             errors,
             loadShippingRates,
-            manualPayment,
+            paymentGateway,
             placeOrder,
             placingOrder,
             rates,

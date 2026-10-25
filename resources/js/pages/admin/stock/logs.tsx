@@ -2,8 +2,6 @@ import { Head, Link, router } from '@inertiajs/react';
 import {
     ArrowDownRight,
     ArrowUpRight,
-    ChevronLeft,
-    ChevronRight,
     History,
     RotateCcw,
     Search,
@@ -21,7 +19,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { PerPageSelect } from '../pagination';
+import { PaginationLabel, PerPageSelect } from '../pagination';
 
 interface StockLog {
     id: number;
@@ -265,7 +263,9 @@ export default function StockLogs({ logs, filters }: Props) {
                                                             : '#'
                                                     }
                                                     className="flex flex-col rounded-md transition-colors hover:text-[#7F2020] focus-visible:ring-2 focus-visible:ring-[#7F2020]/30 focus-visible:outline-none"
-                                                    aria-disabled={!log.product_id}
+                                                    aria-disabled={
+                                                        !log.product_id
+                                                    }
                                                 >
                                                     <span className="font-semibold text-zinc-900">
                                                         {log.variant ?? '-'}
@@ -375,22 +375,8 @@ export default function StockLogs({ logs, filters }: Props) {
                         </span>
                         <div className="flex items-center gap-1">
                             {logs.links.map((link, i) => {
-                                const isChevronLeft =
-                                    link.label.includes('Previous') ||
-                                    link.label.includes('&laquo;');
-                                const isChevronRight =
-                                    link.label.includes('Next') ||
-                                    link.label.includes('&raquo;');
-                                const label = isChevronLeft ? (
-                                    <ChevronLeft className="h-3.5 w-3.5" />
-                                ) : isChevronRight ? (
-                                    <ChevronRight className="h-3.5 w-3.5" />
-                                ) : (
-                                    <span
-                                        dangerouslySetInnerHTML={{
-                                            __html: link.label,
-                                        }}
-                                    />
+                                const label = (
+                                    <PaginationLabel label={link.label} />
                                 );
 
                                 return (
