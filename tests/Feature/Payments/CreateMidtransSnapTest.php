@@ -33,6 +33,149 @@ beforeEach(function () {
     }]);
 });
 
+it('sends cancellation requests with an empty body instead of a JSON array', function (string $api) {
+    Http::fake([
+        'api.sandbox.midtrans.com/*/cancel' => Http::response(['order_id' => $this->order->order_number, 'gross_amount' => '30901.00', 'status_code' => '200', 'transaction_status' => 'cancel']),
+        'app.sandbox.midtrans.com/snap/v1/transactions/*/cancel' => Http::response(['canceled_at' => '2026-10-27T10:00:00Z']),
+    ]);
+    $service = app(MidtransService::class);
+    $api === 'core' ? $service->cancelTransaction($this->order->order_number) : $service->cancelSnapSession('snap-test-token');
+
+    Http::assertSent(fn ($request) => str_ends_with($request->url(), '/cancel')
+        && $request->hasHeader('Content-Type', 'application/json'));
+    expect(Http::recorded()->first()[0]->body())->toBe('');
+    Http::assertSentCount(1);
+})->with(['core', 'snap']);
+
+it('reconciles an uncertain Core cancellation before changing reservations', function (string $failure, string $status) {
+    $this->payment->update(['requested_payment_method' => 'bca_va']);
+    $payload = ['order_id' => $this->order->order_number, 'gross_amount' => '30901.00', 'status_code' => '200'];
+    Http::fake([
+        'api.sandbox.midtrans.com/*/status' => Http::sequence()
+            ->push([...$payload, 'transaction_status' => 'pending'])
+            ->push([...$payload, 'transaction_status' => $status]),
+        'api.sandbox.midtrans.com/*/cancel' => fn () => match ($failure) {
+            'timeout' => throw new ConnectionException('Synthetic timeout'),
+            'malformed' => Http::response('not-json'),
+            'rejected' => Http::response(['status_code' => '412'], 412),
+            default => Http::response(['status_code' => '500'], 500),
+        },
+    ]);
+
+    $response = $this->actingAs($this->customer)->post(route('order.cancel', $this->order));
+    if (in_array($status, ['cancel', 'expire'], true)) {
+        $response->assertSessionHasNoErrors();
+        expect($this->order->refresh()->payment_status)->toBe($status === 'cancel' ? 'cancelled' : 'expired')
+            ->and($this->variant->refresh()->reserved_stock)->toBe(0)
+            ->and($this->voucher->refresh()->used_count)->toBe(0);
+    } else {
+        $response->assertSessionHasErrors('payment');
+        expect($this->order->refresh()->payment_status)->toBe($status === 'settlement' ? 'paid' : 'pending')
+            ->and($this->order->stock_released_at)->toBeNull()
+            ->and($this->voucher->refresh()->used_count)->toBe(1)
+            ->and($this->variant->refresh()->reserved_stock)->toBe($status === 'settlement' ? 0 : 3)
+            ->and($this->variant->stock)->toBe($status === 'settlement' ? 7 : 10);
+    }
+    Http::assertSentCount($failure === 'timeout' ? 2 : 3);
+})->with(['server', 'timeout', 'malformed', 'rejected'])->with(['cancel', 'expire', 'settlement', 'pending']);
+
+it('preserves reservations when cancellation recovery cannot prove a matching terminal status', function (string $failure) {
+    $payload = ['order_id' => $this->order->order_number, 'gross_amount' => '30901.00', 'status_code' => '200', 'transaction_status' => 'cancel'];
+    $statuses = Http::sequence()->push([...$payload, 'transaction_status' => 'pending']);
+    match ($failure) {
+        'missing' => $statuses->push(['status_code' => '404'], 404),
+        'unavailable' => $statuses->push(['status_code' => '500'], 500),
+        'timeout' => $statuses->pushFailedConnection(),
+        'reference' => $statuses->push([...$payload, 'order_id' => 'OTHER']),
+        'amount' => $statuses->push([...$payload, 'gross_amount' => '1.00']),
+    };
+    Http::fake([
+        'api.sandbox.midtrans.com/*/status' => $statuses,
+        'api.sandbox.midtrans.com/*/cancel' => Http::response(['status_code' => '500'], 500),
+    ]);
+
+    $this->actingAs($this->customer)->post(route('order.cancel', $this->order))->assertSessionHasErrors('payment');
+    expect($this->order->refresh()->payment_status)->toBe('pending')
+        ->and($this->order->stock_released_at)->toBeNull()
+        ->and($this->variant->refresh()->reserved_stock)->toBe(3)
+        ->and($this->voucher->refresh()->used_count)->toBe(1);
+    Http::assertSentCount(3);
+})->with(['missing', 'unavailable', 'timeout', 'reference', 'amount']);
+
+it('cancels a charge that appears while Snap cancellation is in progress', function (string $failure) {
+    $this->payment->update(['midtrans_snap_token' => 'snap-test-token']);
+    $payload = ['order_id' => $this->order->order_number, 'gross_amount' => '30901.00', 'status_code' => '200'];
+    Http::fake([
+        'api.sandbox.midtrans.com/*/status' => Http::sequence()
+            ->push(['status_code' => '404'], 404)
+            ->push([...$payload, 'transaction_status' => 'pending']),
+        'app.sandbox.midtrans.com/snap/v1/transactions/*/cancel' => fn () => $failure === 'timeout'
+            ? throw new ConnectionException('Synthetic timeout')
+            : Http::response(['error_messages' => ['Transaction is on progress']], 400),
+        'api.sandbox.midtrans.com/*/cancel' => Http::response([...$payload, 'transaction_status' => 'cancel']),
+    ]);
+
+    $this->actingAs($this->customer)->post(route('order.cancel', $this->order))->assertSessionHasNoErrors();
+    $this->actingAs($this->customer)->post(route('order.cancel', $this->order))->assertSessionHasNoErrors();
+    expect($this->order->refresh()->payment_status)->toBe('cancelled')
+        ->and($this->variant->refresh()->reserved_stock)->toBe(0)
+        ->and($this->voucher->refresh()->used_count)->toBe(0);
+    Http::assertSentCount($failure === 'timeout' ? 3 : 4);
+})->with(['progress', 'timeout']);
+
+it('rechecks contradictory cancellation amounts instead of trusting the response', function () {
+    $payload = ['order_id' => $this->order->order_number, 'gross_amount' => '30901.00', 'status_code' => '200'];
+    Http::fake([
+        'api.sandbox.midtrans.com/*/status' => Http::sequence()
+            ->push([...$payload, 'transaction_status' => 'pending'])
+            ->push([...$payload, 'transaction_status' => 'cancel']),
+        'api.sandbox.midtrans.com/*/cancel' => Http::response([...$payload, 'gross_amount' => '1.00', 'transaction_status' => 'cancel']),
+    ]);
+
+    $this->actingAs($this->customer)->post(route('order.cancel', $this->order))->assertSessionHasNoErrors();
+    expect($this->order->refresh()->payment_status)->toBe('cancelled')
+        ->and($this->variant->refresh()->reserved_stock)->toBe(0);
+    Http::assertSentCount(3);
+});
+
+it('does not cancel a transaction with a mismatched initial reference or amount', function (string $field) {
+    $payload = ['order_id' => $this->order->order_number, 'gross_amount' => '30901.00', 'status_code' => '200', 'transaction_status' => 'pending'];
+    $payload[$field] = $field === 'order_id' ? 'OTHER' : '1.00';
+    Http::fake(['api.sandbox.midtrans.com/*/status' => Http::response($payload)]);
+
+    $this->actingAs($this->customer)->post(route('order.cancel', $this->order))->assertSessionHasErrors('payment');
+    expect($this->order->refresh()->payment_status)->toBe('pending')
+        ->and($this->variant->refresh()->reserved_stock)->toBe(3);
+    Http::assertSentCount(1);
+})->with(['order_id', 'gross_amount']);
+
+it('rejects cancellation of another customers order without contacting the provider', function () {
+    $this->actingAs(User::factory()->create())->post(route('order.cancel', $this->order))->assertNotFound();
+    expect($this->variant->refresh()->reserved_stock)->toBe(3);
+    Http::assertNothingSent();
+});
+
+it('preserves a settlement received during an uncertain cancellation recovery', function () {
+    $payload = ['order_id' => $this->order->order_number, 'gross_amount' => '30901.00', 'status_code' => '200'];
+    Http::fake([
+        'api.sandbox.midtrans.com/*/status' => Http::sequence()
+            ->push([...$payload, 'transaction_status' => 'pending'])
+            ->push([...$payload, 'transaction_status' => 'cancel']),
+        'api.sandbox.midtrans.com/*/cancel' => function () use ($payload) {
+            app(SyncMidtransPaymentAction::class)->applyPayload($this->payment, [...$payload, 'transaction_status' => 'settlement'], 'concurrent_settlement');
+
+            return Http::response(['status_code' => '500'], 500);
+        },
+    ]);
+
+    $this->actingAs($this->customer)->post(route('order.cancel', $this->order))->assertSessionHasErrors('payment');
+    expect($this->order->refresh()->payment_status)->toBe('paid')
+        ->and($this->order->stock_released_at)->toBeNull()
+        ->and($this->variant->refresh()->stock)->toBe(7)
+        ->and($this->variant->reserved_stock)->toBe(0)
+        ->and($this->voucher->refresh()->used_count)->toBe(1);
+});
+
 it('creates one Snap session with exact item totals and reuses it', function () {
     $action = app(CreateMidtransSnapAction::class);
     $result = $action->execute($this->payment);

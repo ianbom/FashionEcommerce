@@ -160,11 +160,6 @@ const adminNavGroups: NavGroup[] = [
                 href: '/admin/banners',
                 icon: Image,
             },
-            {
-                title: 'Halaman',
-                href: '/admin/pages',
-                icon: FileText,
-            },
         ],
     },
     {

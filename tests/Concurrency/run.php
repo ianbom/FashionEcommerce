@@ -60,6 +60,35 @@ if (($argv[1] ?? '') === 'worker') {
             $payment = Payment::query()->findOrFail($recordId);
             $action = app(ManageManualPaymentAction::class);
             $scenario === 'cancel' && $operation === 'b' ? $action->cancel($payment) : $action->confirm($payment);
+        } elseif ($scenario === 'midtrans-cancel-recovery') {
+            $payment = Payment::query()->findOrFail($recordId);
+            $payload = ['order_id' => $payment->midtrans_order_id, 'gross_amount' => '11000.00', 'status_code' => '200'];
+            if ($operation === 'b') {
+                Http::fake([
+                    'api.sandbox.midtrans.com/*/status' => Http::sequence()
+                        ->push([...$payload, 'transaction_status' => 'pending'])
+                        ->push([...$payload, 'transaction_status' => 'cancel']),
+                    'api.sandbox.midtrans.com/*/cancel' => function () use ($signal) {
+                        file_put_contents($signal.'.cancel-requested', 'ready');
+                        $deadline = microtime(true) + 15;
+                        while (! is_file($signal.'.settled')) {
+                            check(microtime(true) < $deadline, 'Concurrent settlement timeout.');
+                            usleep(10000);
+                        }
+
+                        return Http::response(['status_code' => '500'], 500);
+                    },
+                ]);
+                app(SyncMidtransPaymentAction::class)->cancel($payment);
+            } else {
+                $deadline = microtime(true) + 15;
+                while (! is_file($signal.'.cancel-requested')) {
+                    check(microtime(true) < $deadline, 'Concurrent cancellation timeout.');
+                    usleep(10000);
+                }
+                app(SyncMidtransPaymentAction::class)->applyPayload($payment, [...$payload, 'transaction_status' => 'settlement'], 'concurrency_test');
+                file_put_contents($signal.'.settled', 'ready');
+            }
         } elseif (in_array($scenario, ['midtrans-settlement', 'midtrans-cancel'], true)) {
             $payment = Payment::query()->findOrFail($recordId);
             app(SyncMidtransPaymentAction::class)->applyPayload($payment, [
@@ -104,7 +133,7 @@ try {
     foreach (['store_name' => 'Test', 'store_phone' => '081234567890', 'origin_address' => 'Synthetic address', 'store_postal_code' => '60111', 'store_latitude' => '-7.28', 'store_longitude' => '112.80', 'origin_biteship_area_id' => 'IDNP-TEST'] as $key => $value) {
         SiteSetting::query()->create(compact('key', 'value'));
     }
-    foreach (['confirm', 'cancel', 'checkout', 'booking', 'receipt', 'midtrans-settlement', 'midtrans-cancel'] as $scenario) {
+    foreach (['confirm', 'cancel', 'checkout', 'booking', 'receipt', 'midtrans-settlement', 'midtrans-cancel', 'midtrans-cancel-recovery'] as $scenario) {
         $customer = User::factory()->create();
         $product = Product::query()->create(['name' => $scenario, 'slug' => $scenario, 'sku' => strtoupper($scenario), 'base_price' => 10000, 'weight' => 200, 'status' => 'published']);
         $variant = $product->variants()->create(['sku' => strtoupper($scenario).'-M', 'stock' => 10, 'reserved_stock' => $scenario === 'checkout' ? 0 : 1, 'is_active' => true]);
@@ -142,6 +171,8 @@ try {
         }
         $temporaryFiles[] = $signal.'.go';
         $temporaryFiles[] = $signal.'.http';
+        $temporaryFiles[] = $signal.'.cancel-requested';
+        $temporaryFiles[] = $signal.'.settled';
         $deadline = microtime(true) + 15;
         while (! is_file($signal.'.ready.a') || ! is_file($signal.'.ready.b')) {
             check(microtime(true) < $deadline, 'Worker startup timeout.');
@@ -163,8 +194,9 @@ try {
             check($variant->stockLogs()->count() === 1 && $order->stock_finalized_at !== null, 'Finalization must happen once.');
         } elseif ($scenario === 'cancel') {
             check($variant->reserved_stock === 0 && (($order->payment_status === 'paid' && $variant->stock === 9 && $order->stock_released_at === null) || ($order->payment_status === 'cancelled' && $variant->stock === 10 && $order->stock_finalized_at === null)), 'Concurrent cancel and confirm broke reservation ownership.');
-        } elseif ($scenario === 'midtrans-settlement') {
+        } elseif (in_array($scenario, ['midtrans-settlement', 'midtrans-cancel-recovery'], true)) {
             check($order->payment_status === 'paid' && $variant->stock === 9 && $variant->reserved_stock === 0 && $variant->stockLogs()->count() === 1, 'Concurrent settlements must finalize stock once.');
+            check($order->stock_released_at === null, 'Concurrent cancellation released paid stock.');
         } elseif ($scenario === 'midtrans-cancel') {
             check(($order->payment_status === 'paid' && $variant->stock === 9 && $order->stock_released_at === null)
                 || ($order->payment_status === 'manual_review' && $variant->stock === 10 && $order->stock_finalized_at === null && $order->stock_released_at !== null), 'Settlement racing cancellation must preserve paid or enter review, never reconsume released stock.');
@@ -183,7 +215,7 @@ try {
         }
         echo $scenario.': PASS ('.implode(', ', $results).")\n";
     }
-    echo "MySQL concurrency: 7 scenarios passed; providers faked.\n";
+    echo "MySQL concurrency: 8 scenarios passed; providers faked.\n";
 } finally {
     foreach ($processes as [$process, $pipes]) {
         if (is_resource($process)) {

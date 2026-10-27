@@ -19,7 +19,6 @@ import type { ComponentType, ReactNode } from 'react';
 import {
     cancel as orderCancel,
     index as orderIndex,
-    syncPayment,
 } from '@/actions/App/Http/Controllers/Customer/OrderController';
 import { show as productShow } from '@/actions/App/Http/Controllers/Customer/ProductController';
 import {
@@ -284,7 +283,7 @@ function ActionButton({
         );
     }
 
-    if (!href) {
+    if (disabled || !href) {
         return (
             <button
                 type="button"
@@ -452,7 +451,6 @@ function getMidtransReceiptUrl(payment: Payment | null): string | null {
 }
 
 export default function DetailOrder({ order, support }: Props) {
-    const [syncingPayment, setSyncingPayment] = useState(false);
     const [paymentError, setPaymentError] = useState<string | null>(null);
     const [isCancelling, setIsCancelling] = useState(false);
     const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
@@ -505,7 +503,7 @@ export default function DetailOrder({ order, support }: Props) {
     };
 
     const cancelOrder = () => {
-        if (isCancelling) {
+        if (isCancelling || !canCancelOrder) {
             return;
         }
 
@@ -514,15 +512,19 @@ export default function DetailOrder({ order, support }: Props) {
             {},
             {
                 preserveScroll: true,
-                onStart: () => setIsCancelling(true),
+                onStart: () => {
+                    setIsCancelling(true);
+                    setPaymentError(null);
+                },
                 onSuccess: () => setIsCancelModalOpen(false),
                 onError: (errors) => {
                     const message = Object.values(errors).join('\n');
 
-                    alert(
+                    setPaymentError(
                         message ||
                             'Gagal membatalkan order. Cek status pembayaran atau coba lagi.',
                     );
+                    setIsCancelModalOpen(false);
                 },
                 onFinish: () => setIsCancelling(false),
             },
@@ -597,7 +599,10 @@ export default function DetailOrder({ order, support }: Props) {
                                 href={canCancelOrder ? undefined : '/list'}
                                 onClick={
                                     canCancelOrder
-                                        ? () => setIsCancelModalOpen(true)
+                                        ? () => {
+                                              setPaymentError(null);
+                                              setIsCancelModalOpen(true);
+                                          }
                                         : undefined
                                 }
                                 disabled={isCancelling}
@@ -617,6 +622,7 @@ export default function DetailOrder({ order, support }: Props) {
                                 href={canPay ? paymentReceiptUrl : undefined}
                                 external={canPay}
                                 disabled={
+                                    isCancelling ||
                                     isDownloadingProof ||
                                     (!canPay && !canDownloadProof)
                                 }
@@ -660,44 +666,12 @@ export default function DetailOrder({ order, support }: Props) {
                             {order.payment.failure_reason && (
                                 <p>{order.payment.failure_reason}</p>
                             )}
-                            {order.payment.can_sync && (
-                                <button
-                                    type="button"
-                                    disabled={syncingPayment}
-                                    onClick={() =>
-                                        router.post(
-                                            syncPayment.url(order.id),
-                                            {},
-                                            {
-                                                preserveScroll: true,
-                                                onStart: () => {
-                                                    setSyncingPayment(true);
-                                                    setPaymentError(null);
-                                                },
-                                                onError: (errors) =>
-                                                    setPaymentError(
-                                                        Object.values(
-                                                            errors,
-                                                        ).join(' '),
-                                                    ),
-                                                onFinish: () =>
-                                                    setSyncingPayment(false),
-                                            },
-                                        )
-                                    }
-                                    className="rounded border border-[#b9877b] px-4 py-2 font-medium disabled:opacity-60"
-                                >
-                                    {syncingPayment
-                                        ? 'Memperbarui...'
-                                        : 'Perbarui status pembayaran'}
-                                </button>
-                            )}
-                            {paymentError && (
-                                <p role="alert" className="text-red-700">
-                                    {paymentError}
-                                </p>
-                            )}
                         </section>
+                    )}
+                    {paymentError && (
+                        <p role="alert" className="text-sm text-red-700">
+                            {paymentError}
+                        </p>
                     )}
                     {/* Order Progress */}
                     {order.shipping_issue && (
@@ -1174,10 +1148,10 @@ export default function DetailOrder({ order, support }: Props) {
 
                         <div className="space-y-4 px-6 py-5">
                             <p className="text-sm leading-6 text-[#6f5e52]">
-                                Order belum dibayar. Jika dibatalkan, transaksi
-                                pembayaran Midtrans akan dibuat tidak bisa
-                                dibayar lagi dan stok yang tertahan akan
-                                dilepaskan.
+                                Pembatalan akan diperiksa terlebih dahulu.
+                                Setelah terkonfirmasi, pembayaran dinonaktifkan
+                                dan stok yang tertahan dilepaskan. Pembayaran
+                                yang sudah berhasil tidak dapat dibatalkan.
                             </p>
                             <div className="rounded-2xl border border-[#f0ebe4] bg-[#faf6f1] px-4 py-3">
                                 <p className="text-[10px] font-semibold tracking-widest text-[#9a8575] uppercase">

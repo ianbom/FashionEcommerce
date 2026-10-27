@@ -8,6 +8,7 @@ use App\Services\Integrations\MidtransService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class SyncMidtransPaymentAction
@@ -69,9 +70,18 @@ class SyncMidtransPaymentAction
                 if (! $payment->midtrans_snap_token) {
                     throw ValidationException::withMessages(['payment' => 'Identitas sesi Snap belum tersedia; reservasi dipertahankan.']);
                 }
-                $this->midtrans->cancelSnapSession($payment->midtrans_snap_token);
+                $snapFailure = null;
+                try {
+                    $this->midtrans->cancelSnapSession($payment->midtrans_snap_token);
+                } catch (ConnectionException|ValidationException $exception) {
+                    $snapFailure = $exception;
+                    Log::warning('midtrans_cancel_reconciling', ['payment_id' => $payment->id, 'operation' => 'snap_cancel', 'error_type' => $exception::class]);
+                }
                 $payload = $this->midtrans->findTransactionStatus((string) $payment->midtrans_order_id);
                 if ($payload === null) {
+                    if ($snapFailure !== null) {
+                        throw ValidationException::withMessages(['payment' => 'Pembatalan belum terkonfirmasi. Reservasi dipertahankan. Perbarui status pembayaran atau coba lagi.']);
+                    }
                     $payload = ['order_id' => $payment->midtrans_order_id, 'gross_amount' => $payment->gross_amount,
                         'status_code' => '200', 'transaction_status' => $expired ? 'expire' : 'cancel', 'snap_session_cancelled' => true];
                 }
@@ -82,11 +92,25 @@ class SyncMidtransPaymentAction
 
                     return;
                 }
-                $payload = $this->midtrans->cancelTransaction((string) $payment->midtrans_order_id);
+                try {
+                    $payload = $this->midtrans->cancelTransaction((string) $payment->midtrans_order_id);
+                    if (! $this->midtrans->amountMatches($payload['gross_amount'] ?? null, $payment)) {
+                        throw ValidationException::withMessages(['payment' => 'Nominal pembatalan tidak cocok dengan pembayaran.']);
+                    }
+                } catch (ConnectionException|ValidationException $exception) {
+                    Log::warning('midtrans_cancel_reconciling', ['payment_id' => $payment->id, 'operation' => 'core_cancel', 'error_type' => $exception::class]);
+                    $payload = $this->midtrans->findTransactionStatus((string) $payment->midtrans_order_id);
+                    if ($payload === null) {
+                        throw ValidationException::withMessages(['payment' => 'Pembatalan belum terkonfirmasi. Reservasi dipertahankan. Perbarui status pembayaran atau coba lagi.']);
+                    }
+                }
             }
             $this->applyPayload($payment, $payload, $expired ? 'scheduled_expiry' : 'customer_cancel');
+            if (in_array($payment->fresh()->order->payment_status, ['pending', 'manual_review'], true)) {
+                throw ValidationException::withMessages(['payment' => 'Pembatalan belum terkonfirmasi. Reservasi dipertahankan. Perbarui status pembayaran atau coba lagi.']);
+            }
         } catch (ConnectionException $exception) {
-            throw ValidationException::withMessages(['payment' => 'Pembatalan Midtrans belum dapat dipastikan. Reservasi dipertahankan.']);
+            throw ValidationException::withMessages(['payment' => 'Pembatalan belum terkonfirmasi. Reservasi dipertahankan. Perbarui status pembayaran atau coba lagi.']);
         }
     }
 

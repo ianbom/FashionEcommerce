@@ -98,6 +98,9 @@ class OrderService
         abort_unless((int) $order->user_id === (int) $request->user()->id, 404);
         $order->load('payment');
         $payment = $order->payment;
+        if ($payment && $order->payment_status === 'cancelled') {
+            return back()->with('success', 'Order sudah dibatalkan.');
+        }
         if (! $payment || $order->payment_status !== 'pending') {
             throw ValidationException::withMessages(['order' => 'Order hanya dapat dibatalkan sebelum pembayaran berhasil.']);
         }
@@ -108,7 +111,14 @@ class OrderService
         } else {
             throw ValidationException::withMessages(['order' => 'Provider pembayaran tidak mendukung pembatalan ini.']);
         }
-        if ($order->refresh()->payment_status !== 'cancelled') {
+        $status = $order->refresh()->payment_status;
+        if ($status === 'expired') {
+            return back()->with('success', 'Pembayaran sudah kedaluwarsa. Pesanan tidak dapat dibayar lagi.');
+        }
+        if ($status === 'paid') {
+            throw ValidationException::withMessages(['payment' => 'Pembayaran sudah berhasil. Pesanan tidak dapat dibatalkan.']);
+        }
+        if ($status !== 'cancelled') {
             throw ValidationException::withMessages(['order' => 'Status pembayaran telah berubah; order tidak dibatalkan.']);
         }
 

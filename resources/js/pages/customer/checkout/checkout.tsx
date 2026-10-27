@@ -636,7 +636,7 @@ function CheckoutScreen() {
                                     >
                                         Pilih satu metode pembayaran.
                                     </p>
-                                    <div className="grid grid-cols-3 gap-2.5">
+                                    <div className="grid grid-cols-3 gap-2">
                                         {paymentGateway.methods.map(
                                             (method) => (
                                                 <label
@@ -666,21 +666,21 @@ function CheckoutScreen() {
                                                         )}
                                                         className="peer sr-only"
                                                     />
-                                                    <span className="flex aspect-square flex-col items-center justify-center gap-2 rounded-xl border border-[#EADBD8] bg-white px-2 py-3 text-center shadow-[0_2px_0_#EADBD840] transition-[transform,border-color,background-color,box-shadow] peer-checked:border-[#4A2525] peer-checked:bg-[#FAF0EC] peer-checked:shadow-[inset_0_0_0_1px_#4A2525] peer-focus-visible:ring-2 peer-focus-visible:ring-[#4A2525] peer-focus-visible:ring-offset-2 peer-enabled:group-hover:-translate-y-0.5 peer-enabled:group-hover:border-[#B78D80] motion-reduce:transform-none motion-reduce:transition-none">
+                                                    <span className="flex h-12 flex-col items-center justify-center rounded-lg border border-[#EADBD8] bg-white px-2 py-1 text-center shadow-[0_1px_2px_#EADBD840] transition-[transform,border-color,background-color,box-shadow] peer-checked:border-[#4A2525] peer-checked:bg-[#FAF0EC] peer-checked:shadow-[inset_0_0_0_1px_#4A2525] peer-focus-visible:ring-2 peer-focus-visible:ring-[#4A2525] peer-focus-visible:ring-offset-2 peer-enabled:group-hover:-translate-y-0.5 peer-enabled:group-hover:border-[#B78D80] motion-reduce:transform-none motion-reduce:transition-none">
                                                         <img
                                                             src={`/images/payments/${method.id}.png`}
                                                             alt=""
                                                             width={80}
                                                             height={32}
-                                                            className="h-8 w-full max-w-20 object-contain"
+                                                            className="h-6 w-full max-w-16 object-contain"
                                                         />
                                                     </span>
                                                     <span
                                                         aria-hidden="true"
-                                                        className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#4A2525] text-white opacity-0 transition-opacity peer-checked:opacity-100 motion-reduce:transition-none"
+                                                        className="absolute top-1 right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#4A2525] text-white opacity-0 transition-opacity peer-checked:opacity-100 motion-reduce:transition-none"
                                                     >
                                                         <Check
-                                                            size={10}
+                                                            size={9}
                                                             strokeWidth={3}
                                                         />
                                                     </span>

@@ -117,7 +117,7 @@ class MidtransService
         if (! preg_match('/^[a-zA-Z0-9_-]{1,255}$/D', $token)) {
             throw ValidationException::withMessages(['payment' => 'Identitas sesi Snap tidak valid.']);
         }
-        $response = Http::timeout(20)->acceptJson()->withHeaders(['Authorization' => $this->serverKey()])
+        $response = Http::timeout(20)->acceptJson()->withHeaders(['Authorization' => $this->serverKey()])->withBody('', 'application/json')
             ->post($this->snapBaseUrl().'/snap/v1/transactions/'.rawurlencode($token).'/cancel');
         $cancelledAt = $response->json('canceled_at');
         $alreadyCancelled = $response->json('error_messages') === ['token already canceled'];
@@ -170,24 +170,24 @@ class MidtransService
 
     public function cancelTransaction(string $midtransOrderId): array
     {
-        $response = $this->apiClient()->post('/v2/'.rawurlencode($midtransOrderId).'/cancel');
+        $response = $this->apiClient()->withBody('', 'application/json')->post('/v2/'.rawurlencode($midtransOrderId).'/cancel');
 
-        if (! $response->successful()) {
+        $payload = $response->json();
+        if (! $response->successful() || ! is_array($payload)
+            || ! is_scalar($payload['status_code'] ?? null) || (string) $payload['status_code'] !== '200'
+            || ($payload['transaction_status'] ?? null) !== 'cancel'
+            || ($payload['order_id'] ?? null) !== $midtransOrderId
+            || ! is_scalar($payload['gross_amount'] ?? null) || ! is_numeric($payload['gross_amount'])) {
             Log::warning('midtrans_cancel_failed', [
                 'order_id' => $midtransOrderId,
                 'status' => $response->status(),
+                'provider_status_code' => is_array($payload) && is_scalar($payload['status_code'] ?? null)
+                    && preg_match('/^\d{3}$/D', (string) $payload['status_code']) ? (string) $payload['status_code'] : null,
             ]);
 
             throw ValidationException::withMessages([
                 'payment' => 'Pembatalan provider belum dapat dipastikan.',
             ]);
-        }
-
-        $payload = $response->json();
-        if (! is_array($payload) || (string) ($payload['status_code'] ?? '') !== '200'
-            || ($payload['transaction_status'] ?? null) !== 'cancel'
-            || ($payload['order_id'] ?? null) !== $midtransOrderId) {
-            throw ValidationException::withMessages(['payment' => 'Pembatalan provider belum terkonfirmasi.']);
         }
 
         return $payload;
