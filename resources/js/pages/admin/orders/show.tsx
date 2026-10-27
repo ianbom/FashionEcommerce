@@ -75,6 +75,8 @@ interface Payment {
     id: number;
     payment_provider?: string | null;
     payment_method?: string | null;
+    requested_payment_method?: string | null;
+    requested_payment_method_label?: string | null;
     midtrans_order_id?: string | null;
     midtrans_transaction_id?: string | null;
     transaction_status?: string | null;
@@ -1483,8 +1485,13 @@ function PaymentTab({ order }: { order: Order }) {
                         <Detail label="Provider">
                             {payment.payment_provider ?? '—'}
                         </Detail>
-                        <Detail label="Method">
+                        <Detail label="Metode terkonfirmasi">
                             {payment.payment_method ?? '—'}
+                        </Detail>
+                        <Detail label="Pilihan checkout">
+                            {payment.requested_payment_method_label ??
+                                payment.requested_payment_method ??
+                                '—'}
                         </Detail>
                         <Detail label="Transaction Status">
                             <InlineStatus

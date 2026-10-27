@@ -3,6 +3,7 @@ import {
     useCallback,
     useContext,
     useMemo,
+    useRef,
     useState,
 } from 'react';
 import type { ReactNode } from 'react';
@@ -83,6 +84,7 @@ export type CheckoutStoreLocation = {
 
 export type PaymentGateway = {
     provider: 'midtrans';
+    methods: { id: string; label: string; group: string }[];
 };
 
 type CheckoutContextValue = {
@@ -96,7 +98,11 @@ type CheckoutContextValue = {
         addressId: number,
         options?: { preserveSelectedRate?: boolean },
     ) => Promise<void>;
-    placeOrder: (notes: string, agreed: boolean) => Promise<string | null>;
+    placeOrder: (
+        notes: string,
+        agreed: boolean,
+        paymentMethod: string | null,
+    ) => Promise<string | null>;
     placingOrder: boolean;
     removeVoucher: () => Promise<void>;
     selectAddress: (addressId: number) => Promise<void>;
@@ -197,6 +203,7 @@ export function CheckoutProvider({
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [shippingRatesLoading, setShippingRatesLoading] = useState(false);
     const [placingOrder, setPlacingOrder] = useState(false);
+    const placingOrderRef = useRef(false);
     const [idempotencyKey] = useState(checkoutIdempotencyKey);
 
     const resetShippingSummary = useCallback(() => {
@@ -343,8 +350,33 @@ export function CheckoutProvider({
     }, []);
 
     const placeOrder = useCallback(
-        async (notes: string, agreed: boolean) => {
-            if (placingOrder) {
+        async (
+            notes: string,
+            agreed: boolean,
+            paymentMethod: string | null,
+        ) => {
+            if (placingOrderRef.current) {
+                return null;
+            }
+
+            if (
+                !paymentGateway.methods.some(
+                    (method) => method.id === paymentMethod,
+                )
+            ) {
+                setErrors({
+                    payment_method: 'Pilih metode pembayaran terlebih dahulu.',
+                });
+
+                return null;
+            }
+
+            if (!agreed) {
+                setErrors({
+                    no_return_refund_agreed:
+                        'Setujui kebijakan toko terlebih dahulu.',
+                });
+
                 return null;
             }
 
@@ -356,6 +388,7 @@ export function CheckoutProvider({
                 return null;
             }
 
+            placingOrderRef.current = true;
             setPlacingOrder(true);
             setErrors({});
 
@@ -367,6 +400,7 @@ export function CheckoutProvider({
                         customer_address_id: currentAddressId,
                         shipping_rate_id: currentRate.id,
                         idempotency_key: idempotencyKey,
+                        payment_method: paymentMethod,
                         voucher_code: currentVoucher?.code ?? null,
                         notes,
                         no_return_refund_agreed: agreed,
@@ -413,6 +447,7 @@ export function CheckoutProvider({
 
                 return null;
             } finally {
+                placingOrderRef.current = false;
                 setPlacingOrder(false);
             }
         },
@@ -421,7 +456,7 @@ export function CheckoutProvider({
             currentRate,
             currentVoucher,
             idempotencyKey,
-            placingOrder,
+            paymentGateway.methods,
         ],
     );
 

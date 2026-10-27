@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\MidtransPaymentMethod;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'order_id',
     'payment_provider',
     'payment_method',
+    'requested_payment_method',
     'midtrans_order_id',
     'midtrans_transaction_id',
     'midtrans_snap_token',
@@ -28,6 +31,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 ])]
 class Payment extends Model
 {
+    protected $appends = ['requested_payment_method_label'];
+
+    protected function requestedPaymentMethodLabel(): Attribute
+    {
+        return Attribute::get(fn (): ?string => MidtransPaymentMethod::tryFrom((string) $this->requested_payment_method)?->label());
+    }
+
     public function logs(): HasMany
     {
         return $this->hasMany(PaymentLog::class);

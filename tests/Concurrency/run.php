@@ -35,7 +35,8 @@ if (($argv[1] ?? '') === 'worker') {
     $app = require __DIR__.'/bootstrap.php';
     Http::fake([
         'api.biteship.com/v1/rates/couriers' => Http::response(fakeRates()),
-        'app.sandbox.midtrans.com/snap/v1/transactions' => function () use ($signal) {
+        'app.sandbox.midtrans.com/snap/v1/transactions' => function ($request) use ($signal) {
+            check($request->data()['enabled_payments'] === ['bca_va'], 'Snap did not bind the selected checkout method.');
             file_put_contents($signal.'.http', "POST\n", FILE_APPEND | LOCK_EX);
             usleep(400000);
 
@@ -71,7 +72,7 @@ if (($argv[1] ?? '') === 'worker') {
             $service = app(CheckoutService::class);
             $rates = $service->shippingRates($customer, $address->id);
             $service->selectShippingRate($rates[0]['id']);
-            $service->placeOrder($customer, ['customer_address_id' => $address->id, 'shipping_rate_id' => $rates[0]['id'], 'idempotency_key' => 'parallel-checkout']);
+            $service->placeOrder($customer, ['customer_address_id' => $address->id, 'shipping_rate_id' => $rates[0]['id'], 'idempotency_key' => 'parallel-checkout', 'payment_method' => 'bca_va']);
         } elseif ($scenario === 'booking') {
             $request = new class extends Request
             {
@@ -100,7 +101,7 @@ try {
     $app = require __DIR__.'/bootstrap.php';
     check(app()->environment('testing') && DB::connection()->getDatabaseName() === $database, 'Database isolation failed.');
     $app->make(Kernel::class)->call('migrate', ['--force' => true, '--database' => 'mysql']);
-    foreach (['store_name' => 'Test', 'store_phone' => '081234567890', 'store_address' => 'Synthetic address', 'store_postal_code' => '60111', 'store_latitude' => '-7.28', 'store_longitude' => '112.80', 'origin_biteship_area_id' => 'IDNP-TEST', 'payment_whatsapp_number' => '081234567890'] as $key => $value) {
+    foreach (['store_name' => 'Test', 'store_phone' => '081234567890', 'origin_address' => 'Synthetic address', 'store_postal_code' => '60111', 'store_latitude' => '-7.28', 'store_longitude' => '112.80', 'origin_biteship_area_id' => 'IDNP-TEST'] as $key => $value) {
         SiteSetting::query()->create(compact('key', 'value'));
     }
     foreach (['confirm', 'cancel', 'checkout', 'booking', 'receipt', 'midtrans-settlement', 'midtrans-cancel'] as $scenario) {
@@ -173,6 +174,7 @@ try {
             check($cart->items()->count() === 0, 'Checked-out item was not removed.');
             $checkoutOrder = Order::query()->where('checkout_idempotency_key', 'parallel-checkout')->firstOrFail();
             check($checkoutOrder->payment->payment_provider === 'midtrans' && $checkoutOrder->payment->midtrans_snap_token === 'parallel-snap', 'Checkout did not create a Midtrans session.');
+            check($checkoutOrder->payment->requested_payment_method === 'bca_va', 'Concurrent checkout lost the requested method snapshot.');
             check(count(file($signal.'.http')) === 1, 'Concurrent checkout sent duplicate Snap POST.');
         } elseif ($scenario === 'booking') {
             check(count(file($signal.'.http')) === 1 && $shipment->refresh()->biteship_order_id === 'parallel-booking', 'Concurrent booking sent duplicate POST.');

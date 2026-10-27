@@ -106,6 +106,8 @@ class PaymentManagementService
             'midtrans_order_id' => $payment->midtrans_order_id,
             'midtrans_transaction_id' => $payment->midtrans_transaction_id,
             'payment_method' => $payment->payment_method,
+            'requested_payment_method' => $payment->requested_payment_method,
+            'requested_payment_method_label' => $payment->requested_payment_method_label,
             'gross_amount' => $payment->gross_amount,
             'transaction_status' => $payment->transaction_status,
             'fraud_status' => $payment->fraud_status,

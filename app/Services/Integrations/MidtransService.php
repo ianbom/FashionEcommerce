@@ -2,6 +2,7 @@
 
 namespace App\Services\Integrations;
 
+use App\Enums\MidtransPaymentMethod;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Services\Settings\SiteSettingService;
@@ -18,9 +19,9 @@ class MidtransService
     public function createSnapTransaction(Order $order): array
     {
         $this->assertConfigured();
-        $order->load(['items', 'address']);
+        $order->load(['items', 'address', 'payment']);
 
-        $response = $this->snapClient()->post('/snap/v1/transactions', [
+        $request = [
             'transaction_details' => [
                 'order_id' => $order->order_number,
                 'gross_amount' => (int) round((float) $order->grand_total),
@@ -47,7 +48,15 @@ class MidtransService
             'callbacks' => [
                 'finish' => route('order.detail', $order),
             ],
-        ]);
+        ];
+        if ($order->payment?->requested_payment_method !== null) {
+            $method = MidtransPaymentMethod::tryFrom($order->payment->requested_payment_method);
+            if (! $method) {
+                throw ValidationException::withMessages(['payment' => 'Pilihan metode pembayaran tersimpan tidak valid.']);
+            }
+            $request['enabled_payments'] = [$method->value];
+        }
+        $response = $this->snapClient()->post('/snap/v1/transactions', $request);
 
         $payload = $response->json();
         $errors = is_array($payload) ? ($payload['error_messages'] ?? null) : null;

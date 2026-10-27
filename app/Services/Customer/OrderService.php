@@ -239,6 +239,8 @@ class OrderService
                 ...$this->paymentActions($order),
                 'payment_provider' => $order->payment->payment_provider,
                 'payment_method' => $order->payment->payment_method,
+                'requested_payment_method' => $order->payment->requested_payment_method,
+                'requested_payment_method_label' => $order->payment->requested_payment_method_label,
                 'midtrans_order_id' => $order->payment->midtrans_order_id,
                 'midtrans_transaction_id' => $order->payment->midtrans_transaction_id,
                 'midtrans_snap_token' => $order->payment->midtrans_snap_token,

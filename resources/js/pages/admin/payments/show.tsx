@@ -22,6 +22,8 @@ type Payment = {
     customer: string | null;
     payment_provider: string;
     payment_method: string | null;
+    requested_payment_method?: string | null;
+    requested_payment_method_label?: string | null;
     midtrans_order_id: string | null;
     midtrans_transaction_id: string | null;
     midtrans_snap_token: string | null;
@@ -129,8 +131,16 @@ export default function PaymentShow({ payment }: Props) {
                     />
                     <Metric label="Fraud" value={payment.fraud_status ?? '-'} />
                     <Metric
-                        label="Method"
+                        label="Metode terkonfirmasi"
                         value={payment.payment_method ?? '-'}
+                    />
+                    <Metric
+                        label="Pilihan checkout"
+                        value={
+                            payment.requested_payment_method_label ??
+                            payment.requested_payment_method ??
+                            '-'
+                        }
                     />
                 </div>
                 <div className="grid gap-6 lg:grid-cols-2">

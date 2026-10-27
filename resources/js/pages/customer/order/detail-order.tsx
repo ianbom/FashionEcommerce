@@ -72,6 +72,8 @@ type Payment = {
     resume_url: string | null;
     payment_provider: string;
     payment_method: string | null;
+    requested_payment_method?: string | null;
+    requested_payment_method_label?: string | null;
     midtrans_order_id: string | null;
     midtrans_transaction_id: string | null;
     midtrans_snap_token: string | null;
@@ -1023,8 +1025,19 @@ export default function DetailOrder({ order, support }: Props) {
                                 <div className="divide-y divide-[#f5ede6]">
                                     <InfoLine
                                         icon={CreditCard}
-                                        label="Metode"
+                                        label="Metode terkonfirmasi"
                                         value={paymentMethod}
+                                    />
+                                    <InfoLine
+                                        icon={CreditCard}
+                                        label="Pilihan checkout"
+                                        value={
+                                            order.payment
+                                                ?.requested_payment_method_label ??
+                                            order.payment
+                                                ?.requested_payment_method ??
+                                            '-'
+                                        }
                                     />
                                     <InfoLine
                                         icon={ReceiptText}

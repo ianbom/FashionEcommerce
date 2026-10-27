@@ -25,8 +25,9 @@ beforeEach(function () {
     $this->payment->update(['raw_response' => ['snap_creation_state' => 'new']]);
     $this->snapResponse = fn () => Http::response(['token' => 'snap-test-token', 'redirect_url' => 'https://app.sandbox.midtrans.com/snap/v3/redirection/snap-test-token'], 201);
     $this->snapCalls = 0;
-    Http::fake(['app.sandbox.midtrans.com/snap/v1/transactions' => function () {
+    Http::fake(['app.sandbox.midtrans.com/snap/v1/transactions' => function ($request) {
         $this->snapCalls++;
+        $this->snapRequestedMethods = $request->data()['enabled_payments'] ?? null;
 
         return ($this->snapResponse)();
     }]);
@@ -42,6 +43,20 @@ it('creates one Snap session with exact item totals and reuses it', function () 
     Http::assertSent(fn ($request) => $request['transaction_details']['gross_amount'] === 30901
         && collect($request['item_details'])->sum(fn ($item) => $item['price'] * $item['quantity']) === 30901
         && $request['callbacks']['finish'] === route('order.detail', $this->order));
+    Http::assertSent(fn ($request): bool => ! array_key_exists('enabled_payments', $request->data()));
+});
+
+it('keeps the chosen channel through uncertain Snap creation and sync', function () {
+    $this->payment->update(['requested_payment_method' => 'other_qris']);
+    $this->snapResponse = fn () => throw new ConnectionException('Synthetic timeout');
+    $action = app(CreateMidtransSnapAction::class);
+    expect($action->execute($this->payment)['payment_state'])->toBe('processing');
+    $action->execute($this->payment);
+    app(SyncMidtransPaymentAction::class)->applyPayload($this->payment, ['order_id' => $this->order->order_number, 'gross_amount' => '30901.00', 'status_code' => '201', 'transaction_status' => 'pending', 'payment_type' => 'qris']);
+    expect($this->payment->refresh()->requested_payment_method)->toBe('other_qris')
+        ->and($this->payment->payment_method)->toBe('qris')
+        ->and($this->variant->refresh()->reserved_stock)->toBe(3)->and($this->snapCalls)->toBe(1);
+    expect($this->snapRequestedMethods)->toBe(['other_qris']);
 });
 
 it('restores a rejected checkout once without overwriting newer cart additions', function () {

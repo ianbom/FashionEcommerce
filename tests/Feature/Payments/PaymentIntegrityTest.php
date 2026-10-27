@@ -121,6 +121,18 @@ it('handles signed settlement replays without changing final metadata or repeati
     $this->assertDatabaseCount('notifications', 1);
 });
 
+it('keeps requested channel distinct from signed provider method and webhook replays', function (string $requested, string $actual) {
+    $this->payment->update(['payment_provider' => 'midtrans', 'requested_payment_method' => $requested]);
+    $payload = ['order_id' => $this->order->order_number, 'gross_amount' => '10000.00', 'status_code' => '200', 'transaction_status' => 'settlement', 'transaction_id' => 'channel-test', 'payment_type' => $actual];
+    $payload['signature_key'] = hash('sha512', $payload['order_id'].$payload['status_code'].$payload['gross_amount'].'synthetic-test-key');
+    $this->postJson(route('payments.midtrans.notification'), $payload)->assertSuccessful();
+    $this->postJson(route('payments.midtrans.notification'), $payload)->assertSuccessful();
+    expect($this->payment->refresh()->requested_payment_method)->toBe($requested)
+        ->and($this->payment->payment_method)->toBe($actual)
+        ->and($this->order->refresh()->payment_status)->toBe('paid');
+    $this->assertDatabaseCount('notifications', 1);
+})->with([['bca_va', 'bank_transfer'], ['echannel', 'echannel'], ['other_qris', 'qris'], ['gopay', 'qris'], ['shopeepay', 'shopeepay']]);
+
 it('never releases a legacy reservation from uncertain or confirmed missing transaction status', function (int $httpStatus, array $response) {
     $this->payment->update(['payment_provider' => 'midtrans']);
     Http::fake(['api.sandbox.midtrans.com/*' => Http::response($response, $httpStatus)]);

@@ -138,7 +138,7 @@ function CheckoutScreen() {
         appliedVoucher,
         applyVoucher,
         cartItems,
-        errors,
+        errors: checkoutErrors,
         loadShippingRates,
         paymentGateway,
         placeOrder,
@@ -156,6 +156,15 @@ function CheckoutScreen() {
     const [voucherCode, setVoucherCode] = useState(appliedVoucher?.code ?? '');
     const [notes, setNotes] = useState('');
     const [agreed, setAgreed] = useState(false);
+    const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
+    const errors = Object.fromEntries(
+        Object.entries(checkoutErrors).map(([key, message]) => [
+            key,
+            String(message)
+                .replace(/midtrans(?:\s+snap)?/gi, 'pembayaran')
+                .replace(/biteship/gi, 'pengiriman'),
+        ]),
+    );
     const totalWeight = cartItems.reduce(
         (total, item) => total + item.weight,
         0,
@@ -196,7 +205,7 @@ function CheckoutScreen() {
             return;
         }
 
-        const redirectUrl = await placeOrder(notes, agreed);
+        const redirectUrl = await placeOrder(notes, agreed, paymentMethod);
 
         if (redirectUrl) {
             window.location.href = redirectUrl;
@@ -232,8 +241,8 @@ function CheckoutScreen() {
                             Checkout
                         </h1>
                         <p className="text-xs text-[#8A6B62] md:text-sm">
-                            Pilih alamat tersimpan, ongkir Biteship, voucher,
-                            lalu selesaikan pembayaran melalui Midtrans.
+                            Pilih alamat, pengiriman, dan metode pembayaran
+                            untuk menyelesaikan pesanan.
                         </p>
                     </div>
                     <div className="flex max-w-[380px] items-center">
@@ -610,27 +619,101 @@ function CheckoutScreen() {
                                         </span>
                                     </div>
                                 </div>
-                                <div
-                                    data-provider={paymentGateway.provider}
-                                    className="mt-6 rounded-lg border border-[#EADBD8] bg-[#FAF8F5] p-4 text-[12px] text-[#4A4A4A]"
+                                <fieldset
+                                    disabled={placingOrder}
+                                    aria-describedby="payment-method-hint payment-method-error"
+                                    aria-invalid={Boolean(
+                                        errors.payment_method,
+                                    )}
+                                    className="mt-7 w-full min-w-0"
                                 >
-                                    <p className="font-bold text-[#4A2525]">
-                                        Midtrans Snap
+                                    <legend className="font-serif text-xl text-[#333333]">
+                                        Metode Pembayaran
+                                    </legend>
+                                    <p
+                                        id="payment-method-hint"
+                                        className="mt-2 mb-4 text-[12px] text-[#6B5650]"
+                                    >
+                                        Pilih satu metode pembayaran.
                                     </p>
-                                    <p className="mt-2">
-                                        Anda akan diarahkan ke halaman
-                                        pembayaran Midtrans untuk memilih metode
-                                        pembayaran yang tersedia. Status
-                                        diperbarui otomatis setelah pembayaran
-                                        terverifikasi.
-                                    </p>
-                                </div>
+                                    <div className="grid grid-cols-3 gap-2.5">
+                                        {paymentGateway.methods.map(
+                                            (method) => (
+                                                <label
+                                                    key={method.id}
+                                                    className="group relative min-w-0 cursor-pointer has-disabled:cursor-wait has-disabled:opacity-60"
+                                                >
+                                                    <input
+                                                        type="radio"
+                                                        name="payment_method"
+                                                        aria-label={
+                                                            method.label
+                                                        }
+                                                        value={method.id}
+                                                        checked={
+                                                            paymentMethod ===
+                                                            method.id
+                                                        }
+                                                        onChange={() =>
+                                                            setPaymentMethod(
+                                                                method.id,
+                                                            )
+                                                        }
+                                                        required
+                                                        aria-describedby="payment-method-hint payment-method-error"
+                                                        aria-invalid={Boolean(
+                                                            errors.payment_method,
+                                                        )}
+                                                        className="peer sr-only"
+                                                    />
+                                                    <span className="flex aspect-square flex-col items-center justify-center gap-2 rounded-xl border border-[#EADBD8] bg-white px-2 py-3 text-center shadow-[0_2px_0_#EADBD840] transition-[transform,border-color,background-color,box-shadow] peer-checked:border-[#4A2525] peer-checked:bg-[#FAF0EC] peer-checked:shadow-[inset_0_0_0_1px_#4A2525] peer-focus-visible:ring-2 peer-focus-visible:ring-[#4A2525] peer-focus-visible:ring-offset-2 peer-enabled:group-hover:-translate-y-0.5 peer-enabled:group-hover:border-[#B78D80] motion-reduce:transform-none motion-reduce:transition-none">
+                                                        <img
+                                                            src={`/images/payments/${method.id}.png`}
+                                                            alt=""
+                                                            width={80}
+                                                            height={32}
+                                                            className="h-8 w-full max-w-20 object-contain"
+                                                        />
+                                                    </span>
+                                                    <span
+                                                        aria-hidden="true"
+                                                        className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#4A2525] text-white opacity-0 transition-opacity peer-checked:opacity-100 motion-reduce:transition-none"
+                                                    >
+                                                        <Check
+                                                            size={10}
+                                                            strokeWidth={3}
+                                                        />
+                                                    </span>
+                                                </label>
+                                            ),
+                                        )}
+                                    </div>
+                                    <div
+                                        id="payment-method-error"
+                                        className="mt-3 text-[12px] font-semibold text-[#B24B4B]"
+                                    >
+                                        {errors.payment_method && (
+                                            <p role="alert">
+                                                {errors.payment_method}{' '}
+                                                <Link
+                                                    href="/my-order"
+                                                    className="underline"
+                                                >
+                                                    Lihat pesanan saya
+                                                </Link>
+                                            </p>
+                                        )}
+                                    </div>
+                                </fieldset>
                                 <button
                                     type="button"
                                     onClick={() => void submitOrder()}
                                     disabled={
                                         placingOrder ||
+                                        hasUnavailableItems ||
+                                        !selectedAddressId ||
                                         !selectedShippingRate ||
+                                        !paymentMethod ||
                                         !agreed
                                     }
                                     className="mt-6 flex w-full items-center justify-center rounded-lg bg-[#4A2525] py-4 text-[13px] font-bold tracking-wider text-white transition-all hover:bg-[#5F1717] hover:shadow-lg hover:shadow-[#4A2525]/20 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
@@ -638,7 +721,7 @@ function CheckoutScreen() {
                                     <Lock size={16} className="mr-2" />
                                     {placingOrder
                                         ? 'Membuat Order...'
-                                        : 'Bayar dengan Midtrans'}
+                                        : 'Bayar Sekarang'}
                                 </button>
                                 <div className="mt-8 space-y-4 border-t border-[#EADBD8]/60 pt-6">
                                     <CheckoutRouteMap
@@ -656,9 +739,8 @@ function CheckoutScreen() {
                                             strokeWidth={1.5}
                                         />
                                         <p>
-                                            Pembayaran diproses melalui
-                                            Midtrans. Tidak perlu mengirim bukti
-                                            transfer melalui WhatsApp.
+                                            Pembayaran diverifikasi secara
+                                            otomatis.
                                         </p>
                                     </div>
                                     <div className="flex items-start space-x-3 text-[11px] text-[#8A6B62]">
@@ -667,7 +749,10 @@ function CheckoutScreen() {
                                             className="mt-0.5 flex-shrink-0 text-[#C99A8F]"
                                             strokeWidth={1.5}
                                         />
-                                        <p>Ongkir dihitung oleh Biteship</p>
+                                        <p>
+                                            Ongkir dihitung sesuai alamat dan
+                                            layanan pengiriman.
+                                        </p>
                                     </div>
                                 </div>
                             </div>

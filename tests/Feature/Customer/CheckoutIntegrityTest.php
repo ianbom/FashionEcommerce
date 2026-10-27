@@ -4,6 +4,7 @@ use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\CustomerAddress;
 use App\Models\Order;
+use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\SiteSetting;
@@ -35,13 +36,78 @@ beforeEach(function () {
         }
 
         return Http::response($this->pricing);
-    }, 'app.sandbox.midtrans.com/snap/v1/transactions' => Http::response([
-        'token' => 'checkout-token', 'redirect_url' => 'https://app.sandbox.midtrans.com/snap/v2/vtweb/checkout-token',
-    ])]);
+    }, 'app.sandbox.midtrans.com/snap/v1/transactions' => function () {
+        $this->snapshotAtSnap = Payment::query()->first()?->requested_payment_method;
+
+        return Http::response(['token' => 'checkout-token', 'redirect_url' => 'https://app.sandbox.midtrans.com/snap/v2/vtweb/checkout-token']);
+    }]);
     $this->checkout = app(CheckoutService::class);
     $rates = $this->checkout->shippingRates($this->customer, $this->address->id);
     $this->checkout->selectShippingRate($rates[0]['id']);
-    $this->checkoutPayload = ['customer_address_id' => $this->address->id, 'shipping_rate_id' => $rates[0]['id'], 'idempotency_key' => 'checkout-integrity-key', 'no_return_refund_agreed' => true];
+    $this->checkoutPayload = ['customer_address_id' => $this->address->id, 'shipping_rate_id' => $rates[0]['id'], 'idempotency_key' => 'checkout-integrity-key', 'no_return_refund_agreed' => true, 'payment_method' => 'bca_va'];
+});
+
+it('requires a supported payment method before checkout side effects', function (mixed $method) {
+    $payload = [...$this->checkoutPayload, 'payment_method' => $method];
+    $this->actingAs($this->customer)->postJson(route('checkout.place-order'), $payload)->assertUnprocessable()->assertJsonValidationErrors('payment_method');
+    expect(fn () => $this->checkout->placeOrder($this->customer, $payload))->toThrow(ValidationException::class);
+    $this->assertDatabaseCount('orders', 0);
+    $this->assertDatabaseCount('payments', 0);
+    expect($this->variant->refresh()->reserved_stock)->toBe(0)->and($this->cart->items()->count())->toBe(1);
+    Http::assertNotSent(fn ($request): bool => str_contains($request->url(), '/snap/'));
+})->with(['missing' => [null], 'empty' => [''], 'aggregate' => ['bank_transfer'], 'unknown' => ['unknown'], 'array' => [['bca_va']]]);
+
+it('publishes one server catalogue and binds every supported channel before Snap', function (string $method) {
+    $methods = $this->checkout->pageData($this->customer)['paymentGateway']['methods'];
+    expect(array_column($methods, 'id'))->toBe(['bca_va', 'bni_va', 'bri_va', 'echannel', 'permata_va', 'other_qris', 'gopay', 'shopeepay']);
+    $result = $this->checkout->placeOrder($this->customer, [...$this->checkoutPayload, 'payment_method' => $method]);
+    $payment = Payment::query()->findOrFail($result['payment_id']);
+    expect($result['payment_state'])->toBe('ready')
+        ->and($payment->requested_payment_method)->toBe($method)
+        ->and($payment->payment_method)->toBeNull()
+        ->and($this->snapshotAtSnap)->toBe($method);
+    Http::assertSent(fn ($request): bool => str_contains($request->url(), '/snap/') && $request['enabled_payments'] === [$method]);
+    $this->actingAs($this->customer)->get(route('order.detail', $payment->order))
+        ->assertInertia(fn ($page) => $page->where('order.payment.requested_payment_method', $method)
+            ->where('order.payment.requested_payment_method_label', collect($methods)->firstWhere('id', $method)['label'])->etc());
+})->with(['bca_va', 'bni_va', 'bri_va', 'echannel', 'permata_va', 'other_qris', 'gopay', 'shopeepay']);
+
+it('rejects changing the method on an existing checkout without another Snap or reservation', function () {
+    $result = $this->checkout->placeOrder($this->customer, $this->checkoutPayload);
+    expect($this->checkout->placeOrder($this->customer, $this->checkoutPayload))->toBe($result);
+    $this->actingAs($this->customer)->postJson(route('checkout.place-order'), [...$this->checkoutPayload, 'payment_method' => 'gopay'])
+        ->assertUnprocessable()->assertJsonValidationErrors('payment_method');
+    $this->assertDatabaseCount('orders', 1);
+    expect($this->variant->refresh()->reserved_stock)->toBe(3)
+        ->and(Payment::query()->first()->requested_payment_method)->toBe('bca_va');
+    expect(Http::recorded(fn ($request): bool => str_contains($request->url(), '/snap/')))->toHaveCount(1);
+});
+
+it('rechecks the method when another checkout wins during rate verification', function () {
+    $this->providerMutation = function () {
+        $order = Order::query()->create(['user_id' => $this->customer->id, 'customer_name' => 'Customer', 'customer_email' => $this->customer->email, 'customer_phone' => '081234567890', 'order_number' => 'CONCURRENT-METHOD', 'checkout_idempotency_key' => $this->checkoutPayload['idempotency_key'], 'payment_status' => 'pending']);
+        $order->payment()->create(['payment_provider' => 'midtrans', 'requested_payment_method' => 'gopay', 'gross_amount' => 31001, 'raw_response' => ['snap_creation_state' => 'creating']]);
+    };
+    try {
+        $this->checkout->placeOrder($this->customer, $this->checkoutPayload);
+        $this->fail('Conflicting checkout method was accepted.');
+    } catch (ValidationException $exception) {
+        expect($exception->errors())->toHaveKey('payment_method');
+    }
+    Http::assertNotSent(fn ($request): bool => str_contains($request->url(), '/snap/'));
+    expect(Payment::query()->first()->requested_payment_method)->toBe('gopay');
+});
+
+it('reuses a legacy checkout session without rewriting its nullable method snapshot', function () {
+    $result = $this->checkout->placeOrder($this->customer, $this->checkoutPayload);
+    $payment = Payment::query()->findOrFail($result['payment_id']);
+    $payment->update(['requested_payment_method' => null]);
+
+    expect($this->checkout->placeOrder($this->customer, [...$this->checkoutPayload, 'payment_method' => 'gopay']))->toBe($result);
+    expect($payment->refresh()->requested_payment_method)->toBeNull();
+    $this->assertDatabaseCount('orders', 1);
+    expect($this->variant->refresh()->reserved_stock)->toBe(3);
+    Http::assertSentCount(3);
 });
 
 it('preserves shipping binding through voucher apply remove and place order', function (bool $remove) {

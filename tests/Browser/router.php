@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\SiteSetting;
 use App\Models\User;
+use App\Models\Voucher;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -50,12 +51,14 @@ Http::fake([
     'api.biteship.com/v1/orders' => Http::response(['id' => 'browser-fake-booking', 'status' => 'confirmed']),
     'api.biteship.com/v1/orders/*' => fn ($request) => Http::response(['id' => basename(parse_url($request->url(), PHP_URL_PATH)), 'status' => 'confirmed']),
     'api.sandbox.midtrans.com/v2/*/status' => Http::response(['status_code' => '404'], 404),
+    'app.sandbox.midtrans.com/snap/v1/transactions' => Http::response(['token' => 'browser-checkout-token', 'redirect_url' => 'https://app.sandbox.midtrans.com/snap/v3/redirection/browser-checkout-token'], 201),
 ]);
 Vite::useHotFile(__DIR__.'/../isolated-environment/hot');
 $kernel->call('migrate', ['--force' => true]);
 
 $admin = User::factory()->create(['role' => 'admin', 'is_active' => true, 'email' => 'admin-browser@example.test']);
 $customer = User::factory()->create(['role' => 'customer', 'is_active' => true, 'email' => 'customer-browser@example.test']);
+Voucher::query()->create(['code' => 'BROWSER10', 'name' => 'Browser voucher', 'discount_type' => 'fixed', 'discount_value' => 100, 'is_active' => true]);
 Auth::setUser(str_starts_with($path, '/admin') ? $admin : $customer);
 foreach (['store_name' => 'Browser Test', 'store_phone' => '081234567890', 'origin_address' => 'Synthetic address', 'store_postal_code' => '60111', 'store_latitude' => '-7.28', 'store_longitude' => '112.80', 'origin_biteship_area_id' => 'IDNP-TEST'] as $key => $value) {
     SiteSetting::query()->create(compact('key', 'value'));

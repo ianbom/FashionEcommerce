@@ -3,6 +3,7 @@
 namespace App\Services\Customer;
 
 use App\Actions\Payments\CreateMidtransSnapAction;
+use App\Enums\MidtransPaymentMethod;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\CustomerAddress;
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class CheckoutService
@@ -50,7 +52,7 @@ class CheckoutService
                 'latitude' => $this->settings->get('store_latitude'),
                 'longitude' => $this->settings->get('store_longitude'),
             ],
-            'paymentGateway' => ['provider' => 'midtrans'],
+            'paymentGateway' => ['provider' => 'midtrans', 'methods' => MidtransPaymentMethod::options()],
             'appliedVoucher' => $voucher ? $this->voucherPayload($voucher, $discount) : null,
             'selectedShippingRate' => $rate,
             'summary' => $this->summary($items, (float) ($rate['price'] ?? 0), $discount),
@@ -156,6 +158,9 @@ class CheckoutService
 
     public function placeOrder(User $user, array $payload): array
     {
+        $requestedMethod = validator($payload, [
+            'payment_method' => ['required', 'string', Rule::in(MidtransPaymentMethod::values())],
+        ])->validate()['payment_method'];
         $this->forgetExpiredCheckoutSession();
 
         $idempotencyKey = (string) $payload['idempotency_key'];
@@ -166,6 +171,8 @@ class CheckoutService
             ->first();
 
         if ($existingOrder?->payment) {
+            $this->assertPaymentMethodUnchanged($existingOrder->payment, $requestedMethod);
+
             return $this->createSnap->execute($existingOrder->payment);
         }
 
@@ -173,10 +180,12 @@ class CheckoutService
         $this->validateSelectedShippingRate($user, (int) $payload['customer_address_id'], (string) $payload['shipping_rate_id']);
         $verifiedAddressHash = $this->addressHash($this->ownedAddress($user, (int) $payload['customer_address_id']));
 
-        $payment = DB::transaction(function () use ($user, $payload, $verifiedAddressHash): ?Payment {
+        $payment = DB::transaction(function () use ($user, $payload, $verifiedAddressHash, $requestedMethod): ?Payment {
             $cart = Cart::query()->where('user_id', $user->id)->lockForUpdate()->firstOrFail();
             $existing = Order::query()->where('user_id', $user->id)->where('checkout_idempotency_key', $payload['idempotency_key'])->first();
             if ($existing?->payment) {
+                $this->assertPaymentMethodUnchanged($existing->payment, $requestedMethod);
+
                 return $existing->payment;
             }
             $address = CustomerAddress::query()->where('user_id', $user->id)->whereKey($payload['customer_address_id'])->lockForUpdate()->firstOrFail();
@@ -336,6 +345,7 @@ class CheckoutService
 
             $payment = $order->payment()->create([
                 'payment_provider' => 'midtrans',
+                'requested_payment_method' => $requestedMethod,
                 'midtrans_order_id' => $order->order_number,
                 'gross_amount' => $order->grand_total,
                 'currency' => 'IDR',
@@ -360,6 +370,13 @@ class CheckoutService
         }
 
         return $result;
+    }
+
+    private function assertPaymentMethodUnchanged(Payment $payment, string $requestedMethod): void
+    {
+        if ($payment->requested_payment_method !== null && $payment->requested_payment_method !== $requestedMethod) {
+            throw ValidationException::withMessages(['payment_method' => 'Metode pembayaran pesanan ini sudah dipilih. Lanjutkan pembayaran melalui detail pesanan; jangan membuat pembayaran ulang.']);
+        }
     }
 
     private function cartItems(User $user): Collection
